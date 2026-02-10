@@ -93,12 +93,58 @@
             transition: width 0.3s ease;
         }
         .nav-link:hover::after { width: 100%; }
+
+        /* LIQUID GLASS */
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .glass-subtle {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.07;
+        }
+        .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, #4a9eff, transparent 70%);
+            top: -10%; left: -5%;
+            animation: orb-float-1 20s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #a855f7, transparent 70%);
+            bottom: 10%; right: -8%;
+            animation: orb-float-2 25s ease-in-out infinite;
+        }
+        @keyframes orb-float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, 60px) scale(1.1); }
+            66% { transform: translate(-40px, 30px) scale(0.95); }
+        }
+        @keyframes orb-float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-60px, -40px) scale(1.15); }
+            66% { transform: translate(30px, -70px) scale(0.9); }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
     <!-- NAV -->
-    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center">
+    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center glass-subtle relative">
         <a href="index.html">
             <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
         </a>
@@ -130,21 +176,21 @@
 
     <!-- CONTENT -->
     <main class="max-w-5xl mx-auto px-6 sm:px-10 md:px-16 py-16 sm:py-24">
-        <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-7xl tracking-tighter uppercase mb-16 leading-[0.9]">
+        <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-7xl tracking-tighter uppercase mb-10 leading-[0.9]">
             About <span class="text-muted">Me</span>
         </h1>
 
         <!-- PHOTO + INTRO -->
-        <div class="flex flex-col md:flex-row gap-10 md:gap-16 items-start mb-20">
+        <div class="flex flex-col md:flex-row gap-8 md:gap-10 items-start mb-12">
             <!-- Photo -->
-            <div class="w-full md:w-[38%] flex-shrink-0">
-                <div class="aspect-[3/4] w-full overflow-hidden border border-ivory/10">
+            <div class="w-full md:w-[35%] flex-shrink-0">
+                <div class="aspect-[3/4] w-full overflow-hidden glass rounded-lg">
                     <img src="images/Henry.jpeg" alt="Henry Ohler" class="w-full h-full object-cover">
                 </div>
             </div>
 
-            <!-- Text — normal case for readability -->
-            <div class="space-y-5 font-inter text-[15px] sm:text-[17px] text-ivory/75 leading-[1.8] normal-case md:pt-2">
+            <!-- Text -->
+            <div class="space-y-4 font-inter text-sm sm:text-[15px] text-ivory/75 leading-relaxed">
                 <p>
                     My name is Henry Ohler, and Dialed By H started from a genuine obsession with watches.
                 </p>
@@ -158,7 +204,7 @@
         </div>
 
         <!-- CONTINUED TEXT -->
-        <div class="space-y-5 font-inter text-[15px] sm:text-[17px] text-ivory/75 leading-[1.8] normal-case mb-20 max-w-3xl">
+        <div class="space-y-4 font-inter text-sm sm:text-[15px] text-ivory/75 leading-relaxed mb-14 max-w-3xl">
             <p>
                 Today, I work with a vetted network of global partners and personally oversee every step of the process, from authentication and condition verification to pricing and secure delivery. If my name is on it, I am responsible for it.
             </p>
@@ -168,7 +214,7 @@
         </div>
 
         <!-- CONTACT -->
-        <div class="pt-10 border-t border-ivory/10">
+        <div class="pt-10 border-t border-ivory/10 glass-subtle rounded-xl px-6 py-8">
             <h2 class="font-space font-bold text-xl tracking-widest uppercase mb-8 text-muted">Get in Touch</h2>
             <div class="flex flex-wrap gap-8 text-sm sm:text-base font-space uppercase tracking-widest">
                 <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">

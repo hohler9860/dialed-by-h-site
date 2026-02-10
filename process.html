@@ -109,12 +109,53 @@
             transition: width 0.3s ease;
         }
         .nav-link:hover::after { width: 100%; }
+
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .glass-subtle {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .orb {
+            position: fixed; border-radius: 50%; filter: blur(80px);
+            pointer-events: none; z-index: 0; opacity: 0.07;
+        }
+        .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, #4a9eff, transparent 70%);
+            top: -10%; left: -5%;
+            animation: orb-float-1 20s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #a855f7, transparent 70%);
+            bottom: 10%; right: -8%;
+            animation: orb-float-2 25s ease-in-out infinite;
+        }
+        @keyframes orb-float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, 60px) scale(1.1); }
+            66% { transform: translate(-40px, 30px) scale(0.95); }
+        }
+        @keyframes orb-float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-60px, -40px) scale(1.15); }
+            66% { transform: translate(30px, -70px) scale(0.9); }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
     <!-- NAV -->
-    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center">
+    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center glass-subtle relative">
         <a href="index.html">
             <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
         </a>
@@ -152,52 +193,52 @@
 
         <div class="space-y-16">
             <!-- STEP 1 -->
-            <div class="flex gap-6 sm:gap-10">
+            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
                 <div class="flex-shrink-0">
                     <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">01</span>
                 </div>
                 <div>
                     <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Consultation</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide normal-case">
+                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
                         We start with a conversation. You tell me what you're looking for — brand, reference, condition, budget. I listen, advise, and set realistic expectations based on current market availability.
                     </p>
                 </div>
             </div>
 
             <!-- STEP 2 -->
-            <div class="flex gap-6 sm:gap-10">
+            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
                 <div class="flex-shrink-0">
                     <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">02</span>
                 </div>
                 <div>
                     <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Sourcing</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide normal-case">
+                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
                         I activate my global network of trusted dealers, collectors, and private sellers. Every lead is vetted. I only pursue pieces with clean provenance and verifiable history.
                     </p>
                 </div>
             </div>
 
             <!-- STEP 3 -->
-            <div class="flex gap-6 sm:gap-10">
+            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
                 <div class="flex-shrink-0">
                     <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">03</span>
                 </div>
                 <div>
                     <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Authentication</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide normal-case">
+                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
                         Before any transaction moves forward, every piece is independently authenticated by trusted watch specialists. Dial, movement, case, bracelet — everything is verified.
                     </p>
                 </div>
             </div>
 
             <!-- STEP 4 -->
-            <div class="flex gap-6 sm:gap-10">
+            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
                 <div class="flex-shrink-0">
                     <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">04</span>
                 </div>
                 <div>
                     <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Delivery</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide normal-case">
+                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
                         Once authenticated, the piece is fully insured and shipped via secure courier. You receive detailed documentation, photography, and tracking every step of the way.
                     </p>
                 </div>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me | Dialed By H</title>
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: '#0a0a0a',
+                        ivory: '#f0f0f0',
+                        muted: '#888888',
+                    },
+                    fontFamily: {
+                        space: ['"Space Grotesk"', 'sans-serif'],
+                        inter: ['"Inter"', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Google+Sans+Text);
+        html {
+            font-family: 'Google Sans Text', 'Google Sans';
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            color: #f0f0f0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            text-transform: uppercase;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #f0f0f0;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+    </style>
+</head>
+<body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
+
+    <!-- NAV -->
+    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center">
+        <a href="index.html">
+            <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
+        </a>
+        <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
+            <a href="about.html" class="nav-link text-ivory transition-colors">About Me</a>
+            <a href="process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
+            <a href="journal.html" class="nav-link hover:text-muted transition-colors">Journal</a>
+            <a href="index.html" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
+        </div>
+        <button onclick="document.getElementById('mobile-menu').style.opacity='1'; document.getElementById('mobile-menu').style.pointerEvents='auto'; document.body.style.overflow='hidden';" class="md:hidden text-ivory">
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/>
+            </svg>
+        </button>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div id="mobile-menu" class="fixed inset-0 z-50 bg-charcoal/95 backdrop-blur-sm flex flex-col items-center justify-center space-y-8 transition-all duration-500 opacity-0 pointer-events-none">
+        <button onclick="document.getElementById('mobile-menu').style.opacity='0'; document.getElementById('mobile-menu').style.pointerEvents='none'; document.body.style.overflow='';" class="absolute top-4 right-6 text-ivory">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+        <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest text-ivory">About Me</a>
+        <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
+        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
+        <a href="index.html" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
+    </div>
+
+    <!-- CONTENT -->
+    <main class="max-w-5xl mx-auto px-6 sm:px-10 md:px-16 py-16 sm:py-24">
+        <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-7xl tracking-tighter uppercase mb-16 leading-[0.9]">
+            About <span class="text-muted">Me</span>
+        </h1>
+
+        <!-- PHOTO + INTRO -->
+        <div class="flex flex-col md:flex-row gap-10 md:gap-16 items-start mb-20">
+            <!-- Photo -->
+            <div class="w-full md:w-[38%] flex-shrink-0">
+                <div class="aspect-[3/4] w-full overflow-hidden border border-ivory/10">
+                    <img src="images/Henry.jpeg" alt="Henry Ohler" class="w-full h-full object-cover">
+                </div>
+            </div>
+
+            <!-- Text — normal case for readability -->
+            <div class="space-y-5 font-inter text-[15px] sm:text-[17px] text-ivory/75 leading-[1.8] normal-case md:pt-2">
+                <p>
+                    My name is Henry Ohler, and Dialed By H started from a genuine obsession with watches.
+                </p>
+                <p>
+                    I came into this space as a collector first. I spent years learning references, studying market shifts, and understanding why certain pieces matter beyond the hype. What began as a personal passion naturally turned into friends asking me to help source watches they could not find or did not feel comfortable buying on their own.
+                </p>
+                <p class="text-ivory/90 font-medium italic">
+                    That trust is what built Dialed By H.
+                </p>
+            </div>
+        </div>
+
+        <!-- CONTINUED TEXT -->
+        <div class="space-y-5 font-inter text-[15px] sm:text-[17px] text-ivory/75 leading-[1.8] normal-case mb-20 max-w-3xl">
+            <p>
+                Today, I work with a vetted network of global partners and personally oversee every step of the process, from authentication and condition verification to pricing and secure delivery. If my name is on it, I am responsible for it.
+            </p>
+            <p>
+                Dialed By H is not a storefront. It is a concierge service built on trust, discretion, and access. Whether you are chasing a hard to find reference or looking to move a piece from your collection, I treat every transaction like it is my own.
+            </p>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="pt-10 border-t border-ivory/10">
+            <h2 class="font-space font-bold text-xl tracking-widest uppercase mb-8 text-muted">Get in Touch</h2>
+            <div class="flex flex-wrap gap-8 text-sm sm:text-base font-space uppercase tracking-widest">
+                <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">
+                    <i data-lucide="instagram" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    Instagram
+                </a>
+                <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">
+                    <i data-lucide="message-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    WhatsApp
+                </a>
+                <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">
+                    <i data-lucide="mail" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    Email
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="px-6 py-8 border-t border-ivory/10 text-center">
+        <span class="text-xs text-muted font-space uppercase tracking-widest">&copy; 2026 DIALED BY H</span>
+    </footer>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+        lucide.createIcons();
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Page load — nav fades in
+        gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out' });
+
+        // Title — clips in from below
+        gsap.from('h1', {
+            opacity: 0, y: 60, duration: 1, ease: 'power3.out', delay: 0.2
+        });
+
+        // Photo — reveals with scale + fade
+        gsap.from('.aspect-\\[3\\/4\\]', {
+            opacity: 0, scale: 0.95, y: 40, duration: 1.2, ease: 'power3.out', delay: 0.4
+        });
+
+        // Intro text paragraphs — stagger in
+        gsap.from('.flex.flex-col.md\\:flex-row .space-y-6 p', {
+            opacity: 0, y: 30, duration: 0.8, ease: 'power2.out', stagger: 0.15, delay: 0.6
+        });
+
+        // Continued text — scroll triggered
+        gsap.from('.mb-16:last-of-type p', {
+            scrollTrigger: {
+                trigger: '.mb-16:last-of-type',
+                start: 'top 85%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 0, y: 30, duration: 0.8, ease: 'power2.out', stagger: 0.15
+        });
+
+        // Contact section — scroll triggered
+        gsap.from('.border-t h2', {
+            scrollTrigger: {
+                trigger: '.border-t',
+                start: 'top 85%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 0, y: 20, duration: 0.6, ease: 'power2.out'
+        });
+
+        gsap.from('.border-t a', {
+            scrollTrigger: {
+                trigger: '.border-t',
+                start: 'top 85%',
+                toggleActions: 'play none none none'
+            },
+            opacity: 0, y: 20, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.2
+        });
+
+        // Footer
+        gsap.from('footer', {
+            scrollTrigger: { trigger: 'footer', start: 'top 95%' },
+            opacity: 0, duration: 0.6, ease: 'power2.out'
+        });
+    </script>
+</body>
+</html>

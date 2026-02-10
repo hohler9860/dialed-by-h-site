@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialed By H | Acquire the Unobtainable</title>
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: '#0a0a0a',
+                        ivory: '#f0f0f0',
+                        muted: '#888888',
+                    },
+                    fontFamily: {
+                        space: ['"Space Grotesk"', 'sans-serif'],
+                        inter: ['"Inter"', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Google+Sans+Text);
+        html {
+            font-family: 'Google Sans Text', 'Google Sans';
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            color: #f0f0f0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            text-transform: uppercase;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .stroke-text {
+            -webkit-text-stroke: 1px #f0f0f0;
+            color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .modal-hidden {
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .modal-visible {
+            visibility: visible;
+            pointer-events: auto;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-ticker {
+            animation: ticker 40s linear infinite;
+        }
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #f0f0f0;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
+    <!-- MOBILE MENU OVERLAY -->
+    <div id="mobile-menu" class="fixed inset-0 z-50 bg-charcoal/95 backdrop-blur-sm flex flex-col items-center justify-center space-y-8 transition-all duration-500 opacity-0 pointer-events-none">
+        <button onclick="app.toggleMobileMenu()" class="absolute top-4 right-6 text-ivory">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+        <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+            About Me
+        </a>
+        <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+            My Process
+        </a>
+        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+            Journal
+        </a>
+        <button onclick="app.toggleMobileMenu(); app.openModal('JOIN_LIST')" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">
+            JOIN MY PRIVATE LIST
+        </button>
+    </div>
+
+    <main>
+        <!-- HERO SECTION -->
+        <section class="relative h-screen min-h-[600px] sm:min-h-[700px] flex flex-col justify-center items-center px-4 overflow-hidden">
+            <nav class="absolute top-0 left-0 w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center">
+                <a href="index.html">
+                    <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
+                </a>
+                <div id="nav-links" class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
+                    <a href="about.html" class="nav-link hover:text-muted transition-colors">
+                        About Me
+                    </a>
+                    <a href="process.html" class="nav-link hover:text-muted transition-colors">
+                        My Process
+                    </a>
+                    <a href="journal.html" class="nav-link hover:text-muted transition-colors">
+                        Journal
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); app.openModal('JOIN_LIST')" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">
+                        JOIN MY PRIVATE LIST
+                    </a>
+                </div>
+                <button id="mobile-menu-btn" onclick="app.toggleMobileMenu()" class="md:hidden text-ivory">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/>
+                    </svg>
+                </button>
+            </nav>
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-charcoal via-charcoal/80 to-charcoal pointer-events-none"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-ivory opacity-[0.02] rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 text-center max-w-5xl mx-auto">
+                <h1 id="hero-title" class="font-space font-bold text-4xl sm:text-5xl md:text-8xl lg:text-9xl leading-[0.9] tracking-tighter uppercase mb-6 sm:mb-8">
+                    Acquire the <br/>
+                    <span class="stroke-text">Unobtainable</span>
+                </h1>
+                <p id="hero-sub" class="font-inter text-muted text-base sm:text-lg md:text-xl tracking-wide max-w-2xl mx-auto mb-8 sm:mb-12 font-light uppercase">
+                    Concierge sourcing for the world's most elusive references. Verified provenance. Strict anonymity.
+                </p>
+                <button id="hero-btn" onclick="app.openModal('JOIN_LIST')" class="group relative overflow-hidden bg-ivory text-charcoal px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">
+                        <span id="hero-btn-text">JOIN MY PRIVATE LIST</span>
+                    </span>
+                    <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
+                </button>
+            </div>
+
+            <div class="absolute bottom-12 animate-bounce opacity-50">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- TICKER SECTION -->
+        <div class="ticker-wrap w-full border-y border-ivory/10 bg-charcoal overflow-hidden py-4 relative z-20">
+            <div class="flex w-max animate-ticker">
+                <div id="ticker-content" class="flex w-max"></div>
+            </div>
+        </div>
+
+        <!-- TRUST SECTION -->
+        <section id="about" class="border-b border-ivory/5 overflow-hidden relative" style="min-height: 80vh;">
+            <!-- Image covers the right half on desktop, full width on mobile -->
+            <div class="hidden md:block absolute top-0 right-0 w-1/2 h-full overflow-hidden">
+                <img id="trust-img" src="images/trust-auth.jpg" alt="Concierge Service" class="w-full h-full object-cover" />
+            </div>
+            <!-- Text takes the left half -->
+            <div class="relative z-10 md:w-1/2 bg-[#0a0a0a] min-h-[80vh] flex items-center">
+                <div class="px-6 md:px-16 py-24 space-y-8 max-w-xl">
+                    <h2 id="trust-heading" class="reveal-trust font-space text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase leading-tight tracking-tight">
+                        Transparent Concierge. <br/>
+                        <span class="text-muted">Verified.</span> <br/>
+                        <span class="text-ivory">No BS.</span>
+                    </h2>
+                    <p id="trust-desc" class="reveal-trust font-inter text-muted text-base sm:text-lg leading-relaxed tracking-wide">
+                        Every piece is sourced exclusively through verified partners and independently authenticated by trusted watch specialists before acquisition.
+                    </p>
+                    <div id="trust-tags" class="reveal-trust pt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest text-ivory/50">
+                        <span>Global Sourcing</span>
+                        <span class="text-ivory/20">&bull;</span>
+                        <span>In-House Authentication</span>
+                        <span class="text-ivory/20">&bull;</span>
+                        <span>Insured Delivery</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile-only image below text -->
+            <div class="md:hidden h-[50vh] sm:h-[60vh] overflow-hidden">
+                <img src="images/trust-auth.jpg" alt="Concierge Service" class="w-full h-full object-cover" />
+            </div>
+        </section>
+
+        <!-- ACTIONS SECTION (BUY / SELL / TRADE) -->
+        <section id="process" class="grid grid-cols-1 md:grid-cols-3 min-h-[60vh] border-b border-ivory/5 overflow-hidden">
+            <!-- BUY -->
+            <button onclick="app.openModal('BUY')"
+                    class="action-card group relative h-[450px] sm:h-[600px] md:h-[700px] border-b md:border-b-0 md:border-r border-ivory/10 overflow-hidden text-left w-full">
+                <div class="absolute inset-0 z-0">
+                    <div class="absolute inset-0 bg-charcoal/85 group-hover:bg-charcoal/40 transition-colors duration-700 z-10"></div>
+                    <img src="images/buy-ap-royal-oak.jpg"
+                         class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out grayscale group-hover:grayscale-0">
+                </div>
+                <div class="relative z-20 h-full flex flex-col justify-between p-6 sm:p-10">
+                    <div class="flex justify-between items-start w-full">
+                        <span class="font-space font-bold text-2xl opacity-50 group-hover:opacity-100 transition-opacity">01</span>
+                        <div class="w-12 h-12 border border-ivory/30 rounded-full flex items-center justify-center group-hover:bg-ivory group-hover:border-ivory transition-all duration-500">
+                            <i data-lucide="arrow-up-right" class="text-ivory group-hover:text-charcoal transition-colors"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-space text-4xl sm:text-5xl font-bold tracking-tighter mb-3 sm:mb-4 text-ivory group-hover:translate-x-2 transition-transform duration-500">BUY</h3>
+                        <p class="font-inter text-xs font-bold tracking-widest text-muted group-hover:text-ivory transition-colors">Access my curated inventory.</p>
+                    </div>
+                </div>
+            </button>
+            <!-- SELL -->
+            <button onclick="app.openModal('SELL')"
+                    class="action-card group relative h-[450px] sm:h-[600px] md:h-[700px] border-b md:border-b-0 md:border-r border-ivory/10 overflow-hidden text-left w-full">
+                <div class="absolute inset-0 z-0">
+                    <div class="absolute inset-0 bg-charcoal/85 group-hover:bg-charcoal/40 transition-colors duration-700 z-10"></div>
+                    <img src="images/sell-rm-lemans.jpg"
+                         class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out grayscale group-hover:grayscale-0">
+                </div>
+                <div class="relative z-20 h-full flex flex-col justify-between p-6 sm:p-10">
+                    <div class="flex justify-between items-start w-full">
+                        <span class="font-space font-bold text-2xl opacity-50 group-hover:opacity-100 transition-opacity">02</span>
+                        <div class="w-12 h-12 border border-ivory/30 rounded-full flex items-center justify-center group-hover:bg-ivory group-hover:border-ivory transition-all duration-500">
+                            <i data-lucide="arrow-up-right" class="text-ivory group-hover:text-charcoal transition-colors"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-space text-4xl sm:text-5xl font-bold tracking-tighter mb-3 sm:mb-4 text-ivory group-hover:translate-x-2 transition-transform duration-500">SELL</h3>
+                        <p class="font-inter text-xs font-bold tracking-widest text-muted group-hover:text-ivory transition-colors">Competitive market offers.</p>
+                    </div>
+                </div>
+            </button>
+            <!-- TRADE -->
+            <button onclick="app.openModal('TRADE')"
+                    class="action-card group relative h-[450px] sm:h-[600px] md:h-[700px] border-b md:border-b-0 border-ivory/10 overflow-hidden text-left w-full">
+                <div class="absolute inset-0 z-0">
+                    <div class="absolute inset-0 bg-charcoal/85 group-hover:bg-charcoal/40 transition-colors duration-700 z-10"></div>
+                    <img src="images/trade-patek-aquanaut.jpg"
+                         class="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out grayscale group-hover:grayscale-0">
+                </div>
+                <div class="relative z-20 h-full flex flex-col justify-between p-6 sm:p-10">
+                    <div class="flex justify-between items-start w-full">
+                        <span class="font-space font-bold text-2xl opacity-50 group-hover:opacity-100 transition-opacity">03</span>
+                        <div class="w-12 h-12 border border-ivory/30 rounded-full flex items-center justify-center group-hover:bg-ivory group-hover:border-ivory transition-all duration-500">
+                            <i data-lucide="arrow-up-right" class="text-ivory group-hover:text-charcoal transition-colors"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-space text-4xl sm:text-5xl font-bold tracking-tighter mb-3 sm:mb-4 text-ivory group-hover:translate-x-2 transition-transform duration-500">TRADE</h3>
+                        <p class="font-inter text-xs font-bold tracking-widest text-muted group-hover:text-ivory transition-colors">Upgrade your rotation.</p>
+                    </div>
+                </div>
+            </button>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="relative min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-20">
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5">
+                <div class="whitespace-nowrap animate-ticker" style="animation-duration: 60s;">
+                    <span class="text-[20vw] font-space font-bold uppercase leading-none">
+                        Private List &bull; Private List &bull; Private List &bull; Private List &bull;
+                    </span>
+                </div>
+            </div>
+
+            <div class="footer-reveal relative z-10 w-full max-w-xl px-4 text-center opacity-0 translate-y-5">
+                <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-6 sm:mb-8">
+                    Join the inner circle
+                </h4>
+                <p id="contact-text" class="font-inter text-muted text-sm sm:text-base mb-6 sm:mb-8 uppercase tracking-wide">
+                    Receive priority access to off-catalog inventory before it hits the public market.
+                </p>
+
+                <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-12 sm:mb-16">
+                    <input type="email" name="email" placeholder="EMAIL ADDRESS" required
+                           class="flex-1 bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
+                    <button type="submit" id="footer-btn"
+                            class="bg-ivory text-charcoal px-8 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors">
+                        JOIN THE PRIVATE LIST
+                    </button>
+                </form>
+
+                <div class="w-full border-t border-ivory/10 pt-10 space-y-8">
+                    <div class="flex justify-center gap-10 sm:gap-14">
+                        <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm sm:text-base font-space uppercase tracking-widest">
+                            <i data-lucide="instagram" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                            <span>Instagram</span>
+                        </a>
+                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm sm:text-base font-space uppercase tracking-widest">
+                            <i data-lucide="message-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm sm:text-base font-space uppercase tracking-widest">
+                            <i data-lucide="mail" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                            <span>Email</span>
+                        </a>
+                    </div>
+                    <p class="text-center text-sm font-space uppercase tracking-widest text-muted">&copy; 2026 Dialed By H</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- MODAL OVERLAY -->
+    <div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0">
+        <div class="w-full max-w-lg bg-charcoal border border-ivory/20 m-3 sm:m-4 relative shadow-2xl overflow-hidden">
+            <button onclick="app.closeModal()"
+                    class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <div id="modal-body" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            APP_NAME: "Dialed By H",
+            TICKER_ITEMS: [
+                {
+                    id: '1',
+                    name: 'Rolex Daytona',
+                    ref: '126500LN',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/rolex-daytona-126500ln-stainless-steel-white-panda-dial-2024-rolex-1191513351.jpg?v=1757085586&width=2160'
+                },
+                {
+                    id: '2',
+                    name: 'Patek Philippe Nautilus',
+                    ref: '5811/1A',
+                    price: 'Inquire',
+                    image: 'images/5811.jpg.webp'
+                },
+                {
+                    id: '3',
+                    name: 'AP Royal Oak',
+                    ref: '15510ST',
+                    price: 'Inquire',
+                    image: 'https://cdn.shopify.com/s/files/1/0266/7141/5373/files/audemars-piguet-royal-oak-15510st-oo-1320st-07-stainless-steel-black-dial-2024-audemars-piguet-1206420481.jpg?v=1763493208&width=600'
+                },
+                {
+                    id: '4',
+                    name: 'F.P. Journe Octa',
+                    ref: 'Reserve de Marche Platinum',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/f-p-journe-octa-reserve-de-marche-platinum-calibre-1300-3-2022-f-p-journe-42239429640436.jpg?v=1726341094&width=2160'
+                },
+                {
+                    id: '5',
+                    name: 'Richard Mille',
+                    ref: 'RM 17-01',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/richard-mille-rm-17-01-white-ceramic-rose-gold-manual-wind-tourbillon-richard-mille-42592052412660.jpg?v=1735586286&width=2160'
+                },
+                {
+                    id: '6',
+                    name: 'Vacheron Overseas',
+                    ref: '4500V',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/vacheron-constantin-overseas-4500v-110a-b128-stainless-steel-blue-dial-vacheron-constantin-40632762794228.jpg?v=1706785391&width=2160'
+                }
+            ],
+            WATCH_BRANDS: {
+                'Rolex': ['Daytona','Submariner','GMT-Master II','Explorer','Explorer II','Datejust','Day-Date','Sky-Dweller','Yacht-Master','Sea-Dweller','Milgauss','Air-King','Cellini','Other'],
+                'Patek Philippe': ['Nautilus','Aquanaut','Calatrava','Grand Complications','Complications','Twenty~4','Golden Ellipse','Other'],
+                'Audemars Piguet': ['Royal Oak','Royal Oak Offshore','Royal Oak Concept','Code 11.59','Millenary','Other'],
+                'Richard Mille': ['RM 11','RM 35','RM 55','RM 67','RM 17','RM 27','RM 72','Other'],
+                'F.P. Journe': ['Chronometre Bleu','Chronometre Souverain','Octa','Tourbillon Souverain','Centigraphe','Elegante','Other'],
+                'Vacheron Constantin': ['Overseas','Patrimony','Traditionnelle','Historiques','Fiftysix','Other'],
+                'A. Lange & Sohne': ['Lange 1','Saxonia','Zeitwerk','Datograph','1815','Odysseus','Other'],
+                'Omega': ['Speedmaster','Seamaster','Constellation','De Ville','Aqua Terra','Planet Ocean','Other'],
+                'Cartier': ['Santos','Tank','Ballon Bleu','Panthere','Pasha','Drive','Other'],
+                'IWC': ['Portugieser','Pilot','Aquatimer','Ingenieur','Portofino','Other'],
+                'Panerai': ['Luminor','Submersible','Radiomir','Due','Other'],
+                'Hublot': ['Big Bang','Classic Fusion','Spirit of Big Bang','Other'],
+                'Tudor': ['Black Bay','Pelagos','Ranger','1926','Other'],
+                'Breitling': ['Navitimer','Chronomat','Superocean','Avenger','Premier','Other'],
+                'Jaeger-LeCoultre': ['Reverso','Master','Polaris','Atmos','Other'],
+                'Blancpain': ['Fifty Fathoms','Villeret','Ladybird','Other'],
+                'Breguet': ['Classique','Marine','Tradition','Type XX','Other'],
+                'Girard-Perregaux': ['Laureato','1966','Bridges','Other'],
+                'Other': ['Other']
+            }
+        };
+
+        const app = {
+            mobileMenuOpen: false,
+
+            init: () => {
+                app.renderTicker();
+                app.initAnimations();
+                lucide.createIcons();
+            },
+
+            getWatchById: (id) => {
+                return CONFIG.TICKER_ITEMS.find(item => item.id === id);
+            },
+
+            updateModels: (brand) => {
+                const select = document.getElementById('model-select');
+                const models = CONFIG.WATCH_BRANDS[brand] || [];
+                select.innerHTML = '<option value="" class="bg-charcoal">Select Model</option>' +
+                    models.map(m => '<option value="'+m+'" class="bg-charcoal">'+m+'</option>').join('');
+            },
+
+            toggleMobileMenu: () => {
+                const menu = document.getElementById('mobile-menu');
+                app.mobileMenuOpen = !app.mobileMenuOpen;
+                if (app.mobileMenuOpen) {
+                    menu.style.opacity = '1';
+                    menu.style.pointerEvents = 'auto';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    menu.style.opacity = '0';
+                    menu.style.pointerEvents = 'none';
+                    document.body.style.overflow = '';
+                }
+            },
+
+            renderTicker: () => {
+                const container = document.getElementById('ticker-content');
+                const allItems = [...CONFIG.TICKER_ITEMS, ...CONFIG.TICKER_ITEMS, ...CONFIG.TICKER_ITEMS, ...CONFIG.TICKER_ITEMS];
+
+                container.innerHTML = allItems.map(item => `
+                    <button onclick="app.openModal('WATCH_DETAIL', app.getWatchById('${item.id}'))"
+                            class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none">
+                        <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300">
+                                ${item.name}
+                            </span>
+                            <span class="text-muted text-[10px] font-bold tracking-widest group-hover:text-ivory/60 transition-colors duration-300">
+                                ${item.ref}
+                            </span>
+                        </div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2"></div>
+                    </button>
+                `).join('');
+            },
+
+            initAnimations: () => {
+                gsap.registerPlugin(ScrollTrigger);
+
+                const tl = gsap.timeline();
+                tl.to("#hero-title", { opacity: 1, y: 0, duration: 0.8, ease: "expo.out" }, 0)
+                  .to("#hero-sub", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, "-=0.6")
+                  .to("#hero-btn", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, "-=0.5");
+
+                gsap.from(".reveal-trust", {
+                    scrollTrigger: { trigger: "#about", start: "top 75%" },
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.6,
+                    stagger: 0.05,
+                    ease: "expo.out"
+                });
+
+                gsap.fromTo("#trust-img", { scale: 1.1 }, {
+                    scale: 1,
+                    duration: 0.7,
+                    ease: "expo.out",
+                    scrollTrigger: { trigger: "#about", start: "top 75%" }
+                });
+
+                gsap.from(".action-card", {
+                    scrollTrigger: { trigger: "#process", start: "top 80%" },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.6,
+                    stagger: 0.08,
+                    ease: "expo.out"
+                });
+
+                gsap.to(".footer-reveal", {
+                    scrollTrigger: { trigger: "footer", start: "top 85%" },
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.6,
+                    ease: "expo.out"
+                });
+            },
+
+            openModal: (type, data = null) => {
+                const overlay = document.getElementById('modal-overlay');
+                const body = document.getElementById('modal-body');
+
+                let html = '';
+                if (type === 'WATCH_DETAIL' && data) {
+                    html = `
+                        <div id="form-view">
+                            <div class="w-full h-72 sm:h-80 bg-ivory/5 overflow-hidden">
+                                <img src="${data.image}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-5 sm:p-8 space-y-6">
+                                <div>
+                                    <h2 class="text-3xl font-space font-bold tracking-tight mb-1">${data.name}</h2>
+                                    <p class="text-muted font-bold tracking-widest text-xs">${data.ref}</p>
+                                </div>
+                                <div class="border-t border-ivory/10 pt-4">
+                                    <p class="text-sm font-inter text-ivory/80 leading-relaxed mb-6">
+                                        This reference is available for concierge sourcing. Provide your details to inquire.
+                                    </p>
+                                    <form onsubmit="event.preventDefault(); app.submitForm(this, 'WATCH_DETAIL', { watchName: '${data.name}', watchRef: '${data.ref}' });" class="space-y-4">
+                                        <div>
+                                            <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
+                                            <input required type="text" name="fullName" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Email</label>
+                                            <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
+                                        </div>
+                                        <button type="submit" class="w-full bg-ivory text-charcoal py-4 font-bold font-space tracking-widest hover:bg-white transition-colors">
+                                            Submit Inquiry
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="success-view" class="hidden flex flex-col items-center justify-center py-10 text-center p-5 sm:p-8">
+                            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6">
+                                <i data-lucide="check" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
+                            <p class="text-muted text-xs tracking-wide">A concierge will contact you shortly.</p>
+                        </div>
+                    `;
+                } else {
+                    const title = type === 'JOIN_LIST' ? 'Private List Application' : `Request to ${type}`;
+                    html = `
+                        <div id="form-view" class="p-5 sm:p-8">
+                            <h2 class="text-2xl font-space font-bold tracking-tight mb-2">${title}</h2>
+                            <p class="text-xs text-muted mb-8 tracking-wide">Complete the form below.</p>
+                            <form onsubmit="event.preventDefault(); app.submitForm(this, '${type}');" class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
+                                    <input required type="text" name="fullName" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Email</label>
+                                    <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
+                                </div>
+                                ${type !== 'JOIN_LIST' ? `
+                                    <div>
+                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Brand</label>
+                                        <select name="watchBrand" required onchange="app.updateModels(this.value)"
+                                            class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
+                                            <option value="" class="bg-charcoal">Select Brand</option>
+                                            ${Object.keys(CONFIG.WATCH_BRANDS).map(b => '<option value="'+b+'" class="bg-charcoal">'+b+'</option>').join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Model</label>
+                                        <select name="watchModel" required id="model-select"
+                                            class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
+                                            <option value="" class="bg-charcoal">Select Brand First</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reference Number (if known)</label>
+                                        <input type="text" name="watchRef" placeholder="e.g. 126500LN" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Additional Details</label>
+                                        <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, budget, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
+                                    </div>
+                                ` : ''}
+                                <button type="submit" class="w-full bg-ivory text-charcoal py-4 font-bold font-space tracking-widest hover:bg-white transition-colors mt-4">
+                                    Submit Request
+                                </button>
+                            </form>
+                        </div>
+                        <div id="success-view" class="hidden flex flex-col items-center justify-center py-10 text-center p-5 sm:p-8">
+                            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6">
+                                <i data-lucide="check" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
+                            <p class="text-muted text-xs tracking-wide">A concierge will contact you shortly.</p>
+                        </div>
+                    `;
+                }
+
+                body.innerHTML = html;
+                lucide.createIcons();
+
+                overlay.classList.remove('modal-hidden');
+                overlay.classList.add('modal-visible');
+                gsap.to(overlay, { opacity: 1, duration: 0.4, ease: "power2.out" });
+                gsap.fromTo(document.querySelector('#modal-overlay > div'),
+                    { y: 20, opacity: 0, scale: 0.98 },
+                    { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }
+                );
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeModal: () => {
+                const overlay = document.getElementById('modal-overlay');
+                gsap.to(document.querySelector('#modal-overlay > div'),
+                    { y: 20, opacity: 0, scale: 0.98, duration: 0.3, ease: "power2.in" }
+                );
+                gsap.to(overlay, {
+                    opacity: 0,
+                    duration: 0.4,
+                    delay: 0.1,
+                    onComplete: () => {
+                        overlay.classList.remove('modal-visible');
+                        overlay.classList.add('modal-hidden');
+                        document.body.style.overflow = '';
+                    }
+                });
+            },
+
+            showSuccess: () => {
+                const formView = document.getElementById('form-view');
+                const successView = document.getElementById('success-view');
+                if (formView && successView) {
+                    gsap.to(formView, {
+                        opacity: 0,
+                        height: 0,
+                        duration: 0.3,
+                        onComplete: () => {
+                            formView.style.display = 'none';
+                            successView.classList.remove('hidden');
+                            successView.classList.add('flex');
+                            gsap.fromTo(successView, { opacity: 0, y: 10 },
+                                { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }
+                            );
+                        }
+                    });
+                }
+            },
+
+            submitForm: async (formEl, type, extraData = {}) => {
+                const btn = formEl.querySelector('button[type="submit"]');
+                const formData = new FormData(formEl);
+
+                const brand = formData.get('watchBrand') || '';
+                const model = formData.get('watchModel') || '';
+                const ref = formData.get('watchRef') || '';
+                const details = formData.get('watchDetails') || '';
+
+                // Build watchDetails string from brand/model/ref + freeform
+                let watchDetailsStr = details;
+                if (brand || model) {
+                    const parts = [brand, model, ref ? 'Ref: ' + ref : ''].filter(Boolean);
+                    watchDetailsStr = parts.join(' — ') + (details ? ' | ' + details : '');
+                }
+
+                const payload = {
+                    type,
+                    fullName: formData.get('fullName'),
+                    email: formData.get('email'),
+                    watchDetails: watchDetailsStr || null,
+                    watchName: brand && model ? brand + ' ' + model : extraData.watchName || null,
+                    watchRef: ref || extraData.watchRef || null,
+                };
+                // Merge extraData but don't let it override form fields
+                if (extraData.watchName && !payload.watchName) payload.watchName = extraData.watchName;
+                if (extraData.watchRef && !payload.watchRef) payload.watchRef = extraData.watchRef;
+
+                if (btn) {
+                    btn.innerText = 'Processing...';
+                    btn.disabled = true;
+                }
+
+                try {
+                    const res = await fetch('/.netlify/functions/submit-form', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error || 'Submission failed');
+                    }
+
+                    app.showSuccess();
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    // If running locally (file:// or localhost without Netlify), still show success
+                    if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && error.message.includes('Failed to fetch'))) {
+                        console.log('Local mode — showing success without backend');
+                        app.showSuccess();
+                        return;
+                    }
+                    if (btn) {
+                        btn.innerText = 'Error - Try Again';
+                        btn.disabled = false;
+                    }
+                }
+            },
+
+            handleFooterSubmit: async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const btn = form.querySelector('button[type="submit"]');
+                const emailInput = form.querySelector('input[name="email"]');
+                const originalText = btn.innerText;
+
+                btn.innerText = 'JOINING...';
+                btn.disabled = true;
+
+                const showJoined = () => {
+                    btn.innerText = 'JOINED ✓';
+                    emailInput.value = '';
+                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 3000);
+                };
+
+                try {
+                    const res = await fetch('/.netlify/functions/submit-form', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'JOIN_LIST', email: emailInput.value })
+                    });
+
+                    if (!res.ok) throw new Error('Failed');
+                    showJoined();
+                } catch (error) {
+                    console.error('Footer submit error:', error);
+                    // Local dev fallback
+                    if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && error.message.includes('Failed to fetch'))) {
+                        showJoined();
+                        return;
+                    }
+                    btn.innerText = 'ERROR - TRY AGAIN';
+                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 3000);
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', app.init);
+    </script>
+</body>
+</html>

@@ -889,40 +889,40 @@
                 return [prev, centerIdx, next];
             },
 
+            getCardByIndex: (idx) => {
+                return document.querySelector('.testimonial-card-wrap[data-index="' + idx + '"]');
+            },
+
             renderTestimonial: (index) => {
                 app.testimonialIndex = index;
                 const total = CONFIG.TESTIMONIALS.length;
                 const visible = app.getVisibleIndices(index);
-                const wraps = document.querySelectorAll('.testimonial-card-wrap');
                 const inner = document.getElementById('testimonial-inner');
                 const isMobile = window.innerWidth < 1024;
 
+                // Reset all cards
+                document.querySelectorAll('.testimonial-card-wrap').forEach(w => {
+                    w.classList.remove('is-center');
+                    w.style.position = '';
+                    w.style.display = 'none';
+                });
+
                 if (isMobile) {
-                    // On mobile/tablet: show only center card with GSAP crossfade
-                    wraps.forEach((w, i) => {
-                        w.classList.remove('is-center');
-                        if (i === index) {
-                            w.classList.add('is-center');
-                            w.style.position = 'relative';
-                        } else {
-                            w.style.position = 'absolute';
-                        }
-                    });
+                    // Mobile/tablet: show only center card
+                    const centerCard = app.getCardByIndex(index);
+                    if (centerCard) {
+                        centerCard.style.display = '';
+                        centerCard.classList.add('is-center');
+                    }
                 } else {
-                    // Desktop: reorder DOM to show [prev, center, next] and slide
-                    const orderedIndices = visible;
-                    // Clear all classes first
-                    wraps.forEach(w => {
-                        w.classList.remove('is-center');
-                        w.style.position = '';
-                        w.style.display = 'none';
-                    });
-                    // Show and reorder the 3 visible cards
-                    orderedIndices.forEach((idx, pos) => {
-                        const wrap = wraps[idx];
-                        wrap.style.display = '';
-                        inner.appendChild(wrap);
-                        if (pos === 1) wrap.classList.add('is-center');
+                    // Desktop: show [prev, center, next] in order
+                    visible.forEach((idx, pos) => {
+                        const wrap = app.getCardByIndex(idx);
+                        if (wrap) {
+                            wrap.style.display = '';
+                            inner.appendChild(wrap);
+                            if (pos === 1) wrap.classList.add('is-center');
+                        }
                     });
                 }
 

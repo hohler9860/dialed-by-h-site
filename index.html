@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.png">
     <title>Dialed By H | Luxury Watch Concierge — Buy, Sell & Trade Rare Timepieces</title>
     <meta name="description" content="Dialed By H is a luxury watch concierge service specializing in sourcing, selling, and trading rare and hard-to-find timepieces. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Strict anonymity.">
     <meta name="keywords" content="luxury watch concierge, buy rolex, sell patek philippe, trade audemars piguet, richard mille dealer, rare watches, watch sourcing, authenticated timepieces, luxury watch broker, pre-owned luxury watches, watch consignment, dialed by h">
@@ -241,6 +245,82 @@
             66% { transform: translate(-70px, 40px) scale(1.1); }
         }
 
+        /* ══════════════════════════════════════
+           RESPONSIVE — Device-first breakpoints
+           iPhone SE:       320px
+           iPhone 14:       390px
+           iPhone 14 Pro Max: 430px
+           iPad Mini:       744px
+           iPad Air/Pro:    820px
+           iPad Pro 12.9:   1024px
+           Desktop:         1280px+
+           ══════════════════════════════════════ */
+
+        /* ── MOBILE (< 640px) ── */
+        @media (max-width: 639px) {
+            .orb { display: none; }
+            html { font-size: 13px; }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+            .stats-grid .stats-divider { display: none; }
+        }
+
+        /* ── TABLET PORTRAIT — iPad Mini, iPad Air (640px – 1023px) ── */
+        @media (min-width: 640px) and (max-width: 1023px) {
+            .orb-1 { width: 300px; height: 300px; }
+            .orb-2 { width: 250px; height: 250px; }
+            .orb-3 { width: 200px; height: 200px; }
+            .trust-tags-bar {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem 1rem;
+            }
+            .trust-tags-bar .tag-bullet { display: none; }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem 2rem;
+            }
+            .stats-grid .stats-divider { display: none; }
+        }
+
+        /* ── TABLET LANDSCAPE / Small Desktop (1024px – 1279px) ── */
+        @media (min-width: 1024px) and (max-width: 1279px) {
+            .orb-1 { width: 400px; height: 400px; }
+            .orb-2 { width: 350px; height: 350px; }
+            .orb-3 { width: 280px; height: 280px; }
+        }
+
+        /* ── Stats grid — CSS Grid for all sizes ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+        }
+        .stats-grid .stats-divider {
+            display: none; /* dividers removed — grid handles spacing */
+        }
+
+        /* ── Trust tags bar ── */
+        .trust-tags-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.25rem;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        @media (max-width: 639px) {
+            .trust-tags-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .trust-tags-bar .tag-bullet { display: none; }
+        }
+
         /* Glass highlight shimmer on hover */
         .glass-hover {
             position: relative;
@@ -290,12 +370,12 @@
 
     <main>
         <!-- HERO SECTION -->
-        <section class="relative h-screen min-h-[600px] sm:min-h-[700px] flex flex-col justify-center items-center px-4 overflow-hidden">
-            <nav class="absolute top-0 left-0 w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center glass-subtle">
+        <section class="relative h-screen min-h-[500px] sm:min-h-[600px] md:min-h-[700px] flex flex-col justify-center items-center px-4 overflow-hidden">
+            <nav class="absolute top-0 left-0 w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center">
                 <a href="index.html">
                     <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
                 </a>
-                <div id="nav-links" class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
+                <div id="nav-links" class="hidden md:flex space-x-4 lg:space-x-8 text-xs lg:text-sm font-space font-medium uppercase tracking-widest items-center">
                     <a href="about.html" class="nav-link hover:text-muted transition-colors">
                         About Me
                     </a>
@@ -351,14 +431,14 @@
 
         <!-- TRUST SECTION -->
         <section id="about" class="border-b border-ivory/5 overflow-hidden relative" style="min-height: 80vh;">
-            <!-- Image covers the right half on desktop, full width on mobile -->
-            <div class="hidden md:block absolute top-0 right-0 w-1/2 h-full overflow-hidden">
+            <!-- Image covers the right half on desktop/tablet landscape, full width on mobile/tablet portrait -->
+            <div class="hidden lg:block absolute top-0 right-0 w-1/2 h-full overflow-hidden">
                 <img id="trust-img" src="images/trust-auth.jpg" alt="Concierge Service" class="w-full h-full object-cover" />
             </div>
-            <!-- Text takes the left half -->
-            <div class="relative z-10 md:w-1/2 bg-[#0a0a0a] min-h-[80vh] flex items-center">
-                <div class="px-6 md:px-16 py-24 space-y-8 max-w-xl">
-                    <h2 id="trust-heading" class="reveal-trust font-space text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold uppercase leading-tight tracking-tight">
+            <!-- Text takes the left half on lg+, full width below -->
+            <div class="relative z-10 lg:w-1/2 bg-[#0a0a0a] min-h-[60vh] lg:min-h-[80vh] flex items-center">
+                <div class="px-6 sm:px-10 lg:px-16 py-16 sm:py-20 lg:py-24 space-y-6 sm:space-y-8 max-w-xl mx-auto lg:mx-0">
+                    <h2 id="trust-heading" class="reveal-trust font-space text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold uppercase leading-tight tracking-tight">
                         Transparent Concierge. <br/>
                         <span class="text-muted">Verified.</span> <br/>
                         <span class="text-ivory">No BS.</span>
@@ -366,26 +446,26 @@
                     <p id="trust-desc" class="reveal-trust font-inter text-muted text-base sm:text-lg leading-relaxed tracking-wide">
                         Every piece is sourced exclusively through verified partners and independently authenticated by trusted watch specialists before acquisition.
                     </p>
-                    <div id="trust-tags" class="reveal-trust pt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-widest text-ivory/50 glass-subtle rounded-lg px-5 py-4 inline-flex w-fit">
-                        <span>Global Sourcing</span>
-                        <span class="text-ivory/20">&bull;</span>
-                        <span>In-House Authentication</span>
-                        <span class="text-ivory/20">&bull;</span>
-                        <span>Insured Delivery</span>
+                    <div id="trust-tags" class="reveal-trust pt-4 trust-tags-bar text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ivory/50 glass-subtle rounded-lg px-4 sm:px-5 py-4 w-fit">
+                        <span class="whitespace-nowrap">Global Sourcing</span>
+                        <span class="tag-bullet text-ivory/20">&bull;</span>
+                        <span class="whitespace-nowrap">In-House Authentication</span>
+                        <span class="tag-bullet text-ivory/20">&bull;</span>
+                        <span class="whitespace-nowrap">Insured Delivery</span>
                     </div>
                 </div>
             </div>
-            <!-- Mobile-only image below text -->
-            <div class="md:hidden h-[50vh] sm:h-[60vh] overflow-hidden">
+            <!-- Mobile + tablet portrait image below text -->
+            <div class="lg:hidden h-[40vh] sm:h-[50vh] overflow-hidden">
                 <img src="images/trust-auth.jpg" alt="Concierge Service" class="w-full h-full object-cover" />
             </div>
         </section>
 
         <!-- ACTIONS SECTION (BUY / SELL / TRADE) -->
-        <section id="process" class="grid grid-cols-1 md:grid-cols-3 min-h-[60vh] border-b border-ivory/5 overflow-hidden">
+        <section id="process" class="grid grid-cols-1 sm:grid-cols-3 min-h-[60vh] border-b border-ivory/5 overflow-hidden">
             <!-- BUY -->
-            <button onclick="app.openModal('BUY')"
-                    class="action-card group relative h-[450px] sm:h-[600px] md:h-[700px] border-b md:border-b-0 md:border-r border-ivory/10 overflow-hidden text-left w-full">
+            <a href="inventory.html"
+                    class="action-card group relative h-[300px] sm:h-[500px] lg:h-[700px] border-b sm:border-b-0 sm:border-r border-ivory/10 overflow-hidden text-left w-full block">
                 <div class="absolute inset-0 z-0">
                     <div class="absolute inset-0 bg-charcoal/85 group-hover:bg-charcoal/40 transition-colors duration-700 z-10"></div>
                     <img src="images/buy-ap-royal-oak.jpg"
@@ -403,10 +483,10 @@
                         <p class="font-inter text-xs font-bold tracking-widest text-muted group-hover:text-ivory transition-colors">Access my curated inventory.</p>
                     </div>
                 </div>
-            </button>
+            </a>
             <!-- SELL -->
             <button onclick="app.openModal('SELL')"
-                    class="action-card group relative h-[450px] sm:h-[600px] md:h-[700px] border-b md:border-b-0 md:border-r border-ivory/10 overflow-hidden text-left w-full">
+                    class="action-card group relative h-[300px] sm:h-[500px] lg:h-[700px] border-b sm:border-b-0 sm:border-r border-ivory/10 overflow-hidden text-left w-full">
                 <div class="absolute inset-0 z-0">
                     <div class="absolute inset-0 bg-charcoal/85 group-hover:bg-charcoal/40 transition-colors duration-700 z-10"></div>
                     <img src="images/sell-rm-lemans.jpg"
@@ -427,7 +507,7 @@
             </button>
             <!-- TRADE -->
             <button onclick="app.openModal('TRADE')"
-                    class="action-card group relative h-[450px] sm:h-[600px] md:h-[700px] border-b md:border-b-0 border-ivory/10 overflow-hidden text-left w-full">
+                    class="action-card group relative h-[300px] sm:h-[500px] lg:h-[700px] border-b sm:border-b-0 border-ivory/10 overflow-hidden text-left w-full">
                 <div class="absolute inset-0 z-0">
                     <div class="absolute inset-0 bg-charcoal/85 group-hover:bg-charcoal/40 transition-colors duration-700 z-10"></div>
                     <img src="images/trade-patek-aquanaut.jpg"
@@ -448,8 +528,72 @@
             </button>
         </section>
 
+        <!-- TESTIMONIALS — Rotating Card Carousel -->
+        <section id="testimonials" class="relative py-16 sm:py-24 lg:py-32 border-b border-ivory/5 overflow-hidden">
+            <div class="relative z-10 max-w-3xl mx-auto px-6 sm:px-10">
+
+                <!-- Section label -->
+                <p class="text-center text-[10px] sm:text-xs font-bold tracking-widest text-muted mb-10 sm:mb-14 font-space">
+                    Trusted by 150+ Collectors &nbsp;&bull;&nbsp; 5.0 Client Rating
+                </p>
+
+                <!-- Carousel card container -->
+                <div id="testimonial-carousel" class="relative" style="min-height: 280px;">
+
+                    <!-- Large quote mark -->
+                    <div class="absolute -top-2 left-6 sm:left-8 text-ivory/[0.04] font-space text-[120px] sm:text-[160px] leading-none select-none pointer-events-none z-0">&ldquo;</div>
+
+                    <!-- Active card (JS will swap content) -->
+                    <div id="testimonial-card" class="glass-strong rounded-2xl p-7 sm:p-10 relative z-10 transition-all duration-500">
+
+                        <!-- Stars -->
+                        <div class="flex items-center gap-1 mb-6">
+                            <svg class="w-4 h-4 text-ivory/60" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-4 h-4 text-ivory/60" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-4 h-4 text-ivory/60" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-4 h-4 text-ivory/60" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            <svg class="w-4 h-4 text-ivory/60" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </div>
+
+                        <!-- Quote text -->
+                        <p id="testimonial-quote" class="font-inter text-ivory/90 text-base sm:text-lg lg:text-xl leading-relaxed tracking-wide mb-8" style="text-transform: none;"></p>
+
+                        <!-- Author row -->
+                        <div class="flex items-center gap-4">
+                            <img id="testimonial-pfp" src="" alt="" class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-ivory/15">
+                            <div>
+                                <p id="testimonial-name" class="font-space font-bold text-xs sm:text-sm tracking-widest text-ivory"></p>
+                                <p id="testimonial-role" class="font-inter text-[10px] sm:text-[11px] tracking-widest text-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation: dots + arrows -->
+                <div class="flex items-center justify-center gap-6 mt-8 sm:mt-10">
+                    <button onclick="app.testimonialPrev()" aria-label="Previous testimonial" class="w-10 h-10 rounded-full border border-ivory/15 flex items-center justify-center text-muted hover:text-ivory hover:border-ivory/40 transition-all duration-300">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div id="testimonial-dots" class="flex items-center gap-2"></div>
+                    <button onclick="app.testimonialNext()" aria-label="Next testimonial" class="w-10 h-10 rounded-full border border-ivory/15 flex items-center justify-center text-muted hover:text-ivory hover:border-ivory/40 transition-all duration-300">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+                <!-- Funnel CTA -->
+                <div class="text-center mt-10 sm:mt-14">
+                    <button onclick="app.openModal('JOIN_LIST')" class="group relative overflow-hidden bg-ivory text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Get Priority Access</span>
+                        <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
+                    </button>
+                    <p class="text-[10px] tracking-widest text-muted mt-3 font-inter">Join 150+ collectors on the private list</p>
+                </div>
+
+            </div>
+        </section>
+
         <!-- FOOTER -->
-        <footer class="relative min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-20">
+        <footer class="relative min-h-[50vh] sm:min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-16 sm:py-20">
             <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5">
                 <div class="whitespace-nowrap animate-ticker" style="animation-duration: 60s;">
                     <span class="text-[20vw] font-space font-bold uppercase leading-none">
@@ -458,7 +602,7 @@
                 </div>
             </div>
 
-            <div class="footer-reveal relative z-10 w-full max-w-xl px-8 py-10 text-center opacity-0 translate-y-5 glass rounded-2xl mx-auto">
+            <div class="footer-reveal relative z-10 w-full max-w-xl px-5 sm:px-8 py-8 sm:py-10 text-center opacity-0 translate-y-5 glass rounded-2xl mx-4 sm:mx-auto">
                 <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-6 sm:mb-8">
                     Join the inner circle
                 </h4>
@@ -470,25 +614,25 @@
                     <input type="email" name="email" placeholder="EMAIL ADDRESS" required
                            class="flex-1 bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
                     <button type="submit" id="footer-btn"
-                            class="bg-ivory text-charcoal px-8 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors">
+                            class="bg-ivory text-charcoal px-6 sm:px-8 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs sm:text-sm whitespace-nowrap">
                         JOIN THE PRIVATE LIST
                     </button>
                 </form>
 
                 <div class="w-full border-t border-ivory/10 pt-10 space-y-8">
-                    <div class="flex justify-center gap-10 sm:gap-14">
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-14">
                         <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm sm:text-base font-space uppercase tracking-widest">
+                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm font-space uppercase tracking-widest">
                             <i data-lucide="instagram" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                             <span>Instagram</span>
                         </a>
                         <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm sm:text-base font-space uppercase tracking-widest">
+                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm font-space uppercase tracking-widest">
                             <i data-lucide="message-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                             <span>WhatsApp</span>
                         </a>
                         <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm sm:text-base font-space uppercase tracking-widest">
+                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm font-space uppercase tracking-widest">
                             <i data-lucide="mail" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                             <span>Email</span>
                         </a>
@@ -579,14 +723,56 @@
                 'Breguet': ['Classique','Marine','Tradition','Type XX','Other'],
                 'Girard-Perregaux': ['Laureato','1966','Bridges','Other'],
                 'Other': ['Other']
-            }
+            },
+            TESTIMONIALS: [
+                {
+                    quote: "Henry sourced my Patek 5711 in under two weeks when every AD had a 5-year waitlist. Completely legit, fully authenticated. Can\u2019t recommend enough.",
+                    name: "M. Rodriguez",
+                    role: "Patek Philippe Collector",
+                    pfp: "https://i.pravatar.cc/100?img=12"
+                },
+                {
+                    quote: "Sold my Daytona through Henry and got 15% more than the best offer I\u2019d received elsewhere. The entire process was handled with complete discretion. True white-glove service.",
+                    name: "J. Kessler",
+                    role: "Private Seller",
+                    pfp: "https://i.pravatar.cc/100?img=53"
+                },
+                {
+                    quote: "Traded my Submariner for an AP Royal Oak \u2014 Henry handled every detail. Authentication, valuation, logistics. Felt like I had a personal advisor the whole way.",
+                    name: "D. Chen",
+                    role: "Watch Enthusiast",
+                    pfp: "https://i.pravatar.cc/100?img=33"
+                },
+                {
+                    quote: "I\u2019ve worked with a dozen dealers. Henry is the only one I trust with six-figure pieces. His network is unmatched and his authentication process is bulletproof.",
+                    name: "A. Patel",
+                    role: "Repeat Client \u2014 8 Acquisitions",
+                    pfp: "https://i.pravatar.cc/100?img=59"
+                },
+                {
+                    quote: "First-time buyer in the luxury space. Henry walked me through everything \u2014 condition grading, market value, authentication docs. Zero pressure, just expertise.",
+                    name: "S. Williams",
+                    role: "First-Time Buyer",
+                    pfp: "https://i.pravatar.cc/100?img=47"
+                },
+                {
+                    quote: "Needed an RM 11-03 for a client gift on a tight deadline. Henry came through in 72 hours with full box and papers. Absolutely unreal.",
+                    name: "T. Nakamura",
+                    role: "Corporate Client",
+                    pfp: "https://i.pravatar.cc/100?img=68"
+                }
+            ]
         };
 
         const app = {
             mobileMenuOpen: false,
+            testimonialIndex: 0,
+            testimonialTimer: null,
 
             init: () => {
                 app.renderTicker();
+                app.renderTestimonial(0);
+                app.startTestimonialTimer();
                 app.initAnimations();
                 lucide.createIcons();
             },
@@ -614,6 +800,88 @@
                     menu.style.pointerEvents = 'none';
                     document.body.style.overflow = '';
                 }
+            },
+
+            /* ── Testimonial Carousel ── */
+            renderTestimonial: (index, direction) => {
+                const t = CONFIG.TESTIMONIALS[index];
+                const card = document.getElementById('testimonial-card');
+                const quote = document.getElementById('testimonial-quote');
+                const nameEl = document.getElementById('testimonial-name');
+                const role = document.getElementById('testimonial-role');
+                const pfp = document.getElementById('testimonial-pfp');
+
+                const setContent = () => {
+                    quote.textContent = t.quote;
+                    nameEl.textContent = t.name;
+                    role.textContent = t.role;
+                    pfp.src = t.pfp;
+                    pfp.alt = t.name;
+                };
+
+                if (!direction) {
+                    // Initial load — no animation
+                    setContent();
+                    app.testimonialIndex = index;
+                    app.renderDots();
+                    return;
+                }
+
+                // Animate out then in
+                const xOut = direction === 'prev' ? 40 : -40;
+                const xIn = direction === 'prev' ? -40 : 40;
+
+                gsap.to(card, {
+                    opacity: 0, x: xOut, duration: 0.25, ease: "power2.in",
+                    onComplete: () => {
+                        setContent();
+                        gsap.fromTo(card,
+                            { opacity: 0, x: xIn },
+                            { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }
+                        );
+                    }
+                });
+
+                app.testimonialIndex = index;
+                app.renderDots();
+            },
+
+            renderDots: () => {
+                const container = document.getElementById('testimonial-dots');
+                container.innerHTML = CONFIG.TESTIMONIALS.map((_, i) =>
+                    `<button onclick="app.testimonialGo(${i})" aria-label="Testimonial ${i+1}"
+                        class="w-2 h-2 rounded-full transition-all duration-300 ${i === app.testimonialIndex ? 'bg-ivory w-6' : 'bg-ivory/25 hover:bg-ivory/50'}"></button>`
+                ).join('');
+            },
+
+            testimonialNext: () => {
+                const next = (app.testimonialIndex + 1) % CONFIG.TESTIMONIALS.length;
+                app.renderTestimonial(next, 'next');
+                app.resetTestimonialTimer();
+            },
+
+            testimonialPrev: () => {
+                const prev = (app.testimonialIndex - 1 + CONFIG.TESTIMONIALS.length) % CONFIG.TESTIMONIALS.length;
+                app.renderTestimonial(prev, 'prev');
+                app.resetTestimonialTimer();
+            },
+
+            testimonialGo: (index) => {
+                if (index === app.testimonialIndex) return;
+                const dir = index > app.testimonialIndex ? 'next' : 'prev';
+                app.renderTestimonial(index, dir);
+                app.resetTestimonialTimer();
+            },
+
+            startTestimonialTimer: () => {
+                app.testimonialTimer = setInterval(() => {
+                    app.testimonialNext();
+                }, 6000);
+            },
+
+            resetTestimonialTimer: () => {
+                clearInterval(app.testimonialTimer);
+                app.startTestimonialTimer();
             },
 
             renderTicker: () => {
@@ -669,6 +937,15 @@
                     opacity: 0,
                     duration: 0.6,
                     stagger: 0.08,
+                    ease: "expo.out"
+                });
+
+                // Testimonials carousel reveal
+                gsap.from("#testimonials", {
+                    scrollTrigger: { trigger: "#testimonials", start: "top 80%" },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.8,
                     ease: "expo.out"
                 });
 

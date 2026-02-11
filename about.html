@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.png">
     <title>About Henry Ohler | Dialed By H — Luxury Watch Concierge</title>
     <meta name="description" content="Meet Henry Ohler, founder of Dialed By H. A collector-turned-concierge specializing in sourcing, authenticating, and delivering rare luxury watches worldwide.">
     <meta name="keywords" content="Henry Ohler, Dialed By H founder, luxury watch concierge, watch collector, watch dealer, authenticated timepieces, personal watch sourcing">
@@ -94,6 +98,15 @@
         }
         .nav-link:hover::after { width: 100%; }
 
+        /* ── RESPONSIVE ── */
+        @media (max-width: 639px) {
+            .orb { display: none; }
+        }
+        @media (min-width: 640px) and (max-width: 1023px) {
+            .orb-1 { width: 300px; height: 300px; }
+            .orb-2 { width: 250px; height: 250px; }
+        }
+
         /* LIQUID GLASS */
         .glass {
             background: rgba(255,255,255,0.03);
@@ -144,7 +157,7 @@
     <div class="orb orb-2"></div>
 
     <!-- NAV -->
-    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center glass-subtle relative">
+    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
         <a href="index.html">
             <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
         </a>
@@ -176,14 +189,14 @@
 
     <!-- CONTENT -->
     <main class="max-w-5xl mx-auto px-6 sm:px-10 md:px-16 py-16 sm:py-24">
-        <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-7xl tracking-tighter uppercase mb-10 leading-[0.9]">
+        <h1 class="font-space font-bold text-3xl sm:text-4xl md:text-5xl lg:text-7xl tracking-tighter uppercase mb-8 sm:mb-10 leading-[0.9]">
             About <span class="text-muted">Me</span>
         </h1>
 
         <!-- PHOTO + INTRO -->
         <div class="flex flex-col md:flex-row gap-8 md:gap-10 items-start mb-12">
             <!-- Photo -->
-            <div class="w-full md:w-[35%] flex-shrink-0">
+            <div class="w-full sm:w-[60%] md:w-[35%] flex-shrink-0">
                 <div class="aspect-[3/4] w-full overflow-hidden glass rounded-lg">
                     <img src="images/Henry.jpeg" alt="Henry Ohler" class="w-full h-full object-cover">
                 </div>

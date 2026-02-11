@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.png">
     <title>How It Works | Dialed By H — Consultation, Sourcing, Authentication & Delivery</title>
     <meta name="description" content="Learn how Dialed By H works: personal consultation, global sourcing through vetted partners, independent authentication by watch specialists, and insured secure delivery.">
     <meta name="keywords" content="watch concierge process, how to buy luxury watches, watch authentication, watch sourcing process, secure watch delivery, luxury watch consultation, Dialed By H process">
@@ -110,6 +114,15 @@
         }
         .nav-link:hover::after { width: 100%; }
 
+        /* ── RESPONSIVE ── */
+        @media (max-width: 639px) {
+            .orb { display: none; }
+        }
+        @media (min-width: 640px) and (max-width: 1023px) {
+            .orb-1 { width: 300px; height: 300px; }
+            .orb-2 { width: 250px; height: 250px; }
+        }
+
         .glass {
             background: rgba(255,255,255,0.03);
             backdrop-filter: blur(20px) saturate(1.4);
@@ -155,7 +168,7 @@
     <div class="orb orb-2"></div>
 
     <!-- NAV -->
-    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center glass-subtle relative">
+    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
         <a href="index.html">
             <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
         </a>
@@ -187,7 +200,7 @@
 
     <!-- CONTENT -->
     <main class="max-w-4xl mx-auto px-6 py-16 sm:py-24">
-        <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-7xl tracking-tighter uppercase mb-16 leading-[0.9]">
+        <h1 class="font-space font-bold text-3xl sm:text-4xl md:text-5xl lg:text-7xl tracking-tighter uppercase mb-10 sm:mb-16 leading-[0.9]">
             My <span class="text-muted">Process</span>
         </h1>
 

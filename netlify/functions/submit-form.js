@@ -76,6 +76,8 @@ function buildEmail(type, data) {
 }
 
 exports.handler = async (event) => {
+  console.log("[submit-form] Function invoked, method:", event.httpMethod);
+
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
@@ -95,12 +97,21 @@ exports.handler = async (event) => {
     };
   }
 
+  // Log env var presence (never log actual values)
+  console.log("[submit-form] ENV CHECK — SUPABASE_URL:", !!process.env.SUPABASE_URL);
+  console.log("[submit-form] ENV CHECK — SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  console.log("[submit-form] ENV CHECK — RESEND_API_KEY:", !!process.env.RESEND_API_KEY);
+  console.log("[submit-form] ENV CHECK — NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
+
   try {
     const { type, fullName, email, watchDetails, watchName, watchRef } =
       JSON.parse(event.body);
 
+    console.log("[submit-form] Parsed payload — type:", type, "email:", email, "watchName:", watchName || "(none)");
+
     // Validate
     if (!type || !email) {
+      console.error("[submit-form] VALIDATION FAIL — missing type or email");
       return {
         statusCode: 400,
         headers,
@@ -110,6 +121,7 @@ exports.handler = async (event) => {
 
     const validTypes = ["JOIN_LIST", "BUY", "SELL", "TRADE", "WATCH_DETAIL"];
     if (!validTypes.includes(type)) {
+      console.error("[submit-form] VALIDATION FAIL — invalid type:", type);
       return {
         statusCode: 400,
         headers,
@@ -118,6 +130,7 @@ exports.handler = async (event) => {
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      console.error("[submit-form] VALIDATION FAIL — invalid email:", email);
       return {
         statusCode: 400,
         headers,
@@ -136,6 +149,7 @@ exports.handler = async (event) => {
       status: "new",
     };
 
+    console.log("[submit-form] Inserting into Supabase...");
     const { data, error } = await getSupabase()
       .from("submissions")
       .insert([row])
@@ -143,38 +157,67 @@ exports.handler = async (event) => {
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
+      console.error("[submit-form] SUPABASE ERROR:", JSON.stringify(error));
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: "Database error" }),
+        body: JSON.stringify({ error: "Database error", details: error.message }),
       };
     }
 
-    // Send email (don't fail if this errors)
+    console.log("[submit-form] Supabase insert SUCCESS — id:", data.id);
+
+    // Send email via Resend — AWAIT it so we know if it fails
     const template = buildEmail(type, data);
+    let emailResult = null;
+
     if (template) {
-      getResend()
-        .emails.send({
-          from: "Dialed By H <onboarding@resend.dev>",
-          to: process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com",
+      const toEmail = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
+
+      console.log("[submit-form] Sending email via Resend...");
+      console.log("[submit-form] From: Dialed By H <inquiries@mail.dialedbyhenry.com>");
+      console.log("[submit-form] To:", toEmail);
+      console.log("[submit-form] Subject:", template.subject);
+
+      try {
+        emailResult = await getResend().emails.send({
+          from: "Dialed By H <inquiries@mail.dialedbyhenry.com>",
+          to: toEmail,
           subject: template.subject,
           html: template.body,
-        })
-        .catch((err) => console.error("Email error:", err));
+        });
+
+        console.log("[submit-form] RESEND RESPONSE:", JSON.stringify(emailResult));
+
+        if (emailResult.error) {
+          console.error("[submit-form] RESEND RETURNED ERROR:", JSON.stringify(emailResult.error));
+        } else {
+          console.log("[submit-form] Email sent successfully — Resend ID:", emailResult.data?.id);
+        }
+      } catch (emailErr) {
+        console.error("[submit-form] RESEND SEND THREW:", emailErr.message);
+        console.error("[submit-form] RESEND FULL ERROR:", JSON.stringify(emailErr, Object.getOwnPropertyNames(emailErr)));
+        // Don't fail the whole request if email fails — submission is already saved
+      }
     }
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ success: true, id: data.id }),
+      body: JSON.stringify({
+        success: true,
+        id: data.id,
+        emailSent: emailResult && !emailResult.error,
+        emailId: emailResult?.data?.id || null,
+      }),
     };
   } catch (err) {
-    console.error("Function error:", err);
+    console.error("[submit-form] UNHANDLED ERROR:", err.message);
+    console.error("[submit-form] STACK:", err.stack);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "Server error" }),
+      body: JSON.stringify({ error: "Server error", details: err.message }),
     };
   }
 };

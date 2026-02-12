@@ -131,6 +131,13 @@
             opacity: 0.06;
         }
 
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         /* ── WATCH CARD ── */
         .watch-card {
             position: relative;
@@ -557,10 +564,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-5 flex flex-col flex-1">
-                        <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1">${name}${nickname}</h3>
-                        ${ref ? `<p class="text-muted text-[11px] font-bold tracking-widest mb-2">Ref. ${ref}</p>` : ''}
-                        ${details ? `<p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3">${details}</p>` : ''}
+                    <div class="p-5 h-[140px] flex flex-col">
+                        <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1 truncate">${name}${nickname}</h3>
+                        ${ref ? `<p class="text-muted text-[11px] font-bold tracking-widest mb-2 truncate">Ref. ${ref}</p>` : `<p class="text-muted text-[11px] mb-2">&nbsp;</p>`}
+                        ${details ? `<p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3 line-clamp-2">${details}</p>` : `<p class="text-ivory/40 text-[11px] mb-3">&nbsp;</p>`}
                         <div class="flex items-center gap-2 flex-wrap mt-auto">
                             ${condLabel ? `<span class="text-[9px] font-space font-bold tracking-widest text-ivory/50 bg-ivory/5 px-2.5 py-1 rounded-full">${condLabel}</span>` : ''}
                             ${setLabel ? `<span class="text-[9px] font-space tracking-widest text-ivory/35 bg-ivory/5 px-2.5 py-1 rounded-full">${setLabel}</span>` : ''}

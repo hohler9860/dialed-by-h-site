@@ -623,13 +623,13 @@
             if (model !== 'ALL') filtered = filtered.filter(w => w.model === model);
 
             const dial = document.getElementById('filter-dial').value;
-            if (dial !== 'ALL') filtered = filtered.filter(w => (w.dialColor || '').toLowerCase().includes(dial.toLowerCase()));
+            if (dial !== 'ALL') filtered = filtered.filter(w => w.dialColor === dial);
 
             const mat = document.getElementById('filter-material').value;
-            if (mat !== 'ALL') filtered = filtered.filter(w => (w.caseMaterial || '').toLowerCase().includes(mat.toLowerCase()));
+            if (mat !== 'ALL') filtered = filtered.filter(w => w.caseMaterial === mat);
 
             const cond = document.getElementById('filter-condition').value;
-            if (cond !== 'ALL') filtered = filtered.filter(w => (w.condition || '').toLowerCase().includes(cond.toLowerCase()));
+            if (cond !== 'ALL') filtered = filtered.filter(w => w.condition === cond);
 
             const sort = document.getElementById('sort-by').value;
             if (sort === 'year-new') filtered.sort((a, b) => (Number(b.year) || 0) - (Number(a.year) || 0));
@@ -958,18 +958,18 @@
                 pillContainer.appendChild(btn);
             });
 
-            // Populate filter dropdowns with broad categories
+            // Populate filter dropdowns from data
             const models = [...new Set(PIECES.map(w => w.model).filter(Boolean))].sort();
             populateDropdown(['filter-model', 'filter-model-m'], models, 'Model');
 
-            const broadDials = ['Black', 'White', 'Blue', 'Green', 'Grey', 'Silver', 'Champagne', 'Brown'];
-            populateDropdown(['filter-dial', 'filter-dial-m'], broadDials, 'Dial Color');
+            const dials = [...new Set(PIECES.map(w => w.dialColor).filter(Boolean))].sort();
+            populateDropdown(['filter-dial', 'filter-dial-m'], dials, 'Dial Color');
 
-            const broadMaterials = ['Steel', 'Gold', 'Rose Gold', 'White Gold', 'Platinum', 'Titanium', 'Ceramic', 'Carbon'];
-            populateDropdown(['filter-material', 'filter-material-m'], broadMaterials, 'Case Material');
+            const materials = [...new Set(PIECES.map(w => w.caseMaterial).filter(Boolean))].sort();
+            populateDropdown(['filter-material', 'filter-material-m'], materials, 'Case Material');
 
-            const broadConditions = ['Brand New', 'Unworn', 'Excellent', 'Very Good', 'Good'];
-            populateDropdown(['filter-condition', 'filter-condition-m'], broadConditions, 'Condition');
+            const conditions = [...new Set(PIECES.map(w => w.condition).filter(Boolean))].sort();
+            populateDropdown(['filter-condition', 'filter-condition-m'], conditions, 'Condition');
 
             renderGrid(PIECES);
             const rc = document.getElementById('result-count');

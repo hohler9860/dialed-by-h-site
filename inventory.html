@@ -208,6 +208,8 @@
             -moz-appearance: none;
             appearance: none;
             transition: color 0.2s ease;
+            text-align: center;
+            text-align-last: center;
         }
         .filter-select-wrap select:hover,
         .filter-select-wrap select:focus { color: rgba(245,243,235,0.8); }
@@ -263,7 +265,7 @@
     </div>
 
     <!-- CONTENT -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-12 sm:pt-16 pb-12 sm:pb-16">
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-5 sm:pt-6 pb-12 sm:pb-16">
 
         <!-- SUBTITLE -->
         <p id="hero-sub" class="font-inter text-muted text-sm sm:text-base max-w-xl opacity-0 leading-relaxed mb-10 sm:mb-14" style="letter-spacing: 0.15em;">
@@ -323,41 +325,42 @@
 
                 <!-- DESKTOP: single row -->
                 <div class="hidden sm:flex items-center">
-                    <div class="flex items-center gap-0 flex-1">
-                        <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-model" onchange="applyFilters()">
+                    <div class="flex items-center flex-1">
+                        <div class="filter-select-wrap flex-1 flex justify-center">
+                            <select id="filter-model" onchange="applyFilters()" class="text-center">
                                 <option value="ALL">Model</option>
                             </select>
                         </div>
-                        <span class="text-ivory/10">|</span>
-                        <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-dial" onchange="applyFilters()">
+                        <span class="text-ivory/10 shrink-0">|</span>
+                        <div class="filter-select-wrap flex-1 flex justify-center">
+                            <select id="filter-dial" onchange="applyFilters()" class="text-center">
                                 <option value="ALL">Dial Color</option>
                             </select>
                         </div>
-                        <span class="text-ivory/10">|</span>
-                        <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-material" onchange="applyFilters()">
+                        <span class="text-ivory/10 shrink-0">|</span>
+                        <div class="filter-select-wrap flex-1 flex justify-center">
+                            <select id="filter-material" onchange="applyFilters()" class="text-center">
                                 <option value="ALL">Case Material</option>
                             </select>
                         </div>
-                        <span class="text-ivory/10">|</span>
-                        <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-condition" onchange="applyFilters()">
+                        <span class="text-ivory/10 shrink-0">|</span>
+                        <div class="filter-select-wrap flex-1 flex justify-center">
+                            <select id="filter-condition" onchange="applyFilters()" class="text-center">
                                 <option value="ALL">Condition</option>
                             </select>
                         </div>
-                    </div>
-                    <span class="text-ivory/10 mx-4">|</span>
-                    <div class="flex items-center gap-4 shrink-0">
-                        <div class="filter-select-wrap">
-                            <select id="sort-by" onchange="applyFilters()">
+                        <span class="text-ivory/10 shrink-0">|</span>
+                        <div class="filter-select-wrap flex-1 flex justify-center">
+                            <select id="sort-by" onchange="applyFilters()" class="text-center">
                                 <option value="default">Sort By</option>
                                 <option value="year-new">Newest</option>
                                 <option value="year-old">Oldest</option>
                                 <option value="model-az">Model A → Z</option>
                             </select>
                         </div>
+                    </div>
+                    <span class="text-ivory/10 shrink-0 mx-3">|</span>
+                    <div class="flex items-center gap-3 shrink-0">
                         <span id="result-count" class="text-[10px] font-space tracking-widest text-ivory/25 whitespace-nowrap"></span>
                         <button onclick="resetFilters()" id="reset-btn" class="hidden text-[10px] font-space font-bold tracking-widest text-ivory/30 hover:text-ivory transition-colors whitespace-nowrap">
                             ✕ Clear

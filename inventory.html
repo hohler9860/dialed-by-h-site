@@ -181,14 +181,35 @@
             letter-spacing: 0.1em;
             text-transform: uppercase;
             transition: all 0.25s ease;
-            border: 1px solid transparent;
+            border: 1px solid rgba(245,243,235,0.08);
+            cursor: pointer;
         }
-        .brand-pill:hover { background: rgba(245,243,235,0.08); color: rgba(245,243,235,0.6); }
+        .brand-pill:hover { background: rgba(245,243,235,0.1); color: rgba(245,243,235,0.7); border-color: rgba(245,243,235,0.15); }
         .brand-pill.active {
             background: rgba(245,243,235,0.1);
             color: rgba(245,243,235,0.95);
-            border-color: rgba(245,243,235,0.12);
+            border-color: rgba(245,243,235,0.2);
         }
+
+        /* Subtle shimmer on brand pills to draw attention */
+        @keyframes pill-shimmer {
+            0%, 100% { border-color: rgba(245,243,235,0.06); }
+            50% { border-color: rgba(245,243,235,0.18); }
+        }
+        .brand-pill:not(.active) {
+            animation: pill-shimmer 3s ease-in-out infinite;
+        }
+        .brand-pill:not(.active):hover { animation: none; }
+
+        /* Subtle pulse on filter bar border */
+        @keyframes filter-glow {
+            0%, 100% { border-color: rgba(245,243,235,0.05); }
+            50% { border-color: rgba(245,243,235,0.12); }
+        }
+        .filter-bar-animate {
+            animation: filter-glow 4s ease-in-out infinite;
+        }
+
         .filter-select-wrap select {
             background: transparent;
             border: none;
@@ -211,6 +232,18 @@
         .filter-select-wrap select:hover,
         .filter-select-wrap select:focus { color: rgba(245,243,235,0.8); }
         .filter-select-wrap select.active-filter { color: rgba(245,243,235,0.95); }
+        .filter-select-wrap { position: relative; }
+        .filter-select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 8px;
+            color: rgba(245,243,235,0.25);
+            pointer-events: none;
+        }
+        .filter-select-wrap select { padding-right: 14px; }
         .filter-select-wrap select option { background: #1a1a1a; color: #f5f3eb; }
 
         @media (max-width: 639px) {
@@ -275,7 +308,7 @@
             </div>
 
             <!-- Filter row -->
-            <div class="glass-subtle rounded-xl px-4 sm:px-6 py-3">
+            <div class="glass-subtle rounded-xl px-4 sm:px-6 py-3 filter-bar-animate">
                 <!-- MOBILE: 2x2 grid + sort row -->
                 <div class="sm:hidden">
                     <div class="grid grid-cols-2 gap-2 mb-2">
@@ -548,7 +581,14 @@
 
         let activeBrand = 'ALL';
 
+        function stopFilterAnimations() {
+            document.querySelectorAll('.brand-pill:not(.active)').forEach(p => p.style.animation = 'none');
+            const bar = document.querySelector('.filter-bar-animate');
+            if (bar) bar.classList.remove('filter-bar-animate');
+        }
+
         function selectBrand(brand) {
+            stopFilterAnimations();
             activeBrand = brand;
             document.querySelectorAll('.brand-pill').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.brand === brand);
@@ -574,6 +614,7 @@
         }
 
         function applyFilters() {
+            stopFilterAnimations();
             let filtered = [...PIECES];
 
             if (activeBrand !== 'ALL') filtered = filtered.filter(w => w.brand === activeBrand);

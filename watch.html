@@ -155,6 +155,21 @@
         </div>
     </main>
 
+    <!-- SUCCESS OVERLAY -->
+    <div id="success-overlay" class="fixed inset-0 z-50 flex items-center justify-center opacity-0" style="visibility:hidden; pointer-events:none;">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xl"></div>
+        <div class="relative z-10 glass-strong rounded-2xl p-8 sm:p-12 max-w-sm mx-4 text-center">
+            <button onclick="closeSuccessOverlay()" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Inquiry Received</h3>
+            <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="relative z-10 px-6 py-12 border-t border-ivory/10 text-center">
         <div class="flex justify-center gap-8 sm:gap-12 mb-4">
@@ -387,13 +402,6 @@
                                 Submit Inquiry
                             </button>
                         </form>
-                        <div id="success-view" class="hidden flex-col items-center justify-center py-10 text-center">
-                            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6 mx-auto">
-                                <i data-lucide="check" class="w-8 h-8"></i>
-                            </div>
-                            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Inquiry Received</h3>
-                            <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
-                        </div>
                     </div>
                 </div>
             `;
@@ -453,21 +461,31 @@
         }
 
         function showSuccess() {
-            const form = document.getElementById('inquiry-form');
-            const success = document.getElementById('success-view');
-            if (form && success) {
-                gsap.to(form, {
-                    opacity: 0, height: 0, duration: 0.3,
-                    onComplete: () => {
-                        form.style.display = 'none';
-                        success.classList.remove('hidden');
-                        success.classList.add('flex');
-                        gsap.fromTo(success, { opacity: 0, y: 10 },
-                            { opacity: 1, y: 0, duration: 0.4, ease: 'expo.out' }
-                        );
-                    }
-                });
-            }
+            const overlay = document.getElementById('success-overlay');
+            overlay.style.visibility = 'visible';
+            overlay.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'hidden';
+            gsap.to(overlay, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+            gsap.fromTo(overlay.querySelector('.glass-strong'),
+                { y: 20, opacity: 0, scale: 0.95 },
+                { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
+            );
+            lucide.createIcons();
+        }
+
+        function closeSuccessOverlay() {
+            const overlay = document.getElementById('success-overlay');
+            gsap.to(overlay.querySelector('.glass-strong'),
+                { y: 20, opacity: 0, scale: 0.95, duration: 0.3, ease: 'power2.in' }
+            );
+            gsap.to(overlay, {
+                opacity: 0, duration: 0.4, delay: 0.1,
+                onComplete: () => {
+                    overlay.style.visibility = 'hidden';
+                    overlay.style.pointerEvents = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
         }
 
         // INIT

@@ -24,6 +24,10 @@ function getResend() {
 
 // Email templates per submission type
 function buildEmail(type, data) {
+  const detailsBlock = data.watch_details
+    ? `<p><strong>Details:</strong> ${data.watch_details}</p>`
+    : "";
+
   const templates = {
     JOIN_LIST: {
       subject: "New Private List Signup",
@@ -32,33 +36,40 @@ function buildEmail(type, data) {
         <p><strong>Email:</strong> ${data.email}</p>`,
     },
     BUY: {
-      subject: "New Buy Request",
-      body: `<h2>New Buy Request</h2>
+      subject: `Sourcing Request: ${data.watch_name || "New Request"}`,
+      body: `<h2>New Sourcing Request</h2>
         <p><strong>Name:</strong> ${data.full_name}</p>
         <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Watch Details:</strong> ${data.watch_details || "None"}</p>`,
+        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
+        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
+        ${detailsBlock}`,
     },
     SELL: {
-      subject: "New Sell Request",
+      subject: `Sell Request: ${data.watch_name || "New Request"}`,
       body: `<h2>New Sell Request</h2>
         <p><strong>Name:</strong> ${data.full_name}</p>
         <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Watch Details:</strong> ${data.watch_details || "None"}</p>`,
+        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
+        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
+        ${detailsBlock}`,
     },
     TRADE: {
-      subject: "New Trade Request",
+      subject: `Trade Request: ${data.watch_name || "New Request"}`,
       body: `<h2>New Trade Request</h2>
         <p><strong>Name:</strong> ${data.full_name}</p>
         <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Watch Details:</strong> ${data.watch_details || "None"}</p>`,
+        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
+        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
+        ${detailsBlock}`,
     },
     WATCH_DETAIL: {
       subject: `Watch Inquiry: ${data.watch_name || "Unknown"}`,
       body: `<h2>New Watch Inquiry</h2>
-        <p><strong>Watch:</strong> ${data.watch_name}</p>
-        <p><strong>Reference:</strong> ${data.watch_ref}</p>
         <p><strong>Name:</strong> ${data.full_name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>`,
+        <p><strong>Email:</strong> ${data.email}</p>
+        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
+        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
+        ${detailsBlock}`,
     },
   };
   return templates[type];

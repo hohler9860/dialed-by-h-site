@@ -692,6 +692,21 @@
         </div>
     </div>
 
+    <!-- SUCCESS OVERLAY -->
+    <div id="success-overlay" class="fixed inset-0 z-[60] flex items-center justify-center opacity-0" style="visibility:hidden; pointer-events:none;">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xl"></div>
+        <div class="relative z-10 glass-strong rounded-2xl p-8 sm:p-12 max-w-sm mx-4 text-center">
+            <button onclick="app.closeSuccessOverlay()" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
+            <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
+        </div>
+    </div>
+
     <script>
         const CONFIG = {
             APP_NAME: "Dialed By H",
@@ -1077,13 +1092,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="success-view" class="hidden flex flex-col items-center justify-center py-10 text-center p-5 sm:p-8">
-                            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6">
-                                <i data-lucide="check" class="w-8 h-8"></i>
-                            </div>
-                            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
-                            <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
-                        </div>
                     `;
                 } else {
                     const title = type === 'JOIN_LIST' ? 'Private List Application' : `Request to ${type}`;
@@ -1130,13 +1138,6 @@
                                 </button>
                             </form>
                         </div>
-                        <div id="success-view" class="hidden flex flex-col items-center justify-center py-10 text-center p-5 sm:p-8">
-                            <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6">
-                                <i data-lucide="check" class="w-8 h-8"></i>
-                            </div>
-                            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
-                            <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
-                        </div>
                     `;
                 }
 
@@ -1171,23 +1172,36 @@
             },
 
             showSuccess: () => {
-                const formView = document.getElementById('form-view');
-                const successView = document.getElementById('success-view');
-                if (formView && successView) {
-                    gsap.to(formView, {
-                        opacity: 0,
-                        height: 0,
-                        duration: 0.3,
-                        onComplete: () => {
-                            formView.style.display = 'none';
-                            successView.classList.remove('hidden');
-                            successView.classList.add('flex');
-                            gsap.fromTo(successView, { opacity: 0, y: 10 },
-                                { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }
-                            );
-                        }
-                    });
-                }
+                // Close the form modal first
+                app.closeModal();
+                // Show centered success overlay
+                setTimeout(() => {
+                    const overlay = document.getElementById('success-overlay');
+                    overlay.style.visibility = 'visible';
+                    overlay.style.pointerEvents = 'auto';
+                    document.body.style.overflow = 'hidden';
+                    gsap.to(overlay, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+                    gsap.fromTo(overlay.querySelector('.glass-strong'),
+                        { y: 20, opacity: 0, scale: 0.95 },
+                        { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
+                    );
+                    lucide.createIcons();
+                }, 500);
+            },
+
+            closeSuccessOverlay: () => {
+                const overlay = document.getElementById('success-overlay');
+                gsap.to(overlay.querySelector('.glass-strong'),
+                    { y: 20, opacity: 0, scale: 0.95, duration: 0.3, ease: 'power2.in' }
+                );
+                gsap.to(overlay, {
+                    opacity: 0, duration: 0.4, delay: 0.1,
+                    onComplete: () => {
+                        overlay.style.visibility = 'hidden';
+                        overlay.style.pointerEvents = 'none';
+                        document.body.style.overflow = '';
+                    }
+                });
             },
 
             submitForm: async (formEl, type, extraData = {}) => {

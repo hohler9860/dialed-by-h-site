@@ -41,88 +41,77 @@ exports.handler = async (event) => {
     }
 
     try {
-        // Only pull "Available" watches
         const response = await notion.databases.query({
             database_id: DATABASE_ID,
-            filter: {
-                property: 'Status',
-                select: { equals: 'Available' }
-            },
             sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
         });
 
-        const watches = response.results.map(page => {
+        const pieces = response.results.map(page => {
             const p = page.properties;
 
+            const piece = get(p['Piece']);
             const brand = get(p['Brand']);
             const model = get(p['Model']);
+            const nickname = get(p['Nickname']);
             const ref = get(p['Reference Number']);
-            const name = get(p['Watch']) || `${brand} ${model}`.trim();
-            const askingPrice = get(p['Asking Price']);
-            const caseSizeNum = get(p['Case Size']);
+            const caseMaterial = get(p['Case Material']);
+            const caseSizeNum = get(p['Case Size (mm)']);
             const caseSize = caseSizeNum ? `${caseSizeNum}mm` : '';
-            const year = get(p['Year']);
+            const dialColor = get(p['Dial Color']);
+            const bracelet = get(p['Bracelet/Strap']);
             const condition = get(p['Condition']);
-            const material = get(p['Material']);
-            const dial = get(p['Dial Color']);
-            const boxPapers = get(p['Box & Papers']); // boolean
-            const description = get(p['Extra Details']);
-            const images = getImages(p['Images']);
+            const set = get(p['Set']);
+            const year = get(p['Year']);
+            const images = getImages(p['Image']);
 
-            // Price display
-            let price = 'Inquire';
-            if (askingPrice) {
-                price = '$' + Number(askingPrice).toLocaleString('en-US');
-            }
+            // Build display name
+            const name = piece || `${brand} ${model}`.trim();
 
             // Short description for card view
             const descParts = [];
-            if (material) descParts.push(material);
-            if (dial) descParts.push(dial + ' dial');
+            if (caseMaterial) descParts.push(caseMaterial);
+            if (dialColor) descParts.push(dialColor + ' dial');
             if (caseSize) descParts.push(caseSize);
-            if (description) descParts.push(description);
+            if (bracelet) descParts.push(bracelet + ' bracelet');
             const details = descParts.join(', ') + (descParts.length ? '.' : '');
 
             return {
                 id: page.id,
                 brand,
+                model,
                 name,
+                nickname,
                 ref,
-                price,
                 details,
                 image: images[0] || '',
                 images,
                 year: year ? String(Math.round(year)) : '',
                 condition,
-                material,
-                dial,
+                caseMaterial,
+                dialColor,
+                bracelet,
                 caseSize,
-                contents: boxPapers ? 'Box & Papers' : 'Watch Only',
-                description,
-                model
+                set
             };
         });
 
-        // Single watch by ID (bypass image filter for direct links)
+        // Single piece by ID
         const params = event.queryStringParameters || {};
         if (params.id) {
-            const watch = watches.find(w => w.id === params.id);
-            if (!watch) {
-                return { statusCode: 404, headers, body: JSON.stringify({ error: 'Watch not found' }) };
+            const piece = pieces.find(w => w.id === params.id);
+            if (!piece) {
+                return { statusCode: 404, headers, body: JSON.stringify({ error: 'Piece not found' }) };
             }
-            return { statusCode: 200, headers, body: JSON.stringify(watch) };
+            return { statusCode: 200, headers, body: JSON.stringify(piece) };
         }
 
-        // Only return watches that have at least one image
-        const withImages = watches.filter(w => w.images.length > 0);
-
-        return { statusCode: 200, headers, body: JSON.stringify(withImages) };
+        return { statusCode: 200, headers, body: JSON.stringify(pieces) };
 
     } catch (error) {
         console.error('Notion API error:', error);
         return {
             statusCode: 500, headers,
-            body: JSON.stringify({ error: 'Failed to fetch inventory', details: error.message })
+            body: JSON.stringify({ error: 'Failed to fetch pieces', details: error.message })
         };
     }
 };

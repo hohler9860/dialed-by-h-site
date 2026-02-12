@@ -539,8 +539,8 @@
                 const imgSize = brand === 'ROLEX' ? '95%' : brand.includes('AUDEMARS') ? '65%' : brand.includes('RICHARD') ? '150%' : '75%';
 
                 return `
-                <a href="watch.html?id=${w.id}" class="watch-card group block">
-                    <div class="relative aspect-square overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center">
+                <a href="watch.html?id=${w.id}" class="watch-card group flex flex-col h-full">
+                    <div class="relative aspect-square overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center shrink-0">
                         ${image
                             ? `<img src="${image}" alt="${name}" class="card-img object-contain" style="width:${imgSize};height:${imgSize}" loading="lazy">`
                             : `<div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 flex items-center justify-center">
@@ -557,11 +557,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-5">
+                    <div class="p-5 flex flex-col flex-1">
                         <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1">${name}${nickname}</h3>
                         ${ref ? `<p class="text-muted text-[11px] font-bold tracking-widest mb-2">Ref. ${ref}</p>` : ''}
                         ${details ? `<p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3">${details}</p>` : ''}
-                        <div class="flex items-center gap-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap mt-auto">
                             ${condLabel ? `<span class="text-[9px] font-space font-bold tracking-widest text-ivory/50 bg-ivory/5 px-2.5 py-1 rounded-full">${condLabel}</span>` : ''}
                             ${setLabel ? `<span class="text-[9px] font-space tracking-widest text-ivory/35 bg-ivory/5 px-2.5 py-1 rounded-full">${setLabel}</span>` : ''}
                             ${year ? `<span class="text-[9px] font-space tracking-widest text-ivory/30">${year}</span>` : ''}

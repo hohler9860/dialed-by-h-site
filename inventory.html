@@ -706,9 +706,59 @@
                             <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reference Number (if known)</label>
                             <input type="text" name="watchRef" placeholder="e.g. 126500LN" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
                         </div>
+                        <div class="pt-2 pb-1">
+                            <p class="text-[10px] font-bold tracking-widest text-muted mb-3">Your Preferences</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[9px] font-bold tracking-widest text-muted/60 mb-1.5">Preferred Year</label>
+                                    <select name="prefYear" class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer text-xs">
+                                        <option value="" class="bg-charcoal">Any Year</option>
+                                        <option value="2025" class="bg-charcoal">2025</option>
+                                        <option value="2024" class="bg-charcoal">2024</option>
+                                        <option value="2023" class="bg-charcoal">2023</option>
+                                        <option value="2022" class="bg-charcoal">2022</option>
+                                        <option value="2021" class="bg-charcoal">2021</option>
+                                        <option value="2020" class="bg-charcoal">2020</option>
+                                        <option value="2019 or older" class="bg-charcoal">2019 or Older</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold tracking-widest text-muted/60 mb-1.5">Condition</label>
+                                    <select name="prefCondition" class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer text-xs">
+                                        <option value="" class="bg-charcoal">Any Condition</option>
+                                        <option value="Brand New" class="bg-charcoal">Brand New</option>
+                                        <option value="Like New" class="bg-charcoal">Like New</option>
+                                        <option value="Excellent" class="bg-charcoal">Excellent</option>
+                                        <option value="Very Good" class="bg-charcoal">Very Good</option>
+                                        <option value="Good" class="bg-charcoal">Good</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold tracking-widest text-muted/60 mb-1.5">Set</label>
+                                    <select name="prefSet" class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer text-xs">
+                                        <option value="" class="bg-charcoal">Any Set</option>
+                                        <option value="Full Set" class="bg-charcoal">Full Set</option>
+                                        <option value="Partial Set" class="bg-charcoal">Partial Set</option>
+                                        <option value="Watch Only" class="bg-charcoal">Watch Only</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold tracking-widest text-muted/60 mb-1.5">Price Range</label>
+                                    <select name="prefPrice" class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer text-xs">
+                                        <option value="" class="bg-charcoal">Any Budget</option>
+                                        <option value="Under $10K" class="bg-charcoal">Under $10K</option>
+                                        <option value="$10K - $25K" class="bg-charcoal">$10K - $25K</option>
+                                        <option value="$25K - $50K" class="bg-charcoal">$25K - $50K</option>
+                                        <option value="$50K - $100K" class="bg-charcoal">$50K - $100K</option>
+                                        <option value="$100K - $250K" class="bg-charcoal">$100K - $250K</option>
+                                        <option value="$250K+" class="bg-charcoal">$250K+</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div>
                             <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Additional Details</label>
-                            <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, budget, timeline, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
+                            <textarea rows="2" name="watchDetails" placeholder="Any other questions or details..." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
                         </div>
                         <button type="submit" class="w-full bg-ivory text-charcoal py-4 font-bold font-space tracking-widest hover:bg-white transition-colors mt-4">
                             Submit Sourcing Request
@@ -720,7 +770,7 @@
                         <i data-lucide="check" class="w-8 h-8"></i>
                     </div>
                     <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
-                    <p class="text-muted text-xs tracking-wide">I'll reach out shortly with sourcing options.</p>
+                    <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
                 </div>
             `;
             lucide.createIcons();
@@ -753,11 +803,24 @@
             const ref = formData.get('watchRef') || '';
             const details = formData.get('watchDetails') || '';
 
-            let watchDetailsStr = details;
+            // Build preferences string
+            const prefs = [];
+            const prefYear = formData.get('prefYear');
+            const prefCondition = formData.get('prefCondition');
+            const prefSet = formData.get('prefSet');
+            const prefPrice = formData.get('prefPrice');
+            if (prefYear) prefs.push('Year: ' + prefYear);
+            if (prefCondition) prefs.push('Condition: ' + prefCondition);
+            if (prefSet) prefs.push('Set: ' + prefSet);
+            if (prefPrice) prefs.push('Budget: ' + prefPrice);
+            const prefsStr = prefs.length ? 'Preferences: ' + prefs.join(', ') : '';
+
+            let watchDetailsStr = '';
             if (brand || model) {
                 const parts = [brand, model, ref ? 'Ref: ' + ref : ''].filter(Boolean);
-                watchDetailsStr = parts.join(' — ') + (details ? ' | ' + details : '');
+                watchDetailsStr = parts.join(' — ');
             }
+            const allDetails = [watchDetailsStr, prefsStr, details].filter(Boolean).join(' | ');
 
             const payload = {
                 type: 'BUY',
@@ -765,7 +828,7 @@
                 email: formData.get('email'),
                 watchName: brand && model ? brand + ' ' + model : null,
                 watchRef: ref || null,
-                watchDetails: watchDetailsStr || null
+                watchDetails: allDetails || null
             };
 
             if (btn) { btn.innerText = 'Processing...'; btn.disabled = true; }

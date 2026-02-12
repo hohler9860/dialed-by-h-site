@@ -41,12 +41,20 @@ exports.handler = async (event) => {
     }
 
     try {
-        const response = await notion.databases.query({
-            database_id: DATABASE_ID,
-            sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
-        });
+        // Paginate through all results (Notion returns max 100 per request)
+        let allResults = [];
+        let cursor = undefined;
+        do {
+            const response = await notion.databases.query({
+                database_id: DATABASE_ID,
+                start_cursor: cursor,
+                sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
+            });
+            allResults = allResults.concat(response.results);
+            cursor = response.has_more ? response.next_cursor : undefined;
+        } while (cursor);
 
-        const pieces = response.results.map(page => {
+        const pieces = allResults.map(page => {
             const p = page.properties;
 
             const piece = get(p['Piece']);
@@ -72,8 +80,8 @@ exports.handler = async (event) => {
             if (caseMaterial) descParts.push(caseMaterial);
             if (dialColor) descParts.push(dialColor + ' dial');
             if (caseSize) descParts.push(caseSize);
-            if (bracelet) descParts.push(bracelet + ' bracelet');
-            const details = descParts.join(', ') + (descParts.length ? '.' : '');
+            if (bracelet) descParts.push(bracelet);
+            const details = descParts.join(' · ');
 
             return {
                 id: page.id,

@@ -8,17 +8,17 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/favicon.png">
     <title>Available for Sourcing | Dialed By H — Luxury Watch Concierge</title>
-    <meta name="description" content="Browse pieces currently available for sourcing through Dialed By H. Rolex Daytona, GMT-Master II, Submariner, Day-Date, Sky-Dweller and more rare references. Inquire to source.">
-    <meta name="keywords" content="luxury watch sourcing, source rolex daytona, rolex gmt master, rolex submariner, rolex day date, sky dweller, rare watch sourcing, watch concierge, dialed by h">
+    <meta name="description" content="Browse pieces currently available for sourcing through Dialed By H. Rolex, Patek Philippe, Audemars Piguet, Richard Mille and more. Inquire to source.">
+    <meta name="keywords" content="luxury watch sourcing, rolex, patek philippe, audemars piguet, richard mille, rare watch sourcing, watch concierge, dialed by h">
     <meta name="author" content="Henry Ohler">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://dialed-by-h.netlify.app/inventory.html">
+    <link rel="canonical" href="https://dialedbyhenry.com/inventory.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dialed-by-h.netlify.app/inventory.html">
+    <meta property="og:url" content="https://dialedbyhenry.com/inventory.html">
     <meta property="og:title" content="Available for Sourcing | Dialed By H">
     <meta property="og:description" content="Browse rare luxury watches available for sourcing through Dialed By H concierge service.">
-    <meta property="og:image" content="https://dialed-by-h.netlify.app/images/logo.png">
+    <meta property="og:image" content="https://dialedbyhenry.com/images/logo.png">
     <meta property="og:site_name" content="Dialed By H">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Available for Sourcing | Dialed By H">
@@ -30,11 +30,11 @@
         "@type": "CollectionPage",
         "name": "Dialed By H — Pieces for Sourcing",
         "description": "Browse rare and authenticated luxury watches available for concierge sourcing through Dialed By H.",
-        "url": "https://dialed-by-h.netlify.app/inventory.html",
+        "url": "https://dialedbyhenry.com/inventory.html",
         "provider": {
             "@type": "Organization",
             "name": "Dialed By H",
-            "url": "https://dialed-by-h.netlify.app"
+            "url": "https://dialedbyhenry.com"
         }
     }
     </script>
@@ -112,83 +112,67 @@
             -webkit-backdrop-filter: blur(12px) saturate(1.2);
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .orb {
-            position: fixed; border-radius: 50%; filter: blur(80px);
-            pointer-events: none; z-index: 0; opacity: 0.07;
-        }
-        .orb-1 {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, #4a9eff, transparent 70%);
-            top: -10%; left: -5%;
-            animation: orb-float-1 20s ease-in-out infinite;
-        }
-        .orb-2 {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, #a855f7, transparent 70%);
-            bottom: 10%; right: -8%;
-            animation: orb-float-2 25s ease-in-out infinite;
-        }
-        .orb-3 {
-            width: 350px; height: 350px;
-            background: radial-gradient(circle, #06b6d4, transparent 70%);
-            top: 40%; left: 50%;
-            animation: orb-float-3 22s ease-in-out infinite;
-        }
-        @keyframes orb-float-1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(80px, 60px) scale(1.1); }
-            66% { transform: translate(-40px, 30px) scale(0.95); }
-        }
-        @keyframes orb-float-2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(-60px, -40px) scale(1.15); }
-            66% { transform: translate(30px, -70px) scale(0.9); }
-        }
-        @keyframes orb-float-3 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(50px, -50px) scale(1.05); }
-            66% { transform: translate(-70px, 40px) scale(1.1); }
-        }
 
-        .watch-card {
-            position: relative;
-            overflow: hidden;
-        }
-        .watch-card .watch-img {
-            transition: transform 0.7s ease, filter 0.7s ease;
-        }
-        .watch-card:hover .watch-img {
-            transform: scale(1.08);
-            filter: grayscale(0);
-        }
-        .watch-card .card-overlay {
-            transition: background-color 0.5s ease;
-        }
-        .watch-card:hover .card-overlay {
-            background-color: rgba(10, 10, 10, 0.3);
-        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .watch-card .inquire-btn {
+        /* ── BLURRED BACKGROUND MOSAIC ── */
+        #bg-mosaic {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #bg-mosaic .bg-img {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 24px;
+            filter: blur(40px) saturate(1.5);
+            opacity: 0.06;
+        }
+
+        /* ── WATCH CARD ── */
+        .watch-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: transform 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+            cursor: pointer;
+        }
+        .watch-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .watch-card .card-img {
+            transition: transform 0.7s ease;
+        }
+        .watch-card:hover .card-img {
+            transform: scale(1.06);
+        }
+        .watch-card .card-overlay {
+            background: linear-gradient(0deg, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.1) 50%, transparent 100%);
+            transition: opacity 0.5s ease;
+        }
+        .watch-card:hover .card-overlay {
+            opacity: 0.9;
+        }
+        .watch-card .card-cta {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(8px);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .watch-card:hover .inquire-btn {
+        .watch-card:hover .card-cta {
             opacity: 1;
             transform: translateY(0);
         }
 
-        .modal-hidden {
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .modal-visible {
-            visibility: visible;
-            pointer-events: auto;
-        }
-
+        /* ── FILTER PILLS ── */
         .brand-pill {
             background: rgba(245,243,235,0.04);
             color: rgba(245,243,235,0.35);
@@ -231,19 +215,14 @@
         .filter-select-wrap select option { background: #1a1a1a; color: #f5f3eb; }
 
         @media (max-width: 639px) {
-            .orb { display: none; }
-        }
-        @media (min-width: 640px) and (max-width: 1023px) {
-            .orb-1 { width: 300px; height: 300px; }
-            .orb-2 { width: 250px; height: 250px; }
-            .orb-3 { width: 200px; height: 200px; }
+            #bg-mosaic .bg-img { width: 180px; height: 180px; filter: blur(30px) saturate(1.3); opacity: 0.05; }
         }
     </style>
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+
+    <!-- BLURRED PHOTO BACKGROUND -->
+    <div id="bg-mosaic"></div>
 
     <!-- NAV -->
     <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
@@ -277,14 +256,14 @@
     </div>
 
     <!-- HEADER -->
-    <div class="max-w-7xl mx-auto px-6 pt-10 sm:pt-16">
+    <div class="relative z-10 max-w-7xl mx-auto px-6 pt-10 sm:pt-16">
         <h1 id="hero-title" class="font-space font-bold text-3xl sm:text-5xl md:text-6xl lg:text-8xl tracking-tighter uppercase leading-none opacity-0">
             Available for <span class="text-muted">Sourcing</span>
         </h1>
     </div>
 
     <!-- CONTENT -->
-    <main class="max-w-7xl mx-auto px-6 pt-12 sm:pt-16 pb-12 sm:pb-16">
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-12 sm:pt-16 pb-12 sm:pb-16">
 
         <!-- SUBTITLE -->
         <p id="hero-sub" class="font-inter text-muted text-sm sm:text-base max-w-xl opacity-0 leading-relaxed mb-10 sm:mb-14" style="letter-spacing: 0.15em;">
@@ -293,9 +272,9 @@
 
         <!-- FILTER SYSTEM -->
         <div class="mb-10 sm:mb-14" id="filter-bar">
-            <!-- Model pills — horizontal scroll on mobile, wrap on desktop -->
-            <div class="flex sm:flex-wrap gap-2 mb-5 overflow-x-auto no-scrollbar pb-1" id="model-pills">
-                <button onclick="selectModel('ALL')" class="brand-pill active shrink-0" data-model="ALL">All</button>
+            <!-- Brand pills — horizontal scroll on mobile, wrap on desktop -->
+            <div class="flex sm:flex-wrap gap-2 mb-5 overflow-x-auto no-scrollbar pb-1" id="brand-pills">
+                <button onclick="selectBrand('ALL')" class="brand-pill active shrink-0" data-brand="ALL">All</button>
             </div>
 
             <!-- Filter row -->
@@ -304,8 +283,8 @@
                 <div class="sm:hidden">
                     <div class="grid grid-cols-2 gap-2 mb-2">
                         <div class="filter-select-wrap">
-                            <select id="filter-material-m" onchange="syncFilter('filter-material', this.value); applyFilters()" class="w-full">
-                                <option value="ALL">Case Material</option>
+                            <select id="filter-model-m" onchange="syncFilter('filter-model', this.value); applyFilters()" class="w-full">
+                                <option value="ALL">Model</option>
                             </select>
                         </div>
                         <div class="filter-select-wrap">
@@ -314,13 +293,13 @@
                             </select>
                         </div>
                         <div class="filter-select-wrap">
-                            <select id="filter-condition-m" onchange="syncFilter('filter-condition', this.value); applyFilters()" class="w-full">
-                                <option value="ALL">Condition</option>
+                            <select id="filter-material-m" onchange="syncFilter('filter-material', this.value); applyFilters()" class="w-full">
+                                <option value="ALL">Case Material</option>
                             </select>
                         </div>
                         <div class="filter-select-wrap">
-                            <select id="filter-set-m" onchange="syncFilter('filter-set', this.value); applyFilters()" class="w-full">
-                                <option value="ALL">Set</option>
+                            <select id="filter-condition-m" onchange="syncFilter('filter-condition', this.value); applyFilters()" class="w-full">
+                                <option value="ALL">Condition</option>
                             </select>
                         </div>
                     </div>
@@ -346,8 +325,8 @@
                 <div class="hidden sm:flex items-center">
                     <div class="flex items-center gap-0 flex-1">
                         <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-material" onchange="applyFilters()">
-                                <option value="ALL">Case Material</option>
+                            <select id="filter-model" onchange="applyFilters()">
+                                <option value="ALL">Model</option>
                             </select>
                         </div>
                         <span class="text-ivory/10">|</span>
@@ -358,14 +337,14 @@
                         </div>
                         <span class="text-ivory/10">|</span>
                         <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-condition" onchange="applyFilters()">
-                                <option value="ALL">Condition</option>
+                            <select id="filter-material" onchange="applyFilters()">
+                                <option value="ALL">Case Material</option>
                             </select>
                         </div>
                         <span class="text-ivory/10">|</span>
                         <div class="filter-select-wrap flex-1 text-center">
-                            <select id="filter-set" onchange="applyFilters()">
-                                <option value="ALL">Set</option>
+                            <select id="filter-condition" onchange="applyFilters()">
+                                <option value="ALL">Condition</option>
                             </select>
                         </div>
                     </div>
@@ -389,7 +368,7 @@
         </div>
 
         <!-- WATCH GRID -->
-        <div id="watch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div id="watch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7">
         </div>
 
         <!-- EMPTY STATE -->
@@ -410,7 +389,7 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="px-6 py-16 sm:py-20 border-t border-ivory/10 text-center overflow-hidden">
+    <footer class="relative z-10 px-6 py-16 sm:py-20 border-t border-ivory/10 text-center overflow-hidden">
         <div class="footer-content">
             <p class="footer-line text-muted text-xs font-space uppercase tracking-[0.3em] mb-4 opacity-0">Authenticated Timepieces. Global Sourcing.</p>
             <div class="footer-line flex justify-center gap-8 sm:gap-12 mb-6 opacity-0">
@@ -429,7 +408,7 @@
     </footer>
 
     <!-- INQUIRY MODAL -->
-    <div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl opacity-0">
+    <div id="modal-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl opacity-0" style="visibility:hidden; pointer-events:none;">
         <div class="w-full max-w-lg glass-strong m-3 sm:m-4 relative shadow-2xl overflow-hidden rounded-2xl">
             <button onclick="closeModal()"
                     class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
@@ -458,6 +437,37 @@
             }
         }
 
+        /* ── BLURRED BACKGROUND MOSAIC ── */
+        function buildBackground(pieces) {
+            const container = document.getElementById('bg-mosaic');
+            const withImages = pieces.filter(p => p.image);
+            if (!withImages.length) return;
+
+            // Place images in a scattered grid pattern
+            const count = Math.min(withImages.length, 20);
+            const shuffled = withImages.sort(() => Math.random() - 0.5).slice(0, count);
+            const cols = 5;
+            const rows = Math.ceil(count / cols);
+
+            shuffled.forEach((p, i) => {
+                const img = document.createElement('img');
+                img.src = p.image;
+                img.alt = '';
+                img.className = 'bg-img';
+                img.loading = 'lazy';
+                // Scatter across viewport
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = (col / cols) * 100 + (Math.random() * 10 - 5);
+                const y = (row / rows) * 100 + (Math.random() * 10 - 5);
+                img.style.left = x + '%';
+                img.style.top = y + '%';
+                img.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+                container.appendChild(img);
+            });
+        }
+
+        /* ── RENDER GRID ── */
         function renderGrid(items) {
             const grid = document.getElementById('watch-grid');
             const empty = document.getElementById('empty-state');
@@ -472,61 +482,66 @@
             grid.innerHTML = items.map(w => {
                 const name = w.name || '';
                 const ref = w.ref || '';
-                const nickname = w.nickname ? `"${w.nickname}"` : '';
+                const nickname = w.nickname ? ` "${w.nickname}"` : '';
                 const details = w.details || '';
                 const image = w.image || '';
-                const setLabel = w.set || '';
                 const condLabel = w.condition || '';
+                const setLabel = w.set || '';
+                const year = w.year || '';
 
                 return `
-                <div class="watch-card glass rounded-xl cursor-pointer" onclick="openInquiry('${w.id}')" data-model="${w.model}">
-                    <div class="relative aspect-square overflow-hidden rounded-t-xl">
-                        ${image ? `<img src="${image}" alt="${name}" class="watch-img w-full h-full object-cover grayscale-[30%]" loading="lazy">` : `<div class="w-full h-full bg-charcoal/50 flex items-center justify-center"><span class="text-muted text-xs">No Image</span></div>`}
-                        <div class="card-overlay absolute inset-0 bg-charcoal/50"></div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                            <div class="inquire-btn glass-strong rounded-lg px-4 py-3 text-center">
-                                <span class="text-xs font-space font-bold tracking-widest">Inquire to Source</span>
+                <a href="watch.html?id=${w.id}" class="watch-card group block">
+                    <div class="relative aspect-[4/5] overflow-hidden rounded-t-2xl">
+                        ${image
+                            ? `<img src="${image}" alt="${name}" class="card-img w-full h-full object-cover" loading="lazy">`
+                            : `<div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 flex items-center justify-center">
+                                <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
+                               </div>`
+                        }
+                        <div class="card-overlay absolute inset-0"></div>
+                        <!-- Info overlay at bottom -->
+                        <div class="absolute bottom-0 left-0 right-0 p-5">
+                            <div class="card-cta">
+                                <span class="inline-block glass-strong rounded-full px-5 py-2.5 text-[10px] font-space font-bold tracking-widest">
+                                    View Details →
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div class="p-5 sm:p-6">
-                        <h3 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-1">${name} ${nickname}</h3>
-                        ${ref ? `<p class="text-muted text-[11px] font-bold tracking-widest mb-3">Ref. ${ref}</p>` : ''}
-                        ${details ? `<p class="text-ivory/50 text-xs font-inter leading-relaxed tracking-wide mb-4">${details}</p>` : ''}
-                        <div class="flex items-center justify-between pt-3 border-t border-ivory/10">
-                            <div class="flex items-center gap-3">
-                                ${condLabel ? `<span class="text-[10px] font-space font-bold tracking-widest text-ivory/40">${condLabel}</span>` : ''}
-                                ${setLabel ? `<span class="text-[10px] font-space tracking-widest text-ivory/30">${setLabel}</span>` : ''}
-                            </div>
-                            <div class="w-8 h-8 border border-ivory/20 rounded-full flex items-center justify-center">
-                                <i data-lucide="arrow-up-right" class="w-4 h-4 text-ivory/60"></i>
-                            </div>
+                    <div class="p-5">
+                        <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1">${name}${nickname}</h3>
+                        ${ref ? `<p class="text-muted text-[11px] font-bold tracking-widest mb-2">Ref. ${ref}</p>` : ''}
+                        ${details ? `<p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3">${details}</p>` : ''}
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${condLabel ? `<span class="text-[9px] font-space font-bold tracking-widest text-ivory/50 bg-ivory/5 px-2.5 py-1 rounded-full">${condLabel}</span>` : ''}
+                            ${setLabel ? `<span class="text-[9px] font-space tracking-widest text-ivory/35 bg-ivory/5 px-2.5 py-1 rounded-full">${setLabel}</span>` : ''}
+                            ${year ? `<span class="text-[9px] font-space tracking-widest text-ivory/30">${year}</span>` : ''}
                         </div>
                     </div>
-                </div>
+                </a>
             `}).join('');
 
             lucide.createIcons();
         }
 
-        // Sync mobile/desktop filter values
+        /* ── FILTERS ── */
         function syncFilter(desktopId, value) {
             const el = document.getElementById(desktopId);
             if (el) el.value = value;
         }
 
-        let activeModel = 'ALL';
+        let activeBrand = 'ALL';
 
-        function selectModel(model) {
-            activeModel = model;
+        function selectBrand(brand) {
+            activeBrand = brand;
             document.querySelectorAll('.brand-pill').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.model === model);
+                btn.classList.toggle('active', btn.dataset.brand === brand);
             });
             applyFilters();
         }
 
         function highlightActiveSelects() {
-            ['filter-material', 'filter-dial', 'filter-condition', 'filter-set', 'sort-by'].forEach(id => {
+            ['filter-model', 'filter-dial', 'filter-material', 'filter-condition', 'sort-by'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 el.classList.toggle('active-filter', el.value !== 'ALL' && el.value !== 'default');
@@ -534,30 +549,30 @@
         }
 
         function isFiltered() {
-            return activeModel !== 'ALL' ||
-                document.getElementById('filter-material').value !== 'ALL' ||
+            return activeBrand !== 'ALL' ||
+                document.getElementById('filter-model').value !== 'ALL' ||
                 document.getElementById('filter-dial').value !== 'ALL' ||
+                document.getElementById('filter-material').value !== 'ALL' ||
                 document.getElementById('filter-condition').value !== 'ALL' ||
-                document.getElementById('filter-set').value !== 'ALL' ||
                 document.getElementById('sort-by').value !== 'default';
         }
 
         function applyFilters() {
             let filtered = [...PIECES];
 
-            if (activeModel !== 'ALL') filtered = filtered.filter(w => w.model === activeModel);
+            if (activeBrand !== 'ALL') filtered = filtered.filter(w => w.brand === activeBrand);
 
-            const mat = document.getElementById('filter-material').value;
-            if (mat !== 'ALL') filtered = filtered.filter(w => w.caseMaterial === mat);
+            const model = document.getElementById('filter-model').value;
+            if (model !== 'ALL') filtered = filtered.filter(w => w.model === model);
 
             const dial = document.getElementById('filter-dial').value;
             if (dial !== 'ALL') filtered = filtered.filter(w => w.dialColor === dial);
 
+            const mat = document.getElementById('filter-material').value;
+            if (mat !== 'ALL') filtered = filtered.filter(w => w.caseMaterial === mat);
+
             const cond = document.getElementById('filter-condition').value;
             if (cond !== 'ALL') filtered = filtered.filter(w => w.condition === cond);
-
-            const set = document.getElementById('filter-set').value;
-            if (set !== 'ALL') filtered = filtered.filter(w => w.set === set);
 
             const sort = document.getElementById('sort-by').value;
             if (sort === 'year-new') filtered.sort((a, b) => (Number(b.year) || 0) - (Number(a.year) || 0));
@@ -578,16 +593,16 @@
             renderGrid(filtered);
 
             gsap.from('#watch-grid .watch-card', {
-                opacity: 0, y: 30, duration: 0.5, stagger: 0.06, ease: 'power2.out'
+                opacity: 0, y: 30, duration: 0.5, stagger: 0.04, ease: 'power2.out'
             });
         }
 
         function resetFilters() {
-            activeModel = 'ALL';
+            activeBrand = 'ALL';
             document.querySelectorAll('.brand-pill').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.model === 'ALL');
+                btn.classList.toggle('active', btn.dataset.brand === 'ALL');
             });
-            ['filter-material','filter-dial','filter-condition','filter-set'].forEach(id => {
+            ['filter-model','filter-dial','filter-material','filter-condition'].forEach(id => {
                 const d = document.getElementById(id);
                 const m = document.getElementById(id + '-m');
                 if (d) d.value = 'ALL';
@@ -600,60 +615,11 @@
             applyFilters();
         }
 
-        // INQUIRY MODAL — Sourcing
-        function openInquiry(pieceId) {
-            const piece = PIECES.find(w => w.id === pieceId);
-            if (!piece) return;
-
+        /* ── MODALS ── */
+        function openModal() {
             const overlay = document.getElementById('modal-overlay');
-            const body = document.getElementById('modal-body');
-            const displayName = piece.name + (piece.nickname ? ' "' + piece.nickname + '"' : '');
-
-            body.innerHTML = `
-                <div id="form-view">
-                    ${piece.image ? `<div class="w-full h-64 sm:h-72 overflow-hidden"><img src="${piece.image}" class="w-full h-full object-cover"></div>` : ''}
-                    <div class="p-5 sm:p-8 space-y-5">
-                        <div>
-                            <h2 class="text-2xl sm:text-3xl font-space font-bold tracking-tight mb-1">${displayName}</h2>
-                            ${piece.ref ? `<p class="text-muted font-bold tracking-widest text-xs">Ref. ${piece.ref}</p>` : ''}
-                        </div>
-                        ${piece.details ? `<p class="text-ivory/60 text-xs font-inter leading-relaxed tracking-wide">${piece.details}</p>` : ''}
-                        <div class="border-t border-ivory/10 pt-5">
-                            <p class="text-sm font-inter text-ivory/80 leading-relaxed mb-5">
-                                Interested in this piece? Provide your details and I'll reach out with sourcing information.
-                            </p>
-                            <form onsubmit="event.preventDefault(); submitInquiry(this, '${displayName.replace(/'/g, "\\'")}', '${piece.ref}');" class="space-y-4">
-                                <div>
-                                    <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
-                                    <input required type="text" name="fullName" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Email</label>
-                                    <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Message (Optional)</label>
-                                    <textarea rows="2" name="message" placeholder="Questions about condition, timeline, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
-                                </div>
-                                <button type="submit" class="w-full bg-ivory text-charcoal py-4 font-bold font-space tracking-widest hover:bg-white transition-colors">
-                                    Inquire to Source
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div id="success-view" class="hidden flex flex-col items-center justify-center py-10 text-center p-5 sm:p-8">
-                    <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6">
-                        <i data-lucide="check" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="text-xl font-space font-bold tracking-widest mb-2">Inquiry Received</h3>
-                    <p class="text-muted text-xs tracking-wide">I'll get back to you shortly about the ${displayName}.</p>
-                </div>
-            `;
-
-            lucide.createIcons();
-            overlay.classList.remove('modal-hidden');
-            overlay.classList.add('modal-visible');
+            overlay.style.visibility = 'visible';
+            overlay.style.pointerEvents = 'auto';
             gsap.to(overlay, { opacity: 1, duration: 0.4, ease: 'power2.out' });
             gsap.fromTo(overlay.querySelector(':scope > div'),
                 { y: 20, opacity: 0, scale: 0.98 },
@@ -670,8 +636,8 @@
             gsap.to(overlay, {
                 opacity: 0, duration: 0.4, delay: 0.1,
                 onComplete: () => {
-                    overlay.classList.remove('modal-visible');
-                    overlay.classList.add('modal-hidden');
+                    overlay.style.visibility = 'hidden';
+                    overlay.style.pointerEvents = 'none';
                     document.body.style.overflow = '';
                 }
             });
@@ -707,9 +673,7 @@
         }
 
         function openSourceRequest() {
-            const overlay = document.getElementById('modal-overlay');
             const body = document.getElementById('modal-body');
-
             body.innerHTML = `
                 <div id="form-view" class="p-5 sm:p-8">
                     <h2 class="text-2xl font-space font-bold tracking-tight mb-2">Sourcing Request</h2>
@@ -759,16 +723,8 @@
                     <p class="text-muted text-xs tracking-wide">I'll reach out shortly with sourcing options.</p>
                 </div>
             `;
-
             lucide.createIcons();
-            overlay.classList.remove('modal-hidden');
-            overlay.classList.add('modal-visible');
-            gsap.to(overlay, { opacity: 1, duration: 0.4, ease: 'power2.out' });
-            gsap.fromTo(overlay.querySelector(':scope > div'),
-                { y: 20, opacity: 0, scale: 0.98 },
-                { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
-            );
-            document.body.style.overflow = 'hidden';
+            openModal();
         }
 
         function showSuccess() {
@@ -832,128 +788,67 @@
             }
         }
 
-        async function submitInquiry(formEl, watchName, watchRef) {
-            const btn = formEl.querySelector('button[type="submit"]');
-            const formData = new FormData(formEl);
-
-            const payload = {
-                type: 'WATCH_DETAIL',
-                fullName: formData.get('fullName'),
-                email: formData.get('email'),
-                watchName: watchName,
-                watchRef: watchRef,
-                watchDetails: formData.get('message') || null
-            };
-
-            if (btn) { btn.innerText = 'Processing...'; btn.disabled = true; }
-
-            try {
-                const res = await fetch('/.netlify/functions/submit-form', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+        /* ── POPULATE FILTER DROPDOWNS ── */
+        function populateDropdown(ids, values, defaultLabel) {
+            ids.forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = `<option value="ALL">${defaultLabel}</option>`;
+                values.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v; opt.textContent = v;
+                    sel.appendChild(opt);
                 });
-                if (!res.ok) throw new Error('Submission failed');
-                showSuccess();
-            } catch (error) {
-                console.error('Submission error:', error);
-                if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && error.message.includes('Failed to fetch'))) {
-                    showSuccess();
-                    return;
-                }
-                if (btn) { btn.innerText = 'Error - Try Again'; btn.disabled = false; }
-            }
+            });
         }
 
-        // INIT
+        /* ── INIT ── */
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             gsap.registerPlugin(ScrollTrigger);
 
             gsap.from('nav', { opacity: 0, y: -30, duration: 1, ease: 'power3.out' });
-
-            gsap.to('#hero-title', {
-                opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', delay: 0.3
-            });
-            gsap.from('#hero-title', {
-                y: 80, duration: 1.2, ease: 'expo.out', delay: 0.3
-            });
-
-            gsap.to('#hero-sub', {
-                opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.7
-            });
-            gsap.from('#hero-sub', {
-                y: 30, duration: 0.8, ease: 'power2.out', delay: 0.7
-            });
+            gsap.to('#hero-title', { opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', delay: 0.3 });
+            gsap.from('#hero-title', { y: 80, duration: 1.2, ease: 'expo.out', delay: 0.3 });
+            gsap.to('#hero-sub', { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.7 });
+            gsap.from('#hero-sub', { y: 30, duration: 0.8, ease: 'power2.out', delay: 0.7 });
 
             await fetchPieces();
 
-            // Build model pills from data
-            const models = [...new Set(PIECES.map(w => w.model).filter(Boolean))].sort();
-            const pillContainer = document.getElementById('model-pills');
-            models.forEach(m => {
+            // Build blurred background mosaic from piece images
+            buildBackground(PIECES);
+
+            // Build brand pills from data
+            const brands = [...new Set(PIECES.map(w => w.brand).filter(Boolean))].sort();
+            const pillContainer = document.getElementById('brand-pills');
+            brands.forEach(b => {
                 const btn = document.createElement('button');
-                btn.onclick = () => selectModel(m);
+                btn.onclick = () => selectBrand(b);
                 btn.className = 'brand-pill shrink-0';
-                btn.dataset.model = m;
-                btn.textContent = m;
+                btn.dataset.brand = b;
+                btn.textContent = b;
                 pillContainer.appendChild(btn);
             });
 
-            // Populate Case Material dropdown
-            const materials = [...new Set(PIECES.map(w => w.caseMaterial).filter(Boolean))].sort();
-            ['filter-material', 'filter-material-m'].forEach(id => {
-                const sel = document.getElementById(id);
-                if (!sel) return;
-                materials.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m; opt.textContent = m;
-                    sel.appendChild(opt);
-                });
-            });
+            // Populate filter dropdowns
+            const models = [...new Set(PIECES.map(w => w.model).filter(Boolean))].sort();
+            populateDropdown(['filter-model', 'filter-model-m'], models, 'Model');
 
-            // Populate Dial Color dropdown
             const dials = [...new Set(PIECES.map(w => w.dialColor).filter(Boolean))].sort();
-            ['filter-dial', 'filter-dial-m'].forEach(id => {
-                const sel = document.getElementById(id);
-                if (!sel) return;
-                dials.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d; opt.textContent = d;
-                    sel.appendChild(opt);
-                });
-            });
+            populateDropdown(['filter-dial', 'filter-dial-m'], dials, 'Dial Color');
 
-            // Populate Condition dropdown
+            const materials = [...new Set(PIECES.map(w => w.caseMaterial).filter(Boolean))].sort();
+            populateDropdown(['filter-material', 'filter-material-m'], materials, 'Case Material');
+
             const conditions = [...new Set(PIECES.map(w => w.condition).filter(Boolean))].sort();
-            ['filter-condition', 'filter-condition-m'].forEach(id => {
-                const sel = document.getElementById(id);
-                if (!sel) return;
-                conditions.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c; opt.textContent = c;
-                    sel.appendChild(opt);
-                });
-            });
-
-            // Populate Set dropdown
-            const sets = [...new Set(PIECES.map(w => w.set).filter(Boolean))].sort();
-            ['filter-set', 'filter-set-m'].forEach(id => {
-                const sel = document.getElementById(id);
-                if (!sel) return;
-                sets.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s; opt.textContent = s;
-                    sel.appendChild(opt);
-                });
-            });
+            populateDropdown(['filter-condition', 'filter-condition-m'], conditions, 'Condition');
 
             renderGrid(PIECES);
             const rc = document.getElementById('result-count');
             if (rc) rc.textContent = PIECES.length + ' pieces';
 
             gsap.from('#watch-grid .watch-card', {
-                opacity: 0, y: 50, scale: 0.97, duration: 0.7, stagger: 0.1, ease: 'power3.out',
+                opacity: 0, y: 50, scale: 0.97, duration: 0.7, stagger: 0.06, ease: 'power3.out',
                 scrollTrigger: { trigger: '#watch-grid', start: 'top 85%' }
             });
 

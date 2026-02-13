@@ -536,7 +536,8 @@
             grid.innerHTML = items.map(w => {
                 const name = w.name || '';
                 const ref = w.ref || '';
-                const nickname = w.nickname ? ` "${w.nickname}"` : '';
+                const rawNick = w.nickname ? w.nickname.replace(/^"|"$/g, '') : '';
+                const nickname = rawNick ? ` "${rawNick}"` : '';
                 const details = w.details || '';
                 const image = w.image || '';
                 const condLabel = w.condition || '';
@@ -567,7 +568,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-5 h-[140px] flex flex-col">
+                    <div class="p-5 h-[140px] flex flex-col min-w-0 overflow-hidden">
                         <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1 truncate">${name}${nickname}</h3>
                         ${ref ? `<p class="text-muted text-[11px] font-bold tracking-widest mb-2 truncate">Ref. ${ref}</p>` : `<p class="text-muted text-[11px] mb-2">&nbsp;</p>`}
                         ${details ? `<p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3 line-clamp-2">${details}</p>` : `<p class="text-ivory/40 text-[11px] mb-3">&nbsp;</p>`}

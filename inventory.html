@@ -549,7 +549,10 @@
                 <a href="watch.html?id=${w.id}" class="watch-card group flex flex-col h-full">
                     <div class="relative aspect-square overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center shrink-0">
                         ${image
-                            ? `<img src="${image}" alt="${name}" class="card-img object-contain" style="width:${imgSize};height:${imgSize}" loading="lazy">`
+                            ? `<img src="${image}" alt="${name}" class="card-img object-contain" style="width:${imgSize};height:${imgSize}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                               <div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 items-center justify-center absolute inset-0" style="display:none;">
+                                   <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
+                               </div>`
                             : `<div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 flex items-center justify-center">
                                 <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
                                </div>`

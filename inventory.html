@@ -581,13 +581,13 @@
                 const year = w.year || '';
                 const brand = (w.brand || '').toUpperCase();
                 const nm = (name + ' ' + details).toUpperCase();
-                const imgSize = brand === 'ROLEX' ? '85%' : brand === 'TUDOR' && nm.includes('CARBON') ? '100%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '120%' : '75%';
+                const imgSize = brand === 'ROLEX' ? '100%' : brand.includes('AUDEMARS') ? '65%' : brand === 'TUDOR' && nm.includes('CARBON') ? '100%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '120%' : '75%';
 
                 return `
                 <a href="watch.html?id=${w.id}" class="watch-card group">
                     <div class="card-img-wrap relative overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center">
                         ${image
-                            ? `<img src="${image}" alt="${name}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            ? `<img src="${image}" alt="${name}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;object-position:center;margin:auto;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                <div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 items-center justify-center absolute inset-0" style="display:none;">
                                    <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
                                </div>`

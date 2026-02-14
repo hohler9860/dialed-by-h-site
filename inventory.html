@@ -152,9 +152,15 @@
             cursor: pointer;
             display: flex;
             flex-direction: column;
+            height: 100%;
+        }
+        .watch-card .card-img-wrap {
+            flex: 1;
+            min-height: 0;
         }
         .watch-card .card-info {
             height: 140px;
+            flex-shrink: 0;
             overflow: hidden;
             padding: 20px;
         }
@@ -554,12 +560,13 @@
                 const setLabel = w.set || '';
                 const year = w.year || '';
                 const brand = (w.brand || '').toUpperCase();
+                const imgSize = brand === 'ROLEX' ? '75%' : brand === 'TUDOR' ? '75%' : brand.includes('AUDEMARS') ? '50%' : brand.includes('RICHARD') ? '110%' : brand.includes('PATEK') ? '50%' : brand.includes('JOURNE') ? '50%' : '75%';
 
                 return `
                 <a href="watch.html?id=${w.id}" class="watch-card group">
-                    <div class="relative aspect-square overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center" style="flex-shrink:0;">
+                    <div class="card-img-wrap relative overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center">
                         ${image
-                            ? `<img src="${image}" alt="${name}" class="card-img" style="width:75%;height:75%;object-fit:cover;border-radius:8px;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            ? `<img src="${image}" alt="${name}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                <div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 items-center justify-center absolute inset-0" style="display:none;">
                                    <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
                                </div>`

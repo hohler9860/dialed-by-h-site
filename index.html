@@ -479,9 +479,10 @@
         </section>
 
         <!-- TICKER SECTION -->
-        <div class="ticker-wrap w-full overflow-hidden py-4 relative z-20 glass">
+        <div class="ticker-wrap w-full overflow-hidden py-6 relative z-20 border-y border-ivory/5" style="background:rgba(255,255,255,0.02);">
             <div class="flex w-max animate-ticker">
-                <div id="ticker-content" class="flex w-max"></div>
+                <div id="ticker-content" class="flex items-center w-max"></div>
+                <div id="ticker-content-clone" class="flex items-center w-max"></div>
             </div>
         </div>
 
@@ -969,26 +970,25 @@
             },
 
             renderTicker: () => {
-                const container = document.getElementById('ticker-content');
-                const allItems = [...CONFIG.TICKER_ITEMS, ...CONFIG.TICKER_ITEMS, ...CONFIG.TICKER_ITEMS, ...CONFIG.TICKER_ITEMS];
-
-                container.innerHTML = allItems.map(item => `
+                const html = CONFIG.TICKER_ITEMS.map(item => `
                     <button onclick="app.openModal('WATCH_DETAIL', app.getWatchById('${item.id}'))"
-                            class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none">
+                            class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none flex-shrink-0">
                         <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110">
                             <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
                         </div>
                         <div class="flex flex-col items-start">
-                            <span class="text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300">
+                            <span class="text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300 whitespace-nowrap">
                                 ${item.name}
                             </span>
-                            <span class="text-muted text-[10px] font-bold tracking-widest group-hover:text-ivory/60 transition-colors duration-300">
+                            <span class="text-muted text-[10px] font-bold tracking-widest group-hover:text-ivory/60 transition-colors duration-300 whitespace-nowrap">
                                 ${item.ref}
                             </span>
                         </div>
-                        <div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2"></div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2 flex-shrink-0"></div>
                     </button>
                 `).join('');
+                document.getElementById('ticker-content').innerHTML = html;
+                document.getElementById('ticker-content-clone').innerHTML = html;
             },
 
             initAnimations: () => {

@@ -246,8 +246,7 @@
                 ['Set', watch.set]
             ].filter(([, val]) => val);
 
-            const detailBrand = (watch.brand || '').toUpperCase();
-            const detailImgSize = detailBrand === 'ROLEX' ? '75%' : detailBrand === 'TUDOR' ? '75%' : detailBrand.includes('AUDEMARS') ? '50%' : detailBrand.includes('RICHARD') ? '110%' : detailBrand.includes('PATEK') ? '50%' : detailBrand.includes('JOURNE') ? '50%' : '75%';
+            const detailImgSize = '75%';
 
             const specsHTML = specEntries.map(([key, val]) => `
                 <div class="flex justify-between items-start py-3.5 border-b border-ivory/5 last:border-0">

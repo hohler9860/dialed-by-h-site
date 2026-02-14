@@ -778,39 +778,21 @@
             },
             TESTIMONIALS: [
                 {
-                    quote: "",
-                    name: "",
-                    role: "",
+                    quote: "Henry sourced my AP Royal Oak Offshore 26420Ti and a 41mm Celebration Dial — both arrived exactly as described with full documentation. His attention to detail and communication throughout the process were unmatched.",
+                    name: "JAMES SCHMITT",
+                    role: "Verified Client",
                     pfp: ""
                 },
                 {
-                    quote: "",
-                    name: "",
-                    role: "",
+                    quote: "Picked up a Rolex OP 41 124300 green dial through Henry. Seamless from start to finish — he found the exact ref I wanted faster than anyone else I'd spoken to. Couldn't recommend him more.",
+                    name: "MIKE STEINMETZ",
+                    role: "Verified Client",
                     pfp: ""
                 },
                 {
-                    quote: "",
-                    name: "",
-                    role: "",
-                    pfp: ""
-                },
-                {
-                    quote: "",
-                    name: "",
-                    role: "",
-                    pfp: ""
-                },
-                {
-                    quote: "",
-                    name: "",
-                    role: "",
-                    pfp: ""
-                },
-                {
-                    quote: "",
-                    name: "",
-                    role: "",
+                    quote: "I'd been hunting for a Daytona 126518 in yellow gold on Oysterflex for months with no luck. Henry delivered within two weeks, fully authenticated and in pristine condition. Absolute professional.",
+                    name: "DANIEL CARTER",
+                    role: "Verified Client",
                     pfp: ""
                 }
             ]
@@ -887,7 +869,10 @@
                                 <p class="font-inter text-ivory/90 text-sm sm:text-base leading-relaxed tracking-wide mb-6" style="text-transform: none;">${t.quote}</p>
                             </div>
                             <div class="flex items-center gap-3 mt-auto">
-                                <img src="${t.pfp}" alt="${t.name}" class="w-10 h-10 rounded-full object-cover border border-ivory/15">
+                                ${t.pfp
+                                    ? `<img src="${t.pfp}" alt="${t.name}" class="w-10 h-10 rounded-full object-cover border border-ivory/15">`
+                                    : `<div class="w-10 h-10 rounded-full border border-ivory/15 bg-ivory/5 flex items-center justify-center"><span class="font-space font-bold text-[11px] tracking-wider text-ivory/60">${t.name.split(' ').map(n => n[0]).join('')}</span></div>`
+                                }
                                 <div>
                                     <p class="font-space font-bold text-xs tracking-widest text-ivory">${t.name}</p>
                                     <p class="font-inter text-[10px] tracking-widest text-muted">${t.role}</p>

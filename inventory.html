@@ -562,7 +562,7 @@
                 const year = w.year || '';
                 const brand = (w.brand || '').toUpperCase();
                 const nm = (name + ' ' + details).toUpperCase();
-                const imgSize = brand === 'ROLEX' ? '85%' : brand === 'TUDOR' && nm.includes('CARBON') ? '85%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '120%' : '75%';
+                const imgSize = brand === 'ROLEX' ? '85%' : brand === 'TUDOR' && nm.includes('CARBON') ? '100%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '120%' : '75%';
 
                 return `
                 <a href="watch.html?id=${w.id}" class="watch-card group">

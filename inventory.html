@@ -496,11 +496,30 @@
     <script>
         let PIECES = [];
 
+        function interleaveByBrand(pieces) {
+            const byBrand = {};
+            pieces.forEach(p => {
+                const b = p.brand || 'Other';
+                if (!byBrand[b]) byBrand[b] = [];
+                byBrand[b].push(p);
+            });
+            const brands = Object.keys(byBrand);
+            const result = [];
+            let i = 0;
+            while (result.length < pieces.length) {
+                for (const b of brands) {
+                    if (i < byBrand[b].length) result.push(byBrand[b][i]);
+                }
+                i++;
+            }
+            return result;
+        }
+
         async function fetchPieces() {
             try {
                 const res = await fetch('/.netlify/functions/get-inventory');
                 if (!res.ok) throw new Error('Failed to fetch');
-                PIECES = await res.json();
+                PIECES = interleaveByBrand(await res.json());
                 return PIECES;
             } catch (err) {
                 console.error('Failed to fetch pieces from Notion:', err);

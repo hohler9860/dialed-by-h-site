@@ -561,7 +561,8 @@
                 const setLabel = w.set || '';
                 const year = w.year || '';
                 const brand = (w.brand || '').toUpperCase();
-                const imgSize = '75%';
+                const nm = (name + ' ' + details).toUpperCase();
+                const imgSize = brand === 'ROLEX' ? '85%' : brand === 'TUDOR' && nm.includes('CARBON') ? '85%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '120%' : '75%';
 
                 return `
                 <a href="watch.html?id=${w.id}" class="watch-card group">
@@ -1002,8 +1003,7 @@
             if (rc) rc.textContent = PIECES.length + ' pieces';
 
             gsap.from('#watch-grid .watch-card', {
-                opacity: 0, y: 50, scale: 0.97, duration: 0.7, stagger: 0.06, ease: 'power3.out',
-                scrollTrigger: { trigger: '#watch-grid', start: 'top 85%' }
+                opacity: 0, y: 30, duration: 0.5, stagger: 0.04, ease: 'power2.out'
             });
 
             gsap.from('.glass.rounded-2xl', {

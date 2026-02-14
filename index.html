@@ -1025,10 +1025,10 @@
                 });
 
                 // Testimonials section reveal — staggered
-                const tl = gsap.timeline({
+                const testimonialTl = gsap.timeline({
                     scrollTrigger: { trigger: "#testimonials", start: "top 80%" }
                 });
-                tl.from("#testimonials", { opacity: 0, duration: 0.4, ease: "power2.out" })
+                testimonialTl.from("#testimonials", { opacity: 0, duration: 0.4, ease: "power2.out" })
                   .from("#testimonials p.text-center", { y: 20, opacity: 0, duration: 0.5, ease: "expo.out" }, "-=0.1")
                   .from(".testimonial-card-wrap", { y: 40, opacity: 0, scale: 0.95, duration: 0.6, stagger: 0.12, ease: "expo.out" }, "-=0.2")
                   .from("#testimonials .flex.items-center.justify-center", { y: 15, opacity: 0, duration: 0.4, ease: "power2.out" }, "-=0.2");

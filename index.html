@@ -778,13 +778,13 @@
             },
             TESTIMONIALS: [
                 {
-                    quote: "Henry sourced my AP Royal Oak Offshore 26420Ti and a 41mm Celebration Dial — both arrived exactly as described with full documentation. His attention to detail and communication throughout the process were unmatched.",
+                    quote: "Henry sourced my AP Royal Oak Offshore 26420Ti and a 41mm Celebration Dial. Both arrived exactly as described with full documentation. His attention to detail and communication throughout the process were unmatched.",
                     name: "JAMES SCHMITT",
                     role: "Verified Client",
                     pfp: ""
                 },
                 {
-                    quote: "Picked up a Rolex OP 41 124300 green dial through Henry. Seamless from start to finish — he found the exact ref I wanted faster than anyone else I'd spoken to. Couldn't recommend him more.",
+                    quote: "Picked up a Rolex OP 41 124300 green dial through Henry. Seamless from start to finish. He found the exact ref I wanted faster than anyone else I'd spoken to. Couldn't recommend him more.",
                     name: "MIKE STEINMETZ",
                     role: "Verified Client",
                     pfp: ""
@@ -1024,14 +1024,14 @@
                     ease: "expo.out"
                 });
 
-                // Testimonials carousel reveal
-                gsap.from("#testimonials", {
-                    scrollTrigger: { trigger: "#testimonials", start: "top 80%" },
-                    y: 40,
-                    opacity: 0,
-                    duration: 0.8,
-                    ease: "expo.out"
+                // Testimonials section reveal — staggered
+                const tl = gsap.timeline({
+                    scrollTrigger: { trigger: "#testimonials", start: "top 80%" }
                 });
+                tl.from("#testimonials", { opacity: 0, duration: 0.4, ease: "power2.out" })
+                  .from("#testimonials p.text-center", { y: 20, opacity: 0, duration: 0.5, ease: "expo.out" }, "-=0.1")
+                  .from(".testimonial-card-wrap", { y: 40, opacity: 0, scale: 0.95, duration: 0.6, stagger: 0.12, ease: "expo.out" }, "-=0.2")
+                  .from("#testimonials .flex.items-center.justify-center", { y: 15, opacity: 0, duration: 0.4, ease: "power2.out" }, "-=0.2");
 
                 gsap.to(".footer-reveal", {
                     scrollTrigger: { trigger: "footer", start: "top 85%" },

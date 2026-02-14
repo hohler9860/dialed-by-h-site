@@ -485,9 +485,7 @@
             gsap.to(overlay, {
                 opacity: 0, duration: 0.4, delay: 0.1,
                 onComplete: () => {
-                    overlay.style.visibility = 'hidden';
-                    overlay.style.pointerEvents = 'none';
-                    document.body.style.overflow = '';
+                    window.location.reload();
                 }
             });
         }

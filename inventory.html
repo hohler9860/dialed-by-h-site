@@ -147,6 +147,13 @@
             border: 1px solid rgba(255,255,255,0.06);
             transition: transform 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .watch-card .card-info {
+            height: 140px;
+            overflow: hidden;
+            padding: 20px;
         }
         .watch-card:hover {
             transform: translateY(-6px);
@@ -406,7 +413,7 @@
         </div>
 
         <!-- WATCH GRID -->
-        <div id="watch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7">
+        <div id="watch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7" style="grid-auto-rows:1fr;">
         </div>
 
         <!-- EMPTY STATE -->
@@ -547,8 +554,8 @@
                 const imgSize = brand === 'ROLEX' ? '95%' : brand.includes('AUDEMARS') ? '65%' : brand.includes('RICHARD') ? '150%' : '75%';
 
                 return `
-                <a href="watch.html?id=${w.id}" class="watch-card group block">
-                    <div class="relative aspect-square overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center shrink-0">
+                <a href="watch.html?id=${w.id}" class="watch-card group">
+                    <div class="relative aspect-square overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center" style="flex-shrink:0;">
                         ${image
                             ? `<img src="${image}" alt="${name}" class="card-img object-contain" style="width:${imgSize};height:${imgSize}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                <div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 items-center justify-center absolute inset-0" style="display:none;">
@@ -568,7 +575,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-5" style="height:140px;overflow:hidden;">
+                    <div class="card-info">
                         <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}${nickname}</h3>
                         <p class="text-muted text-[11px] font-bold tracking-widest mb-2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ref ? 'Ref. ' + ref : '&nbsp;'}</p>
                         <p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3 line-clamp-2">${details || '&nbsp;'}</p>

@@ -519,7 +519,7 @@
         </section>
 
         <!-- ACTIONS SECTION (BUY / SELL / TRADE) -->
-        <section id="process" class="grid grid-cols-1 sm:grid-cols-3 min-h-[60vh] border-b border-ivory/5 overflow-hidden">
+        <section id="process" class="grid grid-cols-1 sm:grid-cols-3 min-h-[60vh] overflow-hidden">
             <!-- BUY -->
             <a href="inventory.html"
                     class="action-card group relative h-[300px] sm:h-[500px] lg:h-[700px] border-b sm:border-b-0 sm:border-r border-ivory/10 overflow-hidden text-left w-full block">
@@ -586,7 +586,7 @@
         </section>
 
         <!-- TESTIMONIALS — Rotating 3-Card Carousel -->
-        <section id="testimonials" class="relative py-12 sm:py-16 lg:py-20 border-b border-ivory/5 overflow-hidden">
+        <section id="testimonials" class="relative py-10 sm:py-14 lg:py-16 border-b border-ivory/5 overflow-hidden">
             <!-- Semi-blurred background image -->
             <div class="absolute inset-0 z-0">
                 <img src="images/Platinum.jpg.webp" alt="" class="w-full h-full object-cover opacity-[0.07]" style="filter: blur(6px); transform: scale(1.05);">
@@ -1024,14 +1024,14 @@
                     ease: "expo.out"
                 });
 
-                // Testimonials section reveal — staggered
-                const testimonialTl = gsap.timeline({
-                    scrollTrigger: { trigger: "#testimonials", start: "top 80%" }
+                // Testimonials section reveal
+                gsap.from("#testimonials .relative.z-10", {
+                    scrollTrigger: { trigger: "#testimonials", start: "top 80%" },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "expo.out"
                 });
-                testimonialTl.from("#testimonials", { opacity: 0, duration: 0.4, ease: "power2.out" })
-                  .from("#testimonials p.text-center", { y: 20, opacity: 0, duration: 0.5, ease: "expo.out" }, "-=0.1")
-                  .from(".testimonial-card-wrap", { y: 40, opacity: 0, scale: 0.95, duration: 0.6, stagger: 0.12, ease: "expo.out" }, "-=0.2")
-                  .from("#testimonials .flex.items-center.justify-center", { y: 15, opacity: 0, duration: 0.4, ease: "power2.out" }, "-=0.2");
 
                 gsap.to(".footer-reveal", {
                     scrollTrigger: { trigger: "footer", start: "top 85%" },

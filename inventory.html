@@ -582,7 +582,7 @@
                 const brand = (w.brand || '').toUpperCase();
                 const nm = (name + ' ' + details).toUpperCase();
                 const imgSize = brand === 'ROLEX' ? '100%' : brand.includes('AUDEMARS') ? '65%' : brand === 'TUDOR' && nm.includes('CARBON') ? '100%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '135%' : '75%';
-                const imgOffset = brand.includes('RICHARD') ? 'transform:translateY(-5%);' : brand.includes('JOURNE') && !nm.includes('ELEGANTE') ? 'transform:translateY(14%);' : '';
+                const imgOffset = brand.includes('RICHARD') ? 'transform:translateY(-10%);' : brand.includes('JOURNE') && !nm.includes('ELEGANTE') ? 'transform:translateY(14%);' : '';
 
                 return `
                 <a href="watch.html?id=${w.id}" class="watch-card group">

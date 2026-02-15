@@ -248,8 +248,8 @@
 
             const detailBrand = (watch.brand || '').toUpperCase();
             const detailNm = (displayName + ' ' + (watch.details || '') + ' ' + (watch.caseMaterial || '')).toUpperCase();
-            const detailImgSize = detailBrand === 'ROLEX' ? '100%' : detailBrand.includes('AUDEMARS') ? '65%' : detailBrand === 'TUDOR' && detailNm.includes('CARBON') ? '100%' : detailBrand === 'TUDOR' ? '75%' : detailBrand.includes('RICHARD') ? '120%' : '75%';
-            const detailImgOffset = detailBrand.includes('JOURNE') && !detailNm.includes('ELEGANTE') ? 'transform:translateY(14%);' : '';
+            const detailImgSize = detailBrand === 'ROLEX' ? '100%' : detailBrand.includes('AUDEMARS') ? '65%' : detailBrand === 'TUDOR' && detailNm.includes('CARBON') ? '100%' : detailBrand === 'TUDOR' ? '75%' : detailBrand.includes('RICHARD') ? '135%' : '75%';
+            const detailImgOffset = detailBrand.includes('RICHARD') ? 'transform:translateY(-5%);' : detailBrand.includes('JOURNE') && !detailNm.includes('ELEGANTE') ? 'transform:translateY(14%);' : '';
 
             const specsHTML = specEntries.map(([key, val]) => `
                 <div class="flex justify-between items-start py-3.5 border-b border-ivory/5 last:border-0">

@@ -6,3 +6,4 @@ node_modules/
 PLAN.md
 deno.lock
 *.code-workspace
+dist/

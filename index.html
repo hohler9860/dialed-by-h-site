@@ -106,316 +106,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        charcoal: '#0a0a0a',
-                        ivory: '#f0f0f0',
-                        muted: '#888888',
-                    },
-                    fontFamily: {
-                        space: ['"Space Grotesk"', 'sans-serif'],
-                        inter: ['"Inter"', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url(https://fonts.googleapis.com/css?family=Google+Sans+Text);
-        html {
-            font-family: 'Google Sans Text', 'Google Sans';
-            font-size: 14px;
-            margin: 0;
-            padding: 0;
-            background: #0a0a0a;
-            color: #f0f0f0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #0a0a0a;
-            color: #f0f0f0;
-            overflow-x: hidden;
-            text-transform: uppercase;
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0a0a0a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        .stroke-text {
-            -webkit-text-stroke: 1px #f0f0f0;
-            color: transparent;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .modal-hidden {
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .modal-visible {
-            visibility: visible;
-            pointer-events: auto;
-        }
-        @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-ticker {
-            animation: ticker 40s linear infinite;
-        }
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-        }
-        .nav-link {
-            position: relative;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: #f0f0f0;
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        /* LIQUID GLASS */
-        .glass {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(20px) saturate(1.4);
-            -webkit-backdrop-filter: blur(20px) saturate(1.4);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .glass-strong {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(40px) saturate(1.6);
-            -webkit-backdrop-filter: blur(40px) saturate(1.6);
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-        .glass-subtle {
-            background: rgba(255,255,255,0.02);
-            backdrop-filter: blur(12px) saturate(1.2);
-            -webkit-backdrop-filter: blur(12px) saturate(1.2);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        /* Ambient floating orbs */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.07;
-        }
-        .orb-1 {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, #4a9eff, transparent 70%);
-            top: -10%; left: -5%;
-            animation: orb-float-1 20s ease-in-out infinite;
-        }
-        .orb-2 {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, #a855f7, transparent 70%);
-            bottom: 10%; right: -8%;
-            animation: orb-float-2 25s ease-in-out infinite;
-        }
-        .orb-3 {
-            width: 350px; height: 350px;
-            background: radial-gradient(circle, #06b6d4, transparent 70%);
-            top: 40%; left: 50%;
-            animation: orb-float-3 22s ease-in-out infinite;
-        }
-        @keyframes orb-float-1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(80px, 60px) scale(1.1); }
-            66% { transform: translate(-40px, 30px) scale(0.95); }
-        }
-        @keyframes orb-float-2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(-60px, -40px) scale(1.15); }
-            66% { transform: translate(30px, -70px) scale(0.9); }
-        }
-        @keyframes orb-float-3 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(50px, -50px) scale(1.05); }
-            66% { transform: translate(-70px, 40px) scale(1.1); }
-        }
-
-        /* ══════════════════════════════════════
-           RESPONSIVE — Device-first breakpoints
-           iPhone SE:       320px
-           iPhone 14:       390px
-           iPhone 14 Pro Max: 430px
-           iPad Mini:       744px
-           iPad Air/Pro:    820px
-           iPad Pro 12.9:   1024px
-           Desktop:         1280px+
-           ══════════════════════════════════════ */
-
-        /* ── MOBILE (< 640px) ── */
-        @media (max-width: 639px) {
-            .orb { display: none; }
-            html { font-size: 13px; }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 1.5rem;
-            }
-            .stats-grid .stats-divider { display: none; }
-        }
-
-        /* ── TABLET PORTRAIT — iPad Mini, iPad Air (640px – 1023px) ── */
-        @media (min-width: 640px) and (max-width: 1023px) {
-            .orb-1 { width: 300px; height: 300px; }
-            .orb-2 { width: 250px; height: 250px; }
-            .orb-3 { width: 200px; height: 200px; }
-            .trust-tags-bar {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 0.5rem 1rem;
-            }
-            .trust-tags-bar .tag-bullet { display: none; }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 1.5rem 2rem;
-            }
-            .stats-grid .stats-divider { display: none; }
-        }
-
-        /* ── TABLET LANDSCAPE / Small Desktop (1024px – 1279px) ── */
-        @media (min-width: 1024px) and (max-width: 1279px) {
-            .orb-1 { width: 400px; height: 400px; }
-            .orb-2 { width: 350px; height: 350px; }
-            .orb-3 { width: 280px; height: 280px; }
-        }
-
-        /* ── Stats grid — CSS Grid for all sizes ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            align-items: center;
-            text-align: center;
-        }
-        .stats-grid .stats-divider {
-            display: none; /* dividers removed — grid handles spacing */
-        }
-
-        /* ── Trust tags bar ── */
-        .trust-tags-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem 1.25rem;
-            align-items: center;
-            justify-content: flex-start;
-        }
-        @media (max-width: 639px) {
-            .trust-tags-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            .trust-tags-bar .tag-bullet { display: none; }
-        }
-
-        /* ── Testimonial Rotating Card Carousel ── */
-        .testimonial-track {
-            position: relative;
-            overflow: hidden;
-        }
-        .testimonial-inner {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .testimonial-card-wrap {
-            flex-shrink: 0;
-            padding: 0 8px;
-            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-                        opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        /* Desktop: show 3 cards */
-        .testimonial-card-wrap {
-            width: 33.333%;
-        }
-        .testimonial-card-wrap .t-card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        /* Center card lift */
-        .testimonial-card-wrap.is-center .t-card {
-            transform: scale(1.03);
-            border-color: rgba(255,255,255,0.18);
-            box-shadow: 0 0 40px rgba(255,255,255,0.04);
-        }
-        .testimonial-card-wrap:not(.is-center) {
-            opacity: 0.55;
-        }
-        .testimonial-card-wrap:not(.is-center) .t-card {
-            transform: scale(0.97);
-        }
-
-        /* Tablet: show 1 card */
-        @media (max-width: 1023px) {
-            .testimonial-card-wrap {
-                width: 100%;
-            }
-            .testimonial-card-wrap:not(.is-center) {
-                opacity: 0;
-                pointer-events: none;
-                position: absolute;
-            }
-            .testimonial-card-wrap.is-center {
-                opacity: 1;
-            }
-            .testimonial-card-wrap.is-center .t-card {
-                transform: scale(1);
-            }
-        }
-
-        /* Glass highlight shimmer on hover */
-        .glass-hover {
-            position: relative;
-            overflow: hidden;
-        }
-        .glass-hover::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-            transition: left 0.6s ease;
-            z-index: 1;
-            pointer-events: none;
-        }
-        .glass-hover:hover::before {
-            left: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="/dist/styles.css">
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
     <!-- AMBIENT ORBS -->
@@ -649,6 +340,37 @@
             </div>
         </section>
 
+        <!-- INSTAGRAM FEED -->
+        <section id="instagram" class="relative z-10 py-16 sm:py-24">
+            <div class="max-w-6xl mx-auto px-5 sm:px-8 text-center">
+                <p class="text-muted text-[11px] font-bold tracking-[0.25em] mb-4">Follow the Collection</p>
+                <h3 class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4">
+                    <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="hover:text-muted transition-colors">
+                        @dialedbyh
+                    </a>
+                </h3>
+                <p class="font-inter text-muted text-sm mb-10 uppercase tracking-wide">Latest from the wrist</p>
+
+                <!-- BEHOLD INSTAGRAM WIDGET — Paste your embed code below -->
+                <div id="behold-widget" class="min-h-[200px] flex items-center justify-center">
+                    <!--
+                        To activate your Instagram feed:
+                        1. Sign up at https://behold.so
+                        2. Connect your @dialedbyh Instagram account
+                        3. Customize: background #0a0a0a, no borders
+                        4. Copy the embed code and paste it here (replace this comment)
+                    -->
+                    <p class="text-muted/30 text-xs font-space tracking-widest">Instagram feed loading...</p>
+                </div>
+
+                <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-3 mt-10 text-muted hover:text-ivory transition-colors text-sm font-space uppercase tracking-widest">
+                    <i data-lucide="instagram" class="w-5 h-5"></i>
+                    <span>View Full Profile</span>
+                </a>
+            </div>
+        </section>
+
         <!-- FOOTER -->
         <footer class="relative min-h-[50vh] sm:min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-16 sm:py-20">
             <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5">
@@ -660,19 +382,21 @@
             </div>
 
             <div class="footer-reveal relative z-10 w-full max-w-xl px-5 sm:px-8 py-8 sm:py-10 text-center opacity-0 translate-y-5 glass rounded-2xl mx-4 sm:mx-auto">
-                <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-6 sm:mb-8">
-                    Join the inner circle
+                <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-3 sm:mb-4">
+                    Get Priority Access
                 </h4>
-                <p id="contact-text" class="font-inter text-muted text-sm sm:text-base mb-6 sm:mb-8 uppercase tracking-wide">
-                    Receive priority access to off-catalog inventory before it hits the public market.
+                <p id="contact-text" class="font-inter text-muted text-sm sm:text-base mb-8 sm:mb-10 tracking-wide" style="text-transform:none;">
+                    Be the first to know when off-market pieces, rare references, and exclusive sourcing opportunities become available.
                 </p>
 
-                <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-12 sm:mb-16">
+                <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col gap-4 mb-12 sm:mb-16 max-w-sm mx-auto">
+                    <input type="text" name="fullName" placeholder="FULL NAME"
+                           class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
                     <input type="email" name="email" placeholder="EMAIL ADDRESS" required
-                           class="flex-1 bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
+                           class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
                     <button type="submit" id="footer-btn"
-                            class="bg-ivory text-charcoal px-6 sm:px-8 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs sm:text-sm whitespace-nowrap">
-                        JOIN THE PRIVATE LIST
+                            class="w-full bg-ivory text-charcoal px-6 sm:px-8 py-3.5 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs sm:text-sm mt-2">
+                        Get Priority Access
                     </button>
                 </form>
 
@@ -1053,6 +777,14 @@
                     ease: "expo.out"
                 });
 
+                gsap.from("#instagram .max-w-6xl", {
+                    scrollTrigger: { trigger: "#instagram", start: "top 80%" },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "expo.out"
+                });
+
                 gsap.to(".footer-reveal", {
                     scrollTrigger: { trigger: "footer", start: "top 85%" },
                     y: 0,
@@ -1274,6 +1006,7 @@
                 const form = e.target;
                 const btn = form.querySelector('button[type="submit"]');
                 const emailInput = form.querySelector('input[name="email"]');
+                const nameInput = form.querySelector('input[name="fullName"]');
                 const originalText = btn.innerText;
 
                 btn.innerText = 'JOINING...';
@@ -1282,14 +1015,17 @@
                 const showJoined = () => {
                     btn.innerText = 'JOINED ✓';
                     emailInput.value = '';
+                    if (nameInput) nameInput.value = '';
                     setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 3000);
                 };
 
                 try {
+                    const payload = { type: 'JOIN_LIST', email: emailInput.value };
+                    if (nameInput && nameInput.value.trim()) payload.fullName = nameInput.value.trim();
                     const res = await fetch('/.netlify/functions/submit-form', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: 'JOIN_LIST', email: emailInput.value })
+                        body: JSON.stringify(payload)
                     });
 
                     if (!res.ok) throw new Error('Failed');

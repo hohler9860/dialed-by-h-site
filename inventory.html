@@ -23,6 +23,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Available for Sourcing | Dialed By H">
     <meta name="twitter:description" content="Browse rare luxury watches available for sourcing through Dialed By H.">
+    <meta name="twitter:image" content="https://dialedbyhenry.com/images/logo.png">
 
     <script type="application/ld+json">
     {
@@ -38,7 +39,19 @@
         }
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://dialedbyhenry.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Sourcing", "item": "https://dialedbyhenry.com/inventory.html" }
+        ]
+    }
+    </script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -519,7 +532,7 @@
             try {
                 const res = await fetch('/.netlify/functions/get-inventory');
                 if (!res.ok) throw new Error('Failed to fetch');
-                PIECES = interleaveByBrand(await res.json());
+                PIECES = interleaveByBrand((await res.json()).filter(p => p.image));
                 return PIECES;
             } catch (err) {
                 console.error('Failed to fetch pieces from Notion:', err);

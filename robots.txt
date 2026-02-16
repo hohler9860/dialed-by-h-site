@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /.netlify/
 
-Sitemap: https://dialed-by-h.netlify.app/sitemap.xml
+Sitemap: https://dialedbyhenry.com/sitemap.xml

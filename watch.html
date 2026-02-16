@@ -10,12 +10,34 @@
     <title>Watch Detail | Dialed By H</title>
     <meta name="description" content="View details and inquire about this authenticated luxury timepiece available for sourcing through Dialed By H.">
     <meta name="robots" content="index, follow">
-    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://dialedbyhenry.com/watch.html">
+
+    <meta property="og:type" content="product">
+    <meta property="og:url" content="https://dialedbyhenry.com/watch.html">
     <meta property="og:title" content="Watch Detail | Dialed By H">
     <meta property="og:description" content="Authenticated luxury timepiece available for sourcing through Dialed By H concierge service.">
     <meta property="og:image" content="https://dialedbyhenry.com/images/logo.png">
     <meta property="og:site_name" content="Dialed By H">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Watch Detail | Dialed By H">
+    <meta name="twitter:description" content="Authenticated luxury timepiece available for sourcing through Dialed By H.">
+    <meta name="twitter:image" content="https://dialedbyhenry.com/images/logo.png">
 
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://dialedbyhenry.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Sourcing", "item": "https://dialedbyhenry.com/inventory.html" },
+            { "@type": "ListItem", "position": 3, "name": "Watch Detail", "item": "https://dialedbyhenry.com/watch.html" }
+        ]
+    }
+    </script>
+    <script id="product-jsonld" type="application/ld+json">{}</script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -230,6 +252,25 @@
             // Update page title
             const displayName = watch.name + (watch.nickname ? ' "' + watch.nickname + '"' : '');
             document.title = `${displayName} | Dialed By H`;
+
+            // Inject Product structured data
+            const productLD = {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": displayName,
+                "brand": { "@type": "Brand", "name": watch.brand },
+                "description": `${watch.brand} ${displayName} available for sourcing through Dialed By H luxury watch concierge.`,
+                "url": window.location.href,
+                "offers": {
+                    "@type": "Offer",
+                    "availability": "https://schema.org/InStock",
+                    "seller": { "@type": "Organization", "name": "Dialed By H", "url": "https://dialedbyhenry.com" }
+                }
+            };
+            if (watch.image) productLD.image = watch.image;
+            if (watch.ref) productLD.sku = watch.ref;
+            if (watch.condition) productLD.itemCondition = watch.condition === 'New/Unworn' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition';
+            document.getElementById('product-jsonld').textContent = JSON.stringify(productLD);
 
             // Build specs
             const specEntries = [

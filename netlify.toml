@@ -6,3 +6,8 @@
 [dev]
   publish = "."
   functions = "netlify/functions"
+
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404

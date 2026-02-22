@@ -18,12 +18,12 @@
     <meta property="og:url" content="https://dialedbyhenry.com/inventory.html">
     <meta property="og:title" content="Available for Sourcing | Dialed By H">
     <meta property="og:description" content="Browse rare luxury watches available for sourcing through Dialed By H concierge service.">
-    <meta property="og:image" content="https://dialedbyhenry.com/images/logo.png">
+    <meta property="og:image" content="https://dialedbyhenry.com/images/og-share.png">
     <meta property="og:site_name" content="Dialed By H">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Available for Sourcing | Dialed By H">
     <meta name="twitter:description" content="Browse rare luxury watches available for sourcing through Dialed By H.">
-    <meta name="twitter:image" content="https://dialedbyhenry.com/images/logo.png">
+    <meta name="twitter:image" content="https://dialedbyhenry.com/images/og-share.png">
 
     <script type="application/ld+json">
     {
@@ -203,8 +203,34 @@
             </div>
         </div>
 
+        <!-- LOADING SKELETON -->
+        <div id="loading-skeleton" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7">
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line w-3/4"></div><div class="skeleton-line w-1/2"></div><div class="skeleton-line w-full" style="height:8px;margin-top:12px;"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line w-2/3"></div><div class="skeleton-line w-1/3"></div><div class="skeleton-line w-full" style="height:8px;margin-top:12px;"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line w-4/5"></div><div class="skeleton-line w-2/5"></div><div class="skeleton-line w-full" style="height:8px;margin-top:12px;"></div></div></div>
+            <div class="skeleton-card hidden sm:block"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line w-3/5"></div><div class="skeleton-line w-1/2"></div><div class="skeleton-line w-full" style="height:8px;margin-top:12px;"></div></div></div>
+            <div class="skeleton-card hidden sm:block"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line w-2/3"></div><div class="skeleton-line w-1/3"></div><div class="skeleton-line w-full" style="height:8px;margin-top:12px;"></div></div></div>
+            <div class="skeleton-card hidden lg:block"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line w-3/4"></div><div class="skeleton-line w-2/5"></div><div class="skeleton-line w-full" style="height:8px;margin-top:12px;"></div></div></div>
+        </div>
+
         <!-- WATCH GRID -->
-        <div id="watch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7" style="grid-auto-rows:1fr;">
+        <div id="watch-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 hidden" style="grid-auto-rows:1fr;">
+        </div>
+
+        <!-- ERROR STATE -->
+        <div id="error-state" class="hidden text-center py-20">
+            <div class="glass rounded-2xl p-10 sm:p-14 max-w-md mx-auto">
+                <div class="w-14 h-14 border border-ivory/20 rounded-full flex items-center justify-center mb-6 mx-auto">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="text-muted">
+                        <path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                </div>
+                <h3 class="font-space font-bold text-lg tracking-tight mb-3">Temporarily Unavailable</h3>
+                <p class="text-muted text-sm font-inter mb-6" style="text-transform:none;">Our inventory is taking a moment to load. Please check back shortly.</p>
+                <button onclick="window.location.reload()" class="bg-ivory text-charcoal px-6 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs">
+                    Try Again
+                </button>
+            </div>
         </div>
 
         <!-- EMPTY STATE -->
@@ -240,7 +266,8 @@
                 </a>
             </div>
             <span class="footer-line block mt-6 text-xs text-muted/60 font-space uppercase tracking-widest opacity-0">&copy; 2026 DIALED BY H</span>
-            <p class="footer-line opacity-0 text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-6 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not affiliated with Rolex, Patek Philippe, Audemars Piguet, or any respective brand. All trademarks belong to their respective owners. Images are used for identification purposes only.</p>
+            <p class="footer-line opacity-0 text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not affiliated with Rolex, Patek Philippe, Audemars Piguet, or any respective brand. All trademarks belong to their respective owners. Images are used for identification purposes only.</p>
+            <a href="privacy.html" class="footer-line opacity-0 text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
         </div>
     </footer>
 
@@ -297,13 +324,20 @@
         }
 
         async function fetchPieces() {
+            const skeleton = document.getElementById('loading-skeleton');
+            const grid = document.getElementById('watch-grid');
+            const errorState = document.getElementById('error-state');
             try {
                 const res = await fetch('/.netlify/functions/get-inventory');
                 if (!res.ok) throw new Error('Failed to fetch');
                 PIECES = interleaveByBrand((await res.json()).filter(p => p.image));
+                if (skeleton) skeleton.classList.add('hidden');
+                if (grid) grid.classList.remove('hidden');
                 return PIECES;
             } catch (err) {
                 console.error('Failed to fetch pieces from Notion:', err);
+                if (skeleton) skeleton.classList.add('hidden');
+                if (errorState) errorState.classList.remove('hidden');
                 return [];
             }
         }

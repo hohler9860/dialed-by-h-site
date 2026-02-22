@@ -36,4 +36,10 @@
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
+    <url>
+        <loc>https://dialedbyhenry.com/privacy.html</loc>
+        <lastmod>2026-02-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
 </urlset>

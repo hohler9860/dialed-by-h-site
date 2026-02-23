@@ -170,69 +170,63 @@ exports.handler = async (event) => {
 
     console.log("[submit-form] Supabase insert SUCCESS — id:", data.id);
 
-    // Send email via Resend — AWAIT it so we know if it fails
+    // Build all email promises in parallel for speed
     const template = buildEmail(type, data);
-    let emailResult = null;
+    const emailPromises = [];
 
+    // 1. Notification email to Henry
     if (template) {
       const toEmail = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
+      console.log("[submit-form] Queuing notification email to:", toEmail);
 
-      console.log("[submit-form] Sending email via Resend...");
-      console.log("[submit-form] From: Dialed By H <inquiries@mail.dialedbyhenry.com>");
-      console.log("[submit-form] To:", toEmail);
-      console.log("[submit-form] Subject:", template.subject);
-
-      try {
-        emailResult = await getResend().emails.send({
+      emailPromises.push(
+        getResend().emails.send({
           from: "Dialed By H <inquiries@mail.dialedbyhenry.com>",
           to: toEmail,
           subject: template.subject,
           html: template.body,
-        });
-
-        console.log("[submit-form] RESEND RESPONSE:", JSON.stringify(emailResult));
-
-        if (emailResult.error) {
-          console.error("[submit-form] RESEND RETURNED ERROR:", JSON.stringify(emailResult.error));
-        } else {
-          console.log("[submit-form] Email sent successfully — Resend ID:", emailResult.data?.id);
-        }
-      } catch (emailErr) {
-        console.error("[submit-form] RESEND SEND THREW:", emailErr.message);
-        console.error("[submit-form] RESEND FULL ERROR:", JSON.stringify(emailErr, Object.getOwnPropertyNames(emailErr)));
-        // Don't fail the whole request if email fails — submission is already saved
-      }
+        }).then(result => {
+          if (result.error) console.error("[submit-form] NOTIFICATION EMAIL ERROR:", JSON.stringify(result.error));
+          else console.log("[submit-form] Notification sent — ID:", result.data?.id);
+          return { type: "notification", result };
+        }).catch(err => {
+          console.error("[submit-form] NOTIFICATION EMAIL THREW:", err.message);
+          return { type: "notification", error: err.message };
+        })
+      );
     }
 
-    // Send welcome email to subscriber (JOIN_LIST only)
-    let welcomeSent = false;
+    // 2. Welcome email to subscriber (JOIN_LIST only) — rendered + sent in parallel
     if (type === "JOIN_LIST") {
-      try {
-        console.log("[submit-form] Rendering welcome email for:", data.email);
-        const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
-        const welcomeHtml = await render(
-          React.createElement(WelcomeEmail, { firstName })
-        );
+      const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
+      console.log("[submit-form] Queuing welcome email to:", data.email);
 
-        console.log("[submit-form] Sending welcome email to subscriber...");
-        const welcomeResult = await getResend().emails.send({
-          from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
-          to: data.email,
-          subject: "Welcome to the Private List",
-          html: welcomeHtml,
-        });
-
-        if (welcomeResult.error) {
-          console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(welcomeResult.error));
-        } else {
-          console.log("[submit-form] Welcome email sent — Resend ID:", welcomeResult.data?.id);
-          welcomeSent = true;
-        }
-      } catch (welcomeErr) {
-        console.error("[submit-form] WELCOME EMAIL THREW:", welcomeErr.message);
-        // Don't fail the request — the signup itself succeeded
-      }
+      emailPromises.push(
+        render(React.createElement(WelcomeEmail, { firstName }))
+          .then(welcomeHtml =>
+            getResend().emails.send({
+              from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+              to: data.email,
+              subject: "Welcome to the Private List",
+              html: welcomeHtml,
+            })
+          )
+          .then(result => {
+            if (result.error) console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(result.error));
+            else console.log("[submit-form] Welcome email sent — ID:", result.data?.id);
+            return { type: "welcome", result };
+          })
+          .catch(err => {
+            console.error("[submit-form] WELCOME EMAIL THREW:", err.message);
+            return { type: "welcome", error: err.message };
+          })
+      );
     }
+
+    // Fire all emails in parallel — don't let email failures block the response
+    const emailResults = await Promise.all(emailPromises);
+    const notif = emailResults.find(r => r.type === "notification");
+    const welcome = emailResults.find(r => r.type === "welcome");
 
     return {
       statusCode: 200,
@@ -240,9 +234,9 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         success: true,
         id: data.id,
-        emailSent: emailResult && !emailResult.error,
-        emailId: emailResult?.data?.id || null,
-        welcomeSent,
+        emailSent: notif && !notif.error && !notif.result?.error,
+        emailId: notif?.result?.data?.id || null,
+        welcomeSent: welcome && !welcome.error && !welcome.result?.error,
       }),
     };
   } catch (err) {

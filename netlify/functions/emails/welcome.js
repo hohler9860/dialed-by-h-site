@@ -325,12 +325,12 @@ function WelcomeEmail({ firstName }) {
             },
             "Henry"
           ),
-          // Handwritten signature
+          // H signature
           React.createElement(Img, {
             src: BRAND.signatureUrl,
-            alt: "Henry's signature",
-            width: "160",
-            height: "74",
+            alt: "H",
+            width: "48",
+            height: "32",
             style: {
               display: "block",
               margin: "6px 0 0",

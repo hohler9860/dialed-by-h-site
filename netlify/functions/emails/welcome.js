@@ -34,6 +34,14 @@ const BRAND = {
 const FONT = {
   heading: "'Space Grotesk', 'Arial', 'Helvetica', sans-serif",
   body: "'Inter', 'Helvetica Neue', 'Arial', sans-serif",
+  signature: "'Dancing Script', 'Brush Script MT', 'Segoe Script', cursive",
+};
+
+// ── Social icon SVGs (inline data URIs — email-safe, no JS needed)
+const ICON = {
+  instagram: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='20' x='2' y='2' rx='5' ry='5'/%3E%3Cpath d='M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z'/%3E%3Cline x1='17.5' x2='17.51' y1='6.5' y2='6.5'/%3E%3C/svg%3E",
+  whatsapp: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z'/%3E%3C/svg%3E",
+  mail: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='16' x='2' y='4' rx='2'/%3E%3Cpath d='m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'/%3E%3C/svg%3E",
 };
 
 function WelcomeEmail({ firstName }) {
@@ -63,6 +71,16 @@ function WelcomeEmail({ firstName }) {
           format: "woff2",
         },
         fontWeight: "400 500",
+        fontStyle: "normal",
+      }),
+      React.createElement(Font, {
+        fontFamily: "Dancing Script",
+        fallbackFontFamily: "cursive",
+        webFont: {
+          url: "https://fonts.gstatic.com/s/dancingscript/v25/If2cXTr6YS-zF4S-kcSWSVi_sxjsohD9F50Ruu7BMSo3Sup6hNX6plRP.woff2",
+          format: "woff2",
+        },
+        fontWeight: "700",
         fontStyle: "normal",
       }),
       React.createElement("meta", { name: "color-scheme", content: "light" }),
@@ -311,32 +329,73 @@ function WelcomeEmail({ firstName }) {
                 color: BRAND.black,
                 fontSize: "15px",
                 fontFamily: FONT.heading,
-                margin: "0",
+                margin: "0 0 2px",
                 fontWeight: "700",
+              },
+            },
+            "Henry"
+          ),
+          // Cursive signature
+          React.createElement(
+            Text,
+            {
+              style: {
+                color: BRAND.black,
+                fontSize: "32px",
+                fontFamily: FONT.signature,
+                fontWeight: "700",
+                margin: "4px 0 0",
+                lineHeight: "1.2",
               },
             },
             "Henry"
           )
         ),
 
-        // ── Social links
+        // ── Social icons
         React.createElement(
           Section,
           { style: { textAlign: "center", padding: "32px 40px 16px" } },
           React.createElement(
-            Text,
+            "table",
             {
-              style: {
-                fontSize: "12px",
-                fontFamily: FONT.heading,
-                margin: "0 0 16px",
-              },
+              role: "presentation",
+              style: { margin: "0 auto" },
+              cellPadding: "0",
+              cellSpacing: "0",
+              border: "0",
             },
-            React.createElement(Link, { href: BRAND.instagram, style: { color: BRAND.muted, textDecoration: "none", letterSpacing: "2px", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" } }, "Instagram"),
-            React.createElement("span", { style: { color: BRAND.border, margin: "0 12px" } }, "\u00B7"),
-            React.createElement(Link, { href: BRAND.whatsapp, style: { color: BRAND.muted, textDecoration: "none", letterSpacing: "2px", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" } }, "WhatsApp"),
-            React.createElement("span", { style: { color: BRAND.border, margin: "0 12px" } }, "\u00B7"),
-            React.createElement(Link, { href: `mailto:${BRAND.email}`, style: { color: BRAND.muted, textDecoration: "none", letterSpacing: "2px", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" } }, "Email")
+            React.createElement(
+              "tr",
+              null,
+              React.createElement(
+                "td",
+                { style: { padding: "0 14px" } },
+                React.createElement(
+                  Link,
+                  { href: BRAND.instagram, style: { textDecoration: "none" } },
+                  React.createElement(Img, { src: ICON.instagram, alt: "Instagram", width: "22", height: "22", style: { display: "block" } })
+                )
+              ),
+              React.createElement(
+                "td",
+                { style: { padding: "0 14px" } },
+                React.createElement(
+                  Link,
+                  { href: BRAND.whatsapp, style: { textDecoration: "none" } },
+                  React.createElement(Img, { src: ICON.whatsapp, alt: "WhatsApp", width: "22", height: "22", style: { display: "block" } })
+                )
+              ),
+              React.createElement(
+                "td",
+                { style: { padding: "0 14px" } },
+                React.createElement(
+                  Link,
+                  { href: `mailto:${BRAND.email}`, style: { textDecoration: "none" } },
+                  React.createElement(Img, { src: ICON.mail, alt: "Email", width: "22", height: "22", style: { display: "block" } })
+                )
+              )
+            )
           )
         ),
 

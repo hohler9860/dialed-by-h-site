@@ -9,23 +9,31 @@ const {
   Img,
   Link,
   Hr,
-  Row,
-  Column,
   Font,
   Preview,
 } = require("@react-email/components");
 
+// ── Brand tokens (light theme for email)
 const BRAND = {
-  charcoal: "#0a0a0a",
-  ivory: "#f0f0f0",
+  white: "#ffffff",
+  bg: "#f8f8f8",
+  black: "#0a0a0a",
+  dark: "#1a1a1a",
+  body: "#444444",
   muted: "#888888",
-  border: "#1a1a1a",
-  borderLight: "#222222",
-  logoUrl: "https://dialedbyhenry.com/images/logo.png",
+  border: "#e5e5e5",
+  borderLight: "#eeeeee",
+  logoDarkUrl: "https://dialedbyhenry.com/images/logo-dark.png",
   siteUrl: "https://dialedbyhenry.com",
   instagram: "https://www.instagram.com/dialedbyh/",
   whatsapp: "https://wa.me/19146211848",
   email: "dialedbyh@gmail.com",
+};
+
+// ── Shared font stacks
+const FONT = {
+  heading: "'Space Grotesk', 'Arial', 'Helvetica', sans-serif",
+  body: "'Inter', 'Helvetica Neue', 'Arial', sans-serif",
 };
 
 function WelcomeEmail({ firstName }) {
@@ -38,55 +46,68 @@ function WelcomeEmail({ firstName }) {
       Head,
       null,
       React.createElement(Font, {
-        fontFamily: "Georgia",
-        fallbackFontFamily: "serif",
+        fontFamily: "Space Grotesk",
+        fallbackFontFamily: "Arial",
+        webFont: {
+          url: "https://fonts.gstatic.com/s/spacegrotesk/v16/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2",
+          format: "woff2",
+        },
+        fontWeight: "400 700",
+        fontStyle: "normal",
       }),
-      React.createElement("meta", {
-        name: "color-scheme",
-        content: "dark",
+      React.createElement(Font, {
+        fontFamily: "Inter",
+        fallbackFontFamily: "Arial",
+        webFont: {
+          url: "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2",
+          format: "woff2",
+        },
+        fontWeight: "400 500",
+        fontStyle: "normal",
       }),
-      React.createElement("meta", {
-        name: "supported-color-schemes",
-        content: "dark",
-      })
+      React.createElement("meta", { name: "color-scheme", content: "light" }),
+      React.createElement("meta", { name: "supported-color-schemes", content: "light" })
     ),
-    React.createElement(Preview, null, "You're on the private list — priority access to rare timepieces."),
+    React.createElement(Preview, null, "You\u2019re on the private list \u2014 priority access to rare timepieces."),
     React.createElement(
       Body,
       {
         style: {
-          backgroundColor: BRAND.charcoal,
-          fontFamily: "'Georgia', 'Times New Roman', serif",
+          backgroundColor: BRAND.bg,
+          fontFamily: FONT.body,
           margin: 0,
           padding: 0,
         },
       },
 
-      // ── Outer container
+      // ── Outer container (white card on light grey)
       React.createElement(
         Container,
         {
           style: {
-            backgroundColor: BRAND.charcoal,
+            backgroundColor: BRAND.white,
             maxWidth: "600px",
             margin: "0 auto",
             padding: "0",
+            borderRadius: "0",
           },
         },
 
         // ── Top spacer
-        React.createElement(Section, { style: { height: "40px" } }),
+        React.createElement(Section, { style: { height: "48px" } }),
 
         // ── Logo
         React.createElement(
           Section,
-          { style: { textAlign: "center", padding: "0 40px 32px" } },
-          React.createElement(Link, { href: BRAND.siteUrl },
+          { style: { textAlign: "center", padding: "0 40px 36px" } },
+          React.createElement(
+            Link,
+            { href: BRAND.siteUrl },
             React.createElement(Img, {
-              src: BRAND.logoUrl,
+              src: BRAND.logoDarkUrl,
               alt: "Dialed By H",
-              width: "220",
-              height: "29",
+              width: "200",
+              height: "26",
               style: {
                 display: "inline-block",
                 outline: "none",
@@ -97,10 +118,10 @@ function WelcomeEmail({ firstName }) {
           )
         ),
 
-        // ── Divider line
+        // ── Divider
         React.createElement(Hr, {
           style: {
-            borderColor: BRAND.borderLight,
+            borderColor: BRAND.border,
             borderWidth: "1px 0 0 0",
             margin: "0 40px",
           },
@@ -116,13 +137,13 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.ivory,
-                fontSize: "28px",
-                fontWeight: "400",
+                color: BRAND.black,
+                fontSize: "26px",
+                fontWeight: "700",
                 letterSpacing: "-0.5px",
                 lineHeight: "1.3",
-                margin: "0 0 24px",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                margin: "0 0 28px",
+                fontFamily: FONT.heading,
               },
             },
             greeting
@@ -133,14 +154,14 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.muted,
+                color: BRAND.body,
                 fontSize: "15px",
-                lineHeight: "1.7",
+                lineHeight: "1.75",
                 margin: "0 0 20px",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: FONT.body,
               },
             },
-            "You're now on the Dialed By H private list. This means you'll be the first to know when off-market pieces, rare references, and exclusive sourcing opportunities become available."
+            "You\u2019re now on the Dialed By H private list. This means you\u2019ll be the first to know when off-market pieces, rare references, and exclusive sourcing opportunities become available."
           ),
 
           // Body paragraph 2
@@ -148,14 +169,14 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.muted,
+                color: BRAND.body,
                 fontSize: "15px",
-                lineHeight: "1.7",
+                lineHeight: "1.75",
                 margin: "0 0 20px",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: FONT.body,
               },
             },
-            "Whether you're looking to buy, sell, or trade — I handle the entire process personally, from sourcing through authentication to delivery."
+            "Whether you\u2019re looking to buy, sell, or trade \u2014 I handle the entire process personally, from sourcing through authentication to delivery."
           ),
 
           // Body paragraph 3
@@ -163,36 +184,36 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.muted,
+                color: BRAND.body,
                 fontSize: "15px",
-                lineHeight: "1.7",
+                lineHeight: "1.75",
                 margin: "0 0 32px",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: FONT.body,
               },
             },
-            "If you have a specific piece in mind, reply to this email or reach out anytime — I'd love to help."
+            "If you have a specific piece in mind, reply to this email or reach out anytime \u2014 I\u2019d love to help."
           )
         ),
 
         // ── CTA Button
         React.createElement(
           Section,
-          { style: { textAlign: "center", padding: "0 40px 40px" } },
+          { style: { textAlign: "center", padding: "0 40px 44px" } },
           React.createElement(
             Link,
             {
               href: `${BRAND.siteUrl}/inventory.html`,
               style: {
                 display: "inline-block",
-                backgroundColor: BRAND.ivory,
-                color: BRAND.charcoal,
+                backgroundColor: BRAND.black,
+                color: BRAND.white,
                 fontSize: "11px",
                 fontWeight: "700",
-                fontFamily: "'Arial', 'Helvetica', sans-serif",
+                fontFamily: FONT.heading,
                 letterSpacing: "3px",
                 textTransform: "uppercase",
                 textDecoration: "none",
-                padding: "16px 40px",
+                padding: "16px 44px",
                 textAlign: "center",
               },
             },
@@ -203,13 +224,13 @@ function WelcomeEmail({ firstName }) {
         // ── Divider
         React.createElement(Hr, {
           style: {
-            borderColor: BRAND.borderLight,
+            borderColor: BRAND.border,
             borderWidth: "1px 0 0 0",
             margin: "0 40px",
           },
         }),
 
-        // ── What to expect
+        // ── What to expect heading
         React.createElement(
           Section,
           { style: { padding: "40px 40px 8px" } },
@@ -217,10 +238,10 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.ivory,
+                color: BRAND.black,
                 fontSize: "11px",
                 fontWeight: "700",
-                fontFamily: "'Arial', 'Helvetica', sans-serif",
+                fontFamily: FONT.heading,
                 letterSpacing: "3px",
                 textTransform: "uppercase",
                 margin: "0 0 24px",
@@ -230,37 +251,37 @@ function WelcomeEmail({ firstName }) {
           )
         ),
 
-        // ── Feature 1: Priority Alerts
+        // ── Feature 1
         React.createElement(
           Section,
           { style: { padding: "0 40px 24px" } },
-          React.createElement(Text, { style: { color: BRAND.ivory, fontSize: "14px", fontWeight: "700", fontFamily: "'Arial', 'Helvetica', sans-serif", margin: "0 0 6px", letterSpacing: "0.5px" } }, "Priority Alerts"),
-          React.createElement(Text, { style: { color: BRAND.muted, fontSize: "14px", lineHeight: "1.6", fontFamily: "'Georgia', 'Times New Roman', serif", margin: "0" } }, "New arrivals and off-market pieces sent to you before anyone else.")
+          React.createElement(Text, { style: { color: BRAND.black, fontSize: "14px", fontWeight: "700", fontFamily: FONT.heading, margin: "0 0 6px", letterSpacing: "0.3px" } }, "Priority Alerts"),
+          React.createElement(Text, { style: { color: BRAND.body, fontSize: "14px", lineHeight: "1.65", fontFamily: FONT.body, margin: "0" } }, "New arrivals and off-market pieces sent to you before anyone else.")
         ),
 
-        // ── Feature 2: Personal Sourcing
+        // ── Feature 2
         React.createElement(
           Section,
           { style: { padding: "0 40px 24px" } },
-          React.createElement(Text, { style: { color: BRAND.ivory, fontSize: "14px", fontWeight: "700", fontFamily: "'Arial', 'Helvetica', sans-serif", margin: "0 0 6px", letterSpacing: "0.5px" } }, "Personal Sourcing"),
-          React.createElement(Text, { style: { color: BRAND.muted, fontSize: "14px", lineHeight: "1.6", fontFamily: "'Georgia', 'Times New Roman', serif", margin: "0" } }, "Tell me what you're looking for \u2014 I'll tap my global network to find it.")
+          React.createElement(Text, { style: { color: BRAND.black, fontSize: "14px", fontWeight: "700", fontFamily: FONT.heading, margin: "0 0 6px", letterSpacing: "0.3px" } }, "Personal Sourcing"),
+          React.createElement(Text, { style: { color: BRAND.body, fontSize: "14px", lineHeight: "1.65", fontFamily: FONT.body, margin: "0" } }, "Tell me what you\u2019re looking for \u2014 I\u2019ll tap my global network to find it.")
         ),
 
-        // ── Feature 3: Full Concierge Service
+        // ── Feature 3
         React.createElement(
           Section,
           { style: { padding: "0 40px 24px" } },
-          React.createElement(Text, { style: { color: BRAND.ivory, fontSize: "14px", fontWeight: "700", fontFamily: "'Arial', 'Helvetica', sans-serif", margin: "0 0 6px", letterSpacing: "0.5px" } }, "Full Concierge Service"),
-          React.createElement(Text, { style: { color: BRAND.muted, fontSize: "14px", lineHeight: "1.6", fontFamily: "'Georgia', 'Times New Roman', serif", margin: "0" } }, "Authentication, documentation, insured delivery. Every detail handled.")
+          React.createElement(Text, { style: { color: BRAND.black, fontSize: "14px", fontWeight: "700", fontFamily: FONT.heading, margin: "0 0 6px", letterSpacing: "0.3px" } }, "Full Concierge Service"),
+          React.createElement(Text, { style: { color: BRAND.body, fontSize: "14px", lineHeight: "1.65", fontFamily: FONT.body, margin: "0" } }, "Authentication, documentation, insured delivery. Every detail handled.")
         ),
 
-        // ── Spacer before footer
+        // ── Spacer
         React.createElement(Section, { style: { height: "16px" } }),
 
         // ── Footer divider
         React.createElement(Hr, {
           style: {
-            borderColor: BRAND.borderLight,
+            borderColor: BRAND.border,
             borderWidth: "1px 0 0 0",
             margin: "0 40px",
           },
@@ -274,10 +295,10 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.muted,
+                color: BRAND.body,
                 fontSize: "15px",
                 lineHeight: "1.7",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: FONT.body,
                 margin: "0 0 4px",
               },
             },
@@ -287,9 +308,9 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: BRAND.ivory,
+                color: BRAND.black,
                 fontSize: "15px",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: FONT.heading,
                 margin: "0",
                 fontWeight: "700",
               },
@@ -307,14 +328,14 @@ function WelcomeEmail({ firstName }) {
             {
               style: {
                 fontSize: "12px",
-                fontFamily: "'Arial', 'Helvetica', sans-serif",
+                fontFamily: FONT.heading,
                 margin: "0 0 16px",
               },
             },
             React.createElement(Link, { href: BRAND.instagram, style: { color: BRAND.muted, textDecoration: "none", letterSpacing: "2px", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" } }, "Instagram"),
-            React.createElement("span", { style: { color: "#333", margin: "0 12px" } }, "·"),
+            React.createElement("span", { style: { color: BRAND.border, margin: "0 12px" } }, "\u00B7"),
             React.createElement(Link, { href: BRAND.whatsapp, style: { color: BRAND.muted, textDecoration: "none", letterSpacing: "2px", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" } }, "WhatsApp"),
-            React.createElement("span", { style: { color: "#333", margin: "0 12px" } }, "·"),
+            React.createElement("span", { style: { color: BRAND.border, margin: "0 12px" } }, "\u00B7"),
             React.createElement(Link, { href: `mailto:${BRAND.email}`, style: { color: BRAND.muted, textDecoration: "none", letterSpacing: "2px", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" } }, "Email")
           )
         ),
@@ -327,9 +348,9 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: "#444444",
+                color: BRAND.muted,
                 fontSize: "11px",
-                fontFamily: "'Arial', 'Helvetica', sans-serif",
+                fontFamily: FONT.heading,
                 letterSpacing: "2px",
                 textTransform: "uppercase",
                 margin: "0 0 12px",
@@ -341,9 +362,9 @@ function WelcomeEmail({ firstName }) {
             Text,
             {
               style: {
-                color: "#333333",
+                color: "#aaaaaa",
                 fontSize: "10px",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: FONT.body,
                 lineHeight: "1.6",
                 margin: "0 0 12px",
                 fontStyle: "italic",
@@ -356,9 +377,9 @@ function WelcomeEmail({ firstName }) {
             {
               href: `${BRAND.siteUrl}/privacy.html`,
               style: {
-                color: "#444444",
+                color: BRAND.muted,
                 fontSize: "10px",
-                fontFamily: "'Arial', 'Helvetica', sans-serif",
+                fontFamily: FONT.heading,
                 letterSpacing: "2px",
                 textTransform: "uppercase",
                 textDecoration: "none",
@@ -369,7 +390,7 @@ function WelcomeEmail({ firstName }) {
         ),
 
         // ── Bottom spacer
-        React.createElement(Section, { style: { height: "40px" } })
+        React.createElement(Section, { style: { height: "48px" } })
       )
     )
   );

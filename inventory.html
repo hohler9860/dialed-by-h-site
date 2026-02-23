@@ -107,12 +107,12 @@
 
         <!-- FILTER SYSTEM -->
         <div class="mb-10 sm:mb-14" id="filter-bar">
-            <!-- Brand pills — horizontal scroll on mobile, wrap on desktop -->
-            <div class="flex sm:flex-wrap gap-2 mb-5 overflow-x-auto no-scrollbar pb-1" id="brand-pills">
+            <!-- Brand pills — horizontal scroll on mobile, wrap on desktop, centered -->
+            <div class="flex sm:flex-wrap sm:justify-center gap-2 mb-5 overflow-x-auto no-scrollbar pb-1" id="brand-pills">
                 <button onclick="selectBrand('ALL')" class="brand-pill active shrink-0" data-brand="ALL">All</button>
             </div>
 
-            <!-- Filter row -->
+            <!-- Filter row — full width glass bar -->
             <div class="glass-subtle rounded-xl px-4 sm:px-6 py-3 filter-bar-animate">
                 <!-- MOBILE: 2x2 grid + sort row -->
                 <div class="sm:hidden">
@@ -156,35 +156,35 @@
                     </div>
                 </div>
 
-                <!-- DESKTOP: single row -->
-                <div class="hidden sm:flex items-center">
-                    <div class="flex items-center flex-1">
-                        <div class="filter-select-wrap flex-1 flex justify-center">
-                            <select id="filter-model" onchange="applyFilters()" class="text-center">
+                <!-- DESKTOP: single row, evenly distributed -->
+                <div class="hidden sm:flex items-center w-full">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="filter-select-wrap flex-1 flex justify-center min-w-0">
+                            <select id="filter-model" onchange="applyFilters()" class="text-center w-full">
                                 <option value="ALL">Model</option>
                             </select>
                         </div>
                         <span class="text-ivory/10 shrink-0">|</span>
-                        <div class="filter-select-wrap flex-1 flex justify-center">
-                            <select id="filter-dial" onchange="applyFilters()" class="text-center">
+                        <div class="filter-select-wrap flex-1 flex justify-center min-w-0">
+                            <select id="filter-dial" onchange="applyFilters()" class="text-center w-full">
                                 <option value="ALL">Dial Color</option>
                             </select>
                         </div>
                         <span class="text-ivory/10 shrink-0">|</span>
-                        <div class="filter-select-wrap flex-1 flex justify-center">
-                            <select id="filter-material" onchange="applyFilters()" class="text-center">
+                        <div class="filter-select-wrap flex-1 flex justify-center min-w-0">
+                            <select id="filter-material" onchange="applyFilters()" class="text-center w-full">
                                 <option value="ALL">Case Material</option>
                             </select>
                         </div>
                         <span class="text-ivory/10 shrink-0">|</span>
-                        <div class="filter-select-wrap flex-1 flex justify-center">
-                            <select id="filter-condition" onchange="applyFilters()" class="text-center">
+                        <div class="filter-select-wrap flex-1 flex justify-center min-w-0">
+                            <select id="filter-condition" onchange="applyFilters()" class="text-center w-full">
                                 <option value="ALL">Condition</option>
                             </select>
                         </div>
                         <span class="text-ivory/10 shrink-0">|</span>
-                        <div class="filter-select-wrap flex-1 flex justify-center">
-                            <select id="sort-by" onchange="applyFilters()" class="text-center">
+                        <div class="filter-select-wrap flex-1 flex justify-center min-w-0">
+                            <select id="sort-by" onchange="applyFilters()" class="text-center w-full">
                                 <option value="default">Sort By</option>
                                 <option value="year-new">Newest</option>
                                 <option value="year-old">Oldest</option>

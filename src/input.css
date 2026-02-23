@@ -365,6 +365,7 @@ select {
     transition: color 0.2s ease;
     text-align: center;
     text-align-last: center;
+    max-width: 100%;
 }
 .filter-select-wrap select:hover,
 .filter-select-wrap select:focus { color: rgba(245,243,235,0.8); }

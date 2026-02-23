@@ -3,6 +3,7 @@ const { Resend } = require("resend");
 const { render } = require("@react-email/render");
 const React = require("react");
 const { WelcomeEmail } = require("./emails/welcome.js");
+const { InquiryEmail } = require("./emails/inquiry.js");
 
 // Lazy-init clients
 let supabase;
@@ -107,7 +108,7 @@ exports.handler = async (event) => {
   console.log("[submit-form] ENV CHECK — NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef } =
+    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } =
       JSON.parse(event.body);
 
     console.log("[submit-form] Parsed payload — type:", type, "email:", email, "watchName:", watchName || "(none)");
@@ -223,10 +224,44 @@ exports.handler = async (event) => {
       );
     }
 
+    // 3. Inquiry confirmation email to user (WATCH_DETAIL or BUY)
+    if (type === "WATCH_DETAIL" || type === "BUY") {
+      const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
+      console.log("[submit-form] Queuing inquiry confirmation to:", data.email);
+
+      emailPromises.push(
+        render(React.createElement(InquiryEmail, {
+          firstName,
+          watchName: data.watch_name || null,
+          watchRef: data.watch_ref || null,
+          watchBrand: watchBrand || null,
+          watchImage: watchImage || null,
+        }))
+          .then(inquiryHtml =>
+            getResend().emails.send({
+              from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+              to: data.email,
+              subject: `Your Inquiry: ${data.watch_name || "Watch Inquiry"}`,
+              html: inquiryHtml,
+            })
+          )
+          .then(result => {
+            if (result.error) console.error("[submit-form] INQUIRY EMAIL ERROR:", JSON.stringify(result.error));
+            else console.log("[submit-form] Inquiry email sent — ID:", result.data?.id);
+            return { type: "inquiry", result };
+          })
+          .catch(err => {
+            console.error("[submit-form] INQUIRY EMAIL THREW:", err.message);
+            return { type: "inquiry", error: err.message };
+          })
+      );
+    }
+
     // Fire all emails in parallel — don't let email failures block the response
     const emailResults = await Promise.all(emailPromises);
     const notif = emailResults.find(r => r.type === "notification");
     const welcome = emailResults.find(r => r.type === "welcome");
+    const inquiry = emailResults.find(r => r.type === "inquiry");
 
     return {
       statusCode: 200,
@@ -237,6 +272,7 @@ exports.handler = async (event) => {
         emailSent: notif && !notif.error && !notif.result?.error,
         emailId: notif?.result?.data?.id || null,
         welcomeSent: welcome && !welcome.error && !welcome.result?.error,
+        inquirySent: inquiry && !inquiry.error && !inquiry.result?.error,
       }),
     };
   } catch (err) {

@@ -414,7 +414,9 @@
                 email: formData.get('email'),
                 watchName: displayName || null,
                 watchRef: watch ? watch.ref : null,
-                watchDetails: details || null
+                watchDetails: details || null,
+                watchImage: watch ? watch.image : null,
+                watchBrand: watch ? watch.brand : null
             };
 
             if (btn) { btn.innerText = 'Processing...'; btn.disabled = true; }

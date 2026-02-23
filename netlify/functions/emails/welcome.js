@@ -24,6 +24,7 @@ const BRAND = {
   border: "#e5e5e5",
   borderLight: "#eeeeee",
   logoDarkUrl: "https://dialedbyhenry.com/images/logo-dark.png",
+  signatureUrl: "https://dialedbyhenry.com/images/signature-email.png",
   siteUrl: "https://dialedbyhenry.com",
   instagram: "https://www.instagram.com/dialedbyh/",
   whatsapp: "https://wa.me/19146211848",
@@ -34,7 +35,6 @@ const BRAND = {
 const FONT = {
   heading: "'Space Grotesk', 'Arial', 'Helvetica', sans-serif",
   body: "'Inter', 'Helvetica Neue', 'Arial', sans-serif",
-  signature: "'Dancing Script', 'Brush Script MT', 'Segoe Script', cursive",
 };
 
 // ── Social icon SVGs (inline data URIs — email-safe, no JS needed)
@@ -73,20 +73,10 @@ function WelcomeEmail({ firstName }) {
         fontWeight: "400 500",
         fontStyle: "normal",
       }),
-      React.createElement(Font, {
-        fontFamily: "Dancing Script",
-        fallbackFontFamily: "cursive",
-        webFont: {
-          url: "https://fonts.gstatic.com/s/dancingscript/v25/If2cXTr6YS-zF4S-kcSWSVi_sxjsohD9F50Ruu7BMSo3Sup6hNX6plRP.woff2",
-          format: "woff2",
-        },
-        fontWeight: "700",
-        fontStyle: "normal",
-      }),
       React.createElement("meta", { name: "color-scheme", content: "light" }),
       React.createElement("meta", { name: "supported-color-schemes", content: "light" })
     ),
-    React.createElement(Preview, null, "You\u2019re on the private list \u2014 priority access to rare timepieces."),
+    React.createElement(Preview, null, "You\u2019re on the private list. Priority access to rare timepieces."),
     React.createElement(
       Body,
       {
@@ -194,7 +184,7 @@ function WelcomeEmail({ firstName }) {
                 fontFamily: FONT.body,
               },
             },
-            "Whether you\u2019re looking to buy, sell, or trade \u2014 I handle the entire process personally, from sourcing through authentication to delivery."
+            "Whether you\u2019re looking to buy, sell, or trade, I handle the entire process personally, from sourcing through authentication to delivery."
           ),
 
           // Body paragraph 3
@@ -209,7 +199,7 @@ function WelcomeEmail({ firstName }) {
                 fontFamily: FONT.body,
               },
             },
-            "If you have a specific piece in mind, reply to this email or reach out anytime \u2014 I\u2019d love to help."
+            "If you have a specific piece in mind, reply to this email or reach out anytime. I\u2019d love to help."
           )
         ),
 
@@ -282,7 +272,7 @@ function WelcomeEmail({ firstName }) {
           Section,
           { style: { padding: "0 40px 24px" } },
           React.createElement(Text, { style: { color: BRAND.black, fontSize: "14px", fontWeight: "700", fontFamily: FONT.heading, margin: "0 0 6px", letterSpacing: "0.3px" } }, "Personal Sourcing"),
-          React.createElement(Text, { style: { color: BRAND.body, fontSize: "14px", lineHeight: "1.65", fontFamily: FONT.body, margin: "0" } }, "Tell me what you\u2019re looking for \u2014 I\u2019ll tap my global network to find it.")
+          React.createElement(Text, { style: { color: BRAND.body, fontSize: "14px", lineHeight: "1.65", fontFamily: FONT.body, margin: "0" } }, "Tell me what you\u2019re looking for and I\u2019ll tap my global network to find it.")
         ),
 
         // ── Feature 3
@@ -335,21 +325,20 @@ function WelcomeEmail({ firstName }) {
             },
             "Henry"
           ),
-          // Cursive signature
-          React.createElement(
-            Text,
-            {
-              style: {
-                color: BRAND.black,
-                fontSize: "32px",
-                fontFamily: FONT.signature,
-                fontWeight: "700",
-                margin: "4px 0 0",
-                lineHeight: "1.2",
-              },
+          // Handwritten signature
+          React.createElement(Img, {
+            src: BRAND.signatureUrl,
+            alt: "Henry's signature",
+            width: "160",
+            height: "74",
+            style: {
+              display: "block",
+              margin: "6px 0 0",
+              outline: "none",
+              border: "none",
+              textDecoration: "none",
             },
-            "Henry"
-          )
+          })
         ),
 
         // ── Social icons

@@ -1,5 +1,8 @@
 const { createClient } = require("@supabase/supabase-js");
 const { Resend } = require("resend");
+const { render } = require("@react-email/render");
+const React = require("react");
+const { WelcomeEmail } = require("./emails/welcome.js");
 
 // Lazy-init clients
 let supabase;
@@ -201,6 +204,36 @@ exports.handler = async (event) => {
       }
     }
 
+    // Send welcome email to subscriber (JOIN_LIST only)
+    let welcomeSent = false;
+    if (type === "JOIN_LIST") {
+      try {
+        console.log("[submit-form] Rendering welcome email for:", data.email);
+        const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
+        const welcomeHtml = await render(
+          React.createElement(WelcomeEmail, { firstName })
+        );
+
+        console.log("[submit-form] Sending welcome email to subscriber...");
+        const welcomeResult = await getResend().emails.send({
+          from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+          to: data.email,
+          subject: "Welcome to the Private List",
+          html: welcomeHtml,
+        });
+
+        if (welcomeResult.error) {
+          console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(welcomeResult.error));
+        } else {
+          console.log("[submit-form] Welcome email sent — Resend ID:", welcomeResult.data?.id);
+          welcomeSent = true;
+        }
+      } catch (welcomeErr) {
+        console.error("[submit-form] WELCOME EMAIL THREW:", welcomeErr.message);
+        // Don't fail the request — the signup itself succeeded
+      }
+    }
+
     return {
       statusCode: 200,
       headers,
@@ -209,6 +242,7 @@ exports.handler = async (event) => {
         id: data.id,
         emailSent: emailResult && !emailResult.error,
         emailId: emailResult?.data?.id || null,
+        welcomeSent,
       }),
     };
   } catch (err) {

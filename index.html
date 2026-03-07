@@ -718,11 +718,11 @@
                 // ── Hero entrance - dramatic staggered reveal ──
                 const heroTl = gsap.timeline({ defaults: { ease: "expo.out" } });
                 heroTl
-                    .from("#hero-title", { opacity: 0, y: 80, scale: 0.97, duration: 1.4 }, 0.2)
-                    .from("#hero-title .stroke-text", { opacity: 0, x: -40, duration: 1, ease: "power3.out" }, 0.6)
-                    .from("#hero-sub", { opacity: 0, y: 30, duration: 0.9 }, "-=0.7")
-                    .from("#hero-btn", { opacity: 0, y: 20, scale: 0.92, duration: 0.8, ease: "back.out(1.7)" }, "-=0.5")
-                    .from("#hero-btn + a", { opacity: 0, y: 20, duration: 0.7 }, "-=0.5")
+                    .from("#hero-title", { opacity: 0, y: 80, scale: 0.97, duration: 1.4, clearProps: "all" }, 0.2)
+                    .from("#hero-title .stroke-text", { opacity: 0, x: -40, duration: 1, ease: "power3.out", clearProps: "all" }, 0.6)
+                    .from("#hero-sub", { opacity: 0, y: 30, duration: 0.9, clearProps: "all" }, "-=0.7")
+                    .from("#hero-btn", { opacity: 0, y: 20, scale: 0.92, duration: 0.8, ease: "back.out(1.7)", clearProps: "all" }, "-=0.5")
+                    .from("#hero-btn + a", { opacity: 0, y: 20, duration: 0.7, clearProps: "all" }, "-=0.5")
                     .from(".animate-bounce", { opacity: 0, duration: 0.8 }, "-=0.3");
 
 

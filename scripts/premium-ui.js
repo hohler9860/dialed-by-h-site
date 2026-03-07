@@ -9,46 +9,6 @@
         document.body.prepend(grain);
     }
 
-    // ── Page Transitions (overlay approach) ──
-    function initPageTransitions() {
-        // Entrance: fade-in overlay
-        var overlay = document.createElement('div');
-        overlay.style.cssText =
-            'position:fixed;inset:0;background:#0a0a0a;z-index:9999;pointer-events:none;transition:opacity 0.5s cubic-bezier(0.23,1,0.32,1);';
-        document.body.prepend(overlay);
-
-        requestAnimationFrame(function () {
-            overlay.style.opacity = '0';
-            setTimeout(function () {
-                overlay.remove();
-            }, 600);
-        });
-
-        // Exit: intercept internal navigation
-        document.addEventListener('click', function (e) {
-            var link = e.target.closest('a[href]');
-            if (!link) return;
-
-            var href = link.getAttribute('href');
-            if (!href) return;
-            // Skip external links
-            if (link.target === '_blank') return;
-            if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
-            if (href.startsWith('https://') || href.startsWith('http://')) return;
-
-            e.preventDefault();
-            var exitOverlay = document.createElement('div');
-            exitOverlay.style.cssText =
-                'position:fixed;inset:0;background:#0a0a0a;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.3s ease-in;';
-            document.body.appendChild(exitOverlay);
-            requestAnimationFrame(function () {
-                exitOverlay.style.opacity = '1';
-            });
-            setTimeout(function () {
-                window.location.href = href;
-            }, 300);
-        });
-    }
 
     // ── Lenis Smooth Scroll ──
     function initLenis() {
@@ -139,7 +99,6 @@
     // ── Initialize ──
     function init() {
         initGrainOverlay();
-        initPageTransitions();
         initLenis();
 
         if (document.readyState === 'loading') {

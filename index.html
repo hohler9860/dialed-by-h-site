@@ -203,9 +203,9 @@
 
         <!-- TICKER SECTION -->
         <div class="ticker-wrap w-full overflow-hidden py-6 relative z-20 border-y border-ivory/5" style="background:rgba(255,255,255,0.02);">
-            <div class="flex w-max animate-ticker">
-                <div id="ticker-content" class="flex items-center w-max"></div>
-                <div id="ticker-content-clone" class="flex items-center w-max"></div>
+            <div class="animate-ticker flex" style="width:max-content;will-change:transform;">
+                <div id="ticker-content" class="flex items-center" style="flex-shrink:0;"></div>
+                <div id="ticker-content-clone" class="flex items-center" style="flex-shrink:0;"></div>
             </div>
         </div>
 
@@ -715,51 +715,108 @@
             initAnimations: () => {
                 gsap.registerPlugin(ScrollTrigger);
 
-                const tl = gsap.timeline();
-                tl.to("#hero-title", { opacity: 1, y: 0, duration: 0.8, ease: "expo.out" }, 0)
-                  .to("#hero-sub", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, "-=0.6")
-                  .to("#hero-btn", { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, "-=0.5");
+                // ── Hero entrance - dramatic staggered reveal ──
+                const heroTl = gsap.timeline({ defaults: { ease: "expo.out" } });
+                heroTl
+                    .from("#hero-title", { opacity: 0, y: 80, scale: 0.97, duration: 1.4 }, 0.2)
+                    .from("#hero-title .stroke-text", { opacity: 0, x: -40, duration: 1, ease: "power3.out" }, 0.6)
+                    .from("#hero-sub", { opacity: 0, y: 30, duration: 0.9 }, "-=0.7")
+                    .from("#hero-btn", { opacity: 0, y: 20, scale: 0.92, duration: 0.8, ease: "back.out(1.7)" }, "-=0.5")
+                    .from("#hero-btn + a", { opacity: 0, y: 20, duration: 0.7 }, "-=0.5")
+                    .from(".animate-bounce", { opacity: 0, duration: 0.8 }, "-=0.3");
 
-                gsap.from(".reveal-trust", {
-                    scrollTrigger: { trigger: "#about", start: "top 75%" },
-                    y: 30,
+                // ── Hero parallax - title fades & drifts on scroll ──
+                gsap.to("#hero-title", {
+                    y: -120, opacity: 0,
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: "section:first-of-type",
+                        start: "top top",
+                        end: "60% top",
+                        scrub: 1.5
+                    }
+                });
+                gsap.to("#hero-sub", {
+                    y: -60, opacity: 0,
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: "section:first-of-type",
+                        start: "top top",
+                        end: "50% top",
+                        scrub: 1.5
+                    }
+                });
+
+                // ── Ticker section reveal ──
+                gsap.from(".ticker-wrap", {
+                    scrollTrigger: { trigger: ".ticker-wrap", start: "top 95%" },
                     opacity: 0,
-                    duration: 0.6,
-                    stagger: 0.05,
+                    duration: 1,
+                    ease: "power2.out"
+                });
+
+                // ── Trust section - staggered text + parallax image ──
+                gsap.from(".reveal-trust", {
+                    scrollTrigger: { trigger: "#about", start: "top 70%" },
+                    y: 60, opacity: 0,
+                    duration: 1,
+                    stagger: 0.1,
                     ease: "expo.out"
                 });
 
-                gsap.fromTo("#trust-img", { scale: 1.1 }, {
-                    scale: 1,
-                    duration: 0.7,
-                    ease: "expo.out",
-                    scrollTrigger: { trigger: "#about", start: "top 75%" }
-                });
+                gsap.fromTo("#trust-img",
+                    { scale: 1.2, y: 60 },
+                    {
+                        scale: 1, y: -60,
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: "#about",
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: 1
+                        }
+                    }
+                );
 
+                // ── Process cards - staggered with perspective tilt ──
                 gsap.from(".action-card", {
                     scrollTrigger: { trigger: "#process", start: "top 80%" },
-                    y: 40,
-                    opacity: 0,
-                    duration: 0.6,
-                    stagger: 0.08,
+                    y: 100, opacity: 0,
+                    rotationX: 8,
+                    transformOrigin: "center bottom",
+                    duration: 1,
+                    stagger: 0.15,
                     ease: "expo.out"
                 });
 
-                // Testimonials section reveal
+                // Parallax on action card images
+                document.querySelectorAll(".action-card img").forEach(img => {
+                    gsap.to(img, {
+                        y: -30,
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: img.closest(".action-card"),
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: 1
+                        }
+                    });
+                });
+
+                // ── Testimonials - scale + blur reveal ──
                 gsap.from("#testimonials .relative.z-10", {
                     scrollTrigger: { trigger: "#testimonials", start: "top 80%" },
-                    y: 40,
-                    opacity: 0,
-                    duration: 0.8,
+                    y: 60, opacity: 0, scale: 0.96,
+                    duration: 1.2,
                     ease: "expo.out"
                 });
 
+                // ── Footer - dramatic entrance ──
                 gsap.to(".footer-reveal", {
                     scrollTrigger: { trigger: "footer", start: "top 85%" },
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.6,
-                    ease: "expo.out"
+                    y: 0, opacity: 1,
+                    duration: 1,
+                    ease: "back.out(1.4)"
                 });
             },
 

@@ -102,20 +102,20 @@ exports.handler = async (event) => {
   }
 
   // Log env var presence (never log actual values)
-  console.log("[submit-form] ENV CHECK — SUPABASE_URL:", !!process.env.SUPABASE_URL);
-  console.log("[submit-form] ENV CHECK — SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-  console.log("[submit-form] ENV CHECK — RESEND_API_KEY:", !!process.env.RESEND_API_KEY);
-  console.log("[submit-form] ENV CHECK — NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
+  console.log("[submit-form] ENV CHECK -SUPABASE_URL:", !!process.env.SUPABASE_URL);
+  console.log("[submit-form] ENV CHECK -SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+  console.log("[submit-form] ENV CHECK -RESEND_API_KEY:", !!process.env.RESEND_API_KEY);
+  console.log("[submit-form] ENV CHECK -NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
 
   try {
     const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } =
       JSON.parse(event.body);
 
-    console.log("[submit-form] Parsed payload — type:", type, "email:", email, "watchName:", watchName || "(none)");
+    console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
     // Validate
     if (!type || !email) {
-      console.error("[submit-form] VALIDATION FAIL — missing type or email");
+      console.error("[submit-form] VALIDATION FAIL -missing type or email");
       return {
         statusCode: 400,
         headers,
@@ -125,7 +125,7 @@ exports.handler = async (event) => {
 
     const validTypes = ["JOIN_LIST", "BUY", "SELL", "TRADE", "WATCH_DETAIL"];
     if (!validTypes.includes(type)) {
-      console.error("[submit-form] VALIDATION FAIL — invalid type:", type);
+      console.error("[submit-form] VALIDATION FAIL -invalid type:", type);
       return {
         statusCode: 400,
         headers,
@@ -134,7 +134,7 @@ exports.handler = async (event) => {
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      console.error("[submit-form] VALIDATION FAIL — invalid email:", email);
+      console.error("[submit-form] VALIDATION FAIL -invalid email:", email);
       return {
         statusCode: 400,
         headers,
@@ -169,7 +169,7 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log("[submit-form] Supabase insert SUCCESS — id:", data.id);
+    console.log("[submit-form] Supabase insert SUCCESS -id:", data.id);
 
     // Build all email promises in parallel for speed
     const template = buildEmail(type, data);
@@ -188,7 +188,7 @@ exports.handler = async (event) => {
           html: template.body,
         }).then(result => {
           if (result.error) console.error("[submit-form] NOTIFICATION EMAIL ERROR:", JSON.stringify(result.error));
-          else console.log("[submit-form] Notification sent — ID:", result.data?.id);
+          else console.log("[submit-form] Notification sent -ID:", result.data?.id);
           return { type: "notification", result };
         }).catch(err => {
           console.error("[submit-form] NOTIFICATION EMAIL THREW:", err.message);
@@ -197,7 +197,7 @@ exports.handler = async (event) => {
       );
     }
 
-    // 2. Welcome email to subscriber (JOIN_LIST only) — rendered + sent in parallel
+    // 2. Welcome email to subscriber (JOIN_LIST only) -rendered + sent in parallel
     if (type === "JOIN_LIST") {
       const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
       console.log("[submit-form] Queuing welcome email to:", data.email);
@@ -214,7 +214,7 @@ exports.handler = async (event) => {
           )
           .then(result => {
             if (result.error) console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(result.error));
-            else console.log("[submit-form] Welcome email sent — ID:", result.data?.id);
+            else console.log("[submit-form] Welcome email sent -ID:", result.data?.id);
             return { type: "welcome", result };
           })
           .catch(err => {
@@ -247,7 +247,7 @@ exports.handler = async (event) => {
           )
           .then(result => {
             if (result.error) console.error("[submit-form] INQUIRY EMAIL ERROR:", JSON.stringify(result.error));
-            else console.log("[submit-form] Inquiry email sent — ID:", result.data?.id);
+            else console.log("[submit-form] Inquiry email sent -ID:", result.data?.id);
             return { type: "inquiry", result };
           })
           .catch(err => {
@@ -257,7 +257,7 @@ exports.handler = async (event) => {
       );
     }
 
-    // Fire all emails in parallel — don't let email failures block the response
+    // Fire all emails in parallel -don't let email failures block the response
     const emailResults = await Promise.all(emailPromises);
     const notif = emailResults.find(r => r.type === "notification");
     const welcome = emailResults.find(r => r.type === "welcome");

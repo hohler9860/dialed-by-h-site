@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
-    <title>About Henry Ohler | Dialed By H — Luxury Watch Concierge</title>
+    <title>About Henry Ohler | Dialed By H - Luxury Watch Concierge</title>
     <meta name="description" content="Meet Henry Ohler, founder of Dialed By H. A collector-turned-concierge specializing in sourcing, authenticating, and delivering rare luxury watches worldwide.">
     <meta name="keywords" content="Henry Ohler, Dialed By H founder, luxury watch concierge, watch collector, watch dealer, authenticated timepieces, personal watch sourcing">
     <meta name="author" content="Henry Ohler">
@@ -59,6 +59,18 @@
     <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/dist/styles.css">
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '798516899968965');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=798516899968965&ev=PageView&noscript=1"/></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
     <div class="orb orb-1"></div>
@@ -72,7 +84,7 @@
         <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
             <a href="about.html" class="nav-link text-ivory transition-colors">About Me</a>
             <a href="process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
-            <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="nav-link hover:text-muted transition-colors">Journal</a>
+            <a href="journal.html" class="nav-link hover:text-muted transition-colors">Journal</a>
             <a href="index.html" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
         </div>
         <button onclick="document.getElementById('mobile-menu').style.opacity='1'; document.getElementById('mobile-menu').style.pointerEvents='auto'; document.body.style.overflow='hidden';" class="md:hidden text-ivory">
@@ -91,13 +103,13 @@
         </button>
         <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest text-ivory">About Me</a>
         <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
-        <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
+        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
         <a href="index.html" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
     </div>
 
     <!-- CONTENT -->
     <main class="max-w-5xl mx-auto px-6 sm:px-10 md:px-16 py-16 sm:py-24">
-        <h1 class="font-space font-bold text-3xl sm:text-4xl md:text-5xl lg:text-7xl tracking-tighter uppercase mb-8 sm:mb-10 leading-[0.9]">
+        <h1 data-split-text class="font-space font-bold text-3xl sm:text-4xl md:text-5xl lg:text-7xl tracking-tighter uppercase mb-8 sm:mb-10 leading-[0.9]">
             About <span class="text-muted">Me</span>
         </h1>
 
@@ -127,28 +139,40 @@
         <!-- CONTINUED TEXT -->
         <div class="space-y-4 font-inter text-sm sm:text-[15px] text-ivory/75 leading-relaxed mb-14 max-w-3xl">
             <p>
-                Today, I work with a vetted network of global partners and personally oversee every step of the process, from authentication and condition verification to pricing and secure delivery. If my name is on it, I am responsible for it.
+                Today, I work with a vetted network of global partners and personally oversee the process from authentication and condition verification to pricing and secure delivery.
             </p>
             <p>
-                Dialed By H is not a storefront. It is a concierge service built on trust, discretion, and access. Whether you are chasing a hard to find reference or looking to move a piece from your collection, I treat every transaction like it is my own.
+                Dialed By H is not a storefront. It is a concierge service built on trust, discretion, and access. Whether you are chasing a hard to find reference or looking to move a piece from your collection, I approach each transaction as if it were my own.
             </p>
+        </div>
+
+        <!-- CTA -->
+        <div id="about-cta" class="text-center mb-14">
+            <h2 class="font-space font-bold text-xl sm:text-2xl md:text-3xl tracking-tight uppercase mb-3">
+                Have a Piece in Mind?
+            </h2>
+            <p class="font-inter text-muted text-sm sm:text-base tracking-wide mb-8 max-w-md mx-auto" style="text-transform: none;">
+                Whether you're buying, selling, or trading, reach out and let's talk.
+            </p>
+            <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
+               class="shimmer-btn group relative overflow-hidden inline-block bg-ivory text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+                <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Message Me</span>
+                <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
+            </a>
         </div>
 
         <!-- CONTACT -->
         <div class="pt-10 border-t border-ivory/10 glass-subtle rounded-xl px-6 py-8">
             <h2 class="font-space font-bold text-xl tracking-widest uppercase mb-8 text-muted">Get in Touch</h2>
-            <div class="flex flex-wrap gap-8 text-sm sm:text-base font-space uppercase tracking-widest">
-                <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">
-                    <i data-lucide="instagram" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                    Instagram
+            <div class="social-bar">
+                <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="Instagram">
+                    <i data-lucide="instagram" class="w-5 h-5"></i>
                 </a>
-                <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">
-                    <i data-lucide="message-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                    WhatsApp
+                <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="WhatsApp">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
                 </a>
-                <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-ivory transition-colors text-muted group">
-                    <i data-lucide="mail" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                    Email
+                <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="Email">
+                    <i data-lucide="mail" class="w-5 h-5"></i>
                 </a>
             </div>
         </div>
@@ -157,69 +181,72 @@
     <!-- FOOTER -->
     <footer class="px-6 py-8 border-t border-ivory/10 text-center">
         <span class="block mt-6 text-xs text-muted font-space uppercase tracking-widest">&copy; 2026 DIALED BY H</span>
-        <p class="text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not affiliated with Rolex, Patek Philippe, Audemars Piguet, or any respective brand. All trademarks belong to their respective owners. Images are used for identification purposes only.</p>
+        <p class="text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
         <a href="privacy.html" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
     </footer>
 
     <!-- GSAP + ScrollTrigger -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1/dist/lenis.min.js"></script>
+    <script src="/scripts/premium-ui.js"></script>
     <script>
         lucide.createIcons();
         gsap.registerPlugin(ScrollTrigger);
 
-        // Page load — nav fades in
+        // Page load - nav fades in
         gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out' });
 
-        // Title — clips in from below
-        gsap.from('h1', {
-            opacity: 0, y: 60, duration: 1, ease: 'power3.out', delay: 0.2
-        });
+        // Title handled by split-text reveal (premium-ui.js)
 
-        // Photo — reveals with scale + fade
+        // Photo - reveals with scale + fade
         gsap.from('.aspect-\\[3\\/4\\]', {
             opacity: 0, scale: 0.95, y: 40, duration: 1.2, ease: 'power3.out', delay: 0.4
         });
 
-        // Intro text paragraphs — stagger in
+        // Intro text paragraphs - stagger in
         gsap.from('.flex.flex-col.md\\:flex-row .space-y-6 p', {
             opacity: 0, y: 30, duration: 0.8, ease: 'power2.out', stagger: 0.15, delay: 0.6
         });
 
-        // Continued text — scroll triggered
-        gsap.from('.mb-16:last-of-type p', {
-            scrollTrigger: {
-                trigger: '.mb-16:last-of-type',
-                start: 'top 85%',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0, y: 30, duration: 0.8, ease: 'power2.out', stagger: 0.15
-        });
+        // Continued text - scroll triggered
+        gsap.fromTo('.mb-14:last-of-type p',
+            { opacity: 0, y: 30 },
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.15, immediateRender: false,
+              scrollTrigger: { trigger: '.mb-14:last-of-type', start: 'top 85%', toggleActions: 'play none none none' }
+            }
+        );
 
-        // Contact section — scroll triggered
-        gsap.from('.border-t h2', {
-            scrollTrigger: {
-                trigger: '.border-t',
-                start: 'top 85%',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0, y: 20, duration: 0.6, ease: 'power2.out'
-        });
+        // Contact section - scroll triggered
+        gsap.fromTo('.border-t h2',
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', immediateRender: false,
+              scrollTrigger: { trigger: '.border-t', start: 'top 85%', toggleActions: 'play none none none' }
+            }
+        );
 
-        gsap.from('.border-t a', {
-            scrollTrigger: {
-                trigger: '.border-t',
-                start: 'top 85%',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0, y: 20, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.2
-        });
+        gsap.fromTo('.social-icon',
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.2, immediateRender: false,
+              scrollTrigger: { trigger: '.border-t', start: 'top 85%', toggleActions: 'play none none none' }
+            }
+        );
+
+        // About CTA
+        gsap.fromTo('#about-cta',
+            { opacity: 0, y: 30 },
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', immediateRender: false,
+              scrollTrigger: { trigger: '#about-cta', start: 'top 85%' }
+            }
+        );
 
         // Footer
-        gsap.from('footer', {
-            scrollTrigger: { trigger: 'footer', start: 'top 95%' },
-            opacity: 0, duration: 0.6, ease: 'power2.out'
-        });
+        gsap.fromTo('footer',
+            { opacity: 0 },
+            { opacity: 1, duration: 0.6, ease: 'power2.out', immediateRender: false,
+              scrollTrigger: { trigger: 'footer', start: 'top 95%' }
+            }
+        );
     </script>
 </body>
 </html>

@@ -39,6 +39,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/dist/styles.css">
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '798516899968965');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=798516899968965&ev=PageView&noscript=1"/></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
 
@@ -54,7 +66,7 @@
         <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
             <a href="about.html" class="nav-link hover:text-muted transition-colors">About Me</a>
             <a href="process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
-            <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="nav-link hover:text-muted transition-colors">Journal</a>
+            <a href="journal.html" class="nav-link hover:text-muted transition-colors">Journal</a>
             <a href="index.html" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
         </div>
         <button onclick="document.getElementById('mobile-menu').style.opacity='1'; document.getElementById('mobile-menu').style.pointerEvents='auto'; document.body.style.overflow='hidden';" class="md:hidden text-ivory">
@@ -73,7 +85,7 @@
         </button>
         <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">About Me</a>
         <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
-        <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
+        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
         <a href="index.html" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
     </div>
 
@@ -81,7 +93,7 @@
     <main class="relative z-10 max-w-3xl mx-auto px-6 pt-20 sm:pt-28 pb-20 sm:pb-28">
 
         <p class="text-muted text-[11px] font-bold tracking-[0.25em] mb-4">Legal</p>
-        <h1 class="font-space font-bold text-3xl sm:text-5xl tracking-tighter uppercase leading-tight mb-16">
+        <h1 data-split-text class="font-space font-bold text-3xl sm:text-5xl tracking-tighter uppercase leading-tight mb-16">
             Privacy Policy <span class="text-muted">&</span> Terms
         </h1>
 
@@ -154,6 +166,11 @@
                 </div>
 
                 <div>
+                    <h3 class="font-space font-bold text-sm uppercase tracking-widest text-ivory mb-3">Shipping & Insurance</h3>
+                    <p>All pieces sourced through Dialed By H are shipped via insured, secure courier services. Insurance coverage applies to loss or damage during transit only, from the point of shipment to confirmed delivery. Coverage limits and carrier terms vary by shipment and will be communicated prior to dispatch. Dialed By H is not liable for delays caused by carriers, customs, or circumstances beyond our control. Once delivery is confirmed, responsibility for the piece transfers to the recipient.</p>
+                </div>
+
+                <div>
                     <h3 class="font-space font-bold text-sm uppercase tracking-widest text-ivory mb-3">Limitation of Liability</h3>
                     <p>Dialed By H is not liable for any indirect, incidental, or consequential damages arising from the use of this website or our services. Information on this site is provided for general purposes and should not be considered financial or investment advice.</p>
                 </div>
@@ -183,11 +200,13 @@
                 </a>
             </div>
             <span class="block mt-6 text-xs text-muted/60 font-space uppercase tracking-widest">&copy; 2026 DIALED BY H</span>
-            <p class="text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed mt-4" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not affiliated with Rolex, Patek Philippe, Audemars Piguet, or any respective brand. All trademarks belong to their respective owners. Images are used for identification purposes only.</p>
+            <p class="text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed mt-4" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
             <a href="privacy.html" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
         </div>
     </footer>
 
+    <script src="https://unpkg.com/lenis@1/dist/lenis.min.js"></script>
+    <script src="/scripts/premium-ui.js"></script>
     <script>lucide.createIcons();</script>
 </body>
 </html>

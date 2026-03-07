@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="facebook-domain-verification" content="je4nownyg0adrpxd2adi4gzkwbz" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="/favicon-v2.ico?v=3" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
-    <title>Dialed By H | Luxury Watch Concierge — Buy, Sell & Trade Rare Timepieces</title>
+    <title>Dialed By H | Luxury Watch Concierge - Buy, Sell & Trade Rare Timepieces</title>
     <meta name="description" content="Dialed By H is a luxury watch concierge service specializing in sourcing, selling, and trading rare and hard-to-find timepieces. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Strict anonymity.">
     <meta name="keywords" content="luxury watch concierge, buy rolex, sell patek philippe, trade audemars piguet, richard mille dealer, rare watches, watch sourcing, authenticated timepieces, luxury watch broker, pre-owned luxury watches, watch consignment, dialed by h">
     <meta name="author" content="Henry Ohler">
@@ -68,7 +69,7 @@
                 "itemOffered": {
                     "@type": "Service",
                     "name": "Watch Sales & Consignment",
-                    "description": "Competitive market offers for selling luxury watches with full authentication."
+                    "description": "Competitive market offers for selling luxury watches with independent authentication."
                 }
             },
             {
@@ -79,14 +80,7 @@
                     "description": "Trade-in service to upgrade your watch collection with expert guidance."
                 }
             }
-        ],
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5",
-            "reviewCount": "3",
-            "bestRating": "5",
-            "worstRating": "1"
-        }
+        ]
     }
     </script>
     <script type="application/ld+json">
@@ -105,8 +99,21 @@
     <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1/dist/lenis.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/dist/styles.css">
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '798516899968965');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=798516899968965&ev=PageView&noscript=1"/></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
     <!-- AMBIENT ORBS -->
@@ -127,7 +134,7 @@
         <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
             My Process
         </a>
-        <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
             Journal
         </a>
         <button onclick="app.toggleMobileMenu(); app.openModal('JOIN_LIST')" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">
@@ -149,7 +156,7 @@
                     <a href="process.html" class="nav-link hover:text-muted transition-colors">
                         My Process
                     </a>
-                    <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="nav-link hover:text-muted transition-colors">
+                    <a href="journal.html" class="nav-link hover:text-muted transition-colors">
                         Journal
                     </a>
                     <a href="#" onclick="event.preventDefault(); app.openModal('JOIN_LIST')" class="bg-ivory/10 text-ivory px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-ivory hover:text-charcoal transition-all duration-300 border border-ivory/20 backdrop-blur-md">
@@ -174,12 +181,17 @@
                 <p id="hero-sub" class="font-inter text-muted text-base sm:text-lg md:text-xl tracking-wide max-w-2xl mx-auto mb-8 sm:mb-12 font-light uppercase">
                     Concierge sourcing for the world's most elusive references. Verified provenance. Strict anonymity.
                 </p>
-                <button id="hero-btn" onclick="app.openModal('JOIN_LIST')" class="group relative overflow-hidden bg-ivory text-charcoal px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
-                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">
-                        <span id="hero-btn-text">JOIN MY PRIVATE LIST</span>
-                    </span>
-                    <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
-                </button>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                    <button id="hero-btn" onclick="app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden bg-ivory text-charcoal px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">
+                            <span id="hero-btn-text">JOIN MY PRIVATE LIST</span>
+                        </span>
+                        <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
+                    </button>
+                    <a href="inventory.html" class="text-xs sm:text-sm font-space font-bold uppercase tracking-widest text-muted hover:text-ivory transition-colors border border-ivory/20 px-6 sm:px-8 py-3 sm:py-4 hover:border-ivory/40">
+                        Browse Pieces
+                    </a>
+                </div>
             </div>
 
             <div class="absolute bottom-12 animate-bounce opacity-50">
@@ -212,12 +224,12 @@
                         <span class="text-ivory">No BS.</span>
                     </h2>
                     <p id="trust-desc" class="reveal-trust font-inter text-muted text-base sm:text-lg leading-relaxed tracking-wide">
-                        Every piece is sourced exclusively through verified partners and independently authenticated by trusted watch specialists before acquisition.
+                        Pieces are sourced through verified partners and independently authenticated by trusted watch specialists before acquisition.
                     </p>
                     <div id="trust-tags" class="reveal-trust pt-4 trust-tags-bar text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ivory/50 glass-subtle rounded-lg px-4 sm:px-5 py-4 w-fit">
                         <span class="whitespace-nowrap">Global Sourcing</span>
                         <span class="tag-bullet text-ivory/20">&bull;</span>
-                        <span class="whitespace-nowrap">In-House Authentication</span>
+                        <span class="whitespace-nowrap">Independent Authentication</span>
                         <span class="tag-bullet text-ivory/20">&bull;</span>
                         <span class="whitespace-nowrap">Insured Delivery</span>
                     </div>
@@ -296,7 +308,7 @@
             </button>
         </section>
 
-        <!-- TESTIMONIALS — Rotating 3-Card Carousel -->
+        <!-- TESTIMONIALS - Rotating 3-Card Carousel -->
         <section id="testimonials" class="relative py-10 sm:py-14 lg:py-16 border-b border-ivory/5 overflow-hidden">
             <!-- Semi-blurred background image -->
             <div class="absolute inset-0 z-0">
@@ -307,7 +319,7 @@
 
                 <!-- Section label -->
                 <p class="text-center text-[10px] sm:text-xs font-bold tracking-widest text-muted mb-8 sm:mb-10 font-space">
-                    Trusted by 150+ Collectors &nbsp;&bull;&nbsp; 5.0 Client Rating
+                    What Collectors Are Saying
                 </p>
 
                 <!-- 3-Card Track -->
@@ -330,38 +342,13 @@
 
                 <!-- Funnel CTA -->
                 <div class="text-center mt-10 sm:mt-12">
-                    <button onclick="app.openModal('JOIN_LIST')" class="group relative overflow-hidden bg-ivory text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
-                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Get Priority Access</span>
+                    <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="shimmer-btn group relative overflow-hidden inline-block bg-ivory text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Start a Conversation</span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
-                    </button>
-                    <p class="text-[10px] tracking-widest text-muted mt-8 font-inter">Join 150+ collectors on the private list</p>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- INSTAGRAM FEED -->
-        <section id="instagram" class="relative z-10 py-16 sm:py-24">
-            <div class="max-w-6xl mx-auto px-5 sm:px-8 text-center">
-                <p class="text-muted text-[11px] font-bold tracking-[0.25em] mb-4">Follow the Collection</p>
-                <h3 class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4">
-                    <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="hover:text-muted transition-colors">
-                        @dialedbyh
                     </a>
-                </h3>
-                <p class="font-inter text-muted text-sm mb-10 uppercase tracking-wide">Latest from the wrist</p>
-
-                <!-- BEHOLD INSTAGRAM WIDGET -->
-                <div id="behold-widget" class="min-h-[200px]">
-                    <behold-widget feed-id="kcYNcg1QCd5h6iPyq1oj"></behold-widget>
-                    <script>(() => { const d=document,s=d.createElement("script");s.type="module";s.src="https://w.behold.so/widget.js";d.head.append(s); })();</script>
+                    <p class="text-[10px] tracking-widest text-muted mt-8 font-inter">Tell me what you're looking for</p>
                 </div>
 
-                <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer"
-                   class="inline-flex items-center gap-3 mt-10 text-muted hover:text-ivory transition-colors text-sm font-space uppercase tracking-widest">
-                    <i data-lucide="instagram" class="w-5 h-5"></i>
-                    <span>View Full Profile</span>
-                </a>
             </div>
         </section>
 
@@ -395,25 +382,19 @@
                 </form>
 
                 <div class="w-full border-t border-ivory/10 pt-10 space-y-8">
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-14">
-                        <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm font-space uppercase tracking-widest">
-                            <i data-lucide="instagram" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                            <span>Instagram</span>
+                    <div class="social-bar">
+                        <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="Instagram">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
                         </a>
-                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm font-space uppercase tracking-widest">
-                            <i data-lucide="message-circle" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                            <span>WhatsApp</span>
+                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="WhatsApp">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
                         </a>
-                        <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer"
-                           class="flex items-center gap-3 text-muted hover:text-ivory transition-colors group text-sm font-space uppercase tracking-widest">
-                            <i data-lucide="mail" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                            <span>Email</span>
+                        <a href="mailto:dialedbyh@gmail.com" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="Email">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
                         </a>
                     </div>
                     <p class="text-center mt-6 text-sm font-space uppercase tracking-widest text-muted">&copy; 2026 Dialed By H</p>
-                    <p class="text-center text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not affiliated with Rolex, Patek Philippe, Audemars Piguet, or any respective brand. All trademarks belong to their respective owners. Images are used for identification purposes only.</p>
+                    <p class="text-center text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
                     <a href="privacy.html" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
                 </div>
             </div>
@@ -448,6 +429,7 @@
         </div>
     </div>
 
+    <script src="/scripts/premium-ui.js"></script>
     <script>
         const CONFIG = {
             APP_NAME: "Dialed By H",
@@ -772,14 +754,6 @@
                     ease: "expo.out"
                 });
 
-                gsap.from("#instagram .max-w-6xl", {
-                    scrollTrigger: { trigger: "#instagram", start: "top 80%" },
-                    y: 40,
-                    opacity: 0,
-                    duration: 0.8,
-                    ease: "expo.out"
-                });
-
                 gsap.to(".footer-reveal", {
                     scrollTrigger: { trigger: "footer", start: "top 85%" },
                     y: 0,
@@ -948,7 +922,7 @@
                 let watchDetailsStr = details;
                 if (brand || model) {
                     const parts = [brand, model, ref ? 'Ref: ' + ref : ''].filter(Boolean);
-                    watchDetailsStr = parts.join(' — ') + (details ? ' | ' + details : '');
+                    watchDetailsStr = parts.join(' - ') + (details ? ' | ' + details : '');
                 }
 
                 const payload = {
@@ -981,11 +955,13 @@
                     }
 
                     app.showSuccess();
+                    // Meta Pixel: Lead on successful inquiry
+                    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: type });
                 } catch (error) {
                     console.error('Submission error:', error);
                     // If running locally (file:// or localhost without Netlify), still show success
                     if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && error.message.includes('Failed to fetch'))) {
-                        console.log('Local mode — showing success without backend');
+                        console.log('Local mode - showing success without backend');
                         app.showSuccess();
                         return;
                     }
@@ -1025,6 +1001,8 @@
 
                     if (!res.ok) throw new Error('Failed');
                     showJoined();
+                    // Meta Pixel: Lead on successful email signup
+                    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'JOIN_LIST' });
                 } catch (error) {
                     console.error('Footer submit error:', error);
                     // Local dev fallback

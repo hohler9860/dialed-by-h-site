@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
-    <title>Available for Sourcing | Dialed By H — Luxury Watch Concierge</title>
+    <title>Available for Sourcing | Dialed By H - Luxury Watch Concierge</title>
     <meta name="description" content="Browse pieces currently available for sourcing through Dialed By H. Rolex, Patek Philippe, Audemars Piguet, Richard Mille and more. Inquire to source.">
     <meta name="keywords" content="luxury watch sourcing, rolex, patek philippe, audemars piguet, richard mille, rare watch sourcing, watch concierge, dialed by h">
     <meta name="author" content="Henry Ohler">
@@ -29,7 +29,7 @@
     {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
-        "name": "Dialed By H — Pieces for Sourcing",
+        "name": "Dialed By H - Pieces for Sourcing",
         "description": "Browse rare and authenticated luxury watches available for concierge sourcing through Dialed By H.",
         "url": "https://dialedbyhenry.com/inventory.html",
         "provider": {
@@ -55,6 +55,18 @@
     <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/dist/styles.css">
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '798516899968965');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=798516899968965&ev=PageView&noscript=1"/></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
 
@@ -69,7 +81,7 @@
         <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
             <a href="about.html" class="nav-link hover:text-muted transition-colors">About Me</a>
             <a href="process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
-            <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="nav-link hover:text-muted transition-colors">Journal</a>
+            <a href="journal.html" class="nav-link hover:text-muted transition-colors">Journal</a>
             <a href="index.html" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
         </div>
         <button onclick="document.getElementById('mobile-menu').style.opacity='1'; document.getElementById('mobile-menu').style.pointerEvents='auto'; document.body.style.overflow='hidden';" class="md:hidden text-ivory">
@@ -88,7 +100,7 @@
         </button>
         <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">About Me</a>
         <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
-        <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
+        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
         <a href="index.html" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
     </div>
 
@@ -102,17 +114,17 @@
 
         <!-- SUBTITLE -->
         <p id="hero-sub" class="font-inter text-muted text-sm sm:text-base max-w-xl opacity-0 leading-relaxed mb-14 sm:mb-20" style="letter-spacing: 0.15em;">
-            Browse pieces I can currently source. Inquire on any reference and I'll handle the rest.
+            Browse pieces I can currently source. Availability changes as the market moves, so inquire on any reference and I'll handle the rest.
         </p>
 
         <!-- FILTER SYSTEM -->
         <div class="mb-10 sm:mb-14" id="filter-bar">
-            <!-- Brand pills — horizontal scroll on mobile, wrap on desktop, centered -->
+            <!-- Brand pills - horizontal scroll on mobile, wrap on desktop, centered -->
             <div class="flex sm:flex-wrap sm:justify-center gap-2 mb-5 overflow-x-auto no-scrollbar pb-1" id="brand-pills">
                 <button onclick="selectBrand('ALL')" class="brand-pill active shrink-0" data-brand="ALL">All</button>
             </div>
 
-            <!-- Filter row — full width glass bar -->
+            <!-- Filter row - full width glass bar -->
             <div class="glass-subtle rounded-xl px-4 sm:px-6 py-3 filter-bar-animate">
                 <!-- MOBILE: 2x2 grid + sort row -->
                 <div class="sm:hidden">
@@ -266,7 +278,7 @@
                 </a>
             </div>
             <span class="footer-line block mt-6 text-xs text-muted/60 font-space uppercase tracking-widest opacity-0">&copy; 2026 DIALED BY H</span>
-            <p class="footer-line opacity-0 text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not affiliated with Rolex, Patek Philippe, Audemars Piguet, or any respective brand. All trademarks belong to their respective owners. Images are used for identification purposes only.</p>
+            <p class="footer-line opacity-0 text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
             <a href="privacy.html" class="footer-line opacity-0 text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
         </div>
     </footer>
@@ -301,6 +313,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1/dist/lenis.min.js"></script>
+    <script src="/scripts/premium-ui.js"></script>
     <script>
         let PIECES = [];
 
@@ -745,7 +759,7 @@
             let watchDetailsStr = '';
             if (brand || model) {
                 const parts = [brand, model, ref ? 'Ref: ' + ref : ''].filter(Boolean);
-                watchDetailsStr = parts.join(' — ');
+                watchDetailsStr = parts.join(' - ');
             }
             const allDetails = [watchDetailsStr, prefsStr, details].filter(Boolean).join(' | ');
 

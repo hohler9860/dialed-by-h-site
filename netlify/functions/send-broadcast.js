@@ -97,7 +97,7 @@ exports.handler = async (event) => {
 
     // If test mode, send to single address
     if (payload.testEmail) {
-      console.log("[broadcast] TEST MODE — sending to:", payload.testEmail);
+      console.log("[broadcast] TEST MODE -sending to:", payload.testEmail);
       const result = await getResend().emails.send({
         from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
         to: payload.testEmail,
@@ -179,7 +179,7 @@ exports.handler = async (event) => {
       }
     }
 
-    console.log("[broadcast] Complete — sent:", sent, "failed:", failed);
+    console.log("[broadcast] Complete -sent:", sent, "failed:", failed);
 
     return {
       statusCode: 200,

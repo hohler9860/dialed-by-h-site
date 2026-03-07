@@ -90,7 +90,7 @@ async function main() {
   // Copy to clipboard on macOS
   try {
     execSync(`echo '${html.replace(/'/g, "'\\''")}' | pbcopy`, { stdio: "pipe" });
-    console.log("Copied HTML to clipboard — paste into Resend dashboard");
+    console.log("Copied HTML to clipboard -paste into Resend dashboard");
   } catch {
     console.log("Could not copy to clipboard. Open the HTML file manually.");
   }

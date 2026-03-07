@@ -725,27 +725,6 @@
                     .from("#hero-btn + a", { opacity: 0, y: 20, duration: 0.7 }, "-=0.5")
                     .from(".animate-bounce", { opacity: 0, duration: 0.8 }, "-=0.3");
 
-                // ── Hero parallax - title fades & drifts on scroll ──
-                gsap.to("#hero-title", {
-                    y: -120, opacity: 0,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: "section:first-of-type",
-                        start: "top top",
-                        end: "60% top",
-                        scrub: 1.5
-                    }
-                });
-                gsap.to("#hero-sub", {
-                    y: -60, opacity: 0,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: "section:first-of-type",
-                        start: "top top",
-                        end: "50% top",
-                        scrub: 1.5
-                    }
-                });
 
                 // ── Ticker section reveal ──
                 gsap.from(".ticker-wrap", {

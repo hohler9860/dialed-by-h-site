@@ -743,19 +743,7 @@
                     ease: "expo.out"
                 });
 
-                gsap.fromTo("#trust-img",
-                    { scale: 1.2, y: 60 },
-                    {
-                        scale: 1, y: -60,
-                        ease: "none",
-                        scrollTrigger: {
-                            trigger: "#about",
-                            start: "top bottom",
-                            end: "bottom top",
-                            scrub: 1
-                        }
-                    }
-                );
+
 
                 // ── Process cards - staggered with perspective tilt ──
                 gsap.from(".action-card", {

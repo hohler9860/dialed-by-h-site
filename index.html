@@ -136,8 +136,9 @@
         <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
             Journal
         </a>
-        <button onclick="app.toggleMobileMenu(); app.openModal('JOIN_LIST')" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">
-            JOIN MY PRIVATE LIST
+        <button onclick="app.toggleMobileMenu(); app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest transition-transform hover:scale-105">
+            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">JOIN MY PRIVATE LIST</span>
+            <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
         </button>
     </div>
 
@@ -158,8 +159,9 @@
                     <a href="journal.html" class="nav-link hover:text-muted transition-colors">
                         Journal
                     </a>
-                    <a href="#" onclick="event.preventDefault(); app.openModal('JOIN_LIST')" class="bg-ivory/10 text-ivory px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-ivory hover:text-charcoal transition-all duration-300 border border-ivory/20 backdrop-blur-md">
-                        JOIN MY PRIVATE LIST
+                    <a href="#" onclick="event.preventDefault(); app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest transition-transform hover:scale-105">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">JOIN MY PRIVATE LIST</span>
+                        <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </a>
                 </div>
                 <button id="mobile-menu-btn" onclick="app.toggleMobileMenu()" class="md:hidden text-ivory">
@@ -187,8 +189,9 @@
                         </span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </button>
-                    <a href="inventory.html" class="w-[260px] sm:w-[300px] py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest text-muted hover:text-ivory transition-colors border border-ivory/20 hover:border-ivory/40 text-center inline-flex items-center justify-center">
-                        Browse Pieces
+                    <a href="inventory.html" class="shimmer-btn group relative overflow-hidden text-charcoal w-[260px] sm:w-[300px] py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105 text-center inline-flex items-center justify-center">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Browse Pieces</span>
+                        <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </a>
                 </div>
             </div>
@@ -385,8 +388,9 @@
                     <input type="email" name="email" placeholder="EMAIL ADDRESS" required
                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space" />
                     <button type="submit" id="footer-btn"
-                            class="w-full bg-ivory text-charcoal px-6 sm:px-8 py-3.5 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs sm:text-sm mt-2">
-                        Get Priority Access
+                            class="shimmer-btn group relative overflow-hidden w-full text-charcoal px-6 sm:px-8 py-3.5 font-bold font-space uppercase tracking-widest text-xs sm:text-sm mt-2 transition-transform hover:scale-[1.02]">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Get Priority Access</span>
+                        <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </button>
                 </form>
 
@@ -840,8 +844,9 @@
                                             <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Email</label>
                                             <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors">
                                         </div>
-                                        <button type="submit" class="w-full bg-ivory text-charcoal py-4 font-bold font-space tracking-widest hover:bg-white transition-colors">
-                                            Submit Inquiry
+                                        <button type="submit" class="shimmer-btn group relative overflow-hidden w-full text-charcoal py-4 font-bold font-space tracking-widest transition-transform hover:scale-[1.02]">
+                                            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Submit Inquiry</span>
+                                            <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                                         </button>
                                     </form>
                                 </div>
@@ -888,8 +893,9 @@
                                         <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, budget, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
                                     </div>
                                 ` : ''}
-                                <button type="submit" class="w-full bg-ivory text-charcoal py-4 font-bold font-space tracking-widest hover:bg-white transition-colors mt-4">
-                                    Submit Request
+                                <button type="submit" class="shimmer-btn group relative overflow-hidden w-full text-charcoal py-4 font-bold font-space tracking-widest mt-4 transition-transform hover:scale-[1.02]">
+                                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Submit Request</span>
+                                    <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                                 </button>
                             </form>
                         </div>
@@ -999,7 +1005,8 @@
                 if (extraData.watchRef && !payload.watchRef) payload.watchRef = extraData.watchRef;
 
                 if (btn) {
-                    btn.innerText = 'Processing...';
+                    const btnLabel = btn.querySelector('span') || btn;
+                    btnLabel.textContent = 'Processing...';
                     btn.disabled = true;
                 }
 
@@ -1027,7 +1034,8 @@
                         return;
                     }
                     if (btn) {
-                        btn.innerText = 'Error - Try Again';
+                        const btnLabel = btn.querySelector('span') || btn;
+                        btnLabel.textContent = 'Error - Try Again';
                         btn.disabled = false;
                     }
                 }
@@ -1037,18 +1045,19 @@
                 e.preventDefault();
                 const form = e.target;
                 const btn = form.querySelector('button[type="submit"]');
+                const btnLabel = btn.querySelector('span') || btn;
                 const emailInput = form.querySelector('input[name="email"]');
                 const nameInput = form.querySelector('input[name="fullName"]');
-                const originalText = btn.innerText;
+                const originalText = btnLabel.textContent;
 
-                btn.innerText = 'JOINING...';
+                btnLabel.textContent = 'JOINING...';
                 btn.disabled = true;
 
                 const showJoined = () => {
-                    btn.innerText = 'JOINED ✓';
+                    btnLabel.textContent = 'JOINED ✓';
                     emailInput.value = '';
                     if (nameInput) nameInput.value = '';
-                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 3000);
+                    setTimeout(() => { btnLabel.textContent = originalText; btn.disabled = false; }, 3000);
                 };
 
                 try {
@@ -1071,8 +1080,8 @@
                         showJoined();
                         return;
                     }
-                    btn.innerText = 'ERROR - TRY AGAIN';
-                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 3000);
+                    btnLabel.textContent = 'ERROR - TRY AGAIN';
+                    setTimeout(() => { btnLabel.textContent = originalText; btn.disabled = false; }, 3000);
                 }
             }
         };

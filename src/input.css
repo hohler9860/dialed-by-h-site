@@ -557,13 +557,13 @@ select {
    Adapted from emerald-ui shimmer-button
    ══════════════════════════════════════ */
 .shimmer-btn {
-    background: linear-gradient(110deg, #d9d9d9, 40%, #ffffff, 50%, #d9d9d9);
+    background: linear-gradient(110deg, #a0a0a0 0%, #a0a0a0 40%, #f0f0f0 48%, #ffffff 50%, #f0f0f0 52%, #a0a0a0 60%, #a0a0a0 100%);
     background-size: 200% 100%;
-    animation: shimmer2 2.5s infinite linear;
+    animation: shimmer2 2s infinite linear;
 }
 @keyframes shimmer2 {
-    0%   { background-position: 0% 0%; }
-    100% { background-position: -200% 0%; }
+    0%   { background-position: 100% 0%; }
+    100% { background-position: -100% 0%; }
 }
 .shimmer-btn:hover {
     animation-play-state: paused;

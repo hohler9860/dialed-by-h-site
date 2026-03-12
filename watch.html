@@ -577,6 +577,8 @@
             window.openZoom = function(src, alt) {
                 img.src = src;
                 img.alt = alt || '';
+                const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+                document.body.style.paddingRight = scrollbarW + 'px';
                 overlay.style.visibility = 'visible';
                 overlay.style.pointerEvents = 'auto';
                 document.body.style.overflow = 'hidden';
@@ -605,6 +607,7 @@
                         overlay.style.visibility = 'hidden';
                         overlay.style.pointerEvents = 'none';
                         document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
                         img.src = '';
                         scale = 1; posX = 0; posY = 0;
                     }

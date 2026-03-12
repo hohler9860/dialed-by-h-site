@@ -70,8 +70,7 @@
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
 
-    <!-- BLURRED PHOTO BACKGROUND -->
-    <div id="bg-mosaic"></div>
+    <!-- Background removed for performance -->
 
     <!-- NAV -->
     <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
@@ -827,8 +826,7 @@
 
             await fetchPieces();
 
-            // Build blurred background mosaic from piece images
-            buildBackground(PIECES);
+            // Background mosaic removed for performance
 
             // Build brand pills from data
             const brands = [...new Set(PIECES.map(w => w.brand).filter(Boolean))].sort();

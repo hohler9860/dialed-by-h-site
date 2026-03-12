@@ -24,13 +24,12 @@
             touchMultiplier: 2,
         });
 
-        // Connect to GSAP ticker for perfect ScrollTrigger sync
+        // Connect to GSAP ticker for ScrollTrigger sync
         if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
             lenis.on('scroll', ScrollTrigger.update);
             gsap.ticker.add(function (time) {
                 lenis.raf(time * 1000);
             });
-            gsap.ticker.lagSmoothing(0);
         } else {
             // Fallback RAF loop (404.html etc)
             function raf(time) {

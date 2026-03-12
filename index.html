@@ -225,11 +225,11 @@
                     <p id="trust-desc" class="reveal-trust font-inter text-muted text-base sm:text-lg leading-relaxed tracking-wide">
                         Pieces are sourced through verified partners and independently authenticated by trusted watch specialists before acquisition.
                     </p>
-                    <div id="trust-tags" class="reveal-trust pt-4 trust-tags-bar text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ivory/50 glass-subtle rounded-lg px-4 sm:px-5 py-4 w-fit">
+                    <div id="trust-tags" class="reveal-trust pt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ivory/50 glass-subtle rounded-xl px-6 sm:px-8 py-5 sm:py-6 w-fit">
                         <span class="whitespace-nowrap">Global Sourcing</span>
-                        <span class="tag-bullet text-ivory/20">&bull;</span>
+                        <span class="hidden sm:inline tag-bullet text-ivory/20">&bull;</span>
                         <span class="whitespace-nowrap">Independent Authentication</span>
-                        <span class="tag-bullet text-ivory/20">&bull;</span>
+                        <span class="hidden sm:inline tag-bullet text-ivory/20">&bull;</span>
                         <span class="whitespace-nowrap">Insured Delivery</span>
                     </div>
                 </div>
@@ -321,11 +321,6 @@
 
         <!-- TESTIMONIALS - Rotating 3-Card Carousel -->
         <section id="testimonials" class="relative py-10 sm:py-14 lg:py-16 border-b border-ivory/5 overflow-hidden">
-            <!-- Semi-blurred background image -->
-            <div class="absolute inset-0 z-0">
-                <img src="images/Platinum.jpg.webp" alt="" class="w-full h-full object-cover opacity-[0.07]" style="filter: blur(6px); transform: scale(1.05);">
-                <div class="absolute inset-0 bg-gradient-to-b from-charcoal via-charcoal/60 to-charcoal"></div>
-            </div>
             <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
 
                 <!-- Section label -->
@@ -719,12 +714,12 @@
                         force3D: true
                     });
                 }
-                // Footer "Private List" ticker
+                // Footer "Private List" ticker (slow & subtle)
                 const footerTicker = document.getElementById('footer-ticker');
                 if (footerTicker) {
                     app.footerTickerTween = gsap.to(footerTicker, {
                         xPercent: -50,
-                        duration: 40,
+                        duration: 120,
                         ease: "none",
                         repeat: -1,
                         force3D: true

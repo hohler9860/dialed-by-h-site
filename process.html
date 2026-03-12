@@ -170,55 +170,59 @@
             My <span class="text-muted">Process</span>
         </h1>
 
-        <div class="space-y-16">
-            <!-- STEP 1 -->
-            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
-                <div class="flex-shrink-0">
-                    <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">01</span>
-                </div>
-                <div>
-                    <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Consultation</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
-                        We start with a conversation. You tell me what you're looking for: brand, reference, condition, budget. I listen, advise, and set realistic expectations based on current market availability.
+        <!-- TIMELINE -->
+        <div class="process-timeline relative">
+            <!-- Vertical connecting line (mobile) -->
+            <div class="timeline-line absolute left-[23px] top-0 bottom-0 w-px bg-ivory/10 md:hidden"></div>
+            <!-- Horizontal connecting line (desktop) -->
+            <div class="timeline-line-h hidden md:block absolute top-[23px] left-0 right-0 h-px bg-ivory/10"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-6">
+                <!-- STEP 1 -->
+                <div class="process-step relative pl-14 md:pl-0 md:text-center">
+                    <div class="absolute left-0 md:relative md:left-auto md:mx-auto w-[47px] h-[47px] rounded-full border border-ivory/20 bg-charcoal flex items-center justify-center mb-5 z-10">
+                        <i data-lucide="message-square" class="w-5 h-5 text-ivory/60"></i>
+                    </div>
+                    <span class="block font-space text-[10px] uppercase tracking-widest text-muted mb-2">1 – 2 Days</span>
+                    <h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-2">Consultation</h2>
+                    <p class="font-inter text-muted text-sm leading-relaxed">
+                        You tell me what you're looking for: brand, reference, condition, budget. I listen, advise, and set realistic expectations.
                     </p>
                 </div>
-            </div>
 
-            <!-- STEP 2 -->
-            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
-                <div class="flex-shrink-0">
-                    <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">02</span>
-                </div>
-                <div>
-                    <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Sourcing</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
-                        I activate my global network of trusted dealers, collectors, and private sellers. Leads are carefully vetted, and I prioritize pieces with verifiable provenance and history.
+                <!-- STEP 2 -->
+                <div class="process-step relative pl-14 md:pl-0 md:text-center">
+                    <div class="absolute left-0 md:relative md:left-auto md:mx-auto w-[47px] h-[47px] rounded-full border border-ivory/20 bg-charcoal flex items-center justify-center mb-5 z-10">
+                        <i data-lucide="globe" class="w-5 h-5 text-ivory/60"></i>
+                    </div>
+                    <span class="block font-space text-[10px] uppercase tracking-widest text-muted mb-2">1 – 4 Weeks</span>
+                    <h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-2">Sourcing</h2>
+                    <p class="font-inter text-muted text-sm leading-relaxed">
+                        I activate a global network of trusted dealers, collectors, and private sellers. Leads are vetted for provenance and history.
                     </p>
                 </div>
-            </div>
 
-            <!-- STEP 3 -->
-            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
-                <div class="flex-shrink-0">
-                    <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">03</span>
-                </div>
-                <div>
-                    <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Authentication</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
-                        Before any transaction moves forward, pieces are independently authenticated by trusted watch specialists. Dial, movement, case, and bracelet are verified.
+                <!-- STEP 3 -->
+                <div class="process-step relative pl-14 md:pl-0 md:text-center">
+                    <div class="absolute left-0 md:relative md:left-auto md:mx-auto w-[47px] h-[47px] rounded-full border border-ivory/20 bg-charcoal flex items-center justify-center mb-5 z-10">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-ivory/60"></i>
+                    </div>
+                    <span class="block font-space text-[10px] uppercase tracking-widest text-muted mb-2">3 – 5 Days</span>
+                    <h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-2">Authentication</h2>
+                    <p class="font-inter text-muted text-sm leading-relaxed">
+                        Pieces are independently authenticated by trusted watch specialists. Dial, movement, case, and bracelet are verified.
                     </p>
                 </div>
-            </div>
 
-            <!-- STEP 4 -->
-            <div class="flex gap-6 sm:gap-10 glass-subtle rounded-xl p-6 sm:p-8">
-                <div class="flex-shrink-0">
-                    <span class="font-space font-bold text-3xl sm:text-5xl text-ivory/20">04</span>
-                </div>
-                <div>
-                    <h2 class="font-space font-bold text-xl sm:text-2xl tracking-tight mb-3">Delivery</h2>
-                    <p class="font-inter text-muted text-sm sm:text-base leading-[1.8] tracking-wide">
-                        Once authenticated, the piece is insured and shipped via secure courier. You receive detailed documentation, photography, and tracking throughout the process.
+                <!-- STEP 4 -->
+                <div class="process-step relative pl-14 md:pl-0 md:text-center">
+                    <div class="absolute left-0 md:relative md:left-auto md:mx-auto w-[47px] h-[47px] rounded-full border border-ivory/20 bg-charcoal flex items-center justify-center mb-5 z-10">
+                        <i data-lucide="package" class="w-5 h-5 text-ivory/60"></i>
+                    </div>
+                    <span class="block font-space text-[10px] uppercase tracking-widest text-muted mb-2">2 – 3 Days</span>
+                    <h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-2">Delivery</h2>
+                    <p class="font-inter text-muted text-sm leading-relaxed">
+                        Fully insured and shipped via secure courier with detailed documentation, photography, and tracking.
                     </p>
                 </div>
             </div>
@@ -260,30 +264,12 @@
 
         // Title handled by split-text reveal (premium-ui.js)
 
-        // Each step animates in on scroll with staggered number + content
-        document.querySelectorAll('.space-y-16 > .flex').forEach((step, i) => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: step,
-                    start: i === 0 ? 'top 90%' : 'top 80%',
-                    once: true
-                }
+        // Timeline steps animate in on scroll
+        document.querySelectorAll('.process-step').forEach((step, i) => {
+            gsap.from(step, {
+                scrollTrigger: { trigger: step, start: i === 0 ? 'top 90%' : 'top 85%', once: true },
+                opacity: 0, y: 30, duration: 0.7, ease: 'power2.out', delay: i * 0.1, clearProps: 'all'
             });
-
-            // Number slides in from left
-            tl.from(step.querySelector('span'), {
-                opacity: 0, x: -30, duration: 0.6, ease: 'power2.out', clearProps: 'all'
-            });
-
-            // Title slides up
-            tl.from(step.querySelector('h2'), {
-                opacity: 0, y: 20, duration: 0.5, ease: 'power2.out', clearProps: 'all'
-            }, '-=0.3');
-
-            // Description fades in
-            tl.from(step.querySelector('p'), {
-                opacity: 0, y: 20, duration: 0.5, ease: 'power2.out', clearProps: 'all'
-            }, '-=0.2');
         });
 
         // Process CTA

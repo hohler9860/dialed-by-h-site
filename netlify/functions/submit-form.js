@@ -37,7 +37,9 @@ function buildEmail(type, data) {
       subject: "New Private List Signup",
       body: `<h2>New Private List Signup</h2>
         <p><strong>Name:</strong> ${data.full_name || "Not provided"}</p>
-        <p><strong>Email:</strong> ${data.email}</p>`,
+        <p><strong>Email:</strong> ${data.email}</p>
+        ${data.intent ? `<p><strong>Intent:</strong> ${data.intent}</p>` : ""}
+        ${data.budget ? `<p><strong>Budget:</strong> ${data.budget}</p>` : ""}`,
     },
     BUY: {
       subject: `Sourcing Request: ${data.watch_name || "New Request"}`,
@@ -108,7 +110,7 @@ exports.handler = async (event) => {
   console.log("[submit-form] ENV CHECK -NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } =
+    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget } =
       JSON.parse(event.body);
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
@@ -150,6 +152,8 @@ exports.handler = async (event) => {
       watch_details: watchDetails?.trim() || null,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
+      intent: intent?.trim() || null,
+      budget: budget?.trim() || null,
       status: "new",
     };
 

@@ -387,6 +387,22 @@
                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
                     <input type="email" name="email" placeholder="EMAIL ADDRESS" required
                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space" />
+                    <select name="intent" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
+                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-muted/50 focus:border-ivory outline-none transition-colors font-space text-xs uppercase tracking-widest appearance-none cursor-pointer">
+                        <option value="" disabled selected>I'M LOOKING TO...</option>
+                        <option value="buy" class="bg-charcoal text-ivory">Buy</option>
+                        <option value="sell" class="bg-charcoal text-ivory">Sell</option>
+                        <option value="trade" class="bg-charcoal text-ivory">Trade</option>
+                        <option value="browse" class="bg-charcoal text-ivory">Just Browsing</option>
+                    </select>
+                    <select name="budget" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
+                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-muted/50 focus:border-ivory outline-none transition-colors font-space text-xs uppercase tracking-widest appearance-none cursor-pointer">
+                        <option value="" disabled selected>BUDGET RANGE (OPTIONAL)</option>
+                        <option value="under5k" class="bg-charcoal text-ivory">Under $5K</option>
+                        <option value="5k-15k" class="bg-charcoal text-ivory">$5K – $15K</option>
+                        <option value="15k-50k" class="bg-charcoal text-ivory">$15K – $50K</option>
+                        <option value="50k+" class="bg-charcoal text-ivory">$50K+</option>
+                    </select>
                     <button type="submit" id="footer-btn"
                             class="shimmer-btn group relative overflow-hidden w-full text-charcoal px-6 sm:px-8 py-3.5 font-bold font-space uppercase tracking-widest text-xs sm:text-sm mt-2 transition-transform hover:scale-[1.02]">
                         <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Get Priority Access</span>
@@ -1048,6 +1064,8 @@
                 const btnLabel = btn.querySelector('span') || btn;
                 const emailInput = form.querySelector('input[name="email"]');
                 const nameInput = form.querySelector('input[name="fullName"]');
+                const intentSelect = form.querySelector('select[name="intent"]');
+                const budgetSelect = form.querySelector('select[name="budget"]');
                 const originalText = btnLabel.textContent;
 
                 btnLabel.textContent = 'JOINING...';
@@ -1057,12 +1075,16 @@
                     btnLabel.textContent = 'JOINED ✓';
                     emailInput.value = '';
                     if (nameInput) nameInput.value = '';
+                    if (intentSelect) intentSelect.selectedIndex = 0;
+                    if (budgetSelect) budgetSelect.selectedIndex = 0;
                     setTimeout(() => { btnLabel.textContent = originalText; btn.disabled = false; }, 3000);
                 };
 
                 try {
                     const payload = { type: 'JOIN_LIST', email: emailInput.value };
                     if (nameInput && nameInput.value.trim()) payload.fullName = nameInput.value.trim();
+                    if (intentSelect && intentSelect.value) payload.intent = intentSelect.value;
+                    if (budgetSelect && budgetSelect.value) payload.budget = budgetSelect.value;
                     const res = await fetch('/.netlify/functions/submit-form', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

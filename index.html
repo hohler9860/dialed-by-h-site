@@ -383,11 +383,14 @@
                 </p>
 
                 <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col gap-4 mb-12 sm:mb-16 max-w-sm mx-auto">
-                    <input type="text" name="fullName" placeholder="FULL NAME"
+                    <label for="footer-name" class="sr-only">Full Name</label>
+                    <input id="footer-name" type="text" name="fullName" placeholder="FULL NAME"
                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
-                    <input type="email" name="email" placeholder="EMAIL ADDRESS" required
+                    <label for="footer-email" class="sr-only">Email Address</label>
+                    <input id="footer-email" type="email" name="email" placeholder="EMAIL ADDRESS" required
                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space" />
-                    <select name="intent" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
+                    <label for="footer-intent" class="sr-only">Intent</label>
+                    <select id="footer-intent" name="intent" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
                             class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-muted/50 focus:border-ivory outline-none transition-colors font-space text-xs uppercase tracking-widest appearance-none cursor-pointer">
                         <option value="" disabled selected>I'M LOOKING TO...</option>
                         <option value="buy" class="bg-charcoal text-ivory">Buy</option>
@@ -395,7 +398,8 @@
                         <option value="trade" class="bg-charcoal text-ivory">Trade</option>
                         <option value="browse" class="bg-charcoal text-ivory">Just Browsing</option>
                     </select>
-                    <select name="budget" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
+                    <label for="footer-budget" class="sr-only">Budget Range</label>
+                    <select id="footer-budget" name="budget" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
                             class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-muted/50 focus:border-ivory outline-none transition-colors font-space text-xs uppercase tracking-widest appearance-none cursor-pointer">
                         <option value="" disabled selected>BUDGET RANGE (OPTIONAL)</option>
                         <option value="under5k" class="bg-charcoal text-ivory">Under $5K</option>

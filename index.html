@@ -678,8 +678,8 @@
                 const html = CONFIG.TICKER_ITEMS.map(item => `
                     <button onclick="app.openModal('WATCH_DETAIL', app.getWatchById('${item.id}'))"
                             class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                        <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110 bg-white/5">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-contain">
                         </div>
                         <div class="flex flex-col items-start">
                             <span class="text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300 whitespace-nowrap">
@@ -709,13 +709,7 @@
                     .from("#hero-btn + a", { opacity: 0, duration: 0.7, clearProps: "all" }, "-=0.5")
                     .from(".animate-bounce", { opacity: 0, duration: 0.8, clearProps: "all" }, "-=0.3");
 
-                // ── Ticker section reveal ──
-                gsap.from(".ticker-wrap", {
-                    scrollTrigger: { trigger: ".ticker-wrap", start: "top 95%", once: true },
-                    opacity: 0,
-                    duration: 1,
-                    ease: "power2.out"
-                });
+                // ── Ticker - always visible, no scroll trigger ──
 
                 // ── Trust section - staggered text reveal ──
                 gsap.from(".reveal-trust", {
@@ -755,8 +749,8 @@
                 if (type === 'WATCH_DETAIL' && data) {
                     html = `
                         <div id="form-view">
-                            <div class="w-full h-72 sm:h-80 bg-ivory/5 overflow-hidden">
-                                <img src="${data.image}" class="w-full h-full object-cover">
+                            <div class="w-full h-72 sm:h-80 bg-ivory/5 flex items-center justify-center p-4">
+                                <img src="${data.image}" class="max-w-full max-h-full object-contain">
                             </div>
                             <div class="p-5 sm:p-8 space-y-6">
                                 <div>

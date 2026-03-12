@@ -742,8 +742,8 @@
                 if (type === 'WATCH_DETAIL' && data) {
                     html = `
                         <div id="form-view">
-                            <div class="w-full h-72 sm:h-80 bg-ivory/5 flex items-center justify-center p-4">
-                                <img src="${data.image}" class="max-w-full max-h-full object-contain">
+                            <div class="w-full h-72 sm:h-96 overflow-hidden">
+                                <img src="${data.image}" class="w-full h-full object-cover">
                             </div>
                             <div class="p-5 sm:p-8 space-y-6">
                                 <div>

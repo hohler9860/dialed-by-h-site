@@ -528,7 +528,7 @@
             renderGrid(filtered);
 
             gsap.from('#watch-grid .watch-card', {
-                opacity: 0, y: 30, duration: 0.5, stagger: 0.04, ease: 'power2.out'
+                opacity: 0, y: 30, duration: 0.5, stagger: 0.04, ease: 'power2.out', clearProps: 'all'
             });
         }
 
@@ -811,11 +811,19 @@
             lucide.createIcons();
             gsap.registerPlugin(ScrollTrigger);
 
-            gsap.from('nav', { opacity: 0, y: -30, duration: 1, ease: 'power3.out' });
-            gsap.to('#hero-title', { opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', delay: 0.3 });
-            gsap.from('#hero-title', { y: 80, duration: 1.2, ease: 'expo.out', delay: 0.3 });
-            gsap.to('#hero-sub', { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.7 });
-            gsap.from('#hero-sub', { y: 30, duration: 0.8, ease: 'power2.out', delay: 0.7 });
+            gsap.from('nav', { opacity: 0, y: -30, duration: 1, ease: 'power3.out', clearProps: 'all' });
+            gsap.fromTo('#hero-title',
+                { opacity: 0, y: 80 },
+                { opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', delay: 0.3,
+                  onComplete: () => { document.getElementById('hero-title').classList.remove('opacity-0'); gsap.set('#hero-title', { clearProps: 'all' }); }
+                }
+            );
+            gsap.fromTo('#hero-sub',
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.7,
+                  onComplete: () => { document.getElementById('hero-sub').classList.remove('opacity-0'); gsap.set('#hero-sub', { clearProps: 'all' }); }
+                }
+            );
 
             await fetchPieces();
 
@@ -852,22 +860,26 @@
             if (rc) rc.textContent = PIECES.length + ' pieces';
 
             gsap.from('#watch-grid .watch-card', {
-                opacity: 0, y: 30, duration: 0.5, stagger: 0.04, ease: 'power2.out'
+                opacity: 0, y: 30, duration: 0.5, stagger: 0.04, ease: 'power2.out', clearProps: 'all'
             });
 
             gsap.from('.glass.rounded-2xl', {
-                scrollTrigger: { trigger: '.glass.rounded-2xl', start: 'top 85%' },
-                opacity: 0, y: 40, duration: 0.9, ease: 'power3.out'
+                scrollTrigger: { trigger: '.glass.rounded-2xl', start: 'top 85%', once: true },
+                opacity: 0, y: 40, duration: 0.9, ease: 'power3.out', clearProps: 'all'
             });
 
-            gsap.to('.footer-line', {
-                opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: 'power2.out',
-                scrollTrigger: { trigger: 'footer', start: 'top 90%' }
-            });
-            gsap.from('.footer-line', {
-                y: 20, duration: 0.6, stagger: 0.15, ease: 'power2.out',
-                scrollTrigger: { trigger: 'footer', start: 'top 90%' }
-            });
+            gsap.fromTo('.footer-line',
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: 'power2.out',
+                  scrollTrigger: { trigger: 'footer', start: 'top 90%', once: true },
+                  onComplete: () => {
+                      document.querySelectorAll('.footer-line').forEach(el => {
+                          el.classList.remove('opacity-0');
+                          gsap.set(el, { clearProps: 'all' });
+                      });
+                  }
+                }
+            );
         });
     </script>
 </body>

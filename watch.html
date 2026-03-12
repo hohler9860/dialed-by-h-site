@@ -484,7 +484,7 @@
             lucide.createIcons();
             gsap.registerPlugin(ScrollTrigger);
 
-            gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out' });
+            gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out', clearProps: 'all' });
 
             currentWatch = await fetchWatch();
             renderWatchDetail(currentWatch);
@@ -502,20 +502,20 @@
             // Animate content in
             setTimeout(() => {
                 const breadcrumb = document.querySelector('#watch-detail > div:first-child');
-                if (breadcrumb) gsap.from(breadcrumb, { opacity: 0, y: 10, duration: 0.5, ease: 'power2.out' });
+                if (breadcrumb) gsap.from(breadcrumb, { opacity: 0, y: 10, duration: 0.5, ease: 'power2.out', clearProps: 'all' });
 
                 const cols = document.querySelectorAll('#watch-detail .grid > div');
                 if (cols.length) {
-                    gsap.from(cols[0], { opacity: 0, x: -30, duration: 0.8, ease: 'power3.out', delay: 0.1 });
-                    gsap.from(cols[1], { opacity: 0, x: 30, duration: 0.8, ease: 'power3.out', delay: 0.2 });
+                    gsap.from(cols[0], { opacity: 0, x: -30, duration: 0.8, ease: 'power3.out', delay: 0.1, clearProps: 'all' });
+                    gsap.from(cols[1], { opacity: 0, x: 30, duration: 0.8, ease: 'power3.out', delay: 0.2, clearProps: 'all' });
                 }
 
                 // Specs section
                 const specsSection = document.querySelector('#watch-detail > div:nth-child(3)');
                 if (specsSection) {
                     gsap.from(specsSection, {
-                        scrollTrigger: { trigger: specsSection, start: 'top 85%' },
-                        opacity: 0, y: 30, duration: 0.7, ease: 'power2.out'
+                        scrollTrigger: { trigger: specsSection, start: 'top 85%', once: true },
+                        opacity: 0, y: 30, duration: 0.7, ease: 'power2.out', clearProps: 'all'
                     });
                 }
 
@@ -523,8 +523,8 @@
                 const inquirySection = document.getElementById('inquiry-section');
                 if (inquirySection) {
                     gsap.from(inquirySection, {
-                        scrollTrigger: { trigger: inquirySection, start: 'top 85%' },
-                        opacity: 0, y: 30, duration: 0.7, ease: 'power2.out'
+                        scrollTrigger: { trigger: inquirySection, start: 'top 85%', once: true },
+                        opacity: 0, y: 30, duration: 0.7, ease: 'power2.out', clearProps: 'all'
                     });
                 }
             }, 50);

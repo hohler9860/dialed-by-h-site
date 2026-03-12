@@ -242,7 +242,7 @@
         </section>
 
         <!-- ACTIONS SECTION (BUY / SELL / TRADE) -->
-        <section id="process" class="grid grid-cols-1 sm:grid-cols-3 min-h-[60vh] overflow-hidden">
+        <section id="process" class="grid grid-cols-1 sm:grid-cols-3 overflow-hidden">
             <!-- BUY -->
             <a href="inventory.html"
                     class="action-card group relative h-[300px] sm:h-[500px] lg:h-[700px] border-b sm:border-b-0 sm:border-r border-ivory/10 overflow-hidden text-left w-full block">
@@ -475,6 +475,34 @@
                     ref: '4500V',
                     price: 'Inquire',
                     image: 'https://wristaficionado.com/cdn/shop/files/vacheron-constantin-overseas-4500v-110a-b128-stainless-steel-blue-dial-vacheron-constantin-40632762794228.jpg?v=1706785391&width=2160'
+                },
+                {
+                    id: '7',
+                    name: 'Patek Aquanaut',
+                    ref: '5167A-001',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/patek-philippe-aquanaut-5167a-001-selfwinding-stainless-steel-black-dial-2011-patek-philippe-40265459728628.jpg?v=1706734615&width=600'
+                },
+                {
+                    id: '8',
+                    name: 'Patek World Time',
+                    ref: '5930G-010',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/patek-philippe-complications-5930g-010-world-time-flyback-chronograph-white-gold-blue-dial-2022-patek-philippe-40264854307060.jpg?v=1706792931&width=600'
+                },
+                {
+                    id: '9',
+                    name: 'Rolex Daytona Rainbow',
+                    ref: '116599RBOW',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/rolex-daytona-116599rbow-rainbow-white-gold-black-dial-sapphire-bezel-2022-rolex-40550026772724.jpg?v=1706683139&width=600'
+                },
+                {
+                    id: '10',
+                    name: 'Richard Mille',
+                    ref: 'RM 11-03',
+                    price: 'Inquire',
+                    image: 'https://wristaficionado.com/cdn/shop/files/richard-mille-rm-11-03-last-white-edition-automatic-flyback-chronograph-white-ceramic-richard-mille-41667087532276.jpg?v=1726405725&width=600'
                 }
             ],
             WATCH_BRANDS: {
@@ -723,64 +751,40 @@
                     .from("#hero-sub", { opacity: 0, y: 30, duration: 0.9, clearProps: "all" }, "-=0.7")
                     .from("#hero-btn", { opacity: 0, duration: 0.8, clearProps: "all" }, "-=0.5")
                     .from("#hero-btn + a", { opacity: 0, duration: 0.7, clearProps: "all" }, "-=0.5")
-                    .from(".animate-bounce", { opacity: 0, duration: 0.8 }, "-=0.3");
-
+                    .from(".animate-bounce", { opacity: 0, duration: 0.8, clearProps: "all" }, "-=0.3");
 
                 // ── Ticker section reveal ──
                 gsap.from(".ticker-wrap", {
-                    scrollTrigger: { trigger: ".ticker-wrap", start: "top 95%" },
+                    scrollTrigger: { trigger: ".ticker-wrap", start: "top 95%", once: true },
                     opacity: 0,
                     duration: 1,
                     ease: "power2.out"
                 });
 
-                // ── Trust section - staggered text + parallax image ──
+                // ── Trust section - staggered text reveal ──
                 gsap.from(".reveal-trust", {
-                    scrollTrigger: { trigger: "#about", start: "top 70%" },
+                    scrollTrigger: { trigger: "#about", start: "top 70%", once: true },
                     y: 60, opacity: 0,
                     duration: 1,
                     stagger: 0.1,
-                    ease: "expo.out"
+                    ease: "expo.out",
+                    clearProps: "all"
                 });
 
-
-
-                // ── Process cards - staggered with perspective tilt ──
-                gsap.from(".action-card", {
-                    scrollTrigger: { trigger: "#process", start: "top 80%" },
-                    y: 100, opacity: 0,
-                    rotationX: 8,
-                    transformOrigin: "center bottom",
-                    duration: 1,
-                    stagger: 0.15,
-                    ease: "expo.out"
-                });
-
-                // Parallax on action card images
-                document.querySelectorAll(".action-card img").forEach(img => {
-                    gsap.to(img, {
-                        y: -30,
-                        ease: "none",
-                        scrollTrigger: {
-                            trigger: img.closest(".action-card"),
-                            start: "top bottom",
-                            end: "bottom top",
-                            scrub: 1
-                        }
-                    });
-                });
+                // ── Process cards - no entrance animation, hover-only ──
 
                 // ── Testimonials - scale + blur reveal ──
                 gsap.from("#testimonials .relative.z-10", {
-                    scrollTrigger: { trigger: "#testimonials", start: "top 80%" },
+                    scrollTrigger: { trigger: "#testimonials", start: "top 80%", once: true },
                     y: 60, opacity: 0, scale: 0.96,
                     duration: 1.2,
-                    ease: "expo.out"
+                    ease: "expo.out",
+                    clearProps: "all"
                 });
 
                 // ── Footer - dramatic entrance ──
                 gsap.to(".footer-reveal", {
-                    scrollTrigger: { trigger: "footer", start: "top 85%" },
+                    scrollTrigger: { trigger: "footer", start: "top 85%", once: true },
                     y: 0, opacity: 1,
                     duration: 1,
                     ease: "back.out(1.4)"

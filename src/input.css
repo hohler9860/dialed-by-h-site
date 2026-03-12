@@ -160,7 +160,7 @@ body {
     100% { transform: translateX(-50%); }
 }
 .animate-ticker {
-    animation: ticker 120s linear infinite;
+    animation: ticker 300s linear infinite;
     will-change: transform;
     backface-visibility: hidden;
 }

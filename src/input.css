@@ -554,9 +554,9 @@ select {
    Adapted from emerald-ui shimmer-button
    ══════════════════════════════════════ */
 .shimmer-btn {
-    background: linear-gradient(110deg, #f0f0f0, 45%, #ffffff, 55%, #f0f0f0);
+    background: linear-gradient(110deg, #d9d9d9, 40%, #ffffff, 50%, #d9d9d9);
     background-size: 200% 100%;
-    animation: shimmer2 2s infinite linear;
+    animation: shimmer2 2.5s infinite linear;
 }
 @keyframes shimmer2 {
     0%   { background-position: 0% 0%; }

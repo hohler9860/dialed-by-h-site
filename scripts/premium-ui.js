@@ -62,61 +62,14 @@
         });
     }
 
-    // ── Shimmer Text ──
-    // Pure-JS port of the shimmer-text React component.
-    // Adds the .shimmer-text class to headings, paragraphs, and nav links.
-    // For headings that contain children with their own text colors
-    // (e.g. text-muted, stroke-text), the class is applied to each child
-    // individually so colour variations are preserved.
-    function initShimmerText() {
-        var candidates = document.querySelectorAll(
-            'h1, h2, h3, h4, p, .nav-link, #mobile-menu > a'
-        );
-
-        candidates.forEach(function (el) {
-            // Skip elements inside shimmer buttons, forms, or tickers
-            if (el.closest('.shimmer-btn') || el.closest('form') || el.closest('.animate-ticker')) return;
-            // Skip stroke-text (has its own fill / stroke rendering)
-            if (el.classList.contains('stroke-text')) return;
-
-            // Headings with child elements → apply per-child to keep colour
-            var childEls = Array.from(el.children).filter(function (c) {
-                return c.tagName !== 'BR';
-            });
-
-            if (/^H[1-6]$/.test(el.tagName) && childEls.length > 0) {
-                Array.from(el.childNodes).forEach(function (node) {
-                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                        var span = document.createElement('span');
-                        span.className = 'shimmer-text';
-                        span.textContent = node.textContent;
-                        node.parentNode.replaceChild(span, node);
-                    } else if (
-                        node.nodeType === Node.ELEMENT_NODE &&
-                        node.tagName !== 'BR' &&
-                        !node.classList.contains('stroke-text')
-                    ) {
-                        node.classList.add('shimmer-text');
-                    }
-                });
-            } else {
-                el.classList.add('shimmer-text');
-            }
-        });
-    }
-
     // ── Initialize ──
     function init() {
         initGrainOverlay();
 
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function () {
-                initSplitText();
-                initShimmerText();
-            });
+            document.addEventListener('DOMContentLoaded', initSplitText);
         } else {
             initSplitText();
-            initShimmerText();
         }
     }
 

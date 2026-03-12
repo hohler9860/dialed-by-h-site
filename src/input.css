@@ -570,45 +570,6 @@ select {
 }
 
 /* ══════════════════════════════════════
-   PREMIUM UI - Shimmer Text (sweep highlight)
-   Pure-CSS port of shimmer-text React component
-   ══════════════════════════════════════ */
-.shimmer-text {
-    position: relative;
-    overflow: hidden;
-}
-span.shimmer-text,
-a.shimmer-text {
-    display: inline-block;
-}
-.shimmer-text::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        110deg,
-        transparent 0%,
-        transparent 35%,
-        rgba(255, 255, 255, 0.12) 45%,
-        rgba(255, 255, 255, 0.18) 50%,
-        rgba(255, 255, 255, 0.12) 55%,
-        transparent 65%,
-        transparent 100%
-    );
-    background-size: 250% 100%;
-    background-position-x: 130%;
-    animation: shimmer-text-sweep 4s 2s infinite linear;
-    pointer-events: none;
-    mix-blend-mode: screen;
-}
-
-@keyframes shimmer-text-sweep {
-    0%   { background-position-x: 130%; }
-    40%  { background-position-x: -30%; }
-    100% { background-position-x: -30%; }
-}
-
-/* ══════════════════════════════════════
    PREMIUM UI - Split-Text Reveal
    ══════════════════════════════════════ */
 .split-word {

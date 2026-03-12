@@ -688,6 +688,7 @@
             },
 
             startTestimonialTimer: () => {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 app.testimonialTimer = setInterval(() => {
                     const next = (app.testimonialIndex + 1) % CONFIG.TESTIMONIALS.length;
                     app.renderTestimonial(next);
@@ -722,6 +723,7 @@
             },
 
             initTickerGSAP: () => {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 // Main watch ticker — GSAP driven for smooth, jank-free animation
                 const mainTicker = document.getElementById('main-ticker');
                 if (mainTicker) {

@@ -653,3 +653,12 @@ select {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .orb, .orb-1, .orb-2, .orb-3 { animation: none !important; }
+    .shimmer-btn { animation: none !important; }
+    .animate-ticker { animation: none !important; }
+    .split-word { transition: none !important; }
+    * { scroll-behavior: auto !important; }
+}

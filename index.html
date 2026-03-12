@@ -323,7 +323,7 @@
         </section>
 
         <!-- TESTIMONIALS - Rotating 3-Card Carousel -->
-        <section id="testimonials" class="relative py-10 sm:py-14 lg:py-16 border-b border-ivory/5 overflow-hidden">
+        <section id="testimonials" class="relative py-10 sm:py-14 lg:py-16 border-b border-ivory/5 overflow-hidden" role="region" aria-roledescription="carousel" aria-label="Collector testimonials" tabindex="0">
             <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
 
                 <!-- Section label -->
@@ -332,7 +332,7 @@
                 </p>
 
                 <!-- 3-Card Track -->
-                <div id="testimonial-track" class="testimonial-track">
+                <div id="testimonial-track" class="testimonial-track" aria-live="polite">
                     <div id="testimonial-inner" class="testimonial-inner">
                         <!-- Cards injected by JS -->
                     </div>
@@ -556,6 +556,13 @@
                         diff < 0 ? app.testimonialNext() : app.testimonialPrev();
                     }
                 }, { passive: true });
+
+                // Keyboard navigation for testimonial carousel
+                const section = document.getElementById('testimonials');
+                section.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') { app.testimonialPrev(); e.preventDefault(); }
+                    if (e.key === 'ArrowRight') { app.testimonialNext(); e.preventDefault(); }
+                });
 
                 // Re-render on resize (mobile ↔ desktop layout switch)
                 let resizeTimeout;

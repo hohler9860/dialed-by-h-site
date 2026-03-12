@@ -49,6 +49,8 @@ body {
     transition: width 0.3s ease;
 }
 .nav-link:hover::after { width: 100%; }
+.nav-link.nav-active { color: #f0f0f0; }
+.nav-link.nav-active::after { width: 100%; }
 
 /* ── No-scrollbar utility ── */
 .no-scrollbar::-webkit-scrollbar { display: none; }

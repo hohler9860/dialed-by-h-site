@@ -157,16 +157,12 @@ body {
 }
 /* Ticker parent: own compositing layer + content containment */
 .ticker-wrap {
-    contain: content;
+    contain: layout style;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
 }
-@keyframes ticker {
-    0%   { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-50%, 0, 0); }
-}
+/* Animation is driven by GSAP – no CSS @keyframes needed */
 .animate-ticker {
-    animation: ticker 80s linear infinite;
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;

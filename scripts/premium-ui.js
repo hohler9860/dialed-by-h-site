@@ -9,39 +9,6 @@
         document.body.prepend(grain);
     }
 
-
-    // ── Lenis Smooth Scroll ──
-    function initLenis() {
-        if (typeof Lenis === 'undefined') return;
-
-        var lenis = new Lenis({
-            duration: 1.2,
-            easing: function (t) {
-                return Math.min(1, 1.001 - Math.pow(2, -10 * t));
-            },
-            orientation: 'vertical',
-            smoothWheel: true,
-            touchMultiplier: 2,
-        });
-
-        // Connect to GSAP ticker for ScrollTrigger sync
-        if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-            lenis.on('scroll', ScrollTrigger.update);
-            gsap.ticker.add(function (time) {
-                lenis.raf(time * 1000);
-            });
-        } else {
-            // Fallback RAF loop (404.html etc)
-            function raf(time) {
-                lenis.raf(time);
-                requestAnimationFrame(raf);
-            }
-            requestAnimationFrame(raf);
-        }
-
-        window.__lenis = lenis;
-    }
-
     // ── Split-Text Reveal ──
     function initSplitText() {
         var targets = document.querySelectorAll('[data-split-text]');
@@ -98,7 +65,6 @@
     // ── Initialize ──
     function init() {
         initGrainOverlay();
-        initLenis();
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initSplitText);

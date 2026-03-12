@@ -99,7 +99,6 @@
     <link href="https://fonts.googleapis.com/css?family=Google+Sans+Text" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/lenis@1/dist/lenis.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/dist/styles.css">
     <!-- Meta Pixel Code -->
@@ -203,7 +202,7 @@
 
         <!-- TICKER SECTION -->
         <div class="ticker-wrap w-full overflow-hidden py-6 relative z-20 border-y border-ivory/5" style="background:rgba(255,255,255,0.02);">
-            <div class="animate-ticker flex" style="width:max-content;will-change:transform;">
+            <div id="main-ticker" class="animate-ticker flex" style="width:max-content;">
                 <div id="ticker-content" class="flex items-center" style="flex-shrink:0;"></div>
                 <div id="ticker-content-clone" class="flex items-center" style="flex-shrink:0;"></div>
             </div>
@@ -367,7 +366,7 @@
         <!-- FOOTER -->
         <footer class="relative min-h-[50vh] sm:min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-16 sm:py-20">
             <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5 overflow-hidden">
-                <div class="animate-ticker flex" style="animation-duration: 40s; width: max-content;">
+                <div id="footer-ticker" class="animate-ticker flex" style="width: max-content;">
                     <span class="text-[20vw] font-space font-bold uppercase leading-none whitespace-nowrap" style="flex-shrink:0;">
                         Private List &bull; Private List &bull; Private List &bull; Private List &bull;&nbsp;
                     </span>
@@ -516,9 +515,12 @@
             mobileMenuOpen: false,
             testimonialIndex: 0,
             testimonialTimer: null,
+            tickerTween: null,
+            footerTickerTween: null,
 
             init: () => {
                 app.renderTicker();
+                app.initTickerGSAP();
                 app.buildTestimonialCards();
                 app.renderTestimonial(0);
                 app.startTestimonialTimer();
@@ -704,6 +706,42 @@
                 document.getElementById('ticker-content-clone').innerHTML = html;
             },
 
+            initTickerGSAP: () => {
+                // Main watch ticker — GSAP driven for smooth, jank-free animation
+                const mainTicker = document.getElementById('main-ticker');
+                if (mainTicker) {
+                    // Use xPercent: -50 because the element has two identical halves
+                    app.tickerTween = gsap.to(mainTicker, {
+                        xPercent: -50,
+                        duration: 80,
+                        ease: "none",
+                        repeat: -1,
+                        force3D: true
+                    });
+                }
+                // Footer "Private List" ticker
+                const footerTicker = document.getElementById('footer-ticker');
+                if (footerTicker) {
+                    app.footerTickerTween = gsap.to(footerTicker, {
+                        xPercent: -50,
+                        duration: 40,
+                        ease: "none",
+                        repeat: -1,
+                        force3D: true
+                    });
+                }
+            },
+
+            pauseTickers: () => {
+                if (app.tickerTween) app.tickerTween.pause();
+                if (app.footerTickerTween) app.footerTickerTween.pause();
+            },
+
+            resumeTickers: () => {
+                if (app.tickerTween) app.tickerTween.resume();
+                if (app.footerTickerTween) app.footerTickerTween.resume();
+            },
+
             initAnimations: () => {
                 gsap.registerPlugin(ScrollTrigger);
 
@@ -871,8 +909,8 @@
                 document.body.style.paddingRight = scrollbarW + 'px';
                 document.body.style.overflow = 'hidden';
 
-                // Pause ticker animations so they don't fight the modal
-                document.querySelectorAll('.animate-ticker').forEach(el => el.style.animationPlayState = 'paused');
+                // Pause ticker GSAP tweens while modal is open
+                app.pauseTickers();
 
                 overlay.classList.remove('modal-hidden');
                 overlay.classList.add('modal-visible');
@@ -897,8 +935,8 @@
                         overlay.classList.add('modal-hidden');
                         document.body.style.overflow = '';
                         document.body.style.paddingRight = '';
-                        // Resume ticker animations
-                        document.querySelectorAll('.animate-ticker').forEach(el => el.style.animationPlayState = '');
+                        // Resume ticker GSAP tweens
+                        app.resumeTickers();
                     }
                 });
             },
@@ -914,7 +952,7 @@
                     const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
                     document.body.style.paddingRight = scrollbarW + 'px';
                     document.body.style.overflow = 'hidden';
-                    document.querySelectorAll('.animate-ticker').forEach(el => el.style.animationPlayState = 'paused');
+                    app.pauseTickers();
                     gsap.to(overlay, { opacity: 1, duration: 0.35, ease: 'power2.out' });
                     gsap.fromTo(overlay.querySelector('.glass-strong'),
                         { y: 20, opacity: 0, scale: 0.95 },

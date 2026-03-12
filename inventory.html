@@ -107,14 +107,20 @@
     <main class="relative z-10 max-w-7xl mx-auto px-6 pt-20 sm:pt-28 pb-12 sm:pb-16">
 
         <!-- HEADER -->
-        <h1 id="hero-title" class="font-space font-bold text-3xl sm:text-5xl md:text-6xl lg:text-8xl tracking-tighter uppercase leading-[1.15] opacity-0 mb-12 sm:mb-16">
+        <h1 id="hero-title" class="font-space font-bold text-3xl sm:text-5xl md:text-6xl lg:text-8xl tracking-tighter uppercase leading-[1.15] opacity-0 mb-6 sm:mb-8">
             Available for <span class="text-muted">Sourcing</span>
         </h1>
 
         <!-- SUBTITLE -->
-        <p id="hero-sub" class="font-inter text-muted text-sm sm:text-base max-w-xl opacity-0 leading-relaxed mb-14 sm:mb-20" style="letter-spacing: 0.15em;">
-            Browse pieces I can currently source. Availability changes as the market moves, so inquire on any reference and I'll handle the rest.
+        <p id="hero-sub" class="font-inter text-muted text-sm sm:text-base max-w-2xl opacity-0 leading-relaxed mb-5 sm:mb-6" style="letter-spacing: 0.15em;">
+            These are pieces I can source right now, but my network runs deeper. If you don't see what you're looking for, I can still find it.
         </p>
+
+        <!-- REQUEST CTA -->
+        <a id="hero-cta" href="index.html#footer-form" class="inline-flex items-center gap-2 font-space text-[11px] sm:text-xs uppercase tracking-widest text-ivory/70 hover:text-ivory transition-colors opacity-0 mb-14 sm:mb-20 group">
+            <span>Submit a sourcing request</span>
+            <svg class="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
 
         <!-- FILTER SYSTEM -->
         <div class="mb-10 sm:mb-14" id="filter-bar">
@@ -813,13 +819,19 @@
             gsap.fromTo('#hero-title',
                 { opacity: 0, y: 80 },
                 { opacity: 1, y: 0, duration: 1.2, ease: 'expo.out', delay: 0.3,
-                  onComplete: () => { document.getElementById('hero-title').classList.remove('opacity-0'); gsap.set('#hero-title', { clearProps: 'all' }); }
+                  onComplete: () => { document.getElementById('hero-title').classList.remove('opacity-0'); gsap.set('#hero-title', { clearProps: 'opacity,transform' }); }
                 }
             );
             gsap.fromTo('#hero-sub',
                 { opacity: 0, y: 30 },
                 { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.7,
-                  onComplete: () => { document.getElementById('hero-sub').classList.remove('opacity-0'); gsap.set('#hero-sub', { clearProps: 'all' }); }
+                  onComplete: () => { document.getElementById('hero-sub').classList.remove('opacity-0'); gsap.set('#hero-sub', { clearProps: 'opacity,transform' }); }
+                }
+            );
+            gsap.fromTo('#hero-cta',
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.9,
+                  onComplete: () => { gsap.set('#hero-cta', { clearProps: 'opacity,transform' }); }
                 }
             );
 

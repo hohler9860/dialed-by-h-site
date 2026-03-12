@@ -182,13 +182,13 @@
                     Concierge sourcing for the world's most elusive references. Verified provenance. Strict anonymity.
                 </p>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                    <button id="hero-btn" onclick="app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal min-w-[240px] sm:min-w-[280px] px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105 text-center">
+                    <button id="hero-btn" onclick="app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal w-[260px] sm:w-[300px] py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105 text-center">
                         <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">
                             <span id="hero-btn-text">JOIN MY PRIVATE LIST</span>
                         </span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </button>
-                    <a href="inventory.html" class="min-w-[240px] sm:min-w-[280px] px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest text-muted hover:text-ivory transition-colors border border-ivory/20 hover:border-ivory/40 text-center inline-block">
+                    <a href="inventory.html" class="w-[260px] sm:w-[300px] py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest text-muted hover:text-ivory transition-colors border border-ivory/20 hover:border-ivory/40 text-center inline-flex items-center justify-center">
                         Browse Pieces
                     </a>
                 </div>
@@ -354,10 +354,12 @@
 
         <!-- FOOTER -->
         <footer class="relative min-h-[50vh] sm:min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-16 sm:py-20">
-            <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5">
-                <div class="whitespace-nowrap animate-ticker" style="animation-duration: 60s;">
-                    <span class="text-[20vw] font-space font-bold uppercase leading-none">
-                        Private List &bull; Private List &bull; Private List &bull; Private List &bull;
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5 overflow-hidden">
+                <div class="whitespace-nowrap animate-ticker" style="animation-duration: 40s; width: max-content;">
+                    <span class="text-[20vw] font-space font-bold uppercase leading-none" style="display:inline-block; flex-shrink:0;">
+                        Private List &bull; Private List &bull; Private List &bull; Private List &bull;&nbsp;
+                    </span><span class="text-[20vw] font-space font-bold uppercase leading-none" style="display:inline-block; flex-shrink:0;">
+                        Private List &bull; Private List &bull; Private List &bull; Private List &bull;&nbsp;
                     </span>
                 </div>
             </div>
@@ -434,25 +436,25 @@
         const CONFIG = {
             APP_NAME: "Dialed By H",
             TICKER_ITEMS: [
-                { id: '1',  name: 'AP Royal Oak Openworked',     ref: '15416CB',         price: 'Inquire', image: 'images/ticker/watch-1.jpeg' },
-                { id: '2',  name: 'AP Royal Oak Mini Frosted',   ref: '67630BC',         price: 'Inquire', image: 'images/ticker/watch-2.jpeg' },
-                { id: '3',  name: 'Cartier Crash',               ref: 'Paris Edition',   price: 'Inquire', image: 'images/ticker/watch-3.jpeg' },
-                { id: '4',  name: 'Cartier Cloche',              ref: 'Privé Skeleton',  price: 'Inquire', image: 'images/ticker/watch-4.jpg' },
-                { id: '5',  name: 'F.P. Journe',                 ref: 'Chronomètre Bleu', price: 'Inquire', image: 'images/ticker/watch-5.jpg' },
-                { id: '6',  name: 'F.P. Journe Octa Lune',       ref: 'Black Label',     price: 'Inquire', image: 'images/ticker/watch-6.jpg' },
-                { id: '7',  name: 'F.P. Journe Tourbillon',      ref: 'Souverain',       price: 'Inquire', image: 'images/ticker/watch-7.jpg' },
-                { id: '8',  name: 'Greubel Forsey',              ref: 'Balancier S2',    price: 'Inquire', image: 'images/ticker/watch-8.jpg' },
-                { id: '9',  name: 'MB&F Aquapod',                ref: 'HM7 Titanium',   price: 'Inquire', image: 'images/ticker/watch-9.jpg' },
+                { id: '1',  name: 'AP Royal Oak Openworked',     ref: '15416CB',           price: 'Inquire', image: 'images/ticker/watch-1.jpeg' },
+                { id: '5',  name: 'F.P. Journe',                 ref: 'Chronomètre Bleu',  price: 'Inquire', image: 'images/ticker/watch-5.jpg' },
+                { id: '13', name: 'Richard Mille',               ref: 'RM 030 Blue',       price: 'Inquire', image: 'images/ticker/watch-13.jpeg' },
                 { id: '10', name: 'Patek Aquanaut',              ref: '5164A Travel Time', price: 'Inquire', image: 'images/ticker/watch-10.jpeg' },
-                { id: '11', name: 'Patek Nautilus Tiffany',      ref: '5712/1A',         price: 'Inquire', image: 'images/ticker/watch-11.jpeg' },
-                { id: '12', name: 'Rolex Day-Date',              ref: 'Platinum Arabic', price: 'Inquire', image: 'images/ticker/watch-12.jpeg' },
-                { id: '13', name: 'Richard Mille',               ref: 'RM 030 Blue',     price: 'Inquire', image: 'images/ticker/watch-13.jpeg' },
-                { id: '14', name: 'Richard Mille',               ref: 'RM 35-03 Nadal',  price: 'Inquire', image: 'images/ticker/watch-14.jpg' },
-                { id: '15', name: 'Richard Mille',               ref: 'RM 65-01 LeBron', price: 'Inquire', image: 'images/ticker/watch-15.jpg' },
-                { id: '16', name: 'Richard Mille',               ref: 'RM 67-02 Ogier',  price: 'Inquire', image: 'images/ticker/watch-16.jpg' },
+                { id: '3',  name: 'Cartier Crash',               ref: 'Paris Edition',     price: 'Inquire', image: 'images/ticker/watch-3.jpeg' },
+                { id: '12', name: 'Rolex Day-Date',              ref: 'Platinum Arabic',   price: 'Inquire', image: 'images/ticker/watch-12.jpeg' },
+                { id: '18', name: 'Vacheron Overseas Chrono',    ref: '5500V Blue',        price: 'Inquire', image: 'images/ticker/watch-18.jpg' },
+                { id: '8',  name: 'Greubel Forsey',              ref: 'Balancier S2',      price: 'Inquire', image: 'images/ticker/watch-8.jpg' },
+                { id: '14', name: 'Richard Mille',               ref: 'RM 35-03 Nadal',    price: 'Inquire', image: 'images/ticker/watch-14.jpg' },
+                { id: '2',  name: 'AP Royal Oak Mini Frosted',   ref: '67630BC',           price: 'Inquire', image: 'images/ticker/watch-2.jpeg' },
+                { id: '6',  name: 'F.P. Journe Octa Lune',       ref: 'Black Label',       price: 'Inquire', image: 'images/ticker/watch-6.jpg' },
+                { id: '9',  name: 'MB&F Aquapod',                ref: 'HM7 Titanium',     price: 'Inquire', image: 'images/ticker/watch-9.jpg' },
+                { id: '4',  name: 'Cartier Cloche',              ref: 'Privé Skeleton',    price: 'Inquire', image: 'images/ticker/watch-4.jpg' },
+                { id: '15', name: 'Richard Mille',               ref: 'RM 65-01 LeBron',   price: 'Inquire', image: 'images/ticker/watch-15.jpg' },
+                { id: '11', name: 'Patek Nautilus Tiffany',      ref: '5712/1A',           price: 'Inquire', image: 'images/ticker/watch-11.jpeg' },
+                { id: '7',  name: 'F.P. Journe Tourbillon',      ref: 'Souverain',         price: 'Inquire', image: 'images/ticker/watch-7.jpg' },
                 { id: '17', name: 'Rolex GMT-Master II',         ref: '126710BLNR Batman', price: 'Inquire', image: 'images/ticker/watch-17.jpg' },
-                { id: '18', name: 'Vacheron Overseas Chrono',    ref: '5500V Blue',      price: 'Inquire', image: 'images/ticker/watch-18.jpg' },
-                { id: '19', name: 'Vacheron Overseas Perpetual', ref: '4300V Burgundy',  price: 'Inquire', image: 'images/ticker/watch-19.png' },
+                { id: '16', name: 'Richard Mille',               ref: 'RM 67-02 Ogier',    price: 'Inquire', image: 'images/ticker/watch-16.jpg' },
+                { id: '19', name: 'Vacheron Overseas Perpetual', ref: '4300V Burgundy',    price: 'Inquire', image: 'images/ticker/watch-19.png' },
             ],
             WATCH_BRANDS: {
                 'Rolex': ['Daytona','Submariner','GMT-Master II','Explorer','Explorer II','Datejust','Day-Date','Sky-Dweller','Yacht-Master','Sea-Dweller','Milgauss','Air-King','Cellini','Other'],
@@ -714,7 +716,34 @@
                     clearProps: "all"
                 });
 
-                // ── Process cards - no entrance animation, hover-only ──
+                // ── Process cards - scroll-triggered reveal on mobile ──
+                if (window.innerWidth < 640) {
+                    document.querySelectorAll('.action-card').forEach(card => {
+                        const overlay = card.querySelector('.bg-charcoal\\/85');
+                        const img = card.querySelector('img');
+                        if (overlay && img) {
+                            gsap.to(overlay, {
+                                scrollTrigger: {
+                                    trigger: card,
+                                    start: 'top 80%',
+                                    end: 'center 50%',
+                                    scrub: 0.5,
+                                },
+                                backgroundColor: 'rgba(10,10,10,0.40)',
+                            });
+                            gsap.to(img, {
+                                scrollTrigger: {
+                                    trigger: card,
+                                    start: 'top 80%',
+                                    end: 'center 50%',
+                                    scrub: 0.5,
+                                },
+                                filter: 'grayscale(0)',
+                                scale: 1.05,
+                            });
+                        }
+                    });
+                }
 
                 // ── Testimonials - scale + blur reveal ──
                 gsap.from("#testimonials .relative.z-10", {

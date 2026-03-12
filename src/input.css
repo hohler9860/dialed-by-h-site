@@ -336,14 +336,6 @@ select {
     color: rgba(245,243,235,0.95);
     border-color: rgba(245,243,235,0.2);
 }
-@keyframes pill-shimmer {
-    0%, 100% { border-color: rgba(245,243,235,0.06); }
-    50% { border-color: rgba(245,243,235,0.18); }
-}
-.brand-pill:not(.active) {
-    animation: pill-shimmer 3s ease-in-out infinite;
-}
-.brand-pill:not(.active):hover { animation: none; }
 
 @keyframes filter-glow {
     0%, 100% { border-color: rgba(245,243,235,0.05); }

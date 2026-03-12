@@ -155,7 +155,7 @@
                 Whether you're buying, selling, or trading, reach out and let's talk.
             </p>
             <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
-               class="shimmer-btn group relative overflow-hidden inline-block bg-ivory text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+               class="shimmer-btn group relative overflow-hidden inline-block text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
                 <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Message Me</span>
                 <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
             </a>
@@ -195,48 +195,48 @@
         gsap.registerPlugin(ScrollTrigger);
 
         // Page load - nav fades in
-        gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out' });
+        gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out', clearProps: 'all' });
 
         // Title handled by split-text reveal (premium-ui.js)
 
         // Photo - reveals with scale + fade
         gsap.from('.aspect-\\[3\\/4\\]', {
-            opacity: 0, scale: 0.95, y: 40, duration: 1.2, ease: 'power3.out', delay: 0.4
+            opacity: 0, scale: 0.95, y: 40, duration: 1.2, ease: 'power3.out', delay: 0.4, clearProps: 'all'
         });
 
         // Intro text paragraphs - stagger in
         gsap.from('.flex.flex-col.md\\:flex-row .space-y-6 p', {
-            opacity: 0, y: 30, duration: 0.8, ease: 'power2.out', stagger: 0.15, delay: 0.6
+            opacity: 0, y: 30, duration: 0.8, ease: 'power2.out', stagger: 0.15, delay: 0.6, clearProps: 'all'
         });
 
         // Continued text - scroll triggered
         gsap.fromTo('.mb-14:last-of-type p',
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.15, immediateRender: false,
-              scrollTrigger: { trigger: '.mb-14:last-of-type', start: 'top 85%', toggleActions: 'play none none none' }
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.15, immediateRender: false, clearProps: 'all',
+              scrollTrigger: { trigger: '.mb-14:last-of-type', start: 'top 85%', once: true }
             }
         );
 
         // Contact section - scroll triggered
         gsap.fromTo('.border-t h2',
             { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', immediateRender: false,
-              scrollTrigger: { trigger: '.border-t', start: 'top 85%', toggleActions: 'play none none none' }
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', immediateRender: false, clearProps: 'all',
+              scrollTrigger: { trigger: '.border-t', start: 'top 85%', once: true }
             }
         );
 
         gsap.fromTo('.social-icon',
             { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.2, immediateRender: false,
-              scrollTrigger: { trigger: '.border-t', start: 'top 85%', toggleActions: 'play none none none' }
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.1, delay: 0.2, immediateRender: false, clearProps: 'all',
+              scrollTrigger: { trigger: '.border-t', start: 'top 85%', once: true }
             }
         );
 
         // About CTA
         gsap.fromTo('#about-cta',
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', immediateRender: false,
-              scrollTrigger: { trigger: '#about-cta', start: 'top 85%' }
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', immediateRender: false, clearProps: 'all',
+              scrollTrigger: { trigger: '#about-cta', start: 'top 85%', once: true }
             }
         );
 
@@ -244,7 +244,7 @@
         gsap.fromTo('footer',
             { opacity: 0 },
             { opacity: 1, duration: 0.6, ease: 'power2.out', immediateRender: false,
-              scrollTrigger: { trigger: 'footer', start: 'top 95%' }
+              scrollTrigger: { trigger: 'footer', start: 'top 95%', once: true }
             }
         );
     </script>

@@ -249,7 +249,7 @@
                 Subscribe for weekly watch market insights, sourcing stories, and collection updates delivered to your inbox.
             </p>
             <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer"
-               class="shimmer-btn group relative overflow-hidden inline-block bg-ivory text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
+               class="shimmer-btn group relative overflow-hidden inline-block text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
                 <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Subscribe on Substack</span>
                 <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
             </a>
@@ -275,37 +275,37 @@
         // Use fromTo with immediateRender:false so content stays visible if GSAP stalls
         gsap.fromTo('nav',
             { opacity: 0, y: -20 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', immediateRender: false }
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', immediateRender: false, clearProps: 'all' }
         );
 
         // Title handled by split-text reveal (premium-ui.js)
 
         gsap.fromTo('#journal-intro',
             { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.4, immediateRender: false }
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.4, immediateRender: false, clearProps: 'all' }
         );
 
         gsap.fromTo('#journal-grid > a',
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.12, delay: 0.6, immediateRender: false }
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.12, delay: 0.6, immediateRender: false, clearProps: 'all' }
         );
 
         gsap.fromTo('#instagram',
             { opacity: 0, y: 40 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
-              scrollTrigger: { trigger: '#instagram', start: 'top 80%' }, immediateRender: false }
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', clearProps: 'all',
+              scrollTrigger: { trigger: '#instagram', start: 'top 80%', once: true }, immediateRender: false }
         );
 
         gsap.fromTo('#substack-cta',
             { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
-              scrollTrigger: { trigger: '#substack-cta', start: 'top 85%' }, immediateRender: false }
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', clearProps: 'all',
+              scrollTrigger: { trigger: '#substack-cta', start: 'top 85%', once: true }, immediateRender: false }
         );
 
         gsap.fromTo('footer',
             { opacity: 0 },
             { opacity: 1, duration: 0.6, ease: 'power2.out',
-              scrollTrigger: { trigger: 'footer', start: 'top 95%' }, immediateRender: false }
+              scrollTrigger: { trigger: 'footer', start: 'top 95%', once: true }, immediateRender: false }
         );
     </script>
 </body>

@@ -96,6 +96,20 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // Validate required environment variables
+  const missingVars = [];
+  if (!process.env.SUPABASE_URL) missingVars.push("SUPABASE_URL");
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missingVars.push("SUPABASE_SERVICE_ROLE_KEY");
+  if (!process.env.RESEND_API_KEY) missingVars.push("RESEND_API_KEY");
+
+  if (missingVars.length > 0) {
+    console.error("[submit-form] Missing environment variables:", missingVars.join(", "));
+    return res.status(500).json({
+      error: "Server configuration error",
+      details: `Missing environment variables: ${missingVars.join(", ")}. Set these in your Vercel project settings.`,
+    });
+  }
+
   // Log env var presence (never log actual values)
   console.log("[submit-form] ENV CHECK -SUPABASE_URL:", !!process.env.SUPABASE_URL);
   console.log("[submit-form] ENV CHECK -SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);

@@ -25,7 +25,7 @@ function getResend() {
 }
 
 /**
- * POST /.netlify/functions/send-broadcast
+ * POST /api/send-broadcast
  *
  * Protected by a secret key (BROADCAST_SECRET env var).
  *
@@ -47,33 +47,30 @@ function getResend() {
  *   testEmail?: string,       // If provided, only sends to this address (for testing)
  * }
  */
-exports.handler = async (event) => {
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Content-Type": "application/json",
-  };
+module.exports = async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
 
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const payload = JSON.parse(event.body);
+    const payload = req.body;
 
     // Auth check
     const broadcastSecret = process.env.BROADCAST_SECRET;
     if (!broadcastSecret || payload.secret !== broadcastSecret) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: "Unauthorized" }) };
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     if (!payload.subject || !payload.headline) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing required fields: subject, headline" }) };
+      return res.status(400).json({ error: "Missing required fields: subject, headline" });
     }
 
     // Render the email
@@ -105,17 +102,13 @@ exports.handler = async (event) => {
         html,
       });
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          success: true,
-          mode: "test",
-          sentTo: payload.testEmail,
-          resendId: result.data?.id || null,
-          error: result.error || null,
-        }),
-      };
+      return res.status(200).json({
+        success: true,
+        mode: "test",
+        sentTo: payload.testEmail,
+        resendId: result.data?.id || null,
+        error: result.error || null,
+      });
     }
 
     // Production: fetch all subscribers from Supabase
@@ -128,7 +121,7 @@ exports.handler = async (event) => {
 
     if (dbError) {
       console.error("[broadcast] DB ERROR:", dbError.message);
-      return { statusCode: 500, headers, body: JSON.stringify({ error: "Database error", details: dbError.message }) };
+      return res.status(500).json({ error: "Database error", details: dbError.message });
     }
 
     // Deduplicate by email
@@ -181,20 +174,16 @@ exports.handler = async (event) => {
 
     console.log("[broadcast] Complete -sent:", sent, "failed:", failed);
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        mode: "broadcast",
-        totalSubscribers: uniqueSubs.length,
-        sent,
-        failed,
-        errors: errors.length ? errors : undefined,
-      }),
-    };
+    return res.status(200).json({
+      success: true,
+      mode: "broadcast",
+      totalSubscribers: uniqueSubs.length,
+      sent,
+      failed,
+      errors: errors.length ? errors : undefined,
+    });
   } catch (err) {
     console.error("[broadcast] ERROR:", err.message);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", details: err.message }) };
+    return res.status(500).json({ error: "Server error", details: err.message });
   }
 };

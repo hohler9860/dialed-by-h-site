@@ -14,7 +14,7 @@
 
 const React = require("react");
 const { render } = require("@react-email/render");
-const { BroadcastEmail } = require("../netlify/functions/emails/broadcast.js");
+const { BroadcastEmail } = require("../api/emails/broadcast.js");
 const fs = require("fs");
 const { execSync } = require("child_process");
 

@@ -346,7 +346,7 @@
             const grid = document.getElementById('watch-grid');
             const errorState = document.getElementById('error-state');
             try {
-                const res = await fetch('/.netlify/functions/get-inventory');
+                const res = await fetch('/api/get-inventory');
                 if (!res.ok) throw new Error('Failed to fetch');
                 PIECES = interleaveByBrand((await res.json()).filter(p => p.image));
                 if (skeleton) skeleton.classList.add('hidden');
@@ -779,7 +779,7 @@
             if (btn) { btn.innerText = 'Processing...'; btn.disabled = true; }
 
             try {
-                const res = await fetch('/.netlify/functions/submit-form', {
+                const res = await fetch('/api/submit-form', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

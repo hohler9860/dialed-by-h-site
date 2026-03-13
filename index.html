@@ -780,7 +780,6 @@
                     .from("#hero-title .stroke-text", { opacity: 0, x: -40, duration: 1, ease: "power3.out", clearProps: "all" }, 0.6)
                     .from("#hero-sub", { opacity: 0, y: 30, duration: 0.9, clearProps: "all" }, "-=0.7")
                     .from("#hero-btn", { opacity: 0, duration: 0.8, clearProps: "all" }, "-=0.5")
-                    .from("#hero-btn + a", { opacity: 0, duration: 0.7, clearProps: "all" }, "-=0.5")
                     .from(".animate-bounce", { opacity: 0, duration: 0.8, clearProps: "all" }, "-=0.3");
 
                 // ── Ticker - always visible, no scroll trigger ──
@@ -1040,7 +1039,7 @@
                 }
 
                 try {
-                    const res = await fetch('/.netlify/functions/submit-form', {
+                    const res = await fetch('/api/submit-form', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
@@ -1056,7 +1055,7 @@
                     if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: type });
                 } catch (error) {
                     console.error('Submission error:', error);
-                    // If running locally (file:// or localhost without Netlify), still show success
+                    // If running locally (file:// or localhost without server), still show success
                     if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && error.message.includes('Failed to fetch'))) {
                         console.log('Local mode - showing success without backend');
                         app.showSuccess();
@@ -1098,7 +1097,7 @@
                     if (nameInput && nameInput.value.trim()) payload.fullName = nameInput.value.trim();
                     if (intentSelect && intentSelect.value) payload.intent = intentSelect.value;
                     if (budgetSelect && budgetSelect.value) payload.budget = budgetSelect.value;
-                    const res = await fetch('/.netlify/functions/submit-form', {
+                    const res = await fetch('/api/submit-form', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)

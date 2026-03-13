@@ -81,26 +81,19 @@ function buildEmail(type, data) {
   return templates[type];
 }
 
-exports.handler = async (event) => {
-  console.log("[submit-form] Function invoked, method:", event.httpMethod);
+module.exports = async (req, res) => {
+  console.log("[submit-form] Function invoked, method:", req.method);
 
-  const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Content-Type": "application/json",
-  };
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 
-  if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
 
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: "Method not allowed" }),
-    };
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   // Log env var presence (never log actual values)
@@ -110,38 +103,25 @@ exports.handler = async (event) => {
   console.log("[submit-form] ENV CHECK -NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget } =
-      JSON.parse(event.body);
+    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
     // Validate
     if (!type || !email) {
       console.error("[submit-form] VALIDATION FAIL -missing type or email");
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Missing required fields" }),
-      };
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const validTypes = ["JOIN_LIST", "BUY", "SELL", "TRADE", "WATCH_DETAIL"];
     if (!validTypes.includes(type)) {
       console.error("[submit-form] VALIDATION FAIL -invalid type:", type);
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Invalid submission type" }),
-      };
+      return res.status(400).json({ error: "Invalid submission type" });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       console.error("[submit-form] VALIDATION FAIL -invalid email:", email);
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: "Invalid email" }),
-      };
+      return res.status(400).json({ error: "Invalid email" });
     }
 
     // Insert into Supabase
@@ -166,11 +146,7 @@ exports.handler = async (event) => {
 
     if (error) {
       console.error("[submit-form] SUPABASE ERROR:", JSON.stringify(error));
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: "Database error", details: error.message }),
-      };
+      return res.status(500).json({ error: "Database error", details: error.message });
     }
 
     console.log("[submit-form] Supabase insert SUCCESS -id:", data.id);
@@ -201,7 +177,7 @@ exports.handler = async (event) => {
       );
     }
 
-    // 2. Welcome email to subscriber (JOIN_LIST only) -rendered + sent in parallel
+    // 2. Welcome email to subscriber (JOIN_LIST only)
     if (type === "JOIN_LIST") {
       const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
       console.log("[submit-form] Queuing welcome email to:", data.email);
@@ -261,31 +237,23 @@ exports.handler = async (event) => {
       );
     }
 
-    // Fire all emails in parallel -don't let email failures block the response
+    // Fire all emails in parallel
     const emailResults = await Promise.all(emailPromises);
     const notif = emailResults.find(r => r.type === "notification");
     const welcome = emailResults.find(r => r.type === "welcome");
     const inquiry = emailResults.find(r => r.type === "inquiry");
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        id: data.id,
-        emailSent: notif && !notif.error && !notif.result?.error,
-        emailId: notif?.result?.data?.id || null,
-        welcomeSent: welcome && !welcome.error && !welcome.result?.error,
-        inquirySent: inquiry && !inquiry.error && !inquiry.result?.error,
-      }),
-    };
+    return res.status(200).json({
+      success: true,
+      id: data.id,
+      emailSent: notif && !notif.error && !notif.result?.error,
+      emailId: notif?.result?.data?.id || null,
+      welcomeSent: welcome && !welcome.error && !welcome.result?.error,
+      inquirySent: inquiry && !inquiry.error && !inquiry.result?.error,
+    });
   } catch (err) {
     console.error("[submit-form] UNHANDLED ERROR:", err.message);
     console.error("[submit-form] STACK:", err.stack);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: "Server error", details: err.message }),
-    };
+    return res.status(500).json({ error: "Server error", details: err.message });
   }
 };

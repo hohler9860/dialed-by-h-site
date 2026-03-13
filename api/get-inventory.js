@@ -28,16 +28,13 @@ function getImages(prop) {
     return prop.files.map(f => f.file?.url || f.external?.url || '').filter(Boolean);
 }
 
-exports.handler = async (event) => {
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60, s-maxage=60'
-    };
+module.exports = async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
 
-    if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 200, headers, body: '' };
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
     try {
@@ -104,22 +101,19 @@ exports.handler = async (event) => {
         });
 
         // Single piece by ID
-        const params = event.queryStringParameters || {};
+        const params = req.query || {};
         if (params.id) {
             const piece = pieces.find(w => w.id === params.id);
             if (!piece) {
-                return { statusCode: 404, headers, body: JSON.stringify({ error: 'Piece not found' }) };
+                return res.status(404).json({ error: 'Piece not found' });
             }
-            return { statusCode: 200, headers, body: JSON.stringify(piece) };
+            return res.status(200).json(piece);
         }
 
-        return { statusCode: 200, headers, body: JSON.stringify(pieces) };
+        return res.status(200).json(pieces);
 
     } catch (error) {
         console.error('Notion API error:', error);
-        return {
-            statusCode: 500, headers,
-            body: JSON.stringify({ error: 'Failed to fetch pieces', details: error.message })
-        };
+        return res.status(500).json({ error: 'Failed to fetch pieces', details: error.message });
     }
 };

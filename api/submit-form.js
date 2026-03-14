@@ -96,6 +96,20 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // Validate required environment variables
+  const missingVars = [];
+  if (!process.env.SUPABASE_URL) missingVars.push("SUPABASE_URL");
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missingVars.push("SUPABASE_SERVICE_ROLE_KEY");
+  if (!process.env.RESEND_API_KEY) missingVars.push("RESEND_API_KEY");
+
+  if (missingVars.length > 0) {
+    console.error("[submit-form] Missing environment variables:", missingVars.join(", "));
+    return res.status(500).json({
+      error: "Server configuration error",
+      details: `Missing environment variables: ${missingVars.join(", ")}. Set these in your Vercel project settings.`,
+    });
+  }
+
   // Log env var presence (never log actual values)
   console.log("[submit-form] ENV CHECK -SUPABASE_URL:", !!process.env.SUPABASE_URL);
   console.log("[submit-form] ENV CHECK -SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -103,7 +117,7 @@ module.exports = async (req, res) => {
   console.log("[submit-form] ENV CHECK -NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget } = req.body;
+    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -132,8 +146,6 @@ module.exports = async (req, res) => {
       watch_details: watchDetails?.trim() || null,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
-      intent: intent?.trim() || null,
-      budget: budget?.trim() || null,
       status: "new",
     };
 

@@ -1,7 +1,21 @@
 const { Client } = require('@notionhq/client');
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY });
-const DATABASE_ID = process.env.NOTION_DATABASE_ID;
+let notion;
+let DATABASE_ID;
+
+function getNotion() {
+    if (!notion) {
+        if (!process.env.NOTION_API_KEY) {
+            throw new Error('NOTION_API_KEY environment variable is not set');
+        }
+        if (!process.env.NOTION_DATABASE_ID) {
+            throw new Error('NOTION_DATABASE_ID environment variable is not set');
+        }
+        notion = new Client({ auth: process.env.NOTION_API_KEY });
+        DATABASE_ID = process.env.NOTION_DATABASE_ID;
+    }
+    return { notion, DATABASE_ID };
+}
 
 // Extract value from a Notion property
 function get(prop) {
@@ -38,6 +52,8 @@ module.exports = async (req, res) => {
     }
 
     try {
+        const { notion, DATABASE_ID } = getNotion();
+
         // Paginate through all results (Notion returns max 100 per request)
         let allResults = [];
         let cursor = undefined;

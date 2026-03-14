@@ -117,7 +117,7 @@ module.exports = async (req, res) => {
   console.log("[submit-form] ENV CHECK -NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget } = req.body;
+    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -146,8 +146,6 @@ module.exports = async (req, res) => {
       watch_details: watchDetails?.trim() || null,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
-      intent: intent?.trim() || null,
-      budget: budget?.trim() || null,
       status: "new",
     };
 

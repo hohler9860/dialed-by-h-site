@@ -97,9 +97,9 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.577.0"></script>
     <link rel="stylesheet" href="/dist/styles.css">
     <!-- Meta Pixel Code -->
     <script>
@@ -464,6 +464,8 @@
 
     <script src="/scripts/premium-ui.js"></script>
     <script>
+        function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
         const CONFIG = {
             APP_NAME: "Dialed By H",
             TICKER_ITEMS: [
@@ -580,7 +582,7 @@
                 const select = document.getElementById('model-select');
                 const models = CONFIG.WATCH_BRANDS[brand] || [];
                 select.innerHTML = '<option value="" class="bg-charcoal">Select Model</option>' +
-                    models.map(m => '<option value="'+m+'" class="bg-charcoal">'+m+'</option>').join('');
+                    models.map(m => '<option value="'+esc(m)+'" class="bg-charcoal">'+esc(m)+'</option>').join('');
             },
 
             toggleMobileMenu: () => {
@@ -608,16 +610,16 @@
                         <div class="t-card glass-strong rounded-2xl p-6 sm:p-8 transition-all duration-500">
                             <div>
                                 <div class="flex items-center gap-1 mb-5">${stars}</div>
-                                <p class="font-inter text-ivory/90 text-sm sm:text-base leading-relaxed tracking-wide mb-6" style="text-transform: none;">${t.quote}</p>
+                                <p class="font-inter text-ivory/90 text-sm sm:text-base leading-relaxed tracking-wide mb-6" style="text-transform: none;">${esc(t.quote)}</p>
                             </div>
                             <div class="flex items-center gap-3 mt-auto">
                                 ${t.pfp
-                                    ? `<img src="${t.pfp}" alt="${t.name}" class="w-10 h-10 rounded-full object-cover border border-ivory/15">`
-                                    : `<div class="w-10 h-10 rounded-full border border-ivory/15 bg-ivory/5 flex items-center justify-center"><span class="font-space font-bold text-[11px] tracking-wider text-ivory/60">${t.name.split(' ').map(n => n[0]).join('')}</span></div>`
+                                    ? `<img src="${esc(t.pfp)}" alt="${esc(t.name)}" class="w-10 h-10 rounded-full object-cover border border-ivory/15">`
+                                    : `<div class="w-10 h-10 rounded-full border border-ivory/15 bg-ivory/5 flex items-center justify-center"><span class="font-space font-bold text-[11px] tracking-wider text-ivory/60">${esc(t.name.split(' ').map(n => n[0]).join(''))}</span></div>`
                                 }
                                 <div>
-                                    <p class="font-space font-bold text-xs tracking-widest text-ivory">${t.name}</p>
-                                    <p class="font-inter text-[10px] tracking-widest text-muted">${t.role}</p>
+                                    <p class="font-space font-bold text-xs tracking-widest text-ivory">${esc(t.name)}</p>
+                                    <p class="font-inter text-[10px] tracking-widest text-muted">${esc(t.role)}</p>
                                 </div>
                             </div>
                         </div>
@@ -716,14 +718,14 @@
                     <button onclick="app.openModal('WATCH_DETAIL', app.getWatchById('${item.id}'))"
                             class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none flex-shrink-0">
                         <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110 bg-white/5">
-                            <img src="${item.image}" alt="${item.name}" loading="lazy" decoding="async" class="w-full h-full object-contain">
+                            <img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" decoding="async" class="w-full h-full object-contain">
                         </div>
                         <div class="flex flex-col items-start">
                             <span class="text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300 whitespace-nowrap">
-                                ${item.name}
+                                ${esc(item.name)}
                             </span>
                             <span class="text-muted text-[10px] font-bold tracking-widest group-hover:text-ivory/60 transition-colors duration-300 whitespace-nowrap">
-                                ${item.ref}
+                                ${esc(item.ref)}
                             </span>
                         </div>
                         <div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2 flex-shrink-0"></div>
@@ -852,18 +854,18 @@
                     html = `
                         <div id="form-view">
                             <div class="w-full h-72 sm:h-96 overflow-hidden">
-                                <img src="${data.image}" class="w-full h-full object-cover">
+                                <img src="${esc(data.image)}" class="w-full h-full object-cover">
                             </div>
                             <div class="p-5 sm:p-8 space-y-6">
                                 <div>
-                                    <h2 class="text-3xl font-space font-bold tracking-tight mb-1">${data.name}</h2>
-                                    <p class="text-muted font-bold tracking-widest text-xs">${data.ref}</p>
+                                    <h2 class="text-3xl font-space font-bold tracking-tight mb-1">${esc(data.name)}</h2>
+                                    <p class="text-muted font-bold tracking-widest text-xs">${esc(data.ref)}</p>
                                 </div>
                                 <div class="border-t border-ivory/10 pt-4">
                                     <p class="text-sm font-inter text-ivory/80 leading-relaxed mb-6">
                                         This reference is available for concierge sourcing. Provide your details to inquire.
                                     </p>
-                                    <form onsubmit="event.preventDefault(); app.submitForm(this, 'WATCH_DETAIL', { watchName: '${data.name}', watchRef: '${data.ref}' });" class="space-y-4">
+                                    <form onsubmit="event.preventDefault(); app.submitForm(this, 'WATCH_DETAIL', { watchName: '${esc(data.name)}', watchRef: '${esc(data.ref)}' });" class="space-y-4">
                                         <div>
                                             <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
                                             <input required type="text" name="fullName" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
@@ -902,7 +904,7 @@
                                         <select name="watchBrand" required onchange="app.updateModels(this.value)"
                                             class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
                                             <option value="" class="bg-charcoal">Select Brand</option>
-                                            ${Object.keys(CONFIG.WATCH_BRANDS).map(b => '<option value="'+b+'" class="bg-charcoal">'+b+'</option>').join('')}
+                                            ${Object.keys(CONFIG.WATCH_BRANDS).map(b => '<option value="'+esc(b)+'" class="bg-charcoal">'+esc(b)+'</option>').join('')}
                                         </select>
                                     </div>
                                     <div>

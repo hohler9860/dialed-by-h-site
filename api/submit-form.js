@@ -84,7 +84,13 @@ function buildEmail(type, data) {
 module.exports = async (req, res) => {
   console.log("[submit-form] Function invoked, method:", req.method);
 
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const allowedOrigins = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else if (process.env.VERCEL_ENV !== "production") {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  }
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 

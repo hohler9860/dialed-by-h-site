@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /.netlify/
 
 Sitemap: https://dialedbyhenry.com/sitemap.xml

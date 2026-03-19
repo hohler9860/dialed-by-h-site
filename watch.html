@@ -39,7 +39,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.577.0"></script>
     <link rel="stylesheet" href="/dist/styles.css">
     <!-- Meta Pixel Code -->
     <script>
@@ -151,6 +151,8 @@
     <script>
         let currentWatch = null;
 
+        function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
         async function fetchWatch() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
@@ -183,12 +185,13 @@
             // Set background blur
             if (watch.image) {
                 const bgBlur = document.getElementById('bg-blur');
-                bgBlur.innerHTML = `<img src="${watch.image}" alt="">`;
+                bgBlur.innerHTML = `<img src="${esc(watch.image)}" alt="">`;
             }
 
             // Update page title
             const displayName = watch.name + (watch.nickname ? ' "' + watch.nickname + '"' : '');
             document.title = `${displayName} | Dialed By H`;
+            const safeDisplayName = esc(displayName);
 
             // Inject Product structured data
             const productLD = {
@@ -231,8 +234,8 @@
 
             const specsHTML = specEntries.map(([key, val]) => `
                 <div class="flex justify-between items-start py-3.5 border-b border-ivory/5 last:border-0">
-                    <span class="text-muted text-[11px] font-bold tracking-widest">${key}</span>
-                    <span class="text-ivory text-[11px] font-space tracking-wide text-right max-w-[55%]">${val}</span>
+                    <span class="text-muted text-[11px] font-bold tracking-widest">${esc(key)}</span>
+                    <span class="text-ivory text-[11px] font-space tracking-wide text-right max-w-[55%]">${esc(val)}</span>
                 </div>
             `).join('');
 
@@ -250,8 +253,8 @@
                     <!-- LEFT: IMAGE -->
                     <div class="relative">
                         ${watch.image
-                            ? `<div class="glass rounded-2xl overflow-hidden bg-[#111] aspect-square flex items-center justify-center relative cursor-zoom-in group" onclick="openZoom('${watch.image}', '${displayName.replace(/'/g, "\\'")}')">
-                                <img src="${watch.image}" alt="${displayName}" class="detail-img" style="width:${detailImgSize};height:${detailImgSize};object-fit:contain;object-position:center;margin:auto;${detailImgOffset}" onerror="this.style.display='none'; this.parentElement.querySelector('.img-fallback').style.display='flex'; this.parentElement.style.cursor='default'; this.parentElement.onclick=null;">
+                            ? `<div class="glass rounded-2xl overflow-hidden bg-[#111] aspect-square flex items-center justify-center relative cursor-zoom-in group" onclick="openZoom('${esc(watch.image).replace(/'/g, "\\'")}', '${esc(displayName).replace(/'/g, "\\'")}')">
+                                <img src="${esc(watch.image)}" alt="${safeDisplayName}" class="detail-img" style="width:${detailImgSize};height:${detailImgSize};object-fit:contain;object-position:center;margin:auto;${detailImgOffset}" onerror="this.style.display='none'; this.parentElement.querySelector('.img-fallback').style.display='flex'; this.parentElement.style.cursor='default'; this.parentElement.onclick=null;">
                                 <div class="img-fallback absolute inset-0 items-center justify-center" style="display:none;">
                                     <span class="text-muted/40 text-sm font-space tracking-widest">Image Coming Soon</span>
                                 </div>
@@ -265,7 +268,7 @@
                         }
                         ${watch.condition
                             ? `<div class="absolute top-4 right-4">
-                                <span class="glass-strong rounded-full px-4 py-2 text-[10px] font-space font-bold tracking-widest">${watch.condition}</span>
+                                <span class="glass-strong rounded-full px-4 py-2 text-[10px] font-space font-bold tracking-widest">${esc(watch.condition)}</span>
                                </div>`
                             : ''
                         }
@@ -274,12 +277,12 @@
                     <!-- RIGHT: INFO -->
                     <div class="flex flex-col">
                         <div class="mb-6">
-                            <p class="text-muted text-[11px] font-bold tracking-[0.2em] mb-2">${watch.brand}</p>
-                            <h1 class="font-space font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tighter leading-[0.95] mb-3">${displayName}</h1>
-                            ${watch.ref ? `<p class="text-muted text-sm font-bold tracking-widest">Ref. ${watch.ref}</p>` : ''}
+                            <p class="text-muted text-[11px] font-bold tracking-[0.2em] mb-2">${esc(watch.brand)}</p>
+                            <h1 class="font-space font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tighter leading-[0.95] mb-3">${safeDisplayName}</h1>
+                            ${watch.ref ? `<p class="text-muted text-sm font-bold tracking-widest">Ref. ${esc(watch.ref)}</p>` : ''}
                         </div>
 
-                        ${watch.details ? `<p class="text-ivory/60 text-sm font-inter leading-relaxed tracking-wide mb-8">${watch.details}</p>` : ''}
+                        ${watch.details ? `<p class="text-ivory/60 text-sm font-inter leading-relaxed tracking-wide mb-8">${esc(watch.details)}</p>` : ''}
 
                         <!-- INQUIRE CTA -->
                         <div class="glass rounded-xl p-6 mb-8">

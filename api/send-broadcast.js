@@ -48,7 +48,13 @@ function getResend() {
  * }
  */
 module.exports = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const allowedOrigins = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else if (process.env.VERCEL_ENV !== "production") {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  }
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 

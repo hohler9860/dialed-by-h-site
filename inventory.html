@@ -53,7 +53,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.577.0"></script>
     <link rel="stylesheet" href="/dist/styles.css">
     <!-- Meta Pixel Code -->
     <script>
@@ -321,6 +321,7 @@
     <script src="/scripts/premium-ui.js"></script>
     <script>
         let PIECES = [];
+        function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
         function interleaveByBrand(pieces) {
             const byBrand = {};
@@ -418,10 +419,10 @@
                 const imgOffset = brand.includes('RICHARD') ? 'transform:translateY(-10%);' : brand.includes('JOURNE') && !nm.includes('ELEGANTE') ? 'transform:translateY(14%);' : '';
 
                 return `
-                <a href="watch.html?id=${w.id}" class="watch-card group">
+                <a href="watch.html?id=${esc(w.id)}" class="watch-card group">
                     <div class="card-img-wrap relative overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center">
                         ${image
-                            ? `<img src="${image}" alt="${name}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;object-position:center;margin:auto;${imgOffset}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            ? `<img src="${esc(image)}" alt="${esc(name)}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;object-position:center;margin:auto;${imgOffset}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                <div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 items-center justify-center absolute inset-0" style="display:none;">
                                    <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
                                </div>`
@@ -440,13 +441,13 @@
                         </div>
                     </div>
                     <div class="card-info">
-                        <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}${nickname}</h3>
-                        <p class="text-muted text-[11px] font-bold tracking-widest mb-2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ref ? 'Ref. ' + ref : '&nbsp;'}</p>
-                        <p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3 line-clamp-2">${details || '&nbsp;'}</p>
+                        <h3 class="font-space font-bold text-base sm:text-lg tracking-tight leading-snug mb-1" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(name)}${esc(nickname)}</h3>
+                        <p class="text-muted text-[11px] font-bold tracking-widest mb-2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ref ? 'Ref. ' + esc(ref) : '&nbsp;'}</p>
+                        <p class="text-ivory/40 text-[11px] font-inter tracking-wide mb-3 line-clamp-2">${details ? esc(details) : '&nbsp;'}</p>
                         <div class="flex items-center gap-2 flex-wrap">
-                            ${condLabel ? `<span class="text-[9px] font-space font-bold tracking-widest text-ivory/50 bg-ivory/5 px-2.5 py-1 rounded-full">${condLabel}</span>` : ''}
-                            ${setLabel ? `<span class="text-[9px] font-space tracking-widest text-ivory/35 bg-ivory/5 px-2.5 py-1 rounded-full">${setLabel}</span>` : ''}
-                            ${year ? `<span class="text-[9px] font-space tracking-widest text-ivory/30">${year}</span>` : ''}
+                            ${condLabel ? `<span class="text-[9px] font-space font-bold tracking-widest text-ivory/50 bg-ivory/5 px-2.5 py-1 rounded-full">${esc(condLabel)}</span>` : ''}
+                            ${setLabel ? `<span class="text-[9px] font-space tracking-widest text-ivory/35 bg-ivory/5 px-2.5 py-1 rounded-full">${esc(setLabel)}</span>` : ''}
+                            ${year ? `<span class="text-[9px] font-space tracking-widest text-ivory/30">${esc(year)}</span>` : ''}
                         </div>
                     </div>
                 </a>
@@ -608,7 +609,7 @@
             const select = document.getElementById('model-select');
             const models = WATCH_BRANDS[brand] || [];
             select.innerHTML = '<option value="" class="bg-charcoal">Select Model</option>' +
-                models.map(m => '<option value="'+m+'" class="bg-charcoal">'+m+'</option>').join('');
+                models.map(m => '<option value="'+esc(m)+'" class="bg-charcoal">'+esc(m)+'</option>').join('');
         }
 
         function openSourceRequest() {
@@ -631,7 +632,7 @@
                             <select name="watchBrand" required onchange="updateModels(this.value)"
                                 class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
                                 <option value="" class="bg-charcoal">Select Brand</option>
-                                ${Object.keys(WATCH_BRANDS).map(b => '<option value="'+b+'" class="bg-charcoal">'+b+'</option>').join('')}
+                                ${Object.keys(WATCH_BRANDS).map(b => '<option value="'+esc(b)+'" class="bg-charcoal">'+esc(b)+'</option>').join('')}
                             </select>
                         </div>
                         <div>

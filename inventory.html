@@ -383,11 +383,12 @@
         // e.g. "Royal Oak Offshore Chronograph" → "Royal Oak Offshore"
         function normalizeModel(rawModel, brand, brandFamilies) {
             if (!rawModel) return '';
-            // Find matching brand key (accent/case insensitive)
-            const brandLower = (brand || '').toLowerCase().replace(/[^a-z0-9 ]/g, '');
+            // Find matching brand key (accent/case insensitive via Unicode NFD decomposition)
+            function stripAccents(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+            const brandNorm = stripAccents(brand || '');
             let families = null;
             for (const key of Object.keys(brandFamilies)) {
-                if (key.toLowerCase().replace(/[^a-z0-9 ]/g, '') === brandLower) {
+                if (stripAccents(key) === brandNorm) {
                     families = brandFamilies[key];
                     break;
                 }

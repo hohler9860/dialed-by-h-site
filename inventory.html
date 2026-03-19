@@ -383,7 +383,15 @@
         // e.g. "Royal Oak Offshore Chronograph" → "Royal Oak Offshore"
         function normalizeModel(rawModel, brand, brandFamilies) {
             if (!rawModel) return '';
-            const families = brandFamilies[brand];
+            // Find matching brand key (accent/case insensitive)
+            const brandLower = (brand || '').toLowerCase().replace(/[^a-z0-9 ]/g, '');
+            let families = null;
+            for (const key of Object.keys(brandFamilies)) {
+                if (key.toLowerCase().replace(/[^a-z0-9 ]/g, '') === brandLower) {
+                    families = brandFamilies[key];
+                    break;
+                }
+            }
             if (!families) return rawModel;
             const lower = rawModel.toLowerCase();
             // Sort families by length descending so "Royal Oak Offshore" matches before "Royal Oak"
@@ -675,7 +683,7 @@
             'Richard Mille': ['RM 11','RM 35','RM 55','RM 67','RM 17','RM 27','RM 72','Other'],
             'F.P. Journe': ['Chronometre Bleu','Chronometre Souverain','Octa','Tourbillon Souverain','Centigraphe','Elegante','Other'],
             'Vacheron Constantin': ['Overseas','Patrimony','Traditionnelle','Historiques','Fiftysix','Other'],
-            'A. Lange & Sohne': ['Lange 1','Saxonia','Zeitwerk','Datograph','1815','Odysseus','Other'],
+            'A. Lange & Sohne': ['Lange 1','Saxonia','Zeitwerk','Datograph','1815','Odysseus','Richard Lange','Cabaret','Other'],
             'Omega': ['Speedmaster','Seamaster','Constellation','De Ville','Aqua Terra','Planet Ocean','Other'],
             'Cartier': ['Santos','Tank','Ballon Bleu','Panthere','Pasha','Drive','Other'],
             'IWC': ['Portugieser','Pilot','Aquatimer','Ingenieur','Portofino','Other'],

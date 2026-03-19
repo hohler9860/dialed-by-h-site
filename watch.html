@@ -591,13 +591,24 @@
                 clearTimeout(hintTimer);
                 hintTimer = setTimeout(() => { gsap.to(hint, { opacity: 0, duration: 0.5 }); }, 2500);
 
+                // Delay fitImage until overlay is visible and has layout dimensions
+                function tryFit() {
+                    containerW = container.clientWidth;
+                    containerH = container.clientHeight;
+                    if (containerW > 0 && containerH > 0 && imgW > 0 && imgH > 0) {
+                        fitImage();
+                    } else {
+                        requestAnimationFrame(tryFit);
+                    }
+                }
+
                 if (img.complete && img.naturalWidth) {
                     imgW = img.naturalWidth; imgH = img.naturalHeight;
-                    fitImage();
+                    requestAnimationFrame(tryFit);
                 } else {
                     img.onload = function() {
                         imgW = img.naturalWidth; imgH = img.naturalHeight;
-                        fitImage();
+                        requestAnimationFrame(tryFit);
                     };
                 }
             };

@@ -379,13 +379,25 @@
             return 'Other';
         }
 
-        function updateModelDropdown() {
-            let models;
-            if (activeBrand === 'ALL') {
-                models = [...new Set(PIECES.map(w => w.model).filter(Boolean))].sort();
-            } else {
-                models = [...new Set(PIECES.filter(w => w.brand === activeBrand).map(w => w.model).filter(Boolean))].sort();
+        // Normalize a raw model name into its family using WATCH_BRANDS
+        // e.g. "Royal Oak Offshore Chronograph" → "Royal Oak Offshore"
+        function normalizeModel(rawModel, brand, brandFamilies) {
+            if (!rawModel) return '';
+            const families = brandFamilies[brand];
+            if (!families) return rawModel;
+            const lower = rawModel.toLowerCase();
+            // Sort families by length descending so "Royal Oak Offshore" matches before "Royal Oak"
+            const sorted = families.filter(f => f !== 'Other').sort((a, b) => b.length - a.length);
+            for (const family of sorted) {
+                if (lower.includes(family.toLowerCase())) return family;
             }
+            return 'Other';
+        }
+
+        function updateModelDropdown() {
+            let source = activeBrand === 'ALL' ? PIECES : PIECES.filter(w => w.brand === activeBrand);
+            const models = [...new Set(source.map(w => w._modelGroup).filter(v => v && v !== 'Other'))].sort();
+            if (source.some(w => w._modelGroup === 'Other')) models.push('Other');
             populateDropdown(['filter-model', 'filter-model-m'], models, 'Model');
         }
 
@@ -575,7 +587,7 @@
             if (activeBrand !== 'ALL') filtered = filtered.filter(w => w.brand === activeBrand);
 
             const model = document.getElementById('filter-model').value;
-            if (model !== 'ALL') filtered = filtered.filter(w => w.model === model);
+            if (model !== 'ALL') filtered = filtered.filter(w => w._modelGroup === model);
 
             const dial = document.getElementById('filter-dial').value;
             if (dial !== 'ALL') filtered = filtered.filter(w => w._dialGroup === dial);
@@ -911,10 +923,11 @@
 
             await fetchPieces();
 
-            // Normalize dial color and case material into broader groups
+            // Normalize dial color, case material, and model into broader groups
             PIECES.forEach(p => {
                 p._dialGroup = normalize(p.dialColor, DIAL_RULES);
                 p._materialGroup = normalize(p.caseMaterial, MATERIAL_RULES);
+                p._modelGroup = normalizeModel(p.model, p.brand, WATCH_BRANDS);
             });
 
             // Build brand pills from data

@@ -325,6 +325,70 @@
         let PIECES = [];
         function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
+        /* ── NORMALIZATION RULES ── */
+        // Keyword → group. First match wins. Case-insensitive substring matching.
+        const DIAL_RULES = [
+            ['black',       'Black'],
+            ['blue',        'Blue'],
+            ['white',       'White'],
+            ['silver',      'Silver'],
+            ['grey',        'Grey'],
+            ['gray',        'Grey'],
+            ['slate',       'Grey'],
+            ['anthracite',  'Grey'],
+            ['green',       'Green'],
+            ['olive',       'Green'],
+            ['teal',        'Green'],
+            ['brown',       'Brown/Champagne'],
+            ['champagne',   'Brown/Champagne'],
+            ['chocolate',   'Brown/Champagne'],
+            ['salmon',      'Brown/Champagne'],
+            ['copper',      'Brown/Champagne'],
+            ['tan',         'Brown/Champagne'],
+            ['gold',        'Brown/Champagne'],
+            ['red',         'Red/Burgundy'],
+            ['burgundy',    'Red/Burgundy'],
+            ['wine',        'Red/Burgundy'],
+            ['ruby',        'Red/Burgundy'],
+        ];
+
+        const MATERIAL_RULES = [
+            ['steel',       'Steel'],
+            ['stainless',   'Steel'],
+            ['rose gold',   'Rose Gold'],
+            ['pink gold',   'Rose Gold'],
+            ['everose',     'Rose Gold'],
+            ['sedna',       'Rose Gold'],
+            ['white gold',  'White Gold'],
+            ['platinum',    'Platinum'],
+            ['titanium',    'Titanium'],
+            ['titalyt',     'Titanium'],
+            ['ceramic',     'Ceramic'],
+            ['carbon',      'Carbon'],
+            ['tpt',         'Carbon'],
+            ['yellow gold', 'Gold'],
+            ['gold',        'Gold'],
+        ];
+
+        function normalize(value, rules) {
+            if (!value) return '';
+            const lower = value.toLowerCase();
+            for (const [keyword, group] of rules) {
+                if (lower.includes(keyword)) return group;
+            }
+            return 'Other';
+        }
+
+        function updateModelDropdown() {
+            let models;
+            if (activeBrand === 'ALL') {
+                models = [...new Set(PIECES.map(w => w.model).filter(Boolean))].sort();
+            } else {
+                models = [...new Set(PIECES.filter(w => w.brand === activeBrand).map(w => w.model).filter(Boolean))].sort();
+            }
+            populateDropdown(['filter-model', 'filter-model-m'], models, 'Model');
+        }
+
         function interleaveByBrand(pieces) {
             const byBrand = {};
             pieces.forEach(p => {
@@ -478,6 +542,12 @@
             document.querySelectorAll('.brand-pill').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.brand === brand);
             });
+            // Reset model filter and cascade dropdown
+            ['filter-model', 'filter-model-m'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = 'ALL';
+            });
+            updateModelDropdown();
             applyFilters();
         }
 
@@ -508,10 +578,10 @@
             if (model !== 'ALL') filtered = filtered.filter(w => w.model === model);
 
             const dial = document.getElementById('filter-dial').value;
-            if (dial !== 'ALL') filtered = filtered.filter(w => w.dialColor === dial);
+            if (dial !== 'ALL') filtered = filtered.filter(w => w._dialGroup === dial);
 
             const mat = document.getElementById('filter-material').value;
-            if (mat !== 'ALL') filtered = filtered.filter(w => w.caseMaterial === mat);
+            if (mat !== 'ALL') filtered = filtered.filter(w => w._materialGroup === mat);
 
             const cond = document.getElementById('filter-condition').value;
             if (cond !== 'ALL') filtered = filtered.filter(w => w.condition === cond);
@@ -554,6 +624,7 @@
             const sbm = document.getElementById('sort-by-m');
             if (sb) sb.value = 'default';
             if (sbm) sbm.value = 'default';
+            updateModelDropdown();
             applyFilters();
         }
 
@@ -840,7 +911,11 @@
 
             await fetchPieces();
 
-            // Background mosaic removed for performance
+            // Normalize dial color and case material into broader groups
+            PIECES.forEach(p => {
+                p._dialGroup = normalize(p.dialColor, DIAL_RULES);
+                p._materialGroup = normalize(p.caseMaterial, MATERIAL_RULES);
+            });
 
             // Build brand pills from data
             const brands = [...new Set(PIECES.map(w => w.brand).filter(Boolean))].sort();
@@ -854,14 +929,17 @@
                 pillContainer.appendChild(btn);
             });
 
-            // Populate filter dropdowns from data
-            const models = [...new Set(PIECES.map(w => w.model).filter(Boolean))].sort();
-            populateDropdown(['filter-model', 'filter-model-m'], models, 'Model');
+            // Populate filter dropdowns from normalized data
+            updateModelDropdown();
 
-            const dials = [...new Set(PIECES.map(w => w.dialColor).filter(Boolean))].sort();
+            const dialSet = [...new Set(PIECES.map(w => w._dialGroup).filter(Boolean))];
+            const dials = dialSet.filter(v => v !== 'Other').sort();
+            if (dialSet.includes('Other')) dials.push('Other');
             populateDropdown(['filter-dial', 'filter-dial-m'], dials, 'Dial Color');
 
-            const materials = [...new Set(PIECES.map(w => w.caseMaterial).filter(Boolean))].sort();
+            const matSet = [...new Set(PIECES.map(w => w._materialGroup).filter(Boolean))];
+            const materials = matSet.filter(v => v !== 'Other').sort();
+            if (matSet.includes('Other')) materials.push('Other');
             populateDropdown(['filter-material', 'filter-material-m'], materials, 'Case Material');
 
             const conditions = [...new Set(PIECES.map(w => w.condition).filter(Boolean))].sort();

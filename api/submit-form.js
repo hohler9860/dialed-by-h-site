@@ -4,9 +4,9 @@ const React = require("react");
 const { WelcomeEmail } = require("./emails/welcome.js");
 const { InquiryEmail } = require("./emails/inquiry.js");
 
-// Supabase REST API (direct fetch — bypasses broken env var issues)
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://spyeyqgrpvvdetxdhsur.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNweWV5cWdycHZ2ZGV0eGRoc3VyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTA2MDcsImV4cCI6MjA4ODQ4NjYwN30.MUURsxV3Pwh5BXELNpiK5tqPuBDWaBigt_2Q7SJvqJU";
+// Supabase REST API — hardcoded to correct project
+const SUPABASE_URL = "https://spyeyqgrpvvdetxdhsur.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNweWV5cWdycHZ2ZGV0eGRoc3VyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTA2MDcsImV4cCI6MjA4ODQ4NjYwN30.MUURsxV3Pwh5BXELNpiK5tqPuBDWaBigt_2Q7SJvqJU";
 
 async function supabaseInsert(table, row) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {

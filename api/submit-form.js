@@ -1,24 +1,34 @@
-const { createClient } = require("@supabase/supabase-js");
 const { Resend } = require("resend");
 const { render } = require("@react-email/render");
 const React = require("react");
 const { WelcomeEmail } = require("./emails/welcome.js");
 const { InquiryEmail } = require("./emails/inquiry.js");
 
-// Lazy-init clients
-let supabase;
-let resend;
+// Supabase REST API (direct fetch — bypasses broken env var issues)
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://spyeyqgrpvvdetxdhsur.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNweWV5cWdycHZ2ZGV0eGRoc3VyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTA2MDcsImV4cCI6MjA4ODQ4NjYwN30.MUURsxV3Pwh5BXELNpiK5tqPuBDWaBigt_2Q7SJvqJU";
 
-function getSupabase() {
-  if (!supabase) {
-    supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+async function supabaseInsert(table, row) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Prefer": "return=representation",
+    },
+    body: JSON.stringify(row),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(err.message || `Supabase ${res.status}`);
   }
-  return supabase;
+  const data = await res.json();
+  return data[0];
 }
 
+// Lazy-init Resend
+let resend;
 function getResend() {
   if (!resend) {
     resend = new Resend(process.env.RESEND_API_KEY);
@@ -102,24 +112,7 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Validate required environment variables
-  const missingVars = [];
-  if (!process.env.SUPABASE_URL) missingVars.push("SUPABASE_URL");
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missingVars.push("SUPABASE_SERVICE_ROLE_KEY");
-  if (!process.env.RESEND_API_KEY) missingVars.push("RESEND_API_KEY");
-
-  if (missingVars.length > 0) {
-    console.error("[submit-form] Missing environment variables:", missingVars.join(", "));
-    return res.status(500).json({
-      error: "Server configuration error",
-      details: `Missing environment variables: ${missingVars.join(", ")}. Set these in your Vercel project settings.`,
-    });
-  }
-
-  // Log env var presence (URL is public, keys are redacted)
-  console.log("[submit-form] ENV -SUPABASE_URL:", process.env.SUPABASE_URL);
-  console.log("[submit-form] ENV -SERVICE_KEY starts:", process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) + "...");
-  console.log("[submit-form] ENV -RESEND_API_KEY:", !!process.env.RESEND_API_KEY);
+  console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);
 
   try {
     const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } = req.body;
@@ -155,17 +148,7 @@ module.exports = async (req, res) => {
     };
 
     console.log("[submit-form] Inserting into Supabase...");
-    const { data, error } = await getSupabase()
-      .from("dialed_submissions")
-      .insert([row])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("[submit-form] SUPABASE ERROR:", JSON.stringify(error));
-      return res.status(500).json({ error: "Database error", details: error.message });
-    }
-
+    const data = await supabaseInsert("dialed_submissions", row);
     console.log("[submit-form] Supabase insert SUCCESS -id:", data.id);
 
     // ── EMAIL SENDING (non-critical — never fails the request) ──

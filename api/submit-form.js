@@ -116,11 +116,10 @@ module.exports = async (req, res) => {
     });
   }
 
-  // Log env var presence (never log actual values)
-  console.log("[submit-form] ENV CHECK -SUPABASE_URL:", !!process.env.SUPABASE_URL);
-  console.log("[submit-form] ENV CHECK -SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-  console.log("[submit-form] ENV CHECK -RESEND_API_KEY:", !!process.env.RESEND_API_KEY);
-  console.log("[submit-form] ENV CHECK -NOTIFICATION_EMAIL:", process.env.NOTIFICATION_EMAIL || "(not set, will use default)");
+  // Log env var presence (URL is public, keys are redacted)
+  console.log("[submit-form] ENV -SUPABASE_URL:", process.env.SUPABASE_URL);
+  console.log("[submit-form] ENV -SERVICE_KEY starts:", process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) + "...");
+  console.log("[submit-form] ENV -RESEND_API_KEY:", !!process.env.RESEND_API_KEY);
 
   try {
     const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } = req.body;

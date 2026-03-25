@@ -253,7 +253,6 @@ module.exports = async (req, res) => {
       emailSent,
       welcomeSent,
       inquirySent,
-      _emailDebug: emailDebug || null,
     });
   } catch (err) {
     console.error("[submit-form] UNHANDLED ERROR:", err.message);

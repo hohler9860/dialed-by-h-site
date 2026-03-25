@@ -155,6 +155,7 @@ module.exports = async (req, res) => {
     let emailSent = false;
     let welcomeSent = false;
     let inquirySent = false;
+    let emailDebug = null;
 
     try {
       const template = buildEmail(type, data);
@@ -172,11 +173,12 @@ module.exports = async (req, res) => {
             subject: template.subject,
             html: template.body,
           }).then(result => {
-            if (result.error) console.error("[submit-form] NOTIFICATION EMAIL ERROR:", JSON.stringify(result.error));
+            if (result.error) { console.error("[submit-form] NOTIFICATION EMAIL ERROR:", JSON.stringify(result.error)); emailDebug = result.error.message || JSON.stringify(result.error); }
             else { console.log("[submit-form] Notification sent -ID:", result.data?.id); emailSent = true; }
             return result;
           }).catch(err => {
             console.error("[submit-form] NOTIFICATION EMAIL THREW:", err.message);
+            emailDebug = err.message;
           })
         );
       }
@@ -241,6 +243,7 @@ module.exports = async (req, res) => {
 
       await Promise.all(emailPromises);
     } catch (emailErr) {
+      emailDebug = emailErr.message;
       console.error("[submit-form] EMAIL BLOCK ERROR (non-fatal):", emailErr.message);
     }
 
@@ -250,6 +253,7 @@ module.exports = async (req, res) => {
       emailSent,
       welcomeSent,
       inquirySent,
+      _emailDebug: emailDebug || null,
     });
   } catch (err) {
     console.error("[submit-form] UNHANDLED ERROR:", err.message);

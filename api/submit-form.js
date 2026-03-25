@@ -157,7 +157,7 @@ module.exports = async (req, res) => {
 
     console.log("[submit-form] Inserting into Supabase...");
     const { data, error } = await getSupabase()
-      .from("submissions")
+      .from("dialed_submissions")
       .insert([row])
       .select()
       .single();

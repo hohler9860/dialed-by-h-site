@@ -169,105 +169,105 @@ module.exports = async (req, res) => {
 
     console.log("[submit-form] Supabase insert SUCCESS -id:", data.id);
 
-    // Build all email promises in parallel for speed
-    const template = buildEmail(type, data);
-    const emailPromises = [];
+    // ── EMAIL SENDING (non-critical — never fails the request) ──
+    let emailSent = false;
+    let welcomeSent = false;
+    let inquirySent = false;
 
-    // 1. Notification email to Henry
-    if (template) {
-      const toEmail = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
-      console.log("[submit-form] Queuing notification email to:", toEmail);
+    try {
+      const template = buildEmail(type, data);
+      const emailPromises = [];
 
-      emailPromises.push(
-        getResend().emails.send({
-          from: "Dialed By H <inquiries@mail.dialedbyhenry.com>",
-          to: toEmail,
-          subject: template.subject,
-          html: template.body,
-        }).then(result => {
-          if (result.error) console.error("[submit-form] NOTIFICATION EMAIL ERROR:", JSON.stringify(result.error));
-          else console.log("[submit-form] Notification sent -ID:", result.data?.id);
-          return { type: "notification", result };
-        }).catch(err => {
-          console.error("[submit-form] NOTIFICATION EMAIL THREW:", err.message);
-          return { type: "notification", error: err.message };
-        })
-      );
-    }
+      // 1. Notification email to Henry
+      if (template) {
+        const toEmail = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
+        console.log("[submit-form] Queuing notification email to:", toEmail);
 
-    // 2. Welcome email to subscriber (JOIN_LIST only)
-    if (type === "JOIN_LIST") {
-      const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
-      console.log("[submit-form] Queuing welcome email to:", data.email);
+        emailPromises.push(
+          getResend().emails.send({
+            from: "Dialed By H <inquiries@mail.dialedbyhenry.com>",
+            to: toEmail,
+            subject: template.subject,
+            html: template.body,
+          }).then(result => {
+            if (result.error) console.error("[submit-form] NOTIFICATION EMAIL ERROR:", JSON.stringify(result.error));
+            else { console.log("[submit-form] Notification sent -ID:", result.data?.id); emailSent = true; }
+            return result;
+          }).catch(err => {
+            console.error("[submit-form] NOTIFICATION EMAIL THREW:", err.message);
+          })
+        );
+      }
 
-      emailPromises.push(
-        render(React.createElement(WelcomeEmail, { firstName }))
-          .then(welcomeHtml =>
-            getResend().emails.send({
-              from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
-              to: data.email,
-              subject: "Welcome to the Private List",
-              html: welcomeHtml,
+      // 2. Welcome email to subscriber (JOIN_LIST only)
+      if (type === "JOIN_LIST") {
+        const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
+        console.log("[submit-form] Queuing welcome email to:", data.email);
+
+        emailPromises.push(
+          render(React.createElement(WelcomeEmail, { firstName }))
+            .then(welcomeHtml =>
+              getResend().emails.send({
+                from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+                to: data.email,
+                subject: "Welcome to the Private List",
+                html: welcomeHtml,
+              })
+            )
+            .then(result => {
+              if (result.error) console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(result.error));
+              else { console.log("[submit-form] Welcome email sent -ID:", result.data?.id); welcomeSent = true; }
+              return result;
             })
-          )
-          .then(result => {
-            if (result.error) console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(result.error));
-            else console.log("[submit-form] Welcome email sent -ID:", result.data?.id);
-            return { type: "welcome", result };
-          })
-          .catch(err => {
-            console.error("[submit-form] WELCOME EMAIL THREW:", err.message);
-            return { type: "welcome", error: err.message };
-          })
-      );
-    }
-
-    // 3. Inquiry confirmation email to user (WATCH_DETAIL or BUY)
-    if (type === "WATCH_DETAIL" || type === "BUY") {
-      const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
-      console.log("[submit-form] Queuing inquiry confirmation to:", data.email);
-
-      emailPromises.push(
-        render(React.createElement(InquiryEmail, {
-          firstName,
-          watchName: data.watch_name || null,
-          watchRef: data.watch_ref || null,
-          watchBrand: watchBrand || null,
-          watchImage: watchImage || null,
-        }))
-          .then(inquiryHtml =>
-            getResend().emails.send({
-              from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
-              to: data.email,
-              subject: `Your Inquiry: ${data.watch_name || "Watch Inquiry"}`,
-              html: inquiryHtml,
+            .catch(err => {
+              console.error("[submit-form] WELCOME EMAIL THREW:", err.message);
             })
-          )
-          .then(result => {
-            if (result.error) console.error("[submit-form] INQUIRY EMAIL ERROR:", JSON.stringify(result.error));
-            else console.log("[submit-form] Inquiry email sent -ID:", result.data?.id);
-            return { type: "inquiry", result };
-          })
-          .catch(err => {
-            console.error("[submit-form] INQUIRY EMAIL THREW:", err.message);
-            return { type: "inquiry", error: err.message };
-          })
-      );
-    }
+        );
+      }
 
-    // Fire all emails in parallel
-    const emailResults = await Promise.all(emailPromises);
-    const notif = emailResults.find(r => r.type === "notification");
-    const welcome = emailResults.find(r => r.type === "welcome");
-    const inquiry = emailResults.find(r => r.type === "inquiry");
+      // 3. Inquiry confirmation email to user (WATCH_DETAIL or BUY)
+      if (type === "WATCH_DETAIL" || type === "BUY") {
+        const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
+        console.log("[submit-form] Queuing inquiry confirmation to:", data.email);
+
+        emailPromises.push(
+          render(React.createElement(InquiryEmail, {
+            firstName,
+            watchName: data.watch_name || null,
+            watchRef: data.watch_ref || null,
+            watchBrand: watchBrand || null,
+            watchImage: watchImage || null,
+          }))
+            .then(inquiryHtml =>
+              getResend().emails.send({
+                from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+                to: data.email,
+                subject: `Your Inquiry: ${data.watch_name || "Watch Inquiry"}`,
+                html: inquiryHtml,
+              })
+            )
+            .then(result => {
+              if (result.error) console.error("[submit-form] INQUIRY EMAIL ERROR:", JSON.stringify(result.error));
+              else { console.log("[submit-form] Inquiry email sent -ID:", result.data?.id); inquirySent = true; }
+              return result;
+            })
+            .catch(err => {
+              console.error("[submit-form] INQUIRY EMAIL THREW:", err.message);
+            })
+        );
+      }
+
+      await Promise.all(emailPromises);
+    } catch (emailErr) {
+      console.error("[submit-form] EMAIL BLOCK ERROR (non-fatal):", emailErr.message);
+    }
 
     return res.status(200).json({
       success: true,
       id: data.id,
-      emailSent: notif && !notif.error && !notif.result?.error,
-      emailId: notif?.result?.data?.id || null,
-      welcomeSent: welcome && !welcome.error && !welcome.result?.error,
-      inquirySent: inquiry && !inquiry.error && !inquiry.result?.error,
+      emailSent,
+      welcomeSent,
+      inquirySent,
     });
   } catch (err) {
     console.error("[submit-form] UNHANDLED ERROR:", err.message);

@@ -36,56 +36,109 @@ function getResend() {
   return resend;
 }
 
+// Styled notification wrapper
+function wrapNotification(bodyHtml) {
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a; background: #fafafa;">
+      <div style="border-bottom: 2px solid #1a1a1a; padding-bottom: 14px; margin-bottom: 28px;">
+        <strong style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a;">DIALED BY H</strong>
+      </div>
+      ${bodyHtml}
+      <div style="border-top: 1px solid #e5e5e5; margin-top: 32px; padding-top: 14px; font-size: 11px; color: #aaa;">
+        Sent automatically from dialedbyhenry.com
+      </div>
+    </div>
+  `;
+}
+
+function fieldRow(label, value) {
+  if (!value) return "";
+  return `
+    <tr>
+      <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #888; width: 100px; vertical-align: top;">${label}</td>
+      <td style="padding: 10px 0 10px 16px; border-bottom: 1px solid #eee; font-size: 15px; color: #1a1a1a; vertical-align: top;">${value}</td>
+    </tr>
+  `;
+}
+
+function fieldTable(fields) {
+  const rows = fields.map(f => fieldRow(f.label, f.value)).filter(Boolean).join("");
+  if (!rows) return "";
+  return `<table style="width: 100%; border-collapse: collapse; margin-top: 8px;">${rows}</table>`;
+}
+
 // Email templates per submission type
 function buildEmail(type, data) {
-  const detailsBlock = data.watch_details
-    ? `<p><strong>Details:</strong> ${data.watch_details}</p>`
-    : "";
+  const name = data.full_name || "Not provided";
+  const email = data.email;
+  const watch = data.watch_name || null;
+  const ref = data.watch_ref || null;
+  const details = data.watch_details || null;
 
   const templates = {
     JOIN_LIST: {
-      subject: "New Private List Signup",
-      body: `<h2>New Private List Signup</h2>
-        <p><strong>Name:</strong> ${data.full_name || "Not provided"}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        ${data.intent ? `<p><strong>Intent:</strong> ${data.intent}</p>` : ""}
-        ${data.budget ? `<p><strong>Budget:</strong> ${data.budget}</p>` : ""}`,
+      subject: `\u{1F7E2} New Signup: ${name}`,
+      body: wrapNotification(`
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Private List Signup</h2>
+        ${fieldTable([
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Intent", value: data.intent },
+          { label: "Budget", value: data.budget },
+        ])}
+      `),
     },
     BUY: {
-      subject: `Sourcing Request: ${data.watch_name || "New Request"}`,
-      body: `<h2>New Sourcing Request</h2>
-        <p><strong>Name:</strong> ${data.full_name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
-        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
-        ${detailsBlock}`,
+      subject: `\u{1F535} Sourcing: ${watch || "New Request"}`,
+      body: wrapNotification(`
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Sourcing Request</h2>
+        ${fieldTable([
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Watch", value: watch },
+          { label: "Reference", value: ref },
+          { label: "Details", value: details },
+        ])}
+      `),
     },
     SELL: {
-      subject: `Sell Request: ${data.watch_name || "New Request"}`,
-      body: `<h2>New Sell Request</h2>
-        <p><strong>Name:</strong> ${data.full_name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
-        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
-        ${detailsBlock}`,
+      subject: `\u{1F7E1} Sell: ${watch || "New Request"}`,
+      body: wrapNotification(`
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Sell Request</h2>
+        ${fieldTable([
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Watch", value: watch },
+          { label: "Reference", value: ref },
+          { label: "Details", value: details },
+        ])}
+      `),
     },
     TRADE: {
-      subject: `Trade Request: ${data.watch_name || "New Request"}`,
-      body: `<h2>New Trade Request</h2>
-        <p><strong>Name:</strong> ${data.full_name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
-        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
-        ${detailsBlock}`,
+      subject: `\u{1F504} Trade: ${watch || "New Request"}`,
+      body: wrapNotification(`
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Trade Request</h2>
+        ${fieldTable([
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Watch", value: watch },
+          { label: "Reference", value: ref },
+          { label: "Details", value: details },
+        ])}
+      `),
     },
     WATCH_DETAIL: {
-      subject: `Watch Inquiry: ${data.watch_name || "Unknown"}`,
-      body: `<h2>New Watch Inquiry</h2>
-        <p><strong>Name:</strong> ${data.full_name}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        ${data.watch_name ? `<p><strong>Watch:</strong> ${data.watch_name}</p>` : ""}
-        ${data.watch_ref ? `<p><strong>Reference:</strong> ${data.watch_ref}</p>` : ""}
-        ${detailsBlock}`,
+      subject: `\u{1F441} Inquiry: ${watch || "Unknown"}`,
+      body: wrapNotification(`
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Watch Inquiry</h2>
+        ${fieldTable([
+          { label: "Name", value: name },
+          { label: "Email", value: email },
+          { label: "Watch", value: watch },
+          { label: "Reference", value: ref },
+          { label: "Details", value: details },
+        ])}
+      `),
     },
   };
   return templates[type];

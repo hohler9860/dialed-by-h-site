@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 /**
- * Renders a broadcast email to HTML that you can paste into Resend's dashboard.
+ * Renders email templates to HTML for preview and testing.
  *
  * Usage:
- *   node scripts/render-broadcast.js                    # renders with example data, opens in browser
- *   node scripts/render-broadcast.js --type arrival     # new arrival example
- *   node scripts/render-broadcast.js --type journal     # journal post example
- *   node scripts/render-broadcast.js --type announcement # announcement example
- *   node scripts/render-broadcast.js --json config.json  # render from a JSON config file
+ *   node scripts/render-broadcast.js                        # broadcast: new arrival example
+ *   node scripts/render-broadcast.js --type arrival         # broadcast: new arrival
+ *   node scripts/render-broadcast.js --type journal         # broadcast: journal post
+ *   node scripts/render-broadcast.js --type announcement    # broadcast: announcement
+ *   node scripts/render-broadcast.js --template welcome     # welcome email
+ *   node scripts/render-broadcast.js --template inquiry     # inquiry confirmation
+ *   node scripts/render-broadcast.js --json config.json     # broadcast from JSON config
  *
  * The rendered HTML is saved to broadcast-output.html and copied to clipboard (macOS).
  */
@@ -15,6 +17,8 @@
 const React = require("react");
 const { render } = require("@react-email/render");
 const { BroadcastEmail } = require("../api/emails/broadcast.js");
+const { WelcomeEmail } = require("../api/emails/welcome.js");
+const { InquiryEmail } = require("../api/emails/inquiry.js");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
@@ -25,9 +29,8 @@ const examples = {
     headline: "Patek Philippe Nautilus 5711/1A",
     body: "A pristine example of one of the most coveted references in modern watchmaking just became available through my network. Full set, 2022 papers, unworn condition.",
     body2: "This piece won\u2019t last. If you\u2019ve been waiting for the right 5711, this is it.",
-    imageUrl: "https://dialedbyhenry.com/images/5811.jpg.webp",
+    imageUrl: "https://www.dialedbyhenry.com/images/patek-aquanaut.jpg",
     imageAlt: "Patek Philippe Nautilus 5711/1A",
-    imageDark: true,
     details: [
       { label: "Brand", value: "Patek Philippe" },
       { label: "Model", value: "Nautilus" },
@@ -36,7 +39,7 @@ const examples = {
       { label: "Set", value: "Full Set" },
     ],
     ctaText: "Inquire Now",
-    ctaUrl: "https://dialedbyhenry.com/inventory.html",
+    ctaUrl: "https://www.dialedbyhenry.com/inventory.html",
   },
   journal: {
     previewText: "New on the journal: Why the Royal Oak is the ultimate daily wear.",
@@ -44,9 +47,8 @@ const examples = {
     headline: "Why the Royal Oak Is Still King",
     body: "I just published a deep dive into what makes the Audemars Piguet Royal Oak the most versatile luxury sport watch ever made.",
     body2: "Whether you own one or aspire to, this is worth the read.",
-    imageUrl: "https://dialedbyhenry.com/images/buy-ap-royal-oak.jpg",
+    imageUrl: "https://www.dialedbyhenry.com/images/buy-ap-royal-oak.jpg",
     imageAlt: "Audemars Piguet Royal Oak",
-    imageDark: false,
     ctaText: "Read the Article",
     ctaUrl: "https://dialedbyh.substack.com",
   },
@@ -57,40 +59,62 @@ const examples = {
     body: "I\u2019m adding Cartier, A. Lange, and F.P. Journe to the sourcing portfolio this month. If any of these brands have been on your radar, now is the time to reach out.",
     ctaText: "Get in Touch",
     ctaUrl: "https://wa.me/19146211848",
-    signoff: "More to come,",
+    signoffText: "More to come,",
+    useRandomImage: true,
   },
 };
 
 async function main() {
   const args = process.argv.slice(2);
-  let props;
+  let element;
+  let label;
 
-  if (args.includes("--json")) {
+  if (args.includes("--template")) {
+    const tmpl = args[args.indexOf("--template") + 1];
+    if (tmpl === "welcome") {
+      element = React.createElement(WelcomeEmail, { firstName: "Henry" });
+      label = "welcome";
+    } else if (tmpl === "inquiry") {
+      element = React.createElement(InquiryEmail, {
+        firstName: "Alex",
+        watchName: "Royal Oak 15500ST",
+        watchRef: "15500ST.OO.1220ST.01",
+        watchBrand: "Audemars Piguet",
+        watchImage: "https://www.dialedbyhenry.com/images/buy-ap-royal-oak.jpg",
+      });
+      label = "inquiry";
+    } else {
+      console.error("Unknown template. Use: welcome or inquiry");
+      process.exit(1);
+    }
+    console.log(`Rendering ${label} email...`);
+  } else if (args.includes("--json")) {
     const jsonPath = args[args.indexOf("--json") + 1];
-    props = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+    const props = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+    element = React.createElement(BroadcastEmail, props);
+    label = "broadcast (from JSON)";
     console.log("Loaded config from:", jsonPath);
-  } else if (args.includes("--type")) {
-    const type = args[args.indexOf("--type") + 1];
-    props = examples[type];
+  } else {
+    const type = args.includes("--type") ? args[args.indexOf("--type") + 1] : "arrival";
+    const props = examples[type];
     if (!props) {
       console.error("Unknown type. Use: arrival, journal, or announcement");
       process.exit(1);
     }
+    element = React.createElement(BroadcastEmail, props);
+    label = `broadcast (${type})`;
     console.log("Using example:", type);
-  } else {
-    props = examples.arrival;
-    console.log("Using default example (arrival). Use --type or --json for others.");
   }
 
-  const html = await render(React.createElement(BroadcastEmail, props));
+  const html = await render(element);
   const outPath = "broadcast-output.html";
   fs.writeFileSync(outPath, html);
-  console.log(`Saved to ${outPath} (${html.length} bytes)`);
+  console.log(`Saved ${label} to ${outPath} (${html.length} bytes)`);
 
   // Copy to clipboard on macOS
   try {
     execSync(`echo '${html.replace(/'/g, "'\\''")}' | pbcopy`, { stdio: "pipe" });
-    console.log("Copied HTML to clipboard -paste into Resend dashboard");
+    console.log("Copied HTML to clipboard");
   } catch {
     console.log("Could not copy to clipboard. Open the HTML file manually.");
   }

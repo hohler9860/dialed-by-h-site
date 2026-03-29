@@ -100,9 +100,12 @@
 
     // ── Visibility fallback ──
     // If GSAP fails to animate opacity-0 elements, force them visible after 3s
+    // Skip elements that are intentionally hidden (menus, overlays, modals)
     function initVisibilityFallback() {
         setTimeout(function () {
+            var skip = ['mobile-menu', 'success-overlay', 'error-state', 'source-modal'];
             document.querySelectorAll('.opacity-0').forEach(function (el) {
+                if (skip.indexOf(el.id) !== -1 || el.closest('[id="mobile-menu"]') || el.closest('.pointer-events-none')) return;
                 el.classList.remove('opacity-0');
                 el.style.opacity = '1';
             });

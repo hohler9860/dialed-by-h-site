@@ -653,6 +653,21 @@ select {
     transform: translateX(-50%) translateY(0);
 }
 
+/* ══════════════════════════════════════
+   PAGE TRANSITIONS
+   ══════════════════════════════════════ */
+body {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+body.page-ready {
+    opacity: 1;
+}
+body.page-exit {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
     .orb, .orb-1, .orb-2, .orb-3 { animation: none !important; }
@@ -660,4 +675,6 @@ select {
     .animate-ticker { animation: none !important; }
     .split-word { transition: none !important; }
     * { scroll-behavior: auto !important; }
+    body { opacity: 1 !important; transition: none !important; }
+    body.page-exit { opacity: 1 !important; }
 }

@@ -51,7 +51,7 @@ function BroadcastEmail({
         React.createElement("td", {
           className: "detail-value detail-border",
           style: {
-            color: "#dddddd", fontSize: "14px", fontFamily: FONT.body, fontWeight: "500",
+            color: "#333333", fontSize: "14px", fontFamily: FONT.body, fontWeight: "500",
             padding: "12px 0 12px 16px", textAlign: "right", verticalAlign: "top",
             borderBottom: i < arr.length - 1 ? `1px solid ${C.divider}` : "none",
           },

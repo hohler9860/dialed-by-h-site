@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
         res.setHeader('Access-Control-Allow-Origin', origin || '*');
     }
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=60');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();

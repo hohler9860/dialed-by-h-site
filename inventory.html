@@ -246,7 +246,7 @@
                 </div>
                 <h3 class="font-space font-bold text-lg tracking-tight mb-3">Temporarily Unavailable</h3>
                 <p class="text-muted text-sm font-inter mb-6" style="text-transform:none;">Our inventory is taking a moment to load. Please check back shortly.</p>
-                <button onclick="window.location.reload()" class="bg-ivory text-charcoal px-6 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs">
+                <button onclick="document.getElementById('error-state').classList.add('hidden'); document.getElementById('loading-skeleton').classList.remove('hidden'); fetchPieces().then(p => { if (p.length) { buildFilters(p); renderGrid(p); buildBackground(p); } })" class="bg-ivory text-charcoal px-6 py-3 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors text-xs">
                     Try Again
                 </button>
             </div>
@@ -429,22 +429,28 @@
             return result;
         }
 
-        async function fetchPieces() {
+        async function fetchPieces(retries = 2) {
             const skeleton = document.getElementById('loading-skeleton');
             const grid = document.getElementById('watch-grid');
             const errorState = document.getElementById('error-state');
-            try {
-                const res = await fetch('/api/get-inventory');
-                if (!res.ok) throw new Error('Failed to fetch');
-                PIECES = interleaveByBrand((await res.json()).filter(p => p.image));
-                if (skeleton) skeleton.classList.add('hidden');
-                if (grid) grid.classList.remove('hidden');
-                return PIECES;
-            } catch (err) {
-                console.error('Failed to fetch pieces from Notion:', err);
-                if (skeleton) skeleton.classList.add('hidden');
-                if (errorState) errorState.classList.remove('hidden');
-                return [];
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    const res = await fetch('/api/get-inventory');
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    PIECES = interleaveByBrand((await res.json()).filter(p => p.image));
+                    if (skeleton) skeleton.classList.add('hidden');
+                    if (grid) grid.classList.remove('hidden');
+                    return PIECES;
+                } catch (err) {
+                    if (attempt < retries) {
+                        await new Promise(r => setTimeout(r, 1500));
+                        continue;
+                    }
+                    console.error('Failed to fetch pieces from Notion:', err);
+                    if (skeleton) skeleton.classList.add('hidden');
+                    if (errorState) errorState.classList.remove('hidden');
+                    return [];
+                }
             }
         }
 
@@ -830,7 +836,9 @@
             gsap.to(overlay, {
                 opacity: 0, duration: 0.4, delay: 0.1,
                 onComplete: () => {
-                    window.location.reload();
+                    overlay.style.visibility = 'hidden';
+                    overlay.style.pointerEvents = 'none';
+                    document.querySelectorAll('form').forEach(f => f.reset());
                 }
             });
         }

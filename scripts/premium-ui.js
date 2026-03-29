@@ -62,14 +62,41 @@
         });
     }
 
+    // ── Page Transitions ──
+    function initPageTransitions() {
+        // Fade in on load
+        document.body.classList.add('page-ready');
+
+        // Intercept internal link clicks for smooth fade-out
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('a[href]');
+            if (!link) return;
+
+            var href = link.getAttribute('href');
+            // Skip external links, anchors, mailto, tel, whatsapp, javascript, and new-tab links
+            if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:') || link.target === '_blank') return;
+
+            e.preventDefault();
+            document.body.classList.add('page-exit');
+            document.body.classList.remove('page-ready');
+            setTimeout(function () {
+                window.location.href = href;
+            }, 200);
+        });
+    }
+
     // ── Initialize ──
     function init() {
         initGrainOverlay();
 
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSplitText);
+            document.addEventListener('DOMContentLoaded', function () {
+                initSplitText();
+                initPageTransitions();
+            });
         } else {
             initSplitText();
+            initPageTransitions();
         }
     }
 

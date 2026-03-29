@@ -1034,7 +1034,9 @@
                 gsap.to(overlay, {
                     opacity: 0, duration: 0.4, delay: 0.1,
                     onComplete: () => {
-                        window.location.reload();
+                        overlay.style.visibility = 'hidden';
+                        overlay.style.pointerEvents = 'none';
+                        document.querySelectorAll('form').forEach(f => f.reset());
                     }
                 });
             },

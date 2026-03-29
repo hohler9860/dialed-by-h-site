@@ -34,21 +34,21 @@ const FONT = {
   body: "'Inter', 'Helvetica Neue', 'Arial', sans-serif",
 };
 
-// ── Color tokens (dark default, light mode via CSS) ──────────
+// ── Color tokens (light default, dark mode via CSS) ──────────
 const C = {
-  bg: "#0a0a0a",
-  card: "#0a0a0a",
-  heading: "#f0f0f0",
-  body: "#a3a3a3",
-  muted: "#555555",
-  disclaimer: "#333333",
-  tag: "#777777",
-  divider: "#1a1a1a",
-  btnBg: "#ffffff",
-  btnText: "#0a0a0a",
-  featureBg: "#111111",
-  featureBorder: "#1c1c1c",
-  featureText: "#666666",
+  bg: "#ffffff",
+  card: "#ffffff",
+  heading: "#1a1a1a",
+  body: "#555555",
+  muted: "#999999",
+  disclaimer: "#bbbbbb",
+  tag: "#999999",
+  divider: "#e5e5e5",
+  btnBg: "#1a1a1a",
+  btnText: "#ffffff",
+  featureBg: "#f5f5f5",
+  featureBorder: "#e5e5e5",
+  featureText: "#999999",
 };
 
 // ── Hero image library (for welcome + fallback broadcasts) ───
@@ -69,27 +69,23 @@ function pickHeroImage() {
 
 // ── Shared CSS (dark/light mode + animations + responsive) ───
 const SHARED_STYLES = `
-  @media (prefers-color-scheme: light) {
-    .dark-img { display: none !important; max-height: 0 !important; overflow: hidden !important; }
-    .light-img { display: block !important; max-height: none !important; }
-    .email-bg { background-color: #ffffff !important; }
-    .heading-text { color: #1a1a1a !important; }
-    .body-text { color: #555555 !important; }
-    .muted-text { color: #999999 !important; }
-    .tag-text { color: #999999 !important; }
-    .divider-line { border-color: #e5e5e5 !important; }
-    .btn-cta { background-color: #1a1a1a !important; color: #ffffff !important; }
-    .feature-cell { background-color: #f5f5f5 !important; border-color: #e5e5e5 !important; }
-    .feature-num { color: #999999 !important; border-color: #e5e5e5 !important; background-color: #f5f5f5 !important; }
-    .disclaimer-text { color: #bbbbbb !important; }
-    .footer-text { color: #999999 !important; }
-    .detail-label { color: #999999 !important; }
-    .detail-value { color: #333333 !important; }
-    .detail-border { border-color: #e5e5e5 !important; }
-  }
   @media (prefers-color-scheme: dark) {
     .dark-img { display: block !important; max-height: none !important; }
     .light-img { display: none !important; max-height: 0 !important; overflow: hidden !important; }
+    .email-bg { background-color: #0a0a0a !important; }
+    .heading-text { color: #f0f0f0 !important; }
+    .body-text { color: #a3a3a3 !important; }
+    .muted-text { color: #555555 !important; }
+    .tag-text { color: #777777 !important; }
+    .divider-line { border-color: #1a1a1a !important; }
+    .btn-cta { background-color: #ffffff !important; color: #0a0a0a !important; }
+    .feature-cell { background-color: #111111 !important; border-color: #1c1c1c !important; }
+    .feature-num { color: #666666 !important; border-color: #1c1c1c !important; background-color: #111111 !important; }
+    .disclaimer-text { color: #333333 !important; }
+    .footer-text { color: #555555 !important; }
+    .detail-label { color: #555555 !important; }
+    .detail-value { color: #dddddd !important; }
+    .detail-border { border-color: #1a1a1a !important; }
   }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -153,13 +149,13 @@ function dualImg(lightSrc, darkSrc, alt, width, height, extraStyle) {
   const base = { outline: "none", border: "none", textDecoration: "none" };
   return [
     React.createElement(Img, {
-      key: "dark", src: lightSrc, alt, width, height: height || "auto",
-      className: "dark-img",
+      key: "light", src: darkSrc, alt, width, height: height || "auto",
+      className: "light-img",
       style: { display: "block", ...base, ...extraStyle },
     }),
     React.createElement(Img, {
-      key: "light", src: darkSrc, alt, width, height: height || "auto",
-      className: "light-img",
+      key: "dark", src: lightSrc, alt, width, height: height || "auto",
+      className: "dark-img",
       style: { display: "none", maxHeight: "0", overflow: "hidden", ...base, ...extraStyle },
     }),
   ];

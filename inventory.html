@@ -546,7 +546,7 @@
                 </a>
             `}).join('');
 
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         /* ── FILTERS ── */
@@ -806,7 +806,7 @@
                     </form>
                 </div>
             `;
-            lucide.createIcons();
+            safeCreateIcons();
             openModal();
         }
 
@@ -824,7 +824,7 @@
                     { y: 20, opacity: 0, scale: 0.95 },
                     { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
                 );
-                lucide.createIcons();
+                safeCreateIcons();
             }, 500);
         }
 
@@ -915,7 +915,7 @@
 
         /* ── INIT ── */
         document.addEventListener('DOMContentLoaded', async () => {
-            lucide.createIcons();
+            safeCreateIcons();
             gsap.registerPlugin(ScrollTrigger);
 
             gsap.from('nav', { opacity: 0, y: -30, duration: 1, ease: 'power3.out', clearProps: 'all' });

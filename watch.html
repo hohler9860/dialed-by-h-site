@@ -399,7 +399,7 @@
                 </div>
             `;
 
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         async function submitInquiry(formEl) {
@@ -465,7 +465,7 @@
                 { y: 20, opacity: 0, scale: 0.95 },
                 { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
             );
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         function closeSuccessOverlay() {
@@ -485,7 +485,7 @@
 
         // INIT
         document.addEventListener('DOMContentLoaded', async () => {
-            lucide.createIcons();
+            safeCreateIcons();
             gsap.registerPlugin(ScrollTrigger);
 
             gsap.from('nav', { opacity: 0, y: -20, duration: 0.8, ease: 'power2.out', clearProps: 'all' });

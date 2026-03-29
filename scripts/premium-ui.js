@@ -85,6 +85,30 @@
         });
     }
 
+    // ── Safe Lucide wrapper ──
+    // If the Lucide CDN fails to load (content blockers, slow CDN),
+    // ensure it never crashes the page init.
+    window.safeCreateIcons = function () {
+        try {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        } catch (e) {
+            // Lucide unavailable — icons degrade to empty, page still works
+        }
+    };
+
+    // ── Visibility fallback ──
+    // If GSAP fails to animate opacity-0 elements, force them visible after 3s
+    function initVisibilityFallback() {
+        setTimeout(function () {
+            document.querySelectorAll('.opacity-0').forEach(function (el) {
+                el.classList.remove('opacity-0');
+                el.style.opacity = '1';
+            });
+        }, 3000);
+    }
+
     // ── Initialize ──
     function init() {
         initGrainOverlay();
@@ -93,10 +117,12 @@
             document.addEventListener('DOMContentLoaded', function () {
                 initSplitText();
                 initPageTransitions();
+                initVisibilityFallback();
             });
         } else {
             initSplitText();
             initPageTransitions();
+            initVisibilityFallback();
         }
     }
 

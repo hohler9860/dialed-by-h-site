@@ -579,7 +579,7 @@
                 app.renderTestimonial(0);
                 app.startTestimonialTimer();
                 app.initAnimations();
-                lucide.createIcons();
+                safeCreateIcons();
 
                 // Touch/swipe support for testimonials
                 let touchStartX = 0;
@@ -966,7 +966,7 @@
                 }
 
                 body.innerHTML = html;
-                lucide.createIcons();
+                safeCreateIcons();
 
                 // Prevent scrollbar layout shift: compensate width before hiding overflow
                 const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
@@ -1022,7 +1022,7 @@
                         { y: 20, opacity: 0, scale: 0.95 },
                         { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'power3.out' }
                     );
-                    lucide.createIcons();
+                    safeCreateIcons();
                 }, 500);
             },
 

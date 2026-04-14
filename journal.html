@@ -158,8 +158,9 @@
         <!-- JOURNAL CARDS - Add new entries at the top -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8" id="journal-grid">
 
-            <!-- CARD: Watches and Wonders 2026 -->
+            <!-- CARD: Watches and Wonders 2026 (static fallback — replaced at runtime by /api/substack-feed) -->
             <a href="https://dialedbyh.substack.com/p/what-rolex-is-probably-dropping-at" target="_blank" rel="noopener noreferrer"
+               data-static-post
                class="group glass-strong rounded-xl overflow-hidden md:col-span-2 flex flex-col sm:flex-row hover:border-ivory/20 transition-all duration-300">
                 <div class="sm:w-2/5 aspect-[16/10] sm:aspect-auto overflow-hidden">
                     <img src="https://substackcdn.com/image/fetch/w_800,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F0bee0b03-5476-4dbc-a3e4-a9548f7c6d45_2100x1400.heic"
@@ -186,8 +187,9 @@
             </a>
             <!-- END CARD -->
 
-            <!-- CARD: First Entry -->
+            <!-- CARD: First Entry (static fallback — replaced at runtime) -->
             <a href="https://dialedbyh.substack.com" target="_blank" rel="noopener noreferrer"
+               data-static-post
                class="group glass-strong rounded-xl p-6 sm:p-8 flex flex-col justify-between hover:border-ivory/20 transition-all duration-300">
                 <div>
                     <time class="text-[10px] font-space font-bold tracking-widest text-muted uppercase" datetime="2026-02-09">Feb 9, 2026</time>
@@ -204,7 +206,7 @@
             <!-- END CARD -->
 
             <!-- INQUIRY CTA CARD -->
-            <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
+            <a id="inquiry-cta-card" href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
                class="group glass-strong rounded-xl p-6 sm:p-8 flex flex-col justify-center items-center text-center hover:border-ivory/20 transition-all duration-300">
                 <i data-lucide="message-circle" class="w-8 h-8 text-muted group-hover:text-ivory transition-colors mb-4"></i>
                 <h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-3 group-hover:text-ivory transition-colors">Looking for Something?</h2>
@@ -286,10 +288,94 @@
             { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.4, immediateRender: false, clearProps: 'all' }
         );
 
-        gsap.fromTo('#journal-grid > a',
-            { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.12, delay: 0.6, immediateRender: false, clearProps: 'all' }
-        );
+        // Render journal cards dynamically from the Substack feed (/api/substack-feed).
+        // Static cards above are fallback — they stay visible if the fetch fails.
+        (async function renderJournalFeed() {
+            const grid = document.getElementById('journal-grid');
+            const ctaCard = document.getElementById('inquiry-cta-card');
+
+            const animateCards = () => {
+                gsap.fromTo('#journal-grid > a',
+                    { opacity: 0, y: 30 },
+                    { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', stagger: 0.12, delay: 0.6, immediateRender: false, clearProps: 'all' }
+                );
+            };
+
+            const fmtDate = (rfc2822) => {
+                const d = new Date(rfc2822);
+                if (isNaN(d)) return { iso: '', pretty: '' };
+                return {
+                    iso: d.toISOString().slice(0, 10),
+                    pretty: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                };
+            };
+
+            const arrowSvg = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="group-hover:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>';
+
+            try {
+                const res = await fetch('/api/substack-feed', { cache: 'no-store' });
+                if (!res.ok) throw new Error('Feed HTTP ' + res.status);
+                const data = await res.json();
+                if (!data.posts || !data.posts.length) throw new Error('Empty feed');
+
+                // Only swap in dynamic cards after a successful fetch — never wipe the static fallback on error.
+                grid.querySelectorAll('[data-static-post]').forEach(el => el.remove());
+
+                data.posts.forEach((post, idx) => {
+                    const { iso, pretty } = fmtDate(post.pubDate);
+                    const a = document.createElement('a');
+                    a.href = post.link;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.setAttribute('data-journal-dynamic', '');
+
+                    const featured = idx === 0 && !!post.image;
+
+                    if (featured) {
+                        a.className = 'group glass-strong rounded-xl overflow-hidden md:col-span-2 flex flex-col sm:flex-row hover:border-ivory/20 transition-all duration-300';
+                        a.innerHTML =
+                            '<div class="sm:w-2/5 aspect-[16/10] sm:aspect-auto overflow-hidden">' +
+                                '<img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">' +
+                            '</div>' +
+                            '<div class="p-6 sm:p-8 sm:w-3/5 flex flex-col justify-between">' +
+                                '<div>' +
+                                    '<div class="flex items-center gap-3 mb-3">' +
+                                        '<time class="text-[10px] font-space font-bold tracking-widest text-muted uppercase"></time>' +
+                                        (idx === 0 ? '<span class="text-[10px] font-space font-bold tracking-widest text-ivory/30 uppercase">New</span>' : '') +
+                                    '</div>' +
+                                    '<h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mb-3 group-hover:text-ivory transition-colors"></h2>' +
+                                    '<p class="font-inter text-ivory/50 text-sm leading-relaxed tracking-wide" style="text-transform: none;"></p>' +
+                                '</div>' +
+                                '<span class="inline-flex items-center gap-2 text-xs font-space font-bold uppercase tracking-widest text-muted group-hover:text-ivory transition-colors mt-6">Read on Substack ' + arrowSvg + '</span>' +
+                            '</div>';
+                        const img = a.querySelector('img');
+                        img.src = post.image;
+                        img.alt = post.title;
+                    } else {
+                        a.className = 'group glass-strong rounded-xl p-6 sm:p-8 flex flex-col justify-between hover:border-ivory/20 transition-all duration-300';
+                        a.innerHTML =
+                            '<div>' +
+                                '<time class="text-[10px] font-space font-bold tracking-widest text-muted uppercase"></time>' +
+                                '<h2 class="font-space font-bold text-lg sm:text-xl tracking-tight mt-3 mb-3 group-hover:text-ivory transition-colors"></h2>' +
+                                '<p class="font-inter text-ivory/50 text-sm leading-relaxed tracking-wide" style="text-transform: none;"></p>' +
+                            '</div>' +
+                            '<span class="inline-flex items-center gap-2 text-xs font-space font-bold uppercase tracking-widest text-muted group-hover:text-ivory transition-colors mt-6">Read on Substack ' + arrowSvg + '</span>';
+                    }
+
+                    const timeEl = a.querySelector('time');
+                    timeEl.dateTime = iso;
+                    timeEl.textContent = pretty;
+                    a.querySelector('h2').textContent = post.title;
+                    a.querySelector('p').textContent = post.description;
+
+                    grid.insertBefore(a, ctaCard);
+                });
+            } catch (err) {
+                console.warn('[journal] Substack feed unavailable, keeping static cards:', err);
+            } finally {
+                animateCards();
+            }
+        })();
 
         gsap.fromTo('#instagram',
             { opacity: 0, y: 40 },

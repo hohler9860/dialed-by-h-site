@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
     <title>Dialed By H | Boston Luxury Watch Concierge - Buy, Sell & Trade Rare Timepieces</title>
-    <meta name="description" content="Dialed By H is a Boston-based luxury watch concierge service specializing in sourcing, selling, and trading rare and hard-to-find timepieces. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Strict anonymity.">
+    <meta name="description" content="Dialed By H is a Boston-based luxury watch concierge service specializing in sourcing, selling, and trading rare and hard-to-find timepieces. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Discreet service.">
     <meta name="keywords" content="boston luxury watches, boston watch dealer, buy rolex boston, luxury watch concierge boston, luxury watch concierge, buy rolex, sell patek philippe, trade audemars piguet, richard mille dealer, rare watches, watch sourcing, authenticated timepieces, luxury watch broker, pre-owned luxury watches, watch consignment, dialed by h">
     <meta name="author" content="Henry Ohler">
     <meta name="geo.region" content="US-MA">
@@ -23,14 +23,14 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dialedbyhenry.com/">
     <meta property="og:title" content="Dialed By H | Boston Luxury Watch Concierge">
-    <meta property="og:description" content="Boston-based concierge sourcing for the world's most elusive references. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Strict anonymity.">
+    <meta property="og:description" content="Boston-based concierge sourcing for the world's most elusive references. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Discreet service.">
     <meta property="og:image" content="https://dialedbyhenry.com/images/og-share.png">
     <meta property="og:site_name" content="Dialed By H">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Dialed By H | Luxury Watch Concierge">
-    <meta name="twitter:description" content="Boston-based concierge sourcing for the world's most elusive references. Verified provenance. Strict anonymity.">
+    <meta name="twitter:description" content="Boston-based concierge sourcing for the world's most elusive references. Verified provenance. Discreet service.">
     <meta name="twitter:image" content="https://dialedbyhenry.com/images/og-share.png">
 
     <!-- Structured Data -->
@@ -154,24 +154,30 @@
     <div class="orb orb-3"></div>
 
     <!-- MOBILE MENU OVERLAY -->
-    <div id="mobile-menu" class="fixed inset-0 z-50 bg-charcoal/95 backdrop-blur-sm flex flex-col items-center justify-center space-y-8 transition-all duration-500 opacity-0 pointer-events-none">
+    <div id="mobile-menu" class="fixed inset-0 z-50 bg-charcoal/95 backdrop-blur-sm flex flex-col items-center justify-center space-y-7 transition-all duration-500 opacity-0 pointer-events-none">
         <button onclick="app.toggleMobileMenu()" class="absolute top-4 right-6 text-ivory">
             <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
         </button>
-        <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+        <button onclick="app.toggleMobileMenu(); app.openModal('BUY')" class="shimmer-btn group relative overflow-hidden text-charcoal px-10 py-3.5 text-sm font-bold font-space uppercase tracking-widest transition-transform hover:scale-105">
+            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">REQUEST A PIECE</span>
+            <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
+        </button>
+        <a href="inventory.html" class="text-xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+            Browse Pieces
+        </a>
+        <a href="about.html" class="text-xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
             About Me
         </a>
-        <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+        <a href="process.html" class="text-xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
             My Process
         </a>
-        <a href="journal.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
+        <a href="journal.html" class="text-xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">
             Journal
         </a>
-        <button onclick="app.toggleMobileMenu(); app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest transition-transform hover:scale-105">
-            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">JOIN MY PRIVATE LIST</span>
-            <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
+        <button onclick="app.toggleMobileMenu(); app.openModal('JOIN_LIST')" class="text-[11px] font-space font-medium tracking-widest text-muted/70 hover:text-ivory transition-colors uppercase pt-2">
+            Not ready? Join the private list &rarr;
         </button>
     </div>
 
@@ -192,8 +198,8 @@
                     <a href="journal.html" class="nav-link hover:text-muted transition-colors">
                         Journal
                     </a>
-                    <a href="#" onclick="event.preventDefault(); app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest transition-transform hover:scale-105">
-                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">JOIN MY PRIVATE LIST</span>
+                    <a href="#" onclick="event.preventDefault(); app.openModal('BUY')" class="shimmer-btn group relative overflow-hidden text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest transition-transform hover:scale-105">
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">REQUEST A PIECE</span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </a>
                 </div>
@@ -213,12 +219,12 @@
                     <span class="stroke-text">Unobtainable</span>
                 </h1>
                 <p id="hero-sub" class="font-inter text-muted text-base sm:text-lg md:text-xl tracking-wide max-w-2xl mx-auto mb-8 sm:mb-12 font-light uppercase">
-                    Concierge sourcing for the world's most elusive references. Verified provenance. Strict anonymity.
+                    Rare Rolex, Patek, AP, and the independents, sourced personally. Verified provenance. Discreet service.
                 </p>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                    <button id="hero-btn" onclick="app.openModal('JOIN_LIST')" class="shimmer-btn group relative overflow-hidden text-charcoal w-[260px] sm:w-[300px] py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105 text-center">
+                    <button id="hero-btn" onclick="app.openModal('BUY')" class="shimmer-btn group relative overflow-hidden text-charcoal w-[260px] sm:w-[300px] py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105 text-center">
                         <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">
-                            <span id="hero-btn-text">JOIN MY PRIVATE LIST</span>
+                            <span id="hero-btn-text">REQUEST A PIECE</span>
                         </span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </button>
@@ -227,6 +233,9 @@
                         <div class="absolute inset-0 bg-ivory transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </a>
                 </div>
+                <button onclick="app.openModal('JOIN_LIST')" class="mt-6 sm:mt-8 text-[11px] sm:text-xs font-space font-medium tracking-widest text-muted/70 hover:text-ivory transition-colors duration-300 uppercase">
+                    Not ready? Join the private list &rarr;
+                </button>
             </div>
 
             <div class="absolute bottom-12 animate-bounce opacity-50">
@@ -431,6 +440,9 @@
                         <option value="trade" class="bg-charcoal text-ivory">Trade</option>
                         <option value="browse" class="bg-charcoal text-ivory">Just Browsing</option>
                     </select>
+                    <label for="footer-looking-for" class="sr-only">What are you looking for</label>
+                    <input id="footer-looking-for" type="text" name="lookingFor" placeholder="WHAT ARE YOU LOOKING FOR? (OPTIONAL)"
+                           class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space text-xs uppercase tracking-widest" />
                     <label for="footer-budget" class="sr-only">Budget Range</label>
                     <select id="footer-budget" name="budget" onchange="this.classList.toggle('text-ivory',this.value!=='');this.classList.toggle('text-muted/50',this.value==='')"
                             class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-muted/50 focus:border-ivory outline-none transition-colors font-space text-xs uppercase tracking-widest appearance-none cursor-pointer">
@@ -495,6 +507,17 @@
         </div>
     </div>
 
+    <!-- FLOATING WHATSAPP (persistent, mobile + desktop) -->
+    <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
+       id="floating-wa"
+       aria-label="Message Henry on WhatsApp"
+       class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] w-14 h-14 sm:w-[58px] sm:h-[58px] rounded-full flex items-center justify-center shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95"
+       style="background:#25D366;">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff" aria-hidden="true">
+            <path d="M20.52 3.48A11.86 11.86 0 0 0 12.05 0C5.5 0 .16 5.33.16 11.88a11.8 11.8 0 0 0 1.64 6l-1.74 6.36 6.51-1.71a11.86 11.86 0 0 0 5.48 1.4h.01c6.55 0 11.89-5.33 11.89-11.88 0-3.18-1.24-6.17-3.43-8.57Zm-8.47 18.3h-.01a9.86 9.86 0 0 1-5.03-1.38l-.36-.21-3.86 1.01 1.03-3.77-.23-.39a9.82 9.82 0 0 1-1.51-5.26c0-5.43 4.43-9.86 9.87-9.86 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.98c0 5.44-4.43 9.87-9.87 9.87Zm5.41-7.39c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15-.77.96-.94 1.16-.35.22-.64.07a8.08 8.08 0 0 1-2.37-1.46 8.94 8.94 0 0 1-1.65-2.05c-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.48-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37s-1.05 1.03-1.05 2.51 1.08 2.91 1.23 3.11c.15.2 2.12 3.24 5.13 4.54.72.31 1.28.5 1.72.63.72.23 1.38.2 1.9.12.58-.09 1.75-.71 2-1.4.25-.69.25-1.27.17-1.39-.07-.12-.27-.2-.57-.35Z"/>
+        </svg>
+    </a>
+
     <script src="/scripts/premium-ui.js"></script>
     <script>
         function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -505,20 +528,20 @@
                 { id: '1',  name: 'AP Royal Oak Openworked',     ref: '15416CB',           price: 'Inquire', image: 'images/ticker/watch-1.jpeg' },
                 { id: '5',  name: 'F.P. Journe',                 ref: 'Chronomètre Bleu',  price: 'Inquire', image: 'images/ticker/watch-5.jpg' },
                 { id: '13', name: 'Richard Mille',               ref: 'RM 030 Blue',       price: 'Inquire', image: 'images/ticker/watch-13.jpeg' },
-                { id: '10', name: 'Patek Aquanaut',              ref: '5164A Travel Time', price: 'Inquire', image: 'images/ticker/watch-10.jpeg' },
+                { id: '10', name: 'Patek Aquanaut',              ref: '5164A Travel Time', price: 'Inquire', image: 'images/ticker/watch-10.jpeg', sold: 'LAST SOURCED' },
                 { id: '3',  name: 'Cartier Crash',               ref: 'Paris Edition',     price: 'Inquire', image: 'images/ticker/watch-3.jpeg' },
                 { id: '12', name: 'Rolex Day-Date',              ref: 'Platinum Arabic',   price: 'Inquire', image: 'images/ticker/watch-12.jpeg' },
                 { id: '18', name: 'Vacheron Overseas Chrono',    ref: '5500V Blue',        price: 'Inquire', image: 'images/ticker/watch-18.jpg' },
                 { id: '8',  name: 'Greubel Forsey',              ref: 'Balancier S2',      price: 'Inquire', image: 'images/ticker/watch-8.jpg' },
                 { id: '14', name: 'Richard Mille',               ref: 'RM 35-03 Nadal',    price: 'Inquire', image: 'images/ticker/watch-14.jpg' },
-                { id: '2',  name: 'AP Royal Oak Mini Frosted',   ref: '67630BC',           price: 'Inquire', image: 'images/ticker/watch-2.jpeg' },
+                { id: '2',  name: 'AP Royal Oak Mini Frosted',   ref: '67630BC',           price: 'Inquire', image: 'images/ticker/watch-2.jpeg', sold: 'LAST SOURCED' },
                 { id: '6',  name: 'F.P. Journe Octa Lune',       ref: 'Black Label',       price: 'Inquire', image: 'images/ticker/watch-6.jpg' },
                 { id: '9',  name: 'MB&F Aquapod',                ref: 'HM7 Titanium',     price: 'Inquire', image: 'images/ticker/watch-9.jpg' },
                 { id: '4',  name: 'Cartier Cloche',              ref: 'Privé Skeleton',    price: 'Inquire', image: 'images/ticker/watch-4.jpg' },
                 { id: '15', name: 'Richard Mille',               ref: 'RM 65-01 LeBron',   price: 'Inquire', image: 'images/ticker/watch-15.jpg' },
                 { id: '11', name: 'Patek Nautilus Tiffany',      ref: '5712/1A',           price: 'Inquire', image: 'images/ticker/watch-11.jpeg' },
                 { id: '7',  name: 'F.P. Journe Tourbillon',      ref: 'Souverain',         price: 'Inquire', image: 'images/ticker/watch-7.jpg' },
-                { id: '17', name: 'Rolex GMT-Master II',         ref: '126710BLNR Batman', price: 'Inquire', image: 'images/ticker/watch-17.jpg' },
+                { id: '17', name: 'Rolex GMT-Master II',         ref: '126710BLNR Batman', price: 'Inquire', image: 'images/ticker/watch-17.jpg', sold: 'LAST SOURCED' },
                 { id: '16', name: 'Richard Mille',               ref: 'RM 67-02 Ogier',    price: 'Inquire', image: 'images/ticker/watch-16.jpg' },
                 { id: '19', name: 'Vacheron Overseas Perpetual', ref: '4300V Burgundy',    price: 'Inquire', image: 'images/ticker/watch-19.jpg' },
             ],
@@ -761,12 +784,16 @@
                                 ${esc(item.ref)}
                             </span>
                         </div>
-                        <div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2 flex-shrink-0"></div>
+                        ${item.sold
+                            ? `<span class="ml-3 text-[9px] font-space font-bold tracking-widest text-charcoal bg-ivory px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">${esc(item.sold)}</span>`
+                            : `<div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2 flex-shrink-0"></div>`
+                        }
                     </button>
                 `).join('');
                 document.getElementById('ticker-content').innerHTML = html;
                 document.getElementById('ticker-content-clone').innerHTML = html;
             },
+
 
             initTickerGSAP: () => {
                 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1115,6 +1142,7 @@
                 const nameInput = form.querySelector('input[name="fullName"]');
                 const intentSelect = form.querySelector('select[name="intent"]');
                 const budgetSelect = form.querySelector('select[name="budget"]');
+                const lookingForInput = form.querySelector('input[name="lookingFor"]');
                 const originalText = btnLabel.textContent;
 
                 btnLabel.textContent = 'JOINING...';
@@ -1126,6 +1154,7 @@
                     if (nameInput) nameInput.value = '';
                     if (intentSelect) intentSelect.selectedIndex = 0;
                     if (budgetSelect) budgetSelect.selectedIndex = 0;
+                    if (lookingForInput) lookingForInput.value = '';
                     setTimeout(() => { btnLabel.textContent = originalText; btn.disabled = false; }, 3000);
                 };
 
@@ -1134,6 +1163,7 @@
                     if (nameInput && nameInput.value.trim()) payload.fullName = nameInput.value.trim();
                     if (intentSelect && intentSelect.value) payload.intent = intentSelect.value;
                     if (budgetSelect && budgetSelect.value) payload.budget = budgetSelect.value;
+                    if (lookingForInput && lookingForInput.value.trim()) payload.lookingFor = lookingForInput.value.trim();
                     const res = await fetch('/api/submit-form', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

@@ -83,8 +83,7 @@ function buildEmail(type, data) {
         ${fieldTable([
           { label: "Name", value: name },
           { label: "Email", value: email },
-          { label: "Intent", value: data.intent },
-          { label: "Budget", value: data.budget },
+          { label: "Details", value: details },
         ])}
       `),
     },
@@ -168,7 +167,7 @@ module.exports = async (req, res) => {
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand } = req.body;
+    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -189,12 +188,23 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Invalid email" });
     }
 
+    // For JOIN_LIST from footer form, pack intent/budget/lookingFor into watch_details
+    // so Henry actually sees the qualifying info in his inbox + Supabase
+    let detailsForRow = watchDetails?.trim() || null;
+    if (type === "JOIN_LIST") {
+      const parts = [];
+      if (intent) parts.push(`Intent: ${intent}`);
+      if (budget) parts.push(`Budget: ${budget}`);
+      if (lookingFor && String(lookingFor).trim()) parts.push(`Looking for: ${String(lookingFor).trim()}`);
+      if (parts.length) detailsForRow = parts.join(" | ");
+    }
+
     // Insert into Supabase
     const row = {
       submission_type: type,
       email: email.toLowerCase().trim(),
       full_name: fullName?.trim() || null,
-      watch_details: watchDetails?.trim() || null,
+      watch_details: detailsForRow,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
       status: "new",

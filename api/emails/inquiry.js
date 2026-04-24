@@ -165,7 +165,6 @@ function InquiryEmail({ firstName, watchName, watchRef, watchBrand, watchImage }
               row(C.card, "28px 40px 8px", "left", [
                 React.createElement(Text, { key: "s1", style: { color: C.body, fontSize: "15px", lineHeight: "1.7", fontFamily: FONT.body, margin: "0 0 4px" } }, "Talk soon,"),
                 React.createElement(Text, { key: "s2", style: { color: C.heading, fontSize: "15px", fontFamily: FONT.heading, margin: "0 0 2px", fontWeight: "700" } }, "Henry"),
-                React.createElement(Img, { key: "sig", src: BRAND.signature, alt: "H", width: "68", height: "49", style: { display: "block", margin: "6px 0 0", outline: "none", border: "none", textDecoration: "none" } }),
               ]),
 
               // Social

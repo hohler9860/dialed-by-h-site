@@ -221,28 +221,6 @@
 
         </div>
 
-        <!-- INSTAGRAM FEED -->
-        <div id="instagram" class="mt-16 sm:mt-20 text-center">
-            <p class="text-muted text-[11px] font-bold tracking-[0.25em] mb-3">Follow the Collection</p>
-            <h3 class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-2">
-                <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="hover:text-muted transition-colors">
-                    @dialedbyh
-                </a>
-            </h3>
-            <p class="font-inter text-muted text-sm mb-8 uppercase tracking-wide">Latest from the wrist</p>
-
-            <div id="behold-widget" class="min-h-[200px]">
-                <behold-widget feed-id="oBwS8IbDmp5poyLIu7Ch"></behold-widget>
-                <script>(() => { const d=document,s=d.createElement("script");s.type="module";s.src="https://w.behold.so/widget.js";d.head.append(s); })();</script>
-            </div>
-
-            <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-3 mt-10 text-muted hover:text-ivory transition-colors text-sm font-space uppercase tracking-widest">
-                <i data-lucide="instagram" class="w-5 h-5"></i>
-                <span>View Full Profile</span>
-            </a>
-        </div>
-
         <!-- SUBSTACK CTA -->
         <div id="substack-cta" class="mt-16 sm:mt-20 text-center glass-subtle rounded-xl px-6 py-10 sm:py-14">
             <p class="text-muted text-[10px] sm:text-xs font-bold tracking-[0.25em] mb-4 font-space">FULL ARTICLES ON SUBSTACK</p>
@@ -376,12 +354,6 @@
                 animateCards();
             }
         })();
-
-        gsap.fromTo('#instagram',
-            { opacity: 0, y: 40 },
-            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', clearProps: 'all',
-              scrollTrigger: { trigger: '#instagram', start: 'top 80%', once: true }, immediateRender: false }
-        );
 
         gsap.fromTo('#substack-cta',
             { opacity: 0, y: 30 },

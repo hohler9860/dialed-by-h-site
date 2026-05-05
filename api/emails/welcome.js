@@ -19,8 +19,6 @@ const BRAND = {
   email: "dialedbyh@gmail.com",
   logo: "https://www.dialedbyhenry.com/images/logo.png",
   logoDark: "https://www.dialedbyhenry.com/images/logo-dark.png",
-  signature: "https://www.dialedbyhenry.com/images/signature-light.png",
-  signatureDark: "https://www.dialedbyhenry.com/images/signature-dark.png",
   iconIg: "https://www.dialedbyhenry.com/images/icon-instagram-light.png",
   iconIgDark: "https://www.dialedbyhenry.com/images/icon-instagram.png",
   iconWa: "https://www.dialedbyhenry.com/images/icon-whatsapp-light.png",
@@ -294,9 +292,6 @@ function signoff(text) {
       key: "s2", className: "heading-text",
       style: { color: C.heading, fontSize: "15px", fontFamily: FONT.heading, margin: "0 0 2px", fontWeight: "700" },
     }, "Henry"),
-    React.createElement("span", { key: "sig" },
-      ...dualImg(BRAND.signature, BRAND.signatureDark, "H", "68", "49", { margin: "6px 0 0" })
-    ),
   ]);
 }
 

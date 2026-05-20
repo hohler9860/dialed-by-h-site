@@ -362,9 +362,13 @@
                 <textarea id="setting-excerpt" rows="2" placeholder="Optional — short preview shown on the journal index card"></textarea>
             </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-ivory/8 mt-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-ivory/8 mt-4">
                 <div class="text-xs text-muted" id="meta-info"></div>
-                <button id="delete-btn" class="btn-secondary btn-danger" style="display:none">Delete Article</button>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="email-test-btn" class="btn-secondary" style="display:none">Email Test (to me)</button>
+                    <button id="email-broadcast-btn" class="btn-secondary" style="display:none">Email Subscribers</button>
+                    <button id="delete-btn" class="btn-secondary btn-danger" style="display:none">Delete Article</button>
+                </div>
             </div>
         </div>
     </main>
@@ -403,6 +407,8 @@
         const saveDraftBtn  = document.getElementById("save-draft-btn");
         const publishBtn    = document.getElementById("publish-btn");
         const deleteBtn     = document.getElementById("delete-btn");
+        const emailTestBtn  = document.getElementById("email-test-btn");
+        const emailBroadcastBtn = document.getElementById("email-broadcast-btn");
         const metaInfoEl    = document.getElementById("meta-info");
         const toastEl       = document.getElementById("toast");
         const unauthEl      = document.getElementById("unauth-gate");
@@ -576,6 +582,10 @@
 
                 initEditor(article.content_json || { blocks: [{ type: "paragraph", data: { text: "" } }] });
                 deleteBtn.style.display = "inline-block";
+                if (article.status === "published") {
+                    emailTestBtn.style.display = "inline-block";
+                    emailBroadcastBtn.style.display = "inline-block";
+                }
 
                 saveStateEl.textContent = article.status === "published" ? "Published" : "Draft";
                 publishBtn.textContent = article.status === "published" ? "Update" : "Publish";
@@ -668,6 +678,52 @@
                 showToast("Delete failed: " + e.message, true);
             }
         });
+
+        // ─── Email broadcast ───────────────────────────────────
+        async function sendBroadcast({ testEmail } = {}) {
+            if (!articleId) return showToast("Save and publish first.", true);
+            const isTest = !!testEmail;
+            const confirmMsg = isTest
+                ? `Send a test copy to ${testEmail}?`
+                : "Send this article to ALL confirmed subscribers? This cannot be undone.";
+            if (!confirm(confirmMsg)) return;
+
+            const btn = isTest ? emailTestBtn : emailBroadcastBtn;
+            const orig = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Sending…";
+            try {
+                const token = window.dialedAdmin.getToken();
+                const r = await fetch("/api/journal-broadcast", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ articleId, testEmail: testEmail || undefined }),
+                });
+                const json = await r.json().catch(() => ({}));
+                if (r.status === 401) return showUnauth();
+                if (!r.ok) throw new Error(json.error || "Send failed");
+                if (isTest) {
+                    showToast(`Test sent to ${testEmail}`);
+                } else {
+                    showToast(`Sent to ${json.sent} subscribers${json.failed ? ` (${json.failed} failed)` : ""}`);
+                }
+            } catch (e) {
+                showToast("Broadcast failed: " + e.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = orig;
+            }
+        }
+
+        emailTestBtn.addEventListener("click", () => {
+            const target = prompt("Send test to which email?", "dialedbyh@gmail.com");
+            if (target && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target.trim())) {
+                sendBroadcast({ testEmail: target.trim() });
+            } else if (target !== null) {
+                showToast("That email looks off.", true);
+            }
+        });
+        emailBroadcastBtn.addEventListener("click", () => sendBroadcast());
 
         // ─── Setting change tracking ───────────────────────────
         [settingCategory, settingSeoTitle, settingSeoDesc, settingExcerpt].forEach(el => {

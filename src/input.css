@@ -198,13 +198,13 @@ select {
 /* ── Testimonial Carousel (Stagger) ── */
 .testimonial-track {
     position: relative;
-    min-height: 380px;
+    min-height: 300px;
     padding: 12px 4px;
 }
 .testimonial-inner {
     position: relative;
     width: 100%;
-    min-height: 360px;
+    min-height: 280px;
 }
 .testimonial-card-wrap {
     position: absolute;
@@ -554,8 +554,8 @@ select {
     }
 }
 @media (max-width: 767px) {
-    .testimonial-track { min-height: 360px; }
-    .testimonial-inner { min-height: 340px; }
+    .testimonial-track { min-height: 320px; }
+    .testimonial-inner { min-height: 300px; }
     .testimonial-card-wrap {
         width: 84%;
         max-width: 420px;

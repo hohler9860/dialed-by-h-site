@@ -9,8 +9,8 @@
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
 
     <title>Off-Catalog by Dialed By H | Luxury Watch Journal, Market Notes & Sourcing Stories</title>
-    <meta name="description" content="Off-Catalog is the journal from Dialed By H. Market notes on Rolex, Patek Philippe, Audemars Piguet and the independents. Sourcing stories, gray-market analysis, and rare reference releases written by Henry Ohler.">
-    <meta name="keywords" content="off-catalog, dialed by h journal, luxury watch journal, gray market watches, rolex market analysis, patek philippe news, audemars piguet news, independent watchmakers, watch sourcing stories, henry ohler, watch concierge journal, secondary market watches">
+    <meta name="description" content="Off-Catalog is the journal from Dialed By H. Market notes on Rolex, Patek Philippe, Audemars Piguet and the independents. Sourcing stories, grey market analysis, and rare reference releases written by Henry Ohler.">
+    <meta name="keywords" content="off-catalog, dialed by h journal, luxury watch journal, grey market watches, rolex market analysis, patek philippe news, audemars piguet news, independent watchmakers, watch sourcing stories, henry ohler, watch concierge journal, secondary market watches">
     <meta name="author" content="Henry Ohler">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://dialedbyhenry.com/journal/">
@@ -18,13 +18,13 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dialedbyhenry.com/journal/">
     <meta property="og:title" content="Off-Catalog by Dialed By H">
-    <meta property="og:description" content="Market notes, sourcing stories, and gray-market analysis from a luxury watch concierge. New writing weekly.">
+    <meta property="og:description" content="Market notes, sourcing stories, and grey market analysis from a luxury watch concierge. New writing weekly.">
     <meta property="og:image" content="https://dialedbyhenry.com/images/og-share.png">
     <meta property="og:site_name" content="Dialed By H">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Off-Catalog by Dialed By H">
-    <meta name="twitter:description" content="Market notes, sourcing stories, and gray-market analysis from a luxury watch concierge.">
+    <meta name="twitter:description" content="Market notes, sourcing stories, and grey market analysis from a luxury watch concierge.">
     <meta name="twitter:image" content="https://dialedbyhenry.com/images/og-share.png">
 
     <script type="application/ld+json">
@@ -32,7 +32,7 @@
         "@context": "https://schema.org",
         "@type": "Blog",
         "name": "Off-Catalog",
-        "description": "Market notes, sourcing stories, and gray-market analysis from Dialed By H, a luxury watch concierge.",
+        "description": "Market notes, sourcing stories, and grey market analysis from Dialed By H, a luxury watch concierge.",
         "url": "https://dialedbyhenry.com/journal/",
         "publisher": {
             "@type": "Organization",
@@ -89,7 +89,7 @@
         .oc-byline {
             display: inline-flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
             color: #888;
             font-family: 'Space Grotesk', sans-serif;
             font-size: 11px;
@@ -98,10 +98,44 @@
             text-transform: uppercase;
         }
         .oc-byline img {
-            height: 18px;
+            height: 13px;
             width: auto;
             object-fit: contain;
-            opacity: 0.85;
+            opacity: 0.9;
+            transform: translateY(0.5px);
+        }
+
+        /* ── Category sub-nav (simple, centered, easy to navigate) ── */
+        .oc-subnav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+            padding: 12px 24px 0;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .oc-subnav a {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.5);
+            padding: 8px 14px;
+            border-radius: 999px;
+            transition: color 0.2s, background 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .oc-subnav a:hover { color: #f0f0f0; background: rgba(240,240,240,0.04); }
+        .oc-subnav a.is-active { color: #0a0a0a; background: #f0f0f0; }
+        .oc-subnav a.is-cta { color: #f0f0f0; border: 1px solid rgba(240,240,240,0.18); }
+        .oc-subnav a.is-cta:hover { border-color: rgba(240,240,240,0.4); background: rgba(240,240,240,0.06); }
+        @media (max-width: 640px) {
+            .oc-subnav { padding: 8px 16px 0; gap: 2px 4px; }
+            .oc-subnav a { font-size: 9px; padding: 6px 10px; letter-spacing: 0.22em; }
         }
         .oc-tagline {
             margin: 38px auto 0;
@@ -306,9 +340,19 @@
             <img src="/images/logo.png" alt="Dialed By H">
         </div>
         <p class="oc-tagline">
-            Market notes, sourcing stories, and the occasional rare reference. Written by Henry Ohler from the inside of the gray market.
+            Market notes, sourcing stories, and the rare references I can't stop thinking about. Written from inside the grey market.
         </p>
     </header>
+
+    <!-- CATEGORY SUB-NAV -->
+    <nav class="oc-subnav" aria-label="Journal categories">
+        <a href="?" class="is-active" data-category="all">All</a>
+        <a href="?" data-category="Market Notes">Market Notes</a>
+        <a href="?" data-category="Releases">Releases</a>
+        <a href="?" data-category="Sourcing Stories">Sourcing Stories</a>
+        <a href="?" data-category="Predictions">Predictions</a>
+        <a href="/trivia/" class="is-cta">Trivia &rarr;</a>
+    </nav>
 
     <!-- STATUS BANNER (confirmation/unsubscribe messages) -->
     <div id="oc-status" class="hidden"></div>
@@ -443,37 +487,65 @@
         });
 
         // ── Load articles ──
+        let allArticles = [];
+        let activeCategory = "all";
+
+        function renderCard(a) {
+            return `
+                <a href="/journal/${esc(a.slug)}" class="oc-card">
+                    ${a.hero_image_url
+                        ? `<img class="oc-card-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="lazy">`
+                        : `<div class="oc-card-img"></div>`}
+                    <div class="oc-card-body">
+                        <div class="oc-card-meta">
+                            ${a.category ? `<span class="oc-pill">${esc(a.category)}</span>` : ""}
+                            <span>${formatDate(a.published_at)}</span>
+                            ${a.reading_time_minutes ? `<span>&middot; ${a.reading_time_minutes} min read</span>` : ""}
+                        </div>
+                        <h3 class="oc-card-title">${esc(a.title)}</h3>
+                        ${a.subtitle ? `<p class="oc-card-subtitle">${esc(a.subtitle)}</p>` : ""}
+                    </div>
+                </a>
+            `;
+        }
+
+        function renderFeed() {
+            const grid = document.getElementById("oc-grid");
+            const filtered = activeCategory === "all"
+                ? allArticles
+                : allArticles.filter(a => (a.category || "").toLowerCase() === activeCategory.toLowerCase());
+
+            if (filtered.length === 0) {
+                grid.innerHTML = activeCategory === "all"
+                    ? `<div class="oc-empty">First piece coming soon. Subscribe above to get it in your inbox.</div>`
+                    : `<div class="oc-empty">No pieces in this section yet. Try another.</div>`;
+                return;
+            }
+            grid.innerHTML = filtered.map(renderCard).join("");
+        }
+
+        // Category filter pills
+        document.querySelectorAll(".oc-subnav a[data-category]").forEach(link => {
+            link.addEventListener("click", (ev) => {
+                ev.preventDefault();
+                document.querySelectorAll(".oc-subnav a[data-category]").forEach(l => l.classList.remove("is-active"));
+                link.classList.add("is-active");
+                activeCategory = link.dataset.category;
+                renderFeed();
+            });
+        });
+
         async function loadArticles() {
             const grid = document.getElementById("oc-grid");
             try {
-                const r = await fetch("/api/journal-list?limit=24", { cache: "no-store" });
+                const r = await fetch("/api/journal-list?limit=48", { cache: "no-store" });
                 const json = await r.json();
-                const articles = json.articles || [];
-                if (articles.length === 0) {
-                    grid.innerHTML = `<div class="oc-empty">First piece coming soon. Subscribe above to get it in your inbox.</div>`;
-                    return;
-                }
-                grid.innerHTML = articles.map(a => `
-                    <a href="/journal/${esc(a.slug)}" class="oc-card">
-                        ${a.hero_image_url
-                            ? `<img class="oc-card-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="lazy">`
-                            : `<div class="oc-card-img"></div>`}
-                        <div class="oc-card-body">
-                            <div class="oc-card-meta">
-                                ${a.category ? `<span class="oc-pill">${esc(a.category)}</span>` : ""}
-                                <span>${formatDate(a.published_at)}</span>
-                                ${a.reading_time_minutes ? `<span>· ${a.reading_time_minutes} min read</span>` : ""}
-                            </div>
-                            <h3 class="oc-card-title">${esc(a.title)}</h3>
-                            ${a.subtitle ? `<p class="oc-card-subtitle">${esc(a.subtitle)}</p>` : ""}
-                        </div>
-                    </a>
-                `).join("");
+                allArticles = json.articles || [];
+                renderFeed();
             } catch (e) {
                 grid.innerHTML = `<div class="oc-empty">Couldn't load articles. Refresh in a sec.</div>`;
             }
         }
-
         loadArticles();
     </script>
 </body>

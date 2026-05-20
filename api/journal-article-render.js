@@ -319,6 +319,7 @@ code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;
     </svg>
 </a>
 
+<script src="/scripts/premium-ui.js"></script>
 <script>
 (function () {
     const form = document.getElementById("oc-end-form");

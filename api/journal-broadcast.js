@@ -112,7 +112,7 @@ module.exports = async (req, res) => {
 
         // 3. Test mode → single send and return
         if (testEmail) {
-            const unsubUrl = `${SITE_URL}/api/journal-unsubscribe?token=test-token`;
+            const unsubUrl = `${SITE_URL}/api/journal-confirm?action=unsubscribe&token=test-token`;
             const html = htmlWithUnsub.replaceAll(UNSUB_PLACEHOLDER, unsubUrl);
             const r = await getResend().emails.send({
                 from: "Henry at Off-Catalog <inquiries@mail.dialedbyhenry.com>",
@@ -146,7 +146,7 @@ module.exports = async (req, res) => {
             const batch = subs.slice(i, i + batchSize);
             const results = await Promise.allSettled(
                 batch.map((sub) => {
-                    const unsubUrl = `${SITE_URL}/api/journal-unsubscribe?token=${encodeURIComponent(sub.unsubscribe_token)}`;
+                    const unsubUrl = `${SITE_URL}/api/journal-confirm?action=unsubscribe&token=${encodeURIComponent(sub.unsubscribe_token)}`;
                     const html = htmlWithUnsub.replaceAll(UNSUB_PLACEHOLDER, unsubUrl);
                     return getResend().emails.send({
                         from: "Henry at Off-Catalog <inquiries@mail.dialedbyhenry.com>",

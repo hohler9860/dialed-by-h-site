@@ -223,9 +223,30 @@ select {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: background 0.6s cubic-bezier(0.23, 1, 0.32, 1),
-                border-color 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    background: #0a0a0a;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: border-color 0.6s cubic-bezier(0.23, 1, 0.32, 1),
                 box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* Shimmer gradient overlay — opacity-faded in when card is active */
+.testimonial-card-wrap .t-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, #a0a0a0 0%, #a0a0a0 40%, #f0f0f0 48%, #ffffff 50%, #f0f0f0 52%, #a0a0a0 60%, #a0a0a0 100%);
+    background-size: 200% 100%;
+    animation: shimmer2 2s infinite linear;
+    opacity: 0;
+    transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    pointer-events: none;
+    z-index: 0;
+}
+.testimonial-card-wrap .t-card > * {
+    position: relative;
+    z-index: 1;
 }
 .testimonial-card-wrap .t-card * {
     transition: color 0.6s cubic-bezier(0.23, 1, 0.32, 1),
@@ -233,33 +254,30 @@ select {
                 border-color 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* Active (center) card: solid white, dark text */
+/* Active (center) card: silver shimmer gradient + dark text */
 .testimonial-card-wrap[data-active="true"] .t-card {
-    background: #fafafa;
-    border: 1px solid rgba(0,0,0,0.08);
-    box-shadow: 0 16px 60px rgba(0,0,0,0.45);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(0,0,0,0.15);
+    box-shadow: 0 16px 60px rgba(0,0,0,0.5);
+}
+.testimonial-card-wrap[data-active="true"] .t-card::before {
+    opacity: 1;
 }
 .testimonial-card-wrap[data-active="true"] .t-card,
 .testimonial-card-wrap[data-active="true"] .t-card * {
     color: #0a0a0a;
 }
 .testimonial-card-wrap[data-active="true"] .t-card .text-muted {
-    color: rgba(10,10,10,0.55);
+    color: rgba(10,10,10,0.6);
 }
 .testimonial-card-wrap[data-active="true"] .t-card .rounded-full {
-    background: rgba(10,10,10,0.05);
-    border-color: rgba(10,10,10,0.18);
+    background: rgba(10,10,10,0.08);
+    border-color: rgba(10,10,10,0.22);
 }
 
-/* Inactive (side / back) cards: solid black with thin white border */
+/* Inactive (side / back) cards: solid black base shows through, thin white border */
 .testimonial-card-wrap[data-active="false"] .t-card {
-    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.28);
     box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
 }
 
 /* ══════════════════════════════════════

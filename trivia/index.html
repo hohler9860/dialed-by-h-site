@@ -8,8 +8,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
     <title>Watch Trivia | Dialed By H</title>
-    <meta name="description" content="Test how much you actually know about luxury watches. Three difficulty levels covering household references, vintage complications, and obscure independents.">
-    <meta name="keywords" content="watch trivia, luxury watch quiz, Rolex trivia, Patek Philippe quiz, AP Royal Oak, watch collector test, horology quiz">
+    <meta name="description" content="Test how much you actually know about luxury watches. Three difficulty tiers plus dedicated quizzes for Rolex, Patek Philippe, Audemars Piguet, and independents.">
+    <meta name="keywords" content="watch trivia, luxury watch quiz, Rolex trivia, Patek Philippe quiz, AP Royal Oak quiz, independent watchmakers quiz, watch collector test, horology quiz">
     <meta name="author" content="Henry Ohler">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://dialedbyhenry.com/trivia/">
@@ -263,17 +263,20 @@
 
         <!-- INTRO / DIFFICULTY SELECTION -->
         <section id="screen-intro">
-            <p class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-4">A Dialed By H Exercise</p>
+            <a href="/" class="inline-block opacity-80 hover:opacity-100 transition-opacity mb-5" aria-label="Dialed By H home">
+                <img src="/images/logo.png" alt="Dialed By H" class="h-6 sm:h-7 w-auto object-contain">
+            </a>
             <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tighter uppercase mb-5 leading-[0.9]">
                 Watch <span class="text-muted">Trivia</span>
             </h1>
             <p class="font-inter text-base sm:text-lg text-ivory/70 max-w-2xl mb-12 leading-relaxed">
-                Test how much you actually know. Three difficulties, ten questions each. Pick your level.
+                Pick your test. Three difficulty tiers, or go brand-specific with the houses.
             </p>
 
-            <!-- DIFFICULTY GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-14">
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-difficulty="easy">
+            <!-- GENERAL SECTION -->
+            <h3 class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-5">General</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-12">
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="easy">
                     <div class="flex items-center justify-between mb-4">
                         <span class="difficulty-tier">Tier I</span>
                         <span class="best-score" data-best="easy">Best: --</span>
@@ -282,7 +285,7 @@
                     <p class="font-inter text-sm text-ivory/65 leading-relaxed">Common references, household names. Built for newcomers.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-difficulty="medium">
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="medium">
                     <div class="flex items-center justify-between mb-4">
                         <span class="difficulty-tier">Tier II</span>
                         <span class="best-score" data-best="medium">Best: --</span>
@@ -291,13 +294,53 @@
                     <p class="font-inter text-sm text-ivory/65 leading-relaxed">Vintage references, complications, market context. Built for collectors.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-difficulty="hard">
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="hard">
                     <div class="flex items-center justify-between mb-4">
                         <span class="difficulty-tier">Tier III</span>
                         <span class="best-score" data-best="hard">Best: --</span>
                     </div>
                     <h2 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Hard</h2>
                     <p class="font-inter text-sm text-ivory/65 leading-relaxed">Obscure independents, auction prices, complications most dealers don't carry.</p>
+                </button>
+            </div>
+
+            <!-- BY THE HOUSE SECTION -->
+            <h3 class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-5">By the House</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mb-14">
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="rolex">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="difficulty-tier">House</span>
+                        <span class="best-score" data-best="rolex">Best: --</span>
+                    </div>
+                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Rolex</h3>
+                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">From the crown to the Daytona record.</p>
+                </button>
+
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="patek">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="difficulty-tier">House</span>
+                        <span class="best-score" data-best="patek">Best: --</span>
+                    </div>
+                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Patek Philippe</h3>
+                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">Sterns, Nautilus, and the long game.</p>
+                </button>
+
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="ap">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="difficulty-tier">House</span>
+                        <span class="best-score" data-best="ap">Best: --</span>
+                    </div>
+                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Audemars Piguet</h3>
+                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">Genta, the Royal Oak, Le Brassus and back.</p>
+                </button>
+
+                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="independents">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="difficulty-tier">House</span>
+                        <span class="best-score" data-best="independents">Best: --</span>
+                    </div>
+                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Independents</h3>
+                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">Journe, Dufour, Rexhep, and the deep end.</p>
                 </button>
             </div>
 
@@ -356,7 +399,7 @@
             <div class="flex flex-wrap gap-3 mb-10">
                 <button id="share-btn" class="pill-btn primary">Share Score</button>
                 <button id="retry-btn" class="pill-btn">Try Again</button>
-                <button id="back-btn" class="pill-btn">Back to Difficulty</button>
+                <button id="back-btn" class="pill-btn">Back to Menu</button>
             </div>
 
             <div id="share-feedback" class="font-space text-[11px] tracking-[0.22em] uppercase text-muted hidden">Copied to clipboard</div>
@@ -579,10 +622,258 @@
                     a: 0,
                     e: "Roger W. Smith apprenticed under George Daniels on the Isle of Man. Daniels invented the co-axial escapement, which Omega later licensed."
                 }
+            ],
+            rolex: [
+                {
+                    q: "Which Rolex model debuted in 1953 as the first wristwatch waterproof to 100 meters?",
+                    c: ["Explorer", "Submariner", "Sea-Dweller", "Datejust"],
+                    a: 1,
+                    e: "The Submariner ref. 6204 launched at Basel 1954 with a 100m depth rating, the first serially produced wristwatch designed for diving."
+                },
+                {
+                    q: "What is the nickname for the green-on-green Submariner ref. 116610LV?",
+                    c: ["Kermit", "Hulk", "Starbucks", "Smurf"],
+                    a: 1,
+                    e: "Hulk for the green dial AND green bezel. The earlier 16610LV with a green bezel but black dial is the Kermit."
+                },
+                {
+                    q: "The Day-Date is also known by what nickname?",
+                    c: ["President", "Prince", "Yachtsman", "Chairman"],
+                    a: 0,
+                    e: "Introduced in 1956, the Day-Date earned the President name from its dedicated three-piece link bracelet and a long line of US presidential wearers."
+                },
+                {
+                    q: "Which Daytona reference introduced the in-house automatic Caliber 4130?",
+                    c: ["16520", "116520", "116500LN", "126500LN"],
+                    a: 1,
+                    e: "Rolex moved the Daytona to its own in-house Caliber 4130 in the 116520, launched in 2000. The 16520 before it ran a modified Zenith El Primero."
+                },
+                {
+                    q: "Rolex's proprietary ceramic bezel material is called what?",
+                    c: ["Ceramica", "Cerachrom", "Ceragold", "Cermet"],
+                    a: 1,
+                    e: "Cerachrom is Rolex's branded ceramic, introduced in 2005 on the GMT-Master II. Hard, scratch-resistant, fade-proof under UV."
+                },
+                {
+                    q: "Which Submariner reference is nicknamed the 'Single Red' Sea-Dweller?",
+                    c: ["1665", "5512", "5513", "1680"],
+                    a: 0,
+                    e: "The ref. 1665 Sea-Dweller, in its earliest 'Single Red' configuration, carried just one red line of 'SEA-DWELLER SUBMARINER 2000' text. Among the most collected vintage Rolex tool watches."
+                },
+                {
+                    q: "Paul Newman's personal Daytona was which reference?",
+                    c: ["6239", "6241", "6263", "6265"],
+                    a: 0,
+                    e: "Newman wore a ref. 6239 with the exotic 'Paul Newman' dial. Phillips sold it for $17.75M in October 2017."
+                },
+                {
+                    q: "Which GMT-Master colorway carries the 'Root Beer' nickname?",
+                    c: ["Black and red", "Brown and gold", "Black and blue", "Blue and red"],
+                    a: 1,
+                    e: "The brown-and-gold GMT-Master (and modern 126711CHNR Everose / black ceramic) is the Root Beer, a nod to the soda's brown-and-tan palette."
+                },
+                {
+                    q: "The Rolex Deepsea Challenge worn by James Cameron in 2012 is rated to what depth?",
+                    c: ["3,900 m", "11,000 m", "12,500 m", "6,000 m"],
+                    a: 1,
+                    e: "The experimental Deepsea Challenge prototype was rated to 12,000 m and tested to 11,000 m on Cameron's Mariana Trench dive. The 2022 production model carries an 11,000 m rating."
+                },
+                {
+                    q: "Which Rolex was the first watch certified as a Swiss chronometer in 1910?",
+                    c: ["Oyster", "A small Aegler-movement wristwatch", "Submariner prototype", "Bubbleback"],
+                    a: 1,
+                    e: "In 1910 a Rolex wristwatch with an Aegler movement became the first wristwatch to receive a Swiss chronometer certification, from the Bienne rating office."
+                }
+            ],
+            patek: [
+                {
+                    q: "Who designed the original Patek Philippe Nautilus?",
+                    c: ["Philippe Stern", "Gerald Genta", "Thierry Stern", "Jorg Hysek"],
+                    a: 1,
+                    e: "Gerald Genta sketched the Nautilus in 1974. Patek released it as ref. 3700/1A in 1976 with the porthole-inspired case."
+                },
+                {
+                    q: "What is the entry-level Patek Philippe collection, named after a region in Geneva?",
+                    c: ["Calatrava", "Gondolo", "Twenty-4", "Aquanaut"],
+                    a: 0,
+                    e: "The Calatrava, named after the Calatrava Cross (Patek's emblem since 1887), is the brand's classic round dress watch line, anchored by the ref. 96 from 1932."
+                },
+                {
+                    q: "The Patek Philippe Aquanaut launched in what year?",
+                    c: ["1976", "1989", "1997", "2003"],
+                    a: 2,
+                    e: "The Aquanaut ref. 5060 debuted in 1997 with a composite 'Tropical' strap. It was Patek's more youthful, accessible take on a sport watch."
+                },
+                {
+                    q: "Thierry Stern took over as Patek Philippe president in what year?",
+                    c: ["2005", "2009", "2010", "2014"],
+                    a: 1,
+                    e: "Thierry Stern, son of Philippe, became Patek Philippe's president in 2009. The Stern family has owned Patek since 1932."
+                },
+                {
+                    q: "The Patek Philippe Grandmaster Chime ref. 6300A-010 sold at Only Watch 2019 for how much?",
+                    c: ["$11 million", "$24 million", "$31 million", "$45 million"],
+                    a: 2,
+                    e: "The one-of-one steel 6300A-010 hammered for CHF 31 million at Only Watch 2019, the all-time auction record for any wristwatch."
+                },
+                {
+                    q: "Which reference replaced the steel Nautilus 5711/1A?",
+                    c: ["5811/1G white gold", "5712/1A", "5990/1A", "5980/1A"],
+                    a: 0,
+                    e: "After discontinuing the steel 5711/1A in 2021, Patek released the 5811 in 2022, initially in white gold. The 5811 is slightly larger at 41 mm."
+                },
+                {
+                    q: "Patek's perpetual calendar reference 1518, launched in 1941, was the first serially produced wristwatch to combine which complications?",
+                    c: ["Chronograph and perpetual calendar", "Minute repeater and tourbillon", "Annual calendar and moon phase", "World time and chronograph"],
+                    a: 0,
+                    e: "The 1518 (1941) was the world's first serially produced perpetual calendar chronograph wristwatch. Steel examples are among the most valuable Pateks ever sold."
+                },
+                {
+                    q: "Which Patek Philippe was created for the 1989 150th anniversary as the most complicated watch of its time?",
+                    c: ["Star Caliber 2000", "Caliber 89", "Sky Moon Tourbillon", "Grandmaster Chime"],
+                    a: 1,
+                    e: "The Calibre 89 pocket watch (1989) launched with 33 complications. Only four were made, in different metals."
+                },
+                {
+                    q: "The Tiffany-blue Nautilus 5711/1A-018 was produced in how many pieces?",
+                    c: ["110", "170", "250", "500"],
+                    a: 1,
+                    e: "170 pieces, marking 170 years of the Patek and Tiffany & Co. partnership. The first example sold at charity auction for $6.5 million in late 2021."
+                },
+                {
+                    q: "Patek Philippe's Caliber CH 29-535 PS is best known for powering which collection?",
+                    c: ["Aquanaut chronograph", "5170 / 5172 manual-wind chronograph", "Nautilus 5980", "World Time 5230"],
+                    a: 1,
+                    e: "The CH 29-535 PS is Patek's in-house manual chronograph caliber, debuting in the Ladies 7071 in 2009 and the men's 5170J in 2010. It powers the 5172G today."
+                }
+            ],
+            ap: [
+                {
+                    q: "Gerald Genta designed the original Royal Oak in what year?",
+                    c: ["1969", "1972", "1976", "1980"],
+                    a: 1,
+                    e: "Genta sketched the Royal Oak in 1971 and AP unveiled it at Basel 1972 as ref. 5402ST. The 39 mm steel case priced higher than many gold dress watches at the time."
+                },
+                {
+                    q: "The Royal Oak's case shape is inspired by what?",
+                    c: ["A British warship porthole", "A Genevan church window", "An Italian villa column", "A submarine bulkhead"],
+                    a: 0,
+                    e: "Genta took inspiration from the portholes of HMS Royal Oak, a British Royal Navy warship. The eight hexagonal screws anchor that nautical reference."
+                },
+                {
+                    q: "Audemars Piguet is headquartered in which Swiss village?",
+                    c: ["Le Locle", "La Chaux-de-Fonds", "Le Brassus", "Geneva"],
+                    a: 2,
+                    e: "AP has been in Le Brassus, in the Vallée de Joux, since the founding partnership of Jules Audemars and Edward Piguet in 1875."
+                },
+                {
+                    q: "Which Royal Oak reference replaced the 15202 'Jumbo' in 2022?",
+                    c: ["15400", "15500", "16202", "26331"],
+                    a: 2,
+                    e: "The 16202 took over as the new 39 mm Jumbo Extra-Thin for AP's 50th anniversary in 2022, swapping the AP signature from the top of the dial to the bottom."
+                },
+                {
+                    q: "The Royal Oak Offshore launched in what year, designed by Emmanuel Gueit?",
+                    c: ["1989", "1993", "1999", "2002"],
+                    a: 1,
+                    e: "Released in 1993 for the Royal Oak's 20th anniversary at 42 mm, the Offshore was dismissed by purists and rapidly embraced by athletes, rappers, and traders."
+                },
+                {
+                    q: "AP introduced its modern integrated chronograph movement in 2019. What is it called?",
+                    c: ["Caliber 2385", "Caliber 4401", "Caliber 3126", "Caliber 3120"],
+                    a: 1,
+                    e: "The 4401 is AP's in-house integrated automatic chronograph, replacing the Piguet/Frédéric-Piguet-based 2385 used in the Royal Oak Chronograph for over two decades."
+                },
+                {
+                    q: "Which Royal Oak reference is the modern 41 mm time-and-date model that succeeded the 15400?",
+                    c: ["15500", "15510", "15400OR", "15407"],
+                    a: 0,
+                    e: "The 15500 launched in 2019 with a refreshed in-house Caliber 4302 and minor dial-architecture changes (notably, an applied AP logo and centered date)."
+                },
+                {
+                    q: "What does the ROO 'End of Days' reference owe its name to?",
+                    c: ["A movie tie-in with Arnold Schwarzenegger", "An AP marketing slogan", "A founding partner's last project", "A Vallée de Joux flood"],
+                    a: 0,
+                    e: "The Royal Oak Offshore 'End of Days' was a 500-piece collaboration tied to the 1999 Schwarzenegger film of the same name. All-black PVD-coated steel."
+                },
+                {
+                    q: "Code 11.59 by Audemars Piguet was unveiled in what year?",
+                    c: ["2017", "2018", "2019", "2020"],
+                    a: 2,
+                    e: "AP launched Code 11.59 in January 2019 at SIHH. The line uses a complex round-and-octagon case to give AP a non-Royal-Oak design language."
+                },
+                {
+                    q: "The Las Vegas Strip Royal Oak ref. 26331ST.OO.1220ST.02 was made in collaboration with which retailer?",
+                    c: ["Tiffany & Co.", "Marcus", "Westime", "Cellini"],
+                    a: 1,
+                    e: "The 'Las Vegas Strip' was a limited run made for Marcus, an AP retailer with the Las Vegas Strip themed dial. Approximately 200 pieces."
+                }
+            ],
+            independents: [
+                {
+                    q: "Who founded F.P. Journe in its current Invenit et Fecit form?",
+                    c: ["François-Paul Journe", "Felix Journe", "Frédéric Journe", "Francis Journe"],
+                    a: 0,
+                    e: "François-Paul Journe founded the brand under his own name in 1999 in Geneva. 'Invenit et Fecit' means 'invented and made' in Latin."
+                },
+                {
+                    q: "Philippe Dufour is based in which Swiss valley?",
+                    c: ["Vallée de Joux", "Val de Travers", "Engadine", "Val d'Hérens"],
+                    a: 0,
+                    e: "Dufour works out of a small atelier in Le Solliat, in the Vallée de Joux. Same valley as Audemars Piguet, Jaeger-LeCoultre, and Patek's complications workshops."
+                },
+                {
+                    q: "Which independent built the 'Opus' series with Harry Winston, rotating a different watchmaker each year?",
+                    c: ["A single brand each year", "A rotating roster of independents including Journe, Forsey, and Halter", "MB&F only", "F.P. Journe only"],
+                    a: 1,
+                    e: "Launched in 2001 by Max Büsser at Harry Winston, Opus paired the brand with a different independent each year. Opus 1 was Journe, Opus 6 Greubel Forsey, Opus 12 Halter."
+                },
+                {
+                    q: "What does 'Akrivia' refer to?",
+                    c: ["Rexhep Rexhepi's high-end brand in Geneva", "A Vacheron sub-brand", "A vintage Patek movement family", "A complications atelier owned by AP"],
+                    a: 0,
+                    e: "Akrivia was founded by Rexhep Rexhepi in 2012 in Geneva. The Chronomètre Contemporain RRCC, made under the Rexhep Rexhepi line, is one of the most sought independent watches of the 2020s."
+                },
+                {
+                    q: "Greubel Forsey's signature design feature is what?",
+                    c: ["Multi-axis inclined tourbillons", "Constant-force escapement", "Free-sprung dual balance", "Detent escapement"],
+                    a: 0,
+                    e: "Robert Greubel and Stephen Forsey founded the brand in 2004 around inclined and multi-axis tourbillons designed to improve isochronism by averaging out gravity in many positions."
+                },
+                {
+                    q: "Kari Voutilainen's atelier is located in which Swiss town?",
+                    c: ["Geneva", "Môtiers", "Le Locle", "Le Sentier"],
+                    a: 1,
+                    e: "Voutilainen has been based in Môtiers, in the Val-de-Travers, since founding his independent atelier in 2002. The town is also home to the Centre d'Études Horlogères."
+                },
+                {
+                    q: "Vacheron Constantin's reference 57260 holds how many complications?",
+                    c: ["36", "47", "57", "63"],
+                    a: 2,
+                    e: "Released in 2015 for VC's 260th anniversary, the 57260 pocket watch packs 57 complications, the most ever assembled in a single timepiece at that point."
+                },
+                {
+                    q: "De Bethune's signature heat-blued moon phase indicator is fabricated from what material?",
+                    c: ["Steel", "Titanium", "Palladium", "Tungsten"],
+                    a: 1,
+                    e: "De Bethune blues a 3D titanium hemisphere to represent the moon. The technique, developed under co-founder Denis Flageollet, became one of the brand's most recognized signatures."
+                },
+                {
+                    q: "MB&F was founded by whom?",
+                    c: ["Maximilian Büsser", "Marc Büchner", "Michel Bouvier", "Martin Brun"],
+                    a: 0,
+                    e: "Maximilian Büsser founded MB&F (Maximilian Büsser & Friends) in 2005 after running Harry Winston Rare Timepieces. The brand is known for its 'Horological Machines' and 'Legacy Machines.'"
+                },
+                {
+                    q: "Roger Smith trained under which British watchmaker on the Isle of Man?",
+                    c: ["George Daniels", "Derek Pratt", "Anthony Randall", "Frank Mercer"],
+                    a: 0,
+                    e: "Roger W. Smith apprenticed under George Daniels, inventor of the co-axial escapement (later licensed to Omega). Smith now runs his own atelier on the Isle of Man."
+                }
             ]
         };
 
-        // VERDICTS — tier-appropriate
+        // VERDICTS - tier-appropriate
         const VERDICTS = {
             easy: [
                 "Start with the basics. Pick a few references and study deep, not wide.",
@@ -626,11 +917,21 @@
         };
 
         const STORAGE_KEY = 'dialed_trivia_best_v1';
-        const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+        const POOL_LABELS = {
+            easy: 'Easy',
+            medium: 'Medium',
+            hard: 'Hard',
+            rolex: 'Rolex',
+            patek: 'Patek Philippe',
+            ap: 'Audemars Piguet',
+            independents: 'Independents'
+        };
+        const POOL_KEYS = Object.keys(POOL_LABELS);
+        const BRAND_POOLS = ['rolex', 'patek', 'ap', 'independents'];
 
         // STATE
         let state = {
-            difficulty: null,
+            pool: null,
             questions: [],
             index: 0,
             score: 0,
@@ -659,21 +960,27 @@
         const backBtn = document.getElementById('back-btn');
         const shareFeedback = document.getElementById('share-feedback');
 
+        function emptyBest() {
+            const out = {};
+            POOL_KEYS.forEach(k => { out[k] = null; });
+            return out;
+        }
+
         function getBest() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return { easy: null, medium: null, hard: null };
+                if (!raw) return emptyBest();
                 const parsed = JSON.parse(raw);
-                return Object.assign({ easy: null, medium: null, hard: null }, parsed);
+                return Object.assign(emptyBest(), parsed);
             } catch (err) {
-                return { easy: null, medium: null, hard: null };
+                return emptyBest();
             }
         }
 
-        function setBest(difficulty, score) {
+        function setBest(pool, score) {
             const current = getBest();
-            if (current[difficulty] === null || score > current[difficulty]) {
-                current[difficulty] = score;
+            if (current[pool] === null || score > current[pool]) {
+                current[pool] = score;
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify(current)); } catch (err) { /* no-op */ }
                 return true;
             }
@@ -683,8 +990,8 @@
         function renderBestScores() {
             const best = getBest();
             document.querySelectorAll('[data-best]').forEach(el => {
-                const diff = el.getAttribute('data-best');
-                const val = best[diff];
+                const pool = el.getAttribute('data-best');
+                const val = best[pool];
                 el.textContent = val === null || val === undefined ? 'Best: --' : 'Best: ' + val + '/10';
             });
         }
@@ -696,9 +1003,10 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function startQuiz(difficulty) {
-            state.difficulty = difficulty;
-            state.questions = QUESTIONS[difficulty];
+        function startQuiz(pool) {
+            if (!QUESTIONS[pool]) return;
+            state.pool = pool;
+            state.questions = QUESTIONS[pool];
             state.index = 0;
             state.score = 0;
             state.answered = false;
@@ -709,7 +1017,7 @@
         function renderQuestion() {
             const q = state.questions[state.index];
             const total = state.questions.length;
-            quizMeta.textContent = DIFFICULTY_LABELS[state.difficulty] + ' · Question ' + (state.index + 1) + ' of ' + total;
+            quizMeta.textContent = POOL_LABELS[state.pool] + ' · Question ' + (state.index + 1) + ' of ' + total;
             progressFill.style.width = (((state.index) / total) * 100) + '%';
             questionText.textContent = q.q;
 
@@ -765,8 +1073,64 @@
             }
         }
 
-        function pickVerdict(score, difficulty) {
-            const list = VERDICTS[difficulty];
+        const BRAND_VERDICTS = {
+            rolex: [
+                "Crown's heavy. Start with the Submariner and work outward.",
+                "You know the silhouettes, not yet the references.",
+                "Solid base. The 5-digit era is where it gets fun.",
+                "You'd hold your own in a Rolex room.",
+                "Sharp on the references. Try the auction catalogs next.",
+                "Strong. You read the market.",
+                "Dealer-adjacent on Rolex.",
+                "Real depth. The neo-vintage stuff sticks.",
+                "Excellent. Few hit this honestly.",
+                "Crown fluent.",
+                "Perfect score on the house. You know the brand cold."
+            ],
+            patek: [
+                "Start with the Calatrava and the Nautilus. The rest comes.",
+                "You know the shapes. Now learn the calibers.",
+                "Decent. The 1518 / 2499 lineage is the next layer.",
+                "Solid Patek footing.",
+                "You read the Patek market.",
+                "Strong. The Stern-era references are tight in your head.",
+                "Dealer-adjacent on Patek.",
+                "Deep. You know the complications.",
+                "Excellent. Very few finish this honest.",
+                "Stern family approved.",
+                "Perfect. You don't need Patek's book. You wrote one."
+            ],
+            ap: [
+                "Royal Oak first, the rest later.",
+                "You know the shape, not yet the references.",
+                "Decent. The 5402 to 16202 evolution is worth the deep read.",
+                "Solid AP footing.",
+                "Sharp on the Royal Oak family.",
+                "Strong. The Offshore and Code 11.59 also land.",
+                "Dealer-adjacent on AP.",
+                "Deep. You know Le Brassus.",
+                "Excellent. Few finish this clean.",
+                "House fluent.",
+                "Perfect score on AP. You'd talk shop with the brand."
+            ],
+            independents: [
+                "The deep end. Start with Journe and Dufour.",
+                "A few wins. Keep reading the indie press.",
+                "You know the names. Learn the calibers.",
+                "Real interest in the indies is showing.",
+                "Sharp. The Opus series clicks for you.",
+                "Strong. The Vallée de Joux maps out in your head.",
+                "Auction-room ready.",
+                "Deep. The indies trust collectors like you.",
+                "Excellent. Few finish this on the indies.",
+                "Top of the room.",
+                "Perfect on the indies. You'd get the call before the watch lists."
+            ]
+        };
+
+        function pickVerdict(score, pool) {
+            const list = VERDICTS[pool] || BRAND_VERDICTS[pool];
+            if (!list) return '';
             const idx = Math.min(score, list.length - 1);
             return list[idx];
         }
@@ -775,11 +1139,12 @@
             const total = state.questions.length;
             scoreNumber.textContent = state.score;
             scoreTotal.textContent = '/ ' + total;
-            scoreVerdict.textContent = pickVerdict(state.score, state.difficulty);
-            resultTier.textContent = DIFFICULTY_LABELS[state.difficulty] + ' Tier · Complete';
+            scoreVerdict.textContent = pickVerdict(state.score, state.pool);
+            const isBrand = BRAND_POOLS.indexOf(state.pool) !== -1;
+            resultTier.textContent = POOL_LABELS[state.pool] + (isBrand ? ' · House Complete' : ' Tier · Complete');
 
-            const wasNewBest = setBest(state.difficulty, state.score);
-            const best = getBest()[state.difficulty];
+            const wasNewBest = setBest(state.pool, state.score);
+            const best = getBest()[state.pool];
             bestValue.textContent = (best === null ? '--' : best + '/10') + (wasNewBest ? '  · New' : '');
 
             showScreen('results');
@@ -788,7 +1153,7 @@
 
         function shareScore() {
             const total = state.questions.length;
-            const text = "I scored " + state.score + "/" + total + " on Dialed By H's " + DIFFICULTY_LABELS[state.difficulty] + " watch trivia. https://dialedbyhenry.com/trivia/";
+            const text = "I scored " + state.score + "/" + total + " on Dialed By H's " + POOL_LABELS[state.pool] + " watch trivia. https://dialedbyhenry.com/trivia/";
             const showCopied = () => {
                 shareFeedback.classList.remove('hidden');
                 setTimeout(() => shareFeedback.classList.add('hidden'), 2200);
@@ -815,8 +1180,9 @@
         // EVENT WIRING
         document.querySelectorAll('.difficulty-card').forEach(card => {
             card.addEventListener('click', () => {
-                const diff = card.getAttribute('data-difficulty');
-                startQuiz(diff);
+                const pool = card.getAttribute('data-pool') || card.getAttribute('data-difficulty');
+                if (!pool) return;
+                startQuiz(pool);
             });
         });
         nextBtn.addEventListener('click', nextQuestion);
@@ -825,7 +1191,7 @@
             renderBestScores();
         });
         shareBtn.addEventListener('click', shareScore);
-        retryBtn.addEventListener('click', () => startQuiz(state.difficulty));
+        retryBtn.addEventListener('click', () => startQuiz(state.pool));
         backBtn.addEventListener('click', () => {
             showScreen('intro');
             renderBestScores();

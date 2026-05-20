@@ -329,7 +329,7 @@
                     </div>
                     <div>
                         <h3 class="font-space text-4xl sm:text-5xl font-bold tracking-tighter mb-3 sm:mb-4 text-ivory group-hover:translate-x-2 transition-transform duration-500">SELL</h3>
-                        <p class="font-inter text-xs font-bold tracking-widest text-muted group-hover:text-ivory transition-colors">Competitive market offers.</p>
+                        <p class="font-inter text-xs font-bold tracking-widest text-muted group-hover:text-ivory transition-colors">Fair offers. No lowballs.</p>
                         <span class="sm:hidden inline-flex items-center gap-2 mt-3 text-[10px] font-space font-bold tracking-widest text-ivory/70 border border-ivory/20 rounded-full px-4 py-1.5">
                             TAP TO INQUIRE
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14m0 0l-7-7m7 7l-7 7"/></svg>
@@ -370,7 +370,7 @@
 
                 <!-- Section label -->
                 <p class="text-center text-[10px] sm:text-xs font-bold tracking-widest text-muted mb-8 sm:mb-10 font-space">
-                    What Collectors Are Saying
+                    What clients say.
                 </p>
 
                 <!-- 3-Card Track -->
@@ -394,7 +394,7 @@
                 <!-- Funnel CTA -->
                 <div class="text-center mt-10 sm:mt-12">
                     <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="shimmer-btn group relative overflow-hidden inline-block text-charcoal px-8 sm:px-10 py-3.5 sm:py-4 text-xs sm:text-sm font-space font-bold uppercase tracking-widest transition-transform hover:scale-105">
-                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Start a Conversation</span>
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Text me on WhatsApp</span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </a>
                     <p class="text-[10px] tracking-widest text-muted mt-8 font-inter">Tell me what you're looking for</p>
@@ -418,10 +418,10 @@
 
             <div class="footer-reveal relative z-10 w-full max-w-xl px-5 sm:px-8 py-8 sm:py-10 text-center opacity-0 translate-y-5 rounded-2xl mx-4 sm:mx-auto" style="background:rgba(10,10,10,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.08)">
                 <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-3 sm:mb-4">
-                    Get Priority Access
+                    Join the Private List
                 </h4>
                 <p id="contact-text" class="font-inter text-muted text-sm sm:text-base mb-8 sm:mb-10 tracking-wide" style="text-transform:none;">
-                    Be the first to know when off-market pieces, rare references, and exclusive sourcing opportunities become available.
+                    First in line when off-market pieces come in. No spam, just heads-ups.
                 </p>
 
                 <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col gap-4 mb-12 sm:mb-16 max-w-sm mx-auto">
@@ -454,7 +454,7 @@
                     </select>
                     <button type="submit" id="footer-btn"
                             class="shimmer-btn group relative overflow-hidden w-full text-charcoal px-6 sm:px-8 py-3.5 font-bold font-space uppercase tracking-widest text-xs sm:text-sm mt-2 transition-transform hover:scale-[1.02]">
-                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Get Priority Access</span>
+                        <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Join the Private List</span>
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </button>
                 </form>
@@ -502,8 +502,8 @@
             <div class="w-16 h-16 border border-ivory rounded-full flex items-center justify-center mb-6 mx-auto">
                 <i data-lucide="check" class="w-8 h-8"></i>
             </div>
-            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Request Received</h3>
-            <p class="text-muted text-xs tracking-wide">Henry will contact you shortly.</p>
+            <h3 class="text-xl font-space font-bold tracking-widest mb-2">Got it.</h3>
+            <p class="text-muted text-xs tracking-wide">I'll be in touch shortly.</p>
         </div>
     </div>
 
@@ -582,6 +582,12 @@
                 {
                     quote: "I'd been hunting for a Daytona 126518 in yellow gold on Oysterflex for months with no luck. Henry delivered within 3 days, fully authenticated and in pristine condition. Absolute professional.",
                     name: "DANIEL CARTER",
+                    role: "Verified Client",
+                    pfp: ""
+                },
+                {
+                    quote: "Henry tracked down a 124300 with the Celebration dial and had it on my wrist within 2 days. Price beat every other quote I had by a wide margin. No waiting list games, no runaround. Easiest watch purchase I've made.",
+                    name: "SHAMIK PATEL",
                     role: "Verified Client",
                     pfp: ""
                 }
@@ -923,7 +929,7 @@
                                 </div>
                                 <div class="border-t border-ivory/10 pt-4">
                                     <p class="text-sm font-inter text-ivory/80 leading-relaxed mb-6">
-                                        This reference is available for concierge sourcing. Provide your details to inquire.
+                                        Want this one? Drop your info and I'll be in touch.
                                     </p>
                                     <form onsubmit="event.preventDefault(); app.submitForm(this, 'WATCH_DETAIL', { watchName: '${esc(data.name)}', watchRef: '${esc(data.ref)}' });" class="space-y-4">
                                         <div>
@@ -935,7 +941,7 @@
                                             <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors">
                                         </div>
                                         <button type="submit" class="shimmer-btn group relative overflow-hidden w-full text-charcoal py-4 font-bold font-space tracking-widest transition-transform hover:scale-[1.02]">
-                                            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Submit Inquiry</span>
+                                            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Send It</span>
                                             <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                                         </button>
                                     </form>
@@ -944,11 +950,11 @@
                         </div>
                     `;
                 } else {
-                    const title = type === 'JOIN_LIST' ? 'Private List Application' : `Request to ${type}`;
+                    const title = type === 'JOIN_LIST' ? 'Join the Private List' : `Request to ${type}`;
                     html = `
                         <div id="form-view" class="p-5 sm:p-8">
                             <h2 class="text-2xl font-space font-bold tracking-tight mb-2">${title}</h2>
-                            <p class="text-xs text-muted mb-8 tracking-wide">Complete the form below.</p>
+                            <p class="text-xs text-muted mb-8 tracking-wide">Quick form. I'll text you back.</p>
                             <form onsubmit="event.preventDefault(); app.submitForm(this, '${type}');" class="space-y-4">
                                 <div>
                                     <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
@@ -984,7 +990,7 @@
                                     </div>
                                 ` : ''}
                                 <button type="submit" class="shimmer-btn group relative overflow-hidden w-full text-charcoal py-4 font-bold font-space tracking-widest mt-4 transition-transform hover:scale-[1.02]">
-                                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Submit Request</span>
+                                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Send It</span>
                                     <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                                 </button>
                             </form>

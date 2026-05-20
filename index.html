@@ -923,7 +923,7 @@
                                 </div>
                                 <div class="border-t border-ivory/10 pt-4">
                                     <p class="text-sm font-inter text-ivory/80 leading-relaxed mb-6">
-                                        This reference is available for concierge sourcing. Provide your details to inquire.
+                                        Want this one? Drop your info and I'll be in touch.
                                     </p>
                                     <form onsubmit="event.preventDefault(); app.submitForm(this, 'WATCH_DETAIL', { watchName: '${esc(data.name)}', watchRef: '${esc(data.ref)}' });" class="space-y-4">
                                         <div>
@@ -935,7 +935,7 @@
                                             <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors">
                                         </div>
                                         <button type="submit" class="shimmer-btn group relative overflow-hidden w-full text-charcoal py-4 font-bold font-space tracking-widest transition-transform hover:scale-[1.02]">
-                                            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Submit Inquiry</span>
+                                            <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Send It</span>
                                             <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                                         </button>
                                     </form>
@@ -944,11 +944,11 @@
                         </div>
                     `;
                 } else {
-                    const title = type === 'JOIN_LIST' ? 'Private List Application' : `Request to ${type}`;
+                    const title = type === 'JOIN_LIST' ? 'Join the Private List' : `Request to ${type}`;
                     html = `
                         <div id="form-view" class="p-5 sm:p-8">
                             <h2 class="text-2xl font-space font-bold tracking-tight mb-2">${title}</h2>
-                            <p class="text-xs text-muted mb-8 tracking-wide">Complete the form below.</p>
+                            <p class="text-xs text-muted mb-8 tracking-wide">Quick form. I'll text you back.</p>
                             <form onsubmit="event.preventDefault(); app.submitForm(this, '${type}');" class="space-y-4">
                                 <div>
                                     <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
@@ -984,7 +984,7 @@
                                     </div>
                                 ` : ''}
                                 <button type="submit" class="shimmer-btn group relative overflow-hidden w-full text-charcoal py-4 font-bold font-space tracking-widest mt-4 transition-transform hover:scale-[1.02]">
-                                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Submit Request</span>
+                                    <span class="relative z-10 group-hover:text-ivory transition-colors duration-300">Send It</span>
                                     <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                                 </button>
                             </form>

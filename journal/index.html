@@ -371,7 +371,11 @@
     </section>
 
     <!-- ARTICLES GRID -->
-    <section class="px-6 sm:px-10 md:px-16 max-w-6xl mx-auto py-20">
+    <section id="oc-feed" class="px-6 sm:px-10 md:px-16 max-w-6xl mx-auto py-12 sm:py-16">
+        <div class="flex items-baseline justify-between border-b border-ivory/15 pb-4 mb-10">
+            <h2 id="oc-feed-heading" class="font-space font-bold text-2xl sm:text-3xl tracking-tight text-ivory" style="text-transform:none">All Stories</h2>
+            <span id="oc-feed-count" class="text-[10px] font-space font-bold tracking-[0.22em] uppercase text-muted"></span>
+        </div>
         <div id="oc-grid" class="oc-grid">
             <div class="oc-empty">Loading…</div>
         </div>
@@ -514,9 +518,18 @@
 
         function renderFeed() {
             const grid = document.getElementById("oc-grid");
+            const heading = document.getElementById("oc-feed-heading");
+            const count = document.getElementById("oc-feed-count");
+
             const filtered = activeCategory === "all"
                 ? allArticles
                 : allArticles.filter(a => (a.category || "").toLowerCase() === activeCategory.toLowerCase());
+
+            // Update section heading + count so the filter visibly takes effect
+            heading.textContent = activeCategory === "all" ? "All Stories" : activeCategory;
+            count.textContent = filtered.length > 0
+                ? `${String(filtered.length).padStart(2, "0")} ${filtered.length === 1 ? "piece" : "pieces"}`
+                : "";
 
             if (filtered.length === 0) {
                 grid.innerHTML = activeCategory === "all"
@@ -535,6 +548,14 @@
                 link.classList.add("is-active");
                 activeCategory = link.dataset.category;
                 renderFeed();
+                // Scroll the feed into view so the filter change is obviously visible
+                const feed = document.getElementById("oc-feed");
+                if (feed) {
+                    const rect = feed.getBoundingClientRect();
+                    if (rect.top < 0 || rect.top > window.innerHeight * 0.4) {
+                        feed.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                }
             });
         });
 

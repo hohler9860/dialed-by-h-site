@@ -195,38 +195,39 @@ select {
     justify-content: flex-start;
 }
 
-/* ── Testimonial Carousel ── */
+/* ── Testimonial Carousel (Stagger) ── */
 .testimonial-track {
     position: relative;
+    min-height: 380px;
     padding: 12px 4px;
 }
 .testimonial-inner {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    width: 100%;
+    min-height: 360px;
 }
 .testimonial-card-wrap {
-    flex-shrink: 0;
-    padding: 0 8px;
-    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-                opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    width: 33.333%;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 60%;
+    max-width: 540px;
+    transform: translateX(-50%);
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+                opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform, opacity;
+    cursor: pointer;
 }
 .testimonial-card-wrap .t-card {
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
 }
-.testimonial-card-wrap.is-center .t-card {
-    transform: scale(1.03);
+.testimonial-card-wrap[data-active="true"] .t-card {
     border-color: rgba(255,255,255,0.18);
     box-shadow: 0 0 40px rgba(255,255,255,0.04);
-}
-.testimonial-card-wrap:not(.is-center) {
-    opacity: 0.55;
-}
-.testimonial-card-wrap:not(.is-center) .t-card {
-    transform: scale(0.97);
 }
 
 /* ══════════════════════════════════════
@@ -486,22 +487,6 @@ select {
         gap: 1.5rem 2rem;
     }
     .stats-grid .stats-divider { display: none; }
-    .testimonial-card-wrap {
-        width: 100%;
-    }
-    .testimonial-card-wrap:not(.is-center) {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        position: absolute;
-    }
-    .testimonial-card-wrap.is-center {
-        opacity: 1;
-        visibility: visible;
-    }
-    .testimonial-card-wrap.is-center .t-card {
-        transform: scale(1);
-    }
 }
 
 /* ── TABLET LANDSCAPE / Small Desktop (1024px – 1279px) ── */
@@ -511,23 +496,19 @@ select {
     .orb-3 { width: 280px; height: 280px; }
 }
 
-/* Tablet: show 1 testimonial card */
+/* Testimonial stagger: narrower card widths on smaller breakpoints */
 @media (max-width: 1023px) {
     .testimonial-card-wrap {
-        width: 100%;
+        width: 72%;
+        max-width: 480px;
     }
-    .testimonial-card-wrap:not(.is-center) {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        position: absolute;
-    }
-    .testimonial-card-wrap.is-center {
-        opacity: 1;
-        visibility: visible;
-    }
-    .testimonial-card-wrap.is-center .t-card {
-        transform: scale(1);
+}
+@media (max-width: 767px) {
+    .testimonial-track { min-height: 360px; }
+    .testimonial-inner { min-height: 340px; }
+    .testimonial-card-wrap {
+        width: 84%;
+        max-width: 420px;
     }
 }
 

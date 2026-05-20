@@ -55,7 +55,7 @@
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/dist/styles.css">
 
     <!-- Meta Pixel -->
@@ -70,198 +70,170 @@
     </script>
 
     <style>
-        /* ── Off-Catalog masthead ── */
+        :root {
+            --oc-divider: rgba(255,255,255,0.08);
+            --oc-divider-strong: rgba(255,255,255,0.18);
+            --oc-text: #f0f0f0;
+            --oc-muted: #888;
+            --oc-muted-2: #555;
+        }
+
+        /* ══ MASTHEAD ══ */
         .oc-masthead {
             text-align: center;
-            padding: 80px 24px 60px;
+            padding: 64px 24px 56px;
+            max-width: 720px;
+            margin: 0 auto;
             position: relative;
         }
+        .oc-issue-stamp {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--oc-muted-2);
+            margin-bottom: 36px;
+        }
+        .oc-issue-stamp::before,
+        .oc-issue-stamp::after {
+            content: '';
+            display: block;
+            width: 28px;
+            height: 1px;
+            background: var(--oc-divider);
+        }
+
+        .oc-avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--oc-divider-strong);
+            margin: 0 auto 28px;
+            position: relative;
+        }
+        .oc-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.06);
+            pointer-events: none;
+        }
+        .oc-avatar img {
+            width: 42px;
+            height: auto;
+            opacity: 0.95;
+        }
+
         .oc-title {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: -0.04em;
-            line-height: 0.85;
-            font-size: clamp(64px, 14vw, 200px);
-            color: #f0f0f0;
-            margin: 0 0 24px;
+            letter-spacing: -0.045em;
+            line-height: 0.88;
+            font-size: clamp(56px, 11vw, 132px);
+            color: var(--oc-text);
+            margin: 0 0 18px;
+        }
+        .oc-tagline {
+            font-family: 'Fraunces', 'Inter', serif;
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(18px, 2.4vw, 22px);
+            line-height: 1.45;
+            color: var(--oc-text);
+            margin: 0 auto 18px;
+            max-width: 560px;
+            text-transform: none;
+            letter-spacing: -0.005em;
         }
         .oc-byline {
-            display: inline-flex;
-            align-items: center;
-            gap: 14px;
-            color: #888;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.32em;
             text-transform: uppercase;
+            color: var(--oc-muted);
+            margin: 0 0 36px;
         }
-        .oc-byline img {
-            height: 18px;
-            width: auto;
-            object-fit: contain;
-            opacity: 0.85;
-        }
-        .oc-tagline {
-            margin: 38px auto 0;
-            max-width: 640px;
-            font-family: 'Inter', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #888;
-            text-transform: none;
-        }
+        .oc-byline a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+        .oc-byline a:hover { border-color: var(--oc-muted); }
 
-        /* ── Subscribe block ── */
-        .oc-subscribe {
-            max-width: 540px;
-            margin: 56px auto 0;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 30px 24px;
-            text-align: center;
-            backdrop-filter: blur(20px) saturate(1.4);
-            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        /* ══ INLINE SUBSCRIBE (right under masthead) ══ */
+        .oc-subscribe-inline {
+            max-width: 480px;
+            margin: 0 auto;
         }
-        .oc-subscribe h2 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 20px;
-            letter-spacing: -0.01em;
-            margin: 0 0 8px;
-            text-transform: none;
+        .oc-sub-row {
+            display: flex;
+            gap: 8px;
         }
-        .oc-subscribe p {
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            color: #888;
-            margin: 0 0 22px;
-            text-transform: none;
-        }
-        .oc-sub-form { display: flex; flex-direction: column; gap: 12px; max-width: 380px; margin: 0 auto; }
-        .oc-sub-input {
-            width: 100%;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 4px;
-            padding: 12px 14px;
-            color: #f0f0f0;
+        .oc-sub-row input {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--oc-divider-strong);
+            border-radius: 6px;
+            padding: 14px 16px;
+            color: var(--oc-text);
             font-family: 'Inter', sans-serif;
             font-size: 14px;
             outline: none;
             text-transform: none;
+            transition: border-color 0.2s, background 0.2s;
         }
-        .oc-sub-input::placeholder { color: rgba(136,136,136,0.7); }
-        .oc-sub-input:focus { border-color: rgba(255,255,255,0.4); }
-        .oc-sub-btn {
-            width: 100%;
-            background: #f0f0f0;
+        .oc-sub-row input::placeholder { color: rgba(136,136,136,0.7); }
+        .oc-sub-row input:focus {
+            border-color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.06);
+        }
+        .oc-sub-row button {
+            background: var(--oc-text);
             color: #0a0a0a;
             border: none;
-            padding: 12px 14px;
+            padding: 14px 22px;
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
             font-size: 11px;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             transition: opacity 0.2s, transform 0.15s;
+            white-space: nowrap;
         }
-        .oc-sub-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .oc-sub-msg { font-size: 12px; margin-top: 10px; color: #4ade80; text-transform: none; }
+        .oc-sub-row button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .oc-sub-guest {
+            display: block;
+            margin-top: 14px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--oc-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .oc-sub-guest:hover { color: var(--oc-text); }
+        .oc-sub-msg { font-size: 12px; margin-top: 12px; color: #4ade80; text-transform: none; font-family: 'Inter', sans-serif; }
         .oc-sub-msg.error { color: #f87171; }
 
-        /* ── Article cards ── */
-        .oc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 32px;
-        }
-        .oc-card {
-            display: flex;
-            flex-direction: column;
-            text-decoration: none;
-            color: inherit;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px;
-            overflow: hidden;
-            transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
-        }
-        .oc-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255,255,255,0.18);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-        }
-        .oc-card-img {
-            aspect-ratio: 16 / 9;
-            width: 100%;
-            object-fit: cover;
-            background: rgba(255,255,255,0.04);
-        }
-        .oc-card-body { padding: 22px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        .oc-card-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: #888;
-        }
-        .oc-card-meta .oc-pill {
-            color: #f0f0f0;
-            background: rgba(255,255,255,0.07);
-            padding: 4px 10px;
-            border-radius: 999px;
-        }
-        .oc-card-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 20px;
-            line-height: 1.25;
-            letter-spacing: -0.01em;
-            color: #f0f0f0;
-            text-transform: none;
-            margin: 0;
-        }
-        .oc-card-subtitle {
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            line-height: 1.55;
-            color: #888;
-            text-transform: none;
-            margin: 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .oc-empty {
-            text-align: center;
-            padding: 60px 24px;
-            color: #888;
-            font-family: 'Inter', sans-serif;
-            text-transform: none;
-            background: rgba(255,255,255,0.02);
-            border: 1px dashed rgba(255,255,255,0.1);
-            border-radius: 14px;
-        }
-
-        /* ── URL-status banner (?confirmed=1 etc.) ── */
+        /* ══ STATUS BANNER ══ */
         .oc-status-banner {
             max-width: 600px;
             margin: 0 auto 40px;
-            padding: 16px 22px;
-            border-radius: 10px;
+            padding: 14px 22px;
+            border-radius: 8px;
             font-family: 'Inter', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             text-align: center;
             text-transform: none;
             background: rgba(74,222,128,0.08);
@@ -274,10 +246,232 @@
             color: #fca5a5;
         }
 
-        @media (max-width: 640px) {
-            .oc-masthead { padding: 52px 20px 40px; }
-            .oc-subscribe { margin: 36px 16px 0; padding: 26px 20px; }
-            .oc-grid { gap: 22px; }
+        /* ══ DIVIDER ══ */
+        .oc-divider-row {
+            max-width: 1100px;
+            margin: 24px auto 56px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: var(--oc-muted-2);
+        }
+        .oc-divider-row::before,
+        .oc-divider-row::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--oc-divider);
+        }
+
+        /* ══ FEATURED ARTICLE (first card, oversized) ══ */
+        .oc-feed {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+        .oc-feature {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 56px;
+            align-items: center;
+            margin-bottom: 80px;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+        .oc-feature-img {
+            aspect-ratio: 4/3;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.04);
+            transition: transform 0.6s ease;
+        }
+        .oc-feature:hover .oc-feature-img { transform: scale(1.015); }
+        .oc-feature-body { display: flex; flex-direction: column; gap: 20px; }
+        .oc-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--oc-muted);
+        }
+        .oc-meta .oc-pill {
+            color: var(--oc-text);
+            background: rgba(255,255,255,0.07);
+            padding: 5px 11px;
+            border-radius: 999px;
+        }
+        .oc-feature-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: clamp(28px, 3.4vw, 40px);
+            line-height: 1.1;
+            letter-spacing: -0.025em;
+            color: var(--oc-text);
+            text-transform: none;
+            margin: 0;
+        }
+        .oc-feature-subtitle {
+            font-family: 'Fraunces', 'Inter', serif;
+            font-style: italic;
+            font-size: 18px;
+            line-height: 1.55;
+            color: var(--oc-muted);
+            margin: 0;
+            text-transform: none;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .oc-feature-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--oc-text);
+            margin-top: 4px;
+        }
+        .oc-feature-cta::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+        .oc-feature:hover .oc-feature-cta::after { transform: translateX(4px); }
+
+        /* ══ RECENT ARTICLES GRID ══ */
+        .oc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 48px 32px;
+            padding-top: 56px;
+            border-top: 1px solid var(--oc-divider);
+        }
+        .oc-card {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .oc-card-img {
+            aspect-ratio: 4/3;
+            width: 100%;
+            object-fit: cover;
+            background: rgba(255,255,255,0.04);
+            border-radius: 4px;
+            transition: transform 0.5s ease;
+        }
+        .oc-card:hover .oc-card-img { transform: scale(1.015); }
+        .oc-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--oc-muted);
+        }
+        .oc-card-meta .oc-pill {
+            color: var(--oc-text);
+            background: rgba(255,255,255,0.07);
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+        .oc-card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            line-height: 1.2;
+            letter-spacing: -0.012em;
+            color: var(--oc-text);
+            text-transform: none;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .oc-card:hover .oc-card-title { color: #ffffff; }
+
+        /* ══ EMPTY STATE ══ */
+        .oc-empty {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--oc-muted);
+            font-family: 'Fraunces', 'Inter', serif;
+            font-style: italic;
+            font-size: 16px;
+            text-transform: none;
+        }
+        .oc-empty .oc-empty-stamp {
+            display: block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-style: normal;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: var(--oc-muted-2);
+            margin-bottom: 18px;
+        }
+
+        /* ══ END-OF-FEED SUBSCRIBE BLOCK ══ */
+        .oc-end-cta {
+            max-width: 560px;
+            margin: 100px auto 0;
+            text-align: center;
+            padding: 56px 24px;
+            border-top: 1px solid var(--oc-divider);
+        }
+        .oc-end-cta h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 24px;
+            letter-spacing: -0.015em;
+            margin: 0 0 12px;
+            text-transform: none;
+            color: var(--oc-text);
+        }
+        .oc-end-cta p {
+            font-family: 'Fraunces', 'Inter', serif;
+            font-style: italic;
+            font-size: 15px;
+            color: var(--oc-muted);
+            margin: 0 0 22px;
+            text-transform: none;
+        }
+
+        /* ══ MOBILE ══ */
+        @media (max-width: 720px) {
+            .oc-masthead { padding: 44px 20px 40px; }
+            .oc-issue-stamp::before, .oc-issue-stamp::after { width: 16px; }
+            .oc-avatar { width: 60px; height: 60px; margin-bottom: 20px; }
+            .oc-avatar img { width: 34px; }
+            .oc-byline { margin-bottom: 28px; }
+            .oc-sub-row { flex-direction: column; }
+            .oc-sub-row button { width: 100%; padding: 14px 16px; }
+            .oc-feature { grid-template-columns: 1fr; gap: 28px; margin-bottom: 60px; }
+            .oc-feed { padding: 0 20px 60px; }
+            .oc-grid { gap: 36px 22px; padding-top: 40px; }
+            .oc-end-cta { margin-top: 60px; padding: 40px 20px; }
+            .oc-divider-row { margin: 16px auto 36px; padding: 0 20px; }
         }
     </style>
 </head>
@@ -298,43 +492,67 @@
         </div>
     </nav>
 
-    <!-- MASTHEAD -->
-    <header class="oc-masthead">
-        <h1 class="oc-title">Off-Catalog</h1>
-        <div class="oc-byline">
-            <span>By</span>
-            <img src="/images/logo.png" alt="Dialed By H">
-        </div>
-        <p class="oc-tagline">
-            Market notes, sourcing stories, and the occasional rare reference. Written by Henry Ohler from the inside of the gray market.
-        </p>
-    </header>
-
     <!-- STATUS BANNER (confirmation/unsubscribe messages) -->
     <div id="oc-status" class="hidden"></div>
 
-    <!-- SUBSCRIBE -->
-    <section class="px-6 sm:px-10">
-        <div class="oc-subscribe">
-            <h2>Never miss a story</h2>
-            <p>New writing in your inbox. No spam, just watches.</p>
-            <form id="oc-sub-form" class="oc-sub-form" novalidate>
-                <input id="oc-sub-email" class="oc-sub-input" type="email" name="email" placeholder="Email address" required>
-                <button id="oc-sub-btn" class="oc-sub-btn" type="submit">Subscribe</button>
+    <!-- MASTHEAD -->
+    <header class="oc-masthead">
+        <p id="oc-issue-stamp" class="oc-issue-stamp">Vol 01 · May 2026</p>
+
+        <div class="oc-avatar">
+            <img src="/images/logo.png" alt="Dialed By H">
+        </div>
+
+        <h1 class="oc-title">Off-Catalog</h1>
+
+        <p class="oc-tagline">Notes from inside the gray market.</p>
+
+        <p class="oc-byline">By <a href="/about.html">Henry Ohler</a> · Dialed By H</p>
+
+        <!-- INLINE SUBSCRIBE -->
+        <div class="oc-subscribe-inline">
+            <form id="oc-sub-form" novalidate>
+                <div class="oc-sub-row">
+                    <input id="oc-sub-email" type="email" name="email" placeholder="your@email.com" required>
+                    <button id="oc-sub-btn" type="submit">Subscribe</button>
+                </div>
                 <p id="oc-sub-msg" class="oc-sub-msg hidden"></p>
             </form>
+            <a href="#latest" class="oc-sub-guest">Read as guest ↓</a>
         </div>
-    </section>
+    </header>
 
-    <!-- ARTICLES GRID -->
-    <section class="px-6 sm:px-10 md:px-16 max-w-6xl mx-auto py-20">
+    <!-- SECTION DIVIDER -->
+    <div class="oc-divider-row" id="latest">Latest</div>
+
+    <!-- ARTICLE FEED -->
+    <section class="oc-feed">
+        <div id="oc-feature-mount"></div>
         <div id="oc-grid" class="oc-grid">
-            <div class="oc-empty">Loading…</div>
+            <div class="oc-empty" style="grid-column: 1 / -1;">
+                <span class="oc-empty-stamp">Issue 001 · Coming soon</span>
+                The first piece is in the works. Subscribe above and it lands in your inbox the day it ships.
+            </div>
         </div>
     </section>
 
-    <!-- FOOTER (lightweight version of site footer) -->
-    <footer class="border-t border-ivory/5 py-12 sm:py-14 px-6 sm:px-10 md:px-16">
+    <!-- END-OF-FEED SUBSCRIBE -->
+    <div class="oc-end-cta">
+        <h3>Get the next one in your inbox</h3>
+        <p>No spam. Just watches. Unsubscribe whenever.</p>
+        <div class="oc-subscribe-inline">
+            <form id="oc-end-form" novalidate>
+                <div class="oc-sub-row">
+                    <input id="oc-end-email" type="email" name="email" placeholder="your@email.com" required>
+                    <button id="oc-end-btn" type="submit">Subscribe</button>
+                </div>
+                <p id="oc-end-msg" class="oc-sub-msg hidden"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-ivory/5 py-12 sm:py-14 px-6 sm:px-10 md:px-16 mt-12">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-[10px] tracking-widest uppercase text-muted font-space">
             <a href="/" class="hover:text-ivory transition-colors">Dialed By H</a>
             <div class="flex gap-6">
@@ -364,6 +582,16 @@
             catch { return ""; }
         }
 
+        // ── Auto-update issue stamp month ──
+        (function () {
+            const el = document.getElementById("oc-issue-stamp");
+            if (!el) return;
+            const now = new Date();
+            const mon = now.toLocaleDateString("en-US", { month: "long" });
+            const yr  = now.getFullYear();
+            el.textContent = `Vol 01 · ${mon} ${yr}`;
+        })();
+
         // ── Status banner from query params (?confirmed=1, ?unsubscribed=1) ──
         (function showStatusBanner() {
             const params = new URLSearchParams(window.location.search);
@@ -388,92 +616,116 @@
                 el.className = isWarn ? "oc-status-banner warn" : "oc-status-banner";
                 el.textContent = html;
                 el.classList.remove("hidden");
-                // Clean URL after 5s
-                setTimeout(() => {
-                    history.replaceState({}, "", "/journal/");
-                }, 5000);
+                setTimeout(() => history.replaceState({}, "", "/journal/"), 5000);
             }
         })();
 
-        // ── Subscribe form ──
-        const subForm = document.getElementById("oc-sub-form");
-        const subEmail = document.getElementById("oc-sub-email");
-        const subBtn = document.getElementById("oc-sub-btn");
-        const subMsg = document.getElementById("oc-sub-msg");
-
-        subForm.addEventListener("submit", async (ev) => {
-            ev.preventDefault();
-            subMsg.classList.add("hidden");
-            subMsg.classList.remove("error");
-
-            const email = subEmail.value.trim();
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                subMsg.textContent = "That email doesn't look right.";
-                subMsg.classList.remove("hidden");
-                subMsg.classList.add("error");
-                return;
-            }
-
-            subBtn.disabled = true;
-            const original = subBtn.textContent;
-            subBtn.textContent = "Sending…";
-
-            try {
-                const r = await fetch("/api/journal-subscribe", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, source: "journal-index" }),
-                });
-                const json = await r.json().catch(() => ({}));
-                if (!r.ok) throw new Error(json.error || "Subscribe failed");
-
-                subMsg.textContent = json.alreadyConfirmed
-                    ? "You're already on the list. Welcome back."
-                    : "Check your email to confirm.";
-                subMsg.classList.remove("hidden");
-                subForm.reset();
-            } catch (e) {
-                subMsg.textContent = "Something broke. Try again in a sec.";
-                subMsg.classList.remove("hidden");
-                subMsg.classList.add("error");
-            } finally {
-                subBtn.disabled = false;
-                subBtn.textContent = original;
-            }
-        });
+        // ── Subscribe form handler (shared by masthead + end-of-feed) ──
+        function wireSubscribeForm(formId, emailId, btnId, msgId, source) {
+            const form = document.getElementById(formId);
+            const email = document.getElementById(emailId);
+            const btn = document.getElementById(btnId);
+            const msg = document.getElementById(msgId);
+            if (!form) return;
+            form.addEventListener("submit", async (ev) => {
+                ev.preventDefault();
+                msg.classList.add("hidden");
+                msg.classList.remove("error");
+                const v = email.value.trim();
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+                    msg.textContent = "That email doesn't look right.";
+                    msg.classList.remove("hidden");
+                    msg.classList.add("error");
+                    return;
+                }
+                btn.disabled = true;
+                const original = btn.textContent;
+                btn.textContent = "Sending…";
+                try {
+                    const r = await fetch("/api/journal-subscribe", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: v, source }),
+                    });
+                    const json = await r.json().catch(() => ({}));
+                    if (!r.ok) throw new Error(json.error || "Subscribe failed");
+                    msg.textContent = json.alreadyConfirmed
+                        ? "You're already on the list. Welcome back."
+                        : "Check your email to confirm.";
+                    msg.classList.remove("hidden");
+                    form.reset();
+                } catch (e) {
+                    msg.textContent = "Something broke. Try again in a sec.";
+                    msg.classList.remove("hidden");
+                    msg.classList.add("error");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = original;
+                }
+            });
+        }
+        wireSubscribeForm("oc-sub-form", "oc-sub-email", "oc-sub-btn", "oc-sub-msg", "journal-masthead");
+        wireSubscribeForm("oc-end-form", "oc-end-email", "oc-end-btn", "oc-end-msg", "journal-end-of-feed");
 
         // ── Load articles ──
+        function renderFeature(a) {
+            return `
+                <a href="/journal/${esc(a.slug)}" class="oc-feature">
+                    ${a.hero_image_url
+                        ? `<img class="oc-feature-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="eager">`
+                        : `<div class="oc-feature-img"></div>`}
+                    <div class="oc-feature-body">
+                        <div class="oc-meta">
+                            ${a.category ? `<span class="oc-pill">${esc(a.category)}</span>` : `<span class="oc-pill">Featured</span>`}
+                            <span>${formatDate(a.published_at)}</span>
+                            ${a.reading_time_minutes ? `<span>· ${a.reading_time_minutes} min read</span>` : ""}
+                        </div>
+                        <h2 class="oc-feature-title">${esc(a.title)}</h2>
+                        ${a.subtitle ? `<p class="oc-feature-subtitle">${esc(a.subtitle)}</p>` : (a.excerpt ? `<p class="oc-feature-subtitle">${esc(a.excerpt)}</p>` : "")}
+                        <span class="oc-feature-cta">Read the piece</span>
+                    </div>
+                </a>
+            `;
+        }
+
+        function renderCard(a) {
+            return `
+                <a href="/journal/${esc(a.slug)}" class="oc-card">
+                    ${a.hero_image_url
+                        ? `<img class="oc-card-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="lazy">`
+                        : `<div class="oc-card-img"></div>`}
+                    <div class="oc-card-meta">
+                        ${a.category ? `<span class="oc-pill">${esc(a.category)}</span>` : ""}
+                        <span>${formatDate(a.published_at)}</span>
+                    </div>
+                    <h3 class="oc-card-title">${esc(a.title)}</h3>
+                </a>
+            `;
+        }
+
         async function loadArticles() {
+            const featureMount = document.getElementById("oc-feature-mount");
             const grid = document.getElementById("oc-grid");
             try {
                 const r = await fetch("/api/journal-list?limit=24", { cache: "no-store" });
                 const json = await r.json();
                 const articles = json.articles || [];
-                if (articles.length === 0) {
-                    grid.innerHTML = `<div class="oc-empty">First piece coming soon. Subscribe above to get it in your inbox.</div>`;
-                    return;
+                if (articles.length === 0) return; // keep empty-state template
+
+                const [first, ...rest] = articles;
+                featureMount.innerHTML = renderFeature(first);
+                if (rest.length > 0) {
+                    grid.innerHTML = rest.map(renderCard).join("");
+                } else {
+                    grid.innerHTML = `<div class="oc-empty" style="grid-column: 1 / -1;">
+                        <span class="oc-empty-stamp">More on the way</span>
+                        That's the first one. Subscribe above to catch the next.
+                    </div>`;
                 }
-                grid.innerHTML = articles.map(a => `
-                    <a href="/journal/${esc(a.slug)}" class="oc-card">
-                        ${a.hero_image_url
-                            ? `<img class="oc-card-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="lazy">`
-                            : `<div class="oc-card-img"></div>`}
-                        <div class="oc-card-body">
-                            <div class="oc-card-meta">
-                                ${a.category ? `<span class="oc-pill">${esc(a.category)}</span>` : ""}
-                                <span>${formatDate(a.published_at)}</span>
-                                ${a.reading_time_minutes ? `<span>· ${a.reading_time_minutes} min read</span>` : ""}
-                            </div>
-                            <h3 class="oc-card-title">${esc(a.title)}</h3>
-                            ${a.subtitle ? `<p class="oc-card-subtitle">${esc(a.subtitle)}</p>` : ""}
-                        </div>
-                    </a>
-                `).join("");
             } catch (e) {
-                grid.innerHTML = `<div class="oc-empty">Couldn't load articles. Refresh in a sec.</div>`;
+                grid.innerHTML = `<div class="oc-empty" style="grid-column: 1 / -1;">Couldn't load the feed. Refresh in a sec.</div>`;
             }
         }
-
         loadArticles();
     </script>
 </body>

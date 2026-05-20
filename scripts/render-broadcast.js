@@ -16,9 +16,9 @@
 
 const React = require("react");
 const { render } = require("@react-email/render");
-const { BroadcastEmail } = require("../api/emails/broadcast.js");
-const { WelcomeEmail } = require("../api/emails/welcome.js");
-const { InquiryEmail } = require("../api/emails/inquiry.js");
+const { BroadcastEmail } = require("../lib/emails/broadcast.js");
+const { WelcomeEmail } = require("../lib/emails/welcome.js");
+const { InquiryEmail } = require("../lib/emails/inquiry.js");
 const fs = require("fs");
 const { execSync } = require("child_process");
 

@@ -1,8 +1,8 @@
 const { Resend } = require("resend");
 const { render } = require("@react-email/render");
 const React = require("react");
-const { WelcomeEmail } = require("./emails/welcome.js");
-const { InquiryEmail } = require("./emails/inquiry.js");
+const { WelcomeEmail } = require("../lib/emails/welcome.js");
+const { InquiryEmail } = require("../lib/emails/inquiry.js");
 
 // Supabase REST API — DialedbyH project
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";

@@ -11,7 +11,7 @@ const { Resend } = require("resend");
 const { render } = require("@react-email/render");
 const React = require("react");
 const crypto = require("crypto");
-const { BroadcastEmail } = require("./emails/broadcast.js");
+const { BroadcastEmail } = require("../lib/emails/broadcast.js");
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SITE_URL = process.env.SITE_URL || "https://dialedbyhenry.com";

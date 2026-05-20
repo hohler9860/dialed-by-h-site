@@ -2,7 +2,7 @@ const { createClient } = require("@supabase/supabase-js");
 const { Resend } = require("resend");
 const { render } = require("@react-email/render");
 const React = require("react");
-const { BroadcastEmail } = require("./emails/broadcast.js");
+const { BroadcastEmail } = require("../lib/emails/broadcast.js");
 
 let supabase;
 let resend;

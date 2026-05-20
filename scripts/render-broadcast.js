@@ -50,7 +50,7 @@ const examples = {
     imageUrl: "https://www.dialedbyhenry.com/images/buy-ap-royal-oak.jpg",
     imageAlt: "Audemars Piguet Royal Oak",
     ctaText: "Read the Article",
-    ctaUrl: "https://dialedbyh.substack.com",
+    ctaUrl: "https://dialedbyhenry.com/journal/",
   },
   announcement: {
     previewText: "Big things coming to Dialed By H this month.",

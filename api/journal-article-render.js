@@ -262,7 +262,7 @@ code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;
     <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
         <a href="/about.html" class="nav-link hover:text-muted transition-colors">About Me</a>
         <a href="/process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
-        <a href="/journal/" class="nav-link nav-active hover:text-muted transition-colors">Off-Catalog</a>
+        <a href="/journal/" class="nav-link nav-active hover:text-muted transition-colors">Journal</a>
         <a href="/" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted transition-colors">Back to Home</a>
     </div>
 </nav>

@@ -598,27 +598,18 @@
         </section>
 
         <!-- FOOTER -->
-        <footer class="relative min-h-[50vh] sm:min-h-[60vh] flex flex-col justify-center items-center overflow-hidden py-16 sm:py-20">
-            <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full select-none pointer-events-none opacity-5 overflow-hidden">
-                <div id="footer-ticker" class="animate-ticker flex" style="width: max-content;">
-                    <span class="text-[20vw] font-space font-bold uppercase leading-none whitespace-nowrap" style="flex-shrink:0;">
-                        Private List &bull; Private List &bull; Private List &bull; Private List &bull;&nbsp;
-                    </span>
-                    <span class="text-[20vw] font-space font-bold uppercase leading-none whitespace-nowrap" style="flex-shrink:0;">
-                        Private List &bull; Private List &bull; Private List &bull; Private List &bull;&nbsp;
-                    </span>
-                </div>
-            </div>
+        <footer class="relative overflow-hidden py-12 sm:py-16 px-6 sm:px-10 md:px-16">
 
-            <div class="footer-reveal relative z-10 w-full max-w-xl px-5 sm:px-8 py-8 sm:py-10 text-center opacity-0 translate-y-5 rounded-2xl mx-4 sm:mx-auto" style="background:rgba(10,10,10,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.08)">
-                <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-3 sm:mb-4">
+            <!-- COMPACT SIGNUP CARD -->
+            <div class="footer-reveal relative z-10 w-full max-w-2xl mx-auto px-6 sm:px-10 py-7 sm:py-9 text-center opacity-0 translate-y-5 rounded-2xl" style="background:rgba(10,10,10,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.08)">
+                <h4 id="contact-title" class="font-space text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tight mb-3">
                     Join the Private List
                 </h4>
-                <p id="contact-text" class="font-inter text-muted text-sm sm:text-base mb-8 sm:mb-10 tracking-wide" style="text-transform:none;">
+                <p id="contact-text" class="font-inter text-muted text-sm sm:text-base mb-6 sm:mb-7 tracking-wide" style="text-transform:none;">
                     First in line when off-market pieces come in. No spam, just heads-ups.
                 </p>
 
-                <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col gap-4 mb-12 sm:mb-16 max-w-sm mx-auto">
+                <form onsubmit="app.handleFooterSubmit(event)" class="flex flex-col gap-3 max-w-md mx-auto">
                     <label for="footer-name" class="sr-only">Full Name</label>
                     <input id="footer-name" type="text" name="fullName" placeholder="FULL NAME"
                            class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/50 focus:border-ivory outline-none transition-colors font-space uppercase" />
@@ -652,8 +643,14 @@
                         <div class="absolute inset-0 bg-charcoal transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></div>
                     </button>
                 </form>
+            </div>
 
-                <div class="w-full border-t border-ivory/10 pt-10 space-y-8">
+            <!-- FOOTER BAR: logo, socials, copyright + privacy spread horizontally -->
+            <div class="relative z-10 max-w-6xl mx-auto mt-10 sm:mt-14">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6">
+                    <a href="index.html" class="flex items-center shrink-0">
+                        <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-9 w-auto object-contain">
+                    </a>
                     <div class="social-bar">
                         <a href="https://www.instagram.com/dialedbyh/" target="_blank" rel="noopener noreferrer" class="social-icon" data-tooltip="Instagram">
                             <i data-lucide="instagram" class="w-5 h-5"></i>
@@ -665,9 +662,13 @@
                             <i data-lucide="mail" class="w-5 h-5"></i>
                         </a>
                     </div>
-                    <p class="text-center mt-6 text-sm font-space uppercase tracking-widest text-muted">&copy; 2026 Dialed By H</p>
-                    <p class="text-center text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
-                    <a href="privacy.html" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
+                    <div class="flex items-center gap-6 shrink-0">
+                        <span class="text-[11px] font-space uppercase tracking-widest text-muted whitespace-nowrap">&copy; 2026 Dialed By H</span>
+                        <a href="privacy.html" class="text-[11px] font-space uppercase tracking-widest text-muted hover:text-ivory transition-colors whitespace-nowrap">Privacy &amp; Terms</a>
+                    </div>
+                </div>
+                <div class="border-t border-ivory/10 pt-5">
+                    <p class="text-[10px] text-muted/30 font-inter max-w-3xl mx-auto text-center leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
                 </div>
             </div>
         </footer>

@@ -116,7 +116,8 @@
             max-width: 980px;
             margin: 0 auto;
         }
-        .oc-subnav a {
+        .oc-subnav a,
+        .oc-subnav button {
             font-family: 'Space Grotesk', sans-serif;
             font-size: 10px;
             font-weight: 700;
@@ -128,14 +129,25 @@
             transition: color 0.2s, background 0.2s;
             text-decoration: none;
             white-space: nowrap;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font: inherit;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
         }
-        .oc-subnav a:hover { color: #f0f0f0; background: rgba(240,240,240,0.04); }
-        .oc-subnav a.is-active { color: #0a0a0a; background: #f0f0f0; }
+        .oc-subnav a:hover,
+        .oc-subnav button:hover { color: #f0f0f0; background: rgba(240,240,240,0.04); }
+        .oc-subnav a.is-active,
+        .oc-subnav button.is-active { color: #0a0a0a; background: #f0f0f0; }
         .oc-subnav a.is-cta { color: #f0f0f0; border: 1px solid rgba(240,240,240,0.18); }
         .oc-subnav a.is-cta:hover { border-color: rgba(240,240,240,0.4); background: rgba(240,240,240,0.06); }
         @media (max-width: 640px) {
             .oc-subnav { padding: 8px 16px 0; gap: 2px 4px; }
-            .oc-subnav a { font-size: 9px; padding: 6px 10px; letter-spacing: 0.22em; }
+            .oc-subnav a, .oc-subnav button { font-size: 9px; padding: 6px 10px; letter-spacing: 0.22em; }
         }
         .oc-tagline {
             margin: 38px auto 0;
@@ -346,11 +358,11 @@
 
     <!-- CATEGORY SUB-NAV -->
     <nav class="oc-subnav" aria-label="Journal categories">
-        <a href="?" class="is-active" data-category="all">All</a>
-        <a href="?" data-category="Market Notes">Market Notes</a>
-        <a href="?" data-category="Releases">Releases</a>
-        <a href="?" data-category="Sourcing Stories">Sourcing Stories</a>
-        <a href="?" data-category="Predictions">Predictions</a>
+        <button type="button" class="is-active" data-category="all">All</button>
+        <button type="button" data-category="Market Notes">Market Notes</button>
+        <button type="button" data-category="Releases">Releases</button>
+        <button type="button" data-category="Sourcing Stories">Sourcing Stories</button>
+        <button type="button" data-category="Predictions">Predictions</button>
         <a href="/trivia/" class="is-cta">Trivia &rarr;</a>
     </nav>
 
@@ -540,15 +552,14 @@
             grid.innerHTML = filtered.map(renderCard).join("");
         }
 
-        // Category filter pills
-        document.querySelectorAll(".oc-subnav a[data-category]").forEach(link => {
-            link.addEventListener("click", (ev) => {
+        // Category filter pills (buttons — no href, no nav, can't reload page)
+        document.querySelectorAll(".oc-subnav [data-category]").forEach(btn => {
+            btn.addEventListener("click", (ev) => {
                 ev.preventDefault();
-                document.querySelectorAll(".oc-subnav a[data-category]").forEach(l => l.classList.remove("is-active"));
-                link.classList.add("is-active");
-                activeCategory = link.dataset.category;
+                document.querySelectorAll(".oc-subnav [data-category]").forEach(b => b.classList.remove("is-active"));
+                btn.classList.add("is-active");
+                activeCategory = btn.dataset.category;
                 renderFeed();
-                // Scroll the feed into view so the filter change is obviously visible
                 const feed = document.getElementById("oc-feed");
                 if (feed) {
                     const rect = feed.getBoundingClientRect();

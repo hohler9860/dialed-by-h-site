@@ -10,5 +10,8 @@
   "rewrites": [
     { "source": "/journal/:slug", "destination": "/api/journal-article-render?slug=:slug" },
     { "source": "/journal/:slug/", "destination": "/api/journal-article-render?slug=:slug" }
+  ],
+  "redirects": [
+    { "source": "/journal.html", "destination": "/journal/", "permanent": true }
   ]
 }

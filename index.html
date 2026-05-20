@@ -122,7 +122,129 @@
         "@type": "WebSite",
         "name": "Dialed By H",
         "url": "https://dialedbyhenry.com",
-        "description": "Luxury watch concierge service specializing in sourcing, selling, and trading rare timepieces."
+        "description": "Luxury watch concierge service specializing in sourcing, selling, and trading rare timepieces.",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Dialed By H",
+            "url": "https://dialedbyhenry.com",
+            "logo": { "@type": "ImageObject", "url": "https://dialedbyhenry.com/images/logo.png" }
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://dialedbyhenry.com/inventory.html?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <!-- Person schema: Henry, the founder + concierge behind Dialed By H -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Henry Ohler",
+        "alternateName": "Henry at Dialed By H",
+        "url": "https://dialedbyhenry.com/about.html",
+        "image": "https://dialedbyhenry.com/images/logo.png",
+        "jobTitle": "Founder, Luxury Watch Concierge",
+        "worksFor": {
+            "@type": "Organization",
+            "name": "Dialed By H",
+            "url": "https://dialedbyhenry.com"
+        },
+        "sameAs": [
+            "https://www.instagram.com/dialedbyh/"
+        ],
+        "knowsAbout": ["Rolex", "Patek Philippe", "Audemars Piguet", "F.P. Journe", "Vacheron Constantin", "A. Lange & Söhne", "Richard Mille", "Cartier", "luxury watch sourcing", "grey market watches", "watch authentication"],
+        "areaServed": ["Boston", "New York City", "Miami", "United States"]
+    }
+    </script>
+
+    <!-- Service schema: what Dialed By H actually does -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Luxury Watch Sourcing & Concierge",
+        "serviceType": "Watch Sourcing",
+        "provider": {
+            "@type": "Organization",
+            "name": "Dialed By H",
+            "url": "https://dialedbyhenry.com"
+        },
+        "areaServed": [
+            { "@type": "City", "name": "Boston" },
+            { "@type": "City", "name": "New York" },
+            { "@type": "City", "name": "Miami" },
+            { "@type": "Country", "name": "United States" }
+        ],
+        "audience": {
+            "@type": "Audience",
+            "audienceType": "Luxury watch collectors and enthusiasts"
+        },
+        "offers": [
+            { "@type": "Offer", "name": "Watch Sourcing", "description": "Concierge sourcing of rare and hard-to-find luxury timepieces through a vetted global network." },
+            { "@type": "Offer", "name": "Watch Sales & Consignment", "description": "Competitive market offers with independent authentication." },
+            { "@type": "Offer", "name": "Watch Trading", "description": "Trade-in service to upgrade your collection with expert guidance." }
+        ]
+    }
+    </script>
+
+    <!-- FAQPage schema (mirrors the visible FAQ section below) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How do you source rare and hard-to-find watches?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "I work through a vetted network of dealers, collectors, and trusted contacts across Boston, New York, Miami, and globally. When you tell me what you're looking for, I tap that network directly instead of waiting for a piece to surface publicly. Most sourcing requests get a real lead within 12 hours."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do you authenticate watches before delivery?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Every piece is independently authenticated by a trusted watch specialist before it reaches you. I verify provenance, papers, and movement, and I'll only deliver a watch I'd put on my own wrist."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What brands do you specialize in?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Rolex, Patek Philippe, Audemars Piguet, F.P. Journe, A. Lange & Söhne, Vacheron Constantin, Richard Mille, Cartier, and the independent watchmakers most dealers don't carry. If you have a brand in mind that isn't on this list, ask — chances are I can still find it."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How long does it take to source a piece?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "First response on a sourcing request: within 12 hours. Time to actually find the watch varies by reference. Common references can land in days. Hyped or discontinued pieces may take a few weeks. I keep you updated the whole way."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I trade in or sell my current watch?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. I offer competitive market trade-in pricing toward your next piece, and I can also sell a watch outright on consignment. Either way, you get a transparent quote and independent authentication."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Where are you based and do you ship?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "I'm based in Boston with active presence in New York and Miami. Pieces ship fully insured anywhere in the United States. International delivery is case by case — reach out and we'll figure it out."
+                }
+            }
+        ]
     }
     </script>
 
@@ -401,6 +523,78 @@
                 </div>
 
             </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section id="faq" class="relative border-b border-ivory/5 overflow-hidden py-20 sm:py-24 lg:py-28 px-6 sm:px-10 md:px-16">
+            <div class="relative z-10 max-w-3xl mx-auto">
+                <p class="text-center text-[10px] sm:text-xs font-bold tracking-widest text-muted mb-4 font-space uppercase">Common Questions</p>
+                <h2 class="text-center font-space font-bold text-3xl sm:text-4xl md:text-5xl tracking-tighter uppercase leading-[0.95] mb-12 sm:mb-16">Frequently Asked</h2>
+
+                <div class="space-y-3">
+                    <details class="faq-item group glass-subtle rounded-xl px-5 sm:px-7 py-5 cursor-pointer border border-ivory/8 hover:border-ivory/20 transition-colors">
+                        <summary class="flex items-center justify-between gap-4 list-none">
+                            <h3 class="font-space font-bold text-base sm:text-lg tracking-tight pr-4" style="text-transform:none">How do you source rare and hard-to-find watches?</h3>
+                            <span class="faq-toggle text-2xl text-muted group-open:rotate-45 transition-transform shrink-0">+</span>
+                        </summary>
+                        <p class="font-inter text-muted text-sm sm:text-base leading-relaxed mt-4" style="text-transform:none">I work through a vetted network of dealers, collectors, and trusted contacts across Boston, New York, Miami, and globally. When you tell me what you're looking for, I tap that network directly instead of waiting for a piece to surface publicly. Most sourcing requests get a real lead within 12 hours.</p>
+                    </details>
+
+                    <details class="faq-item group glass-subtle rounded-xl px-5 sm:px-7 py-5 cursor-pointer border border-ivory/8 hover:border-ivory/20 transition-colors">
+                        <summary class="flex items-center justify-between gap-4 list-none">
+                            <h3 class="font-space font-bold text-base sm:text-lg tracking-tight pr-4" style="text-transform:none">How do you authenticate watches before delivery?</h3>
+                            <span class="faq-toggle text-2xl text-muted group-open:rotate-45 transition-transform shrink-0">+</span>
+                        </summary>
+                        <p class="font-inter text-muted text-sm sm:text-base leading-relaxed mt-4" style="text-transform:none">Every piece is independently authenticated by a trusted watch specialist before it reaches you. I verify provenance, papers, and movement, and I'll only deliver a watch I'd put on my own wrist.</p>
+                    </details>
+
+                    <details class="faq-item group glass-subtle rounded-xl px-5 sm:px-7 py-5 cursor-pointer border border-ivory/8 hover:border-ivory/20 transition-colors">
+                        <summary class="flex items-center justify-between gap-4 list-none">
+                            <h3 class="font-space font-bold text-base sm:text-lg tracking-tight pr-4" style="text-transform:none">What brands do you specialize in?</h3>
+                            <span class="faq-toggle text-2xl text-muted group-open:rotate-45 transition-transform shrink-0">+</span>
+                        </summary>
+                        <p class="font-inter text-muted text-sm sm:text-base leading-relaxed mt-4" style="text-transform:none">Rolex, Patek Philippe, Audemars Piguet, F.P. Journe, A. Lange &amp; Söhne, Vacheron Constantin, Richard Mille, Cartier, and the independent watchmakers most dealers don't carry. If you have a brand in mind that isn't on this list, ask. Chances are I can still find it.</p>
+                    </details>
+
+                    <details class="faq-item group glass-subtle rounded-xl px-5 sm:px-7 py-5 cursor-pointer border border-ivory/8 hover:border-ivory/20 transition-colors">
+                        <summary class="flex items-center justify-between gap-4 list-none">
+                            <h3 class="font-space font-bold text-base sm:text-lg tracking-tight pr-4" style="text-transform:none">How long does it take to source a piece?</h3>
+                            <span class="faq-toggle text-2xl text-muted group-open:rotate-45 transition-transform shrink-0">+</span>
+                        </summary>
+                        <p class="font-inter text-muted text-sm sm:text-base leading-relaxed mt-4" style="text-transform:none">First response on a sourcing request: within 12 hours. Time to actually find the watch varies by reference. Common references can land in days. Hyped or discontinued pieces may take a few weeks. I keep you updated the whole way.</p>
+                    </details>
+
+                    <details class="faq-item group glass-subtle rounded-xl px-5 sm:px-7 py-5 cursor-pointer border border-ivory/8 hover:border-ivory/20 transition-colors">
+                        <summary class="flex items-center justify-between gap-4 list-none">
+                            <h3 class="font-space font-bold text-base sm:text-lg tracking-tight pr-4" style="text-transform:none">Can I trade in or sell my current watch?</h3>
+                            <span class="faq-toggle text-2xl text-muted group-open:rotate-45 transition-transform shrink-0">+</span>
+                        </summary>
+                        <p class="font-inter text-muted text-sm sm:text-base leading-relaxed mt-4" style="text-transform:none">Yes. I offer competitive market trade-in pricing toward your next piece, and I can also sell a watch outright on consignment. Either way, you get a transparent quote and independent authentication.</p>
+                    </details>
+
+                    <details class="faq-item group glass-subtle rounded-xl px-5 sm:px-7 py-5 cursor-pointer border border-ivory/8 hover:border-ivory/20 transition-colors">
+                        <summary class="flex items-center justify-between gap-4 list-none">
+                            <h3 class="font-space font-bold text-base sm:text-lg tracking-tight pr-4" style="text-transform:none">Where are you based and do you ship?</h3>
+                            <span class="faq-toggle text-2xl text-muted group-open:rotate-45 transition-transform shrink-0">+</span>
+                        </summary>
+                        <p class="font-inter text-muted text-sm sm:text-base leading-relaxed mt-4" style="text-transform:none">I'm based in Boston with active presence in New York and Miami. Pieces ship fully insured anywhere in the United States. International delivery is case by case. Reach out and we'll figure it out.</p>
+                    </details>
+                </div>
+
+                <div class="text-center mt-12 sm:mt-14">
+                    <p class="text-muted text-sm font-inter mb-4" style="text-transform:none">Still have a question?</p>
+                    <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="inline-block border border-ivory/30 text-ivory px-6 py-3 text-xs font-space font-bold uppercase tracking-widest hover:bg-ivory hover:text-charcoal transition-colors">
+                        Message Me on WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <style>
+                .faq-item summary::-webkit-details-marker { display: none; }
+                .faq-item summary { outline: none; }
+                .faq-item[open] .faq-toggle { transform: rotate(45deg); }
+                .faq-item[open] { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.18); }
+            </style>
         </section>
 
         <!-- FOOTER -->

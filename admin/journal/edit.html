@@ -519,7 +519,7 @@
             }, 30000);
         }
 
-        // ─── Hero image upload ─────────────────────────────────
+        // ─── Image upload (with client-side compression) ───────
         async function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -533,7 +533,60 @@
             });
         }
 
+        // Vercel serverless functions cap request bodies at 4.5MB. A modern
+        // phone photo can easily exceed that once base64-encoded (~1.33x raw
+        // bytes). Compress on the client first: cap longest side at 1800px,
+        // re-encode JPEG at q=0.85. Skip if the file is already small or not
+        // an image type we can decode.
+        async function compressImage(file) {
+            if (!file || !file.type || !file.type.startsWith("image/")) return file;
+            // SVG and GIF: don't touch (canvas would lose animation/vector data).
+            if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
+            // Already small enough.
+            if (file.size < 700 * 1024) return file;
+
+            const MAX_SIDE = 1800;
+            const QUALITY = 0.85;
+
+            const objectUrl = URL.createObjectURL(file);
+            try {
+                const img = await new Promise((resolve, reject) => {
+                    const i = new Image();
+                    i.onload = () => resolve(i);
+                    i.onerror = () => reject(new Error("Could not decode image"));
+                    i.src = objectUrl;
+                });
+
+                let { width, height } = img;
+                const scale = Math.min(1, MAX_SIDE / Math.max(width, height));
+                const newW = Math.round(width * scale);
+                const newH = Math.round(height * scale);
+
+                const canvas = document.createElement("canvas");
+                canvas.width = newW;
+                canvas.height = newH;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, newW, newH);
+
+                const blob = await new Promise((resolve) =>
+                    canvas.toBlob(resolve, "image/jpeg", QUALITY)
+                );
+                if (!blob) return file;
+
+                const newName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+                const compressed = new File([blob], newName, { type: "image/jpeg" });
+                // If compression somehow made it bigger (already tiny JPEG), use original.
+                return compressed.size < file.size ? compressed : file;
+            } catch (e) {
+                console.warn("Image compression failed, uploading original:", e);
+                return file;
+            } finally {
+                URL.revokeObjectURL(objectUrl);
+            }
+        }
+
         async function uploadImage(file) {
+            file = await compressImage(file);
             const base64 = await fileToBase64(file);
             const json = await window.dialedAdmin.adminFetch("upload-image", {
                 filename: file.name,
@@ -596,6 +649,7 @@
                             uploader: {
                                 async uploadByFile(file) {
                                     try {
+                                        file = await compressImage(file);
                                         const base64 = await fileToBase64(file);
                                         return await window.dialedAdmin.adminFetch("upload-image", {
                                             filename: file.name,

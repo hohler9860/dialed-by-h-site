@@ -141,27 +141,90 @@
         }
         .ce-toolbar__plus:hover,
         .ce-toolbar__settings-btn:hover { background: rgba(255,255,255,0.12); }
+        /* ── Editor.js v2.30 popover (block + add menus, inline toolbar) ── */
         .ce-popover,
+        .ce-popover-wrapper,
+        .ce-popover__container,
         .ce-conversion-toolbar,
         .ce-inline-toolbar {
             background: #181818 !important;
             border: 1px solid rgba(255,255,255,0.1) !important;
             color: #f0f0f0 !important;
             box-shadow: 0 12px 32px rgba(0,0,0,0.6) !important;
+            border-radius: 8px !important;
+            --color-text-primary: #f0f0f0 !important;
+            --color-text-secondary: rgba(240,240,240,0.5) !important;
+            --color-border-icon: rgba(255,255,255,0.08) !important;
+            --color-active-icon: #f0f0f0 !important;
+            --color-popover-background: #181818 !important;
+            --color-background-icon: rgba(255,255,255,0.06) !important;
+            --color-background-item-hover: rgba(255,255,255,0.08) !important;
+            --color-background-icon-hover: rgba(255,255,255,0.12) !important;
+            --color-text-icon-active: #f0f0f0 !important;
+            --color-tabbar-background: #181818 !important;
         }
-        .ce-popover-item,
-        .ce-inline-tool,
-        .ce-conversion-tool {
+        /* Search field inside the popover (v2.30 uses .cdx-search-field) */
+        .ce-popover .cdx-search-field,
+        .ce-popover__search,
+        .cdx-search-field {
+            background: rgba(255,255,255,0.06) !important;
             color: #f0f0f0 !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 6px !important;
+        }
+        .ce-popover input[type="text"],
+        .cdx-search-field__input {
+            background: transparent !important;
+            color: #f0f0f0 !important;
+            border: none !important;
+            outline: none !important;
+        }
+        .ce-popover input[type="text"]::placeholder,
+        .cdx-search-field__input::placeholder {
+            color: rgba(240,240,240,0.4) !important;
+        }
+        .cdx-search-field__icon,
+        .cdx-search-field__icon svg {
+            color: rgba(240,240,240,0.5) !important;
+            fill: currentColor !important;
+        }
+        /* Popover items (Heading, List, Image, etc.) */
+        .ce-popover-item,
+        .ce-popover-item__title,
+        .ce-popover-item__secondary-title,
+        .ce-inline-tool,
+        .ce-conversion-tool,
+        .ce-conversion-tool__name {
+            color: #f0f0f0 !important;
+        }
+        .ce-popover-item__secondary-title {
+            color: rgba(240,240,240,0.45) !important;
         }
         .ce-popover-item:hover,
         .ce-inline-tool:hover,
         .ce-conversion-tool:hover {
             background: rgba(255,255,255,0.08) !important;
         }
+        .ce-popover-item--active {
+            background: rgba(255,255,255,0.12) !important;
+        }
         .ce-popover-item__icon,
-        .ce-conversion-tool__icon { background: rgba(255,255,255,0.06) !important; color: #f0f0f0 !important; }
-        .ce-popover__search { background: rgba(255,255,255,0.04) !important; color: #f0f0f0 !important; }
+        .ce-conversion-tool__icon {
+            background: rgba(255,255,255,0.06) !important;
+            color: #f0f0f0 !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 6px !important;
+        }
+        .ce-popover-item__icon svg,
+        .ce-conversion-tool__icon svg,
+        .ce-inline-tool svg {
+            color: #f0f0f0 !important;
+            fill: currentColor !important;
+        }
+        /* Nothing-found state */
+        .ce-popover__nothing-found-message {
+            color: rgba(240,240,240,0.5) !important;
+        }
         .cdx-block { padding: 8px 0; }
         .cdx-quote {
             background: rgba(255,255,255,0.03);

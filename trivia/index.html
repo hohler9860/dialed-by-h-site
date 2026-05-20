@@ -75,6 +75,9 @@
     <!-- End Meta Pixel Code -->
 
     <style>
+        /* Override global body opacity (site uses page-ready fade-in) */
+        body { opacity: 1 !important; transition: none !important; }
+
         /* trivia-specific styling, keeps the editorial concierge feel */
         .difficulty-card {
             background: rgba(255,255,255,0.02);
@@ -361,10 +364,17 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="px-6 py-8 border-t border-ivory/10 text-center mt-16">
-        <span class="block mt-6 text-xs text-muted font-space uppercase tracking-widest">&copy; 2026 DIALED BY H</span>
-        <p class="text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
-        <a href="/privacy.html" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
+    <footer class="px-6 py-10 border-t border-ivory/10 text-center mt-16">
+        <a href="/" class="inline-block opacity-80 hover:opacity-100 transition-opacity mb-6">
+            <img src="/images/logo.png" alt="Dialed By H" class="h-7 sm:h-8 w-auto object-contain mx-auto">
+        </a>
+        <p class="text-[10px] text-muted/40 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
+        <div class="flex justify-center gap-6 text-[10px] text-muted/40 font-space uppercase tracking-widest">
+            <a href="/journal/" class="hover:text-muted transition-colors">Journal</a>
+            <a href="/inventory.html" class="hover:text-muted transition-colors">Inventory</a>
+            <a href="/about.html" class="hover:text-muted transition-colors">About</a>
+            <a href="/privacy.html" class="hover:text-muted transition-colors">Privacy</a>
+        </div>
     </footer>
 
     <!-- FLOATING WHATSAPP -->

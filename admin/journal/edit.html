@@ -349,17 +349,17 @@
 
             <div class="settings-row">
                 <label for="setting-seo-title">SEO Title (defaults to article title)</label>
-                <input id="setting-seo-title" type="text" placeholder="Optional — overrides title in search results">
+                <input id="setting-seo-title" type="text" placeholder="Optional. Overrides title in search results.">
             </div>
 
             <div class="settings-row">
                 <label for="setting-seo-description">SEO Description (defaults to excerpt)</label>
-                <textarea id="setting-seo-description" rows="3" placeholder="Optional — 1-2 sentences shown in search results"></textarea>
+                <textarea id="setting-seo-description" rows="3" placeholder="Optional. 1 to 2 sentences shown in search results."></textarea>
             </div>
 
             <div class="settings-row">
                 <label for="setting-excerpt">Excerpt (defaults to first paragraph)</label>
-                <textarea id="setting-excerpt" rows="2" placeholder="Optional — short preview shown on the journal index card"></textarea>
+                <textarea id="setting-excerpt" rows="2" placeholder="Optional. Short preview shown on the journal index card."></textarea>
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-ivory/8 mt-4">
@@ -563,7 +563,7 @@
             if (!articleId) {
                 initEditor(null);
                 deleteBtn.style.display = "none";
-                metaInfoEl.textContent = "New article — unsaved";
+                metaInfoEl.textContent = "New article. Unsaved.";
                 return;
             }
             try {

@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
                 imageAlt: article.title,
                 ctaText: "Read the full article",
                 ctaUrl,
-                signoffText: "— Henry",
+                signoffText: "Talk soon,",
             })
         );
         const htmlWithUnsub = injectUnsubscribeFooter(baseHtml);

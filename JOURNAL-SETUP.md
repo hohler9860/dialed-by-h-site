@@ -1,4 +1,4 @@
-# Off-Catalog Journal — Setup Checklist
+# Off-Catalog Journal Setup Checklist
 
 This doc covers what you need to do after merging `feat/off-catalog-journal` to ship the new journal to production.
 
@@ -44,8 +44,8 @@ For each:
 
 ## 4. Decide what to do with the dead Substack files
 
-- `journal.html` — old Substack-feed page. Already 301-redirects to `/journal/` via `vercel.json`. Safe to leave; safe to delete.
-- `api/substack-feed.js` — old RSS proxy. No longer called by anything. Safe to delete.
+- `journal.html`: old Substack-feed page. Already 301-redirects to `/journal/` via `vercel.json`. Safe to leave, safe to delete.
+- `api/substack-feed.js`: old RSS proxy. No longer called by anything. Safe to delete.
 
 Tell Claude "delete these two files" if you want to clean up. I left them in place because the redirect handles the user-facing URL fine without deletion.
 
@@ -81,10 +81,10 @@ Test your own confirm + unsubscribe flow before announcing:
 | `/api/journal-unsubscribe?token=X` | GET unsubscribe (public) |
 | `/api/journal-admin` | Auth-protected CRUD (admin only) |
 | `/api/journal-article-render?slug=X` | Server-side renderer (called by Vercel rewrite) |
-| `/api/journal-broadcast` | Auth-protected — send article to subscribers |
+| `/api/journal-broadcast` | Auth-protected. Sends article to subscribers |
 
 ## 8. Database tables added
 
-- `journal_articles` — every article (drafts + published)
-- `journal_subscribers` — double-opt-in email list with unsubscribe tokens
-- `journal-images` storage bucket — for hero + inline images
+- `journal_articles`: every article (drafts + published)
+- `journal_subscribers`: double-opt-in email list with unsubscribe tokens
+- `journal-images` storage bucket: for hero + inline images

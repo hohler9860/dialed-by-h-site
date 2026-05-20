@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write · Off-Catalog · Dialed By H</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/x-icon" href="/favicon-v2.ico?v=3" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/dist/styles.css">
+
+    <!-- Editor.js + plugins (UMD via CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.30.7/dist/editorjs.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8/dist/header.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.6/dist/list.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.2/dist/image.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6/dist/quote.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6/dist/embed.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.5.1/dist/inline-code.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.3/dist/code.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2/dist/delimiter.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1.4.0/dist/marker.umd.min.js"></script>
+
+    <style>
+        body { text-transform: none; background: #0a0a0a; color: #f0f0f0; }
+
+        .editor-shell {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 40px 24px 120px;
+        }
+
+        .title-input,
+        .subtitle-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f0f0f0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            resize: none;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        .title-input {
+            font-size: 44px;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+        }
+        .title-input::placeholder { color: #444; }
+        .subtitle-input {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 22px;
+            line-height: 1.35;
+            color: #888;
+            margin-bottom: 36px;
+        }
+        .subtitle-input::placeholder { color: #444; }
+
+        .hero-upload {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed rgba(255,255,255,0.12);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #888;
+            font-size: 13px;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+        .hero-upload:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.05); }
+        .hero-upload img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .hero-upload .hero-remove {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.6);
+            color: #f0f0f0;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            font-size: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            display: none;
+        }
+        .hero-upload.has-image .hero-remove { display: block; }
+        .hero-upload.has-image .hero-placeholder { display: none; }
+
+        /* Editor.js dark mode */
+        .ce-block__content,
+        .ce-toolbar__content { max-width: 720px; }
+        .codex-editor { color: #f0f0f0; }
+        .ce-paragraph,
+        .ce-header,
+        .cdx-quote__text,
+        .cdx-list,
+        .cdx-input {
+            color: #f0f0f0;
+            font-family: 'Inter', sans-serif;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+        .ce-header {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        h2.ce-header { font-size: 30px; line-height: 1.25; margin-top: 28px; }
+        h3.ce-header { font-size: 22px; line-height: 1.3; margin-top: 22px; }
+        h4.ce-header { font-size: 18px; line-height: 1.35; margin-top: 18px; }
+        .ce-paragraph[data-placeholder]:empty::before,
+        .ce-header[data-placeholder]:empty::before { color: #444 !important; opacity: 1 !important; }
+        .ce-toolbar__plus,
+        .ce-toolbar__settings-btn {
+            background: rgba(255,255,255,0.06);
+            color: #f0f0f0;
+            border-radius: 6px;
+        }
+        .ce-toolbar__plus:hover,
+        .ce-toolbar__settings-btn:hover { background: rgba(255,255,255,0.12); }
+        .ce-popover,
+        .ce-conversion-toolbar,
+        .ce-inline-toolbar {
+            background: #181818 !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #f0f0f0 !important;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.6) !important;
+        }
+        .ce-popover-item,
+        .ce-inline-tool,
+        .ce-conversion-tool {
+            color: #f0f0f0 !important;
+        }
+        .ce-popover-item:hover,
+        .ce-inline-tool:hover,
+        .ce-conversion-tool:hover {
+            background: rgba(255,255,255,0.08) !important;
+        }
+        .ce-popover-item__icon,
+        .ce-conversion-tool__icon { background: rgba(255,255,255,0.06) !important; color: #f0f0f0 !important; }
+        .ce-popover__search { background: rgba(255,255,255,0.04) !important; color: #f0f0f0 !important; }
+        .cdx-block { padding: 8px 0; }
+        .cdx-quote {
+            background: rgba(255,255,255,0.03);
+            border-left: 3px solid rgba(255,255,255,0.3);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+        }
+        .cdx-quote__caption { color: #888; font-size: 13px; }
+        .cdx-input {
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        .image-tool__caption,
+        .embed-tool__caption {
+            background: rgba(255,255,255,0.02);
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .ce-code__textarea {
+            background: rgba(0,0,0,0.4) !important;
+            color: #f0f0f0 !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            font-family: 'Menlo', 'Monaco', monospace !important;
+        }
+        .ce-delimiter::before { color: #444 !important; }
+
+        /* Settings panel */
+        .settings-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 24px;
+            margin-top: 48px;
+        }
+        .settings-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+        .settings-row label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #888;
+        }
+        .settings-row input, .settings-row textarea, .settings-row select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #f0f0f0;
+            outline: none;
+        }
+        .settings-row input:focus, .settings-row textarea:focus, .settings-row select:focus { border-color: rgba(255,255,255,0.24); }
+
+        /* Sticky toolbar */
+        .top-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .save-state {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #888;
+        }
+        .btn-primary {
+            background: #f0f0f0;
+            color: #0a0a0a;
+            padding: 10px 22px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-secondary {
+            background: transparent;
+            color: #f0f0f0;
+            padding: 10px 22px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.18);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-secondary:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
+        .btn-danger { color: #f87171; border-color: rgba(248,113,113,0.3); }
+        .btn-danger:hover { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.5); }
+
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #181818;
+            color: #f0f0f0;
+            padding: 14px 24px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { border-color: rgba(248,113,113,0.4); color: #fca5a5; }
+
+        #unauth-gate {
+            position: fixed;
+            inset: 0;
+            background: rgba(10,10,10,0.96);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top toolbar -->
+    <div class="top-toolbar">
+        <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-4">
+                <a href="/admin/journal/" class="flex items-center gap-3">
+                    <img src="/images/logo.png" alt="Dialed By H" class="h-6 w-auto">
+                </a>
+                <span class="text-muted">/</span>
+                <span class="text-[10px] tracking-[0.22em] uppercase text-muted font-space">Off-Catalog</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="save-state" class="save-state">Draft</span>
+                <button id="save-draft-btn" class="btn-secondary">Save Draft</button>
+                <button id="publish-btn" class="btn-primary">Publish</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="editor-shell">
+        <!-- Hero image -->
+        <div id="hero-upload" class="hero-upload">
+            <div class="hero-placeholder">+ Upload hero image (16:9 looks best)</div>
+            <img id="hero-img" src="" alt="Hero">
+            <button id="hero-remove-btn" class="hero-remove" type="button">Remove</button>
+            <input id="hero-file-input" type="file" accept="image/*" class="hidden">
+        </div>
+
+        <!-- Title + Subtitle -->
+        <textarea id="title-input" class="title-input" rows="1" placeholder="Title"></textarea>
+        <textarea id="subtitle-input" class="subtitle-input" rows="1" placeholder="A short subtitle (optional)"></textarea>
+
+        <!-- Editor.js mount point -->
+        <div id="editor"></div>
+
+        <!-- Settings -->
+        <div class="settings-card">
+            <h3 class="font-space font-bold text-lg tracking-tight mb-5">Article Settings</h3>
+
+            <div class="settings-row">
+                <label for="setting-category">Category</label>
+                <input id="setting-category" type="text" placeholder="e.g. Market Notes, Releases, Sourcing Stories">
+            </div>
+
+            <div class="settings-row">
+                <label for="setting-seo-title">SEO Title (defaults to article title)</label>
+                <input id="setting-seo-title" type="text" placeholder="Optional — overrides title in search results">
+            </div>
+
+            <div class="settings-row">
+                <label for="setting-seo-description">SEO Description (defaults to excerpt)</label>
+                <textarea id="setting-seo-description" rows="3" placeholder="Optional — 1-2 sentences shown in search results"></textarea>
+            </div>
+
+            <div class="settings-row">
+                <label for="setting-excerpt">Excerpt (defaults to first paragraph)</label>
+                <textarea id="setting-excerpt" rows="2" placeholder="Optional — short preview shown on the journal index card"></textarea>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-ivory/8 mt-4">
+                <div class="text-xs text-muted" id="meta-info"></div>
+                <button id="delete-btn" class="btn-secondary btn-danger" style="display:none">Delete Article</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Unauthorized gate (shown if session expires) -->
+    <div id="unauth-gate">
+        <div class="text-center">
+            <p class="text-muted mb-4 font-space text-xs tracking-[0.22em] uppercase">Session expired</p>
+            <a href="/admin/journal/" class="btn-primary inline-block">Sign in again</a>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/scripts/admin-auth.js"></script>
+    <script>
+        // ─── State ─────────────────────────────────────────────
+        const params = new URLSearchParams(window.location.search);
+        const articleId = params.get("id");
+
+        let editor;
+        let heroImageUrl = "";
+        let lastSavedState = "";
+        let saving = false;
+        let pendingDirty = false;
+        let autoSaveTimer = null;
+
+        // ─── DOM refs ──────────────────────────────────────────
+        const titleEl       = document.getElementById("title-input");
+        const subtitleEl    = document.getElementById("subtitle-input");
+        const heroUploadEl  = document.getElementById("hero-upload");
+        const heroImgEl     = document.getElementById("hero-img");
+        const heroFileInput = document.getElementById("hero-file-input");
+        const heroRemoveBtn = document.getElementById("hero-remove-btn");
+        const saveStateEl   = document.getElementById("save-state");
+        const saveDraftBtn  = document.getElementById("save-draft-btn");
+        const publishBtn    = document.getElementById("publish-btn");
+        const deleteBtn     = document.getElementById("delete-btn");
+        const metaInfoEl    = document.getElementById("meta-info");
+        const toastEl       = document.getElementById("toast");
+        const unauthEl      = document.getElementById("unauth-gate");
+        const settingCategory = document.getElementById("setting-category");
+        const settingSeoTitle = document.getElementById("setting-seo-title");
+        const settingSeoDesc  = document.getElementById("setting-seo-description");
+        const settingExcerpt  = document.getElementById("setting-excerpt");
+
+        // ─── Auth check ────────────────────────────────────────
+        if (!window.dialedAdmin.isAuthed()) {
+            window.location.href = "/admin/journal/";
+        }
+
+        function showUnauth() {
+            unauthEl.style.display = "flex";
+        }
+
+        function showToast(msg, isError = false) {
+            toastEl.textContent = msg;
+            toastEl.classList.toggle("error", isError);
+            toastEl.classList.add("show");
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(() => toastEl.classList.remove("show"), 3000);
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        }
+        titleEl.addEventListener("input", () => { autoResize(titleEl); markDirty(); });
+        subtitleEl.addEventListener("input", () => { autoResize(subtitleEl); markDirty(); });
+
+        function markDirty() {
+            saveStateEl.textContent = "Unsaved";
+            pendingDirty = true;
+            scheduleAutoSave();
+        }
+
+        function scheduleAutoSave() {
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                if (pendingDirty && !saving) {
+                    save({ silent: true });
+                }
+            }, 30000);
+        }
+
+        // ─── Hero image upload ─────────────────────────────────
+        async function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const result = reader.result;
+                    const base64 = String(result).split(",")[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function uploadImage(file) {
+            const base64 = await fileToBase64(file);
+            const json = await window.dialedAdmin.adminFetch("upload-image", {
+                filename: file.name,
+                data: base64,
+                contentType: file.type,
+            });
+            return json.file.url;
+        }
+
+        heroUploadEl.addEventListener("click", (ev) => {
+            if (ev.target === heroRemoveBtn) return;
+            heroFileInput.click();
+        });
+        heroFileInput.addEventListener("change", async () => {
+            const file = heroFileInput.files[0];
+            if (!file) return;
+            try {
+                showToast("Uploading hero…");
+                const url = await uploadImage(file);
+                heroImageUrl = url;
+                heroImgEl.src = url;
+                heroUploadEl.classList.add("has-image");
+                markDirty();
+                showToast("Hero uploaded");
+            } catch (e) {
+                if (e.message === "Unauthorized") return showUnauth();
+                showToast("Upload failed: " + e.message, true);
+            }
+        });
+        heroRemoveBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            heroImageUrl = "";
+            heroImgEl.src = "";
+            heroUploadEl.classList.remove("has-image");
+            heroFileInput.value = "";
+            markDirty();
+        });
+
+        // ─── Editor.js init ────────────────────────────────────
+        function initEditor(initialData) {
+            editor = new EditorJS({
+                holder: "editor",
+                placeholder: "Start writing…",
+                autofocus: !articleId,
+                data: initialData || { blocks: [{ type: "paragraph", data: { text: "" } }] },
+                tools: {
+                    header: {
+                        class: window.Header,
+                        config: { levels: [2, 3, 4], defaultLevel: 2, placeholder: "Section heading" },
+                        shortcut: "CMD+SHIFT+H",
+                    },
+                    list: {
+                        class: window.EditorjsList || window.List,
+                        inlineToolbar: true,
+                        config: { defaultStyle: "unordered" },
+                    },
+                    image: {
+                        class: window.ImageTool,
+                        config: {
+                            uploader: {
+                                async uploadByFile(file) {
+                                    try {
+                                        const base64 = await fileToBase64(file);
+                                        return await window.dialedAdmin.adminFetch("upload-image", {
+                                            filename: file.name,
+                                            data: base64,
+                                            contentType: file.type,
+                                        });
+                                    } catch (e) {
+                                        if (e.message === "Unauthorized") showUnauth();
+                                        return { success: 0 };
+                                    }
+                                },
+                            },
+                        },
+                    },
+                    quote: { class: window.Quote, inlineToolbar: true, config: { quotePlaceholder: "Quote", captionPlaceholder: "Attribution" } },
+                    embed: { class: window.Embed, config: { services: { youtube: true, twitter: true, instagram: true, vimeo: true } } },
+                    inlineCode: { class: window.InlineCode, shortcut: "CMD+SHIFT+M" },
+                    code: { class: window.CodeTool },
+                    delimiter: window.Delimiter,
+                    marker: { class: window.Marker, shortcut: "CMD+SHIFT+H" },
+                },
+                onChange: markDirty,
+            });
+        }
+
+        // ─── Load existing or start fresh ──────────────────────
+        async function loadArticle() {
+            if (!articleId) {
+                initEditor(null);
+                deleteBtn.style.display = "none";
+                metaInfoEl.textContent = "New article — unsaved";
+                return;
+            }
+            try {
+                const { article } = await window.dialedAdmin.adminFetch("get", { id: articleId });
+                titleEl.value = article.title || "";
+                subtitleEl.value = article.subtitle || "";
+                heroImageUrl = article.hero_image_url || "";
+                if (heroImageUrl) {
+                    heroImgEl.src = heroImageUrl;
+                    heroUploadEl.classList.add("has-image");
+                }
+                settingCategory.value = article.category || "";
+                settingSeoTitle.value = article.seo_title || "";
+                settingSeoDesc.value  = article.seo_description || "";
+                settingExcerpt.value  = article.excerpt || "";
+
+                initEditor(article.content_json || { blocks: [{ type: "paragraph", data: { text: "" } }] });
+                deleteBtn.style.display = "inline-block";
+
+                saveStateEl.textContent = article.status === "published" ? "Published" : "Draft";
+                publishBtn.textContent = article.status === "published" ? "Update" : "Publish";
+
+                metaInfoEl.innerHTML = `
+                    <span>/journal/${article.slug || ""}</span>
+                    ${article.published_at ? `&nbsp;·&nbsp;<span>Published ${new Date(article.published_at).toLocaleDateString()}</span>` : ""}
+                `;
+
+                autoResize(titleEl);
+                autoResize(subtitleEl);
+                lastSavedState = JSON.stringify({
+                    title: titleEl.value, subtitle: subtitleEl.value, hero: heroImageUrl,
+                    category: settingCategory.value, seoTitle: settingSeoTitle.value,
+                    seoDesc: settingSeoDesc.value, excerpt: settingExcerpt.value,
+                });
+            } catch (e) {
+                if (e.message === "Unauthorized") return showUnauth();
+                showToast("Failed to load: " + e.message, true);
+            }
+        }
+
+        // ─── Save ──────────────────────────────────────────────
+        async function save({ status, silent } = {}) {
+            if (saving) return;
+            saving = true;
+            if (!silent) saveStateEl.textContent = "Saving…";
+
+            try {
+                const content_json = await editor.save();
+                const payload = {
+                    id: articleId || undefined,
+                    title: titleEl.value.trim() || "Untitled",
+                    subtitle: subtitleEl.value.trim() || null,
+                    excerpt: settingExcerpt.value.trim() || null,
+                    category: settingCategory.value.trim() || null,
+                    hero_image_url: heroImageUrl || null,
+                    content_json,
+                    seo_title: settingSeoTitle.value.trim() || null,
+                    seo_description: settingSeoDesc.value.trim() || null,
+                };
+                if (status) payload.status = status;
+
+                const { article } = await window.dialedAdmin.adminFetch("save", payload);
+
+                pendingDirty = false;
+                saveStateEl.textContent = article.status === "published" ? "Published" : "Draft saved";
+                publishBtn.textContent = article.status === "published" ? "Update" : "Publish";
+
+                // If this was a new article, switch URL to edit mode
+                if (!articleId && article.id) {
+                    const newUrl = `/admin/journal/edit.html?id=${encodeURIComponent(article.id)}`;
+                    window.history.replaceState({}, "", newUrl);
+                    deleteBtn.style.display = "inline-block";
+                    metaInfoEl.innerHTML = `<span>/journal/${article.slug || ""}</span>`;
+                    // Force a reload-like state update — but keep editor as-is
+                    window.location.href = newUrl;
+                    return;
+                }
+
+                if (!silent) showToast(status === "published" ? "Published" : "Saved");
+            } catch (e) {
+                if (e.message === "Unauthorized") return showUnauth();
+                saveStateEl.textContent = "Save failed";
+                showToast("Save failed: " + e.message, true);
+            } finally {
+                saving = false;
+            }
+        }
+
+        saveDraftBtn.addEventListener("click", () => save({ status: "draft" }));
+        publishBtn.addEventListener("click", () => {
+            if (!titleEl.value.trim()) {
+                showToast("Title required to publish", true);
+                titleEl.focus();
+                return;
+            }
+            save({ status: "published" });
+        });
+
+        // ─── Delete ────────────────────────────────────────────
+        deleteBtn.addEventListener("click", async () => {
+            if (!articleId) return;
+            if (!confirm("Delete this article? This cannot be undone.")) return;
+            try {
+                await window.dialedAdmin.adminFetch("delete", { id: articleId });
+                window.location.href = "/admin/journal/";
+            } catch (e) {
+                if (e.message === "Unauthorized") return showUnauth();
+                showToast("Delete failed: " + e.message, true);
+            }
+        });
+
+        // ─── Setting change tracking ───────────────────────────
+        [settingCategory, settingSeoTitle, settingSeoDesc, settingExcerpt].forEach(el => {
+            el.addEventListener("input", markDirty);
+        });
+
+        // ─── Warn before leaving ───────────────────────────────
+        window.addEventListener("beforeunload", (e) => {
+            if (pendingDirty) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        });
+
+        // ─── Boot ──────────────────────────────────────────────
+        loadArticle();
+    </script>
+</body>
+</html>

@@ -9,8 +9,8 @@
     <link rel="shortcut icon" href="/favicon-v2.ico?v=3" />
 
     <title>Off-Catalog by Dialed By H | Luxury Watch Journal, Market Notes & Sourcing Stories</title>
-    <meta name="description" content="Off-Catalog is the journal from Dialed By H. Market notes on Rolex, Patek Philippe, Audemars Piguet and the independents. Sourcing stories, gray-market analysis, and rare reference releases written by Henry Ohler.">
-    <meta name="keywords" content="off-catalog, dialed by h journal, luxury watch journal, gray market watches, rolex market analysis, patek philippe news, audemars piguet news, independent watchmakers, watch sourcing stories, henry ohler, watch concierge journal, secondary market watches">
+    <meta name="description" content="Off-Catalog is the journal from Dialed By H. Market notes on Rolex, Patek Philippe, Audemars Piguet and the independents. Sourcing stories, grey-market analysis, and rare reference releases written by Henry Ohler.">
+    <meta name="keywords" content="off-catalog, dialed by h journal, luxury watch journal, grey market watches, rolex market analysis, patek philippe news, audemars piguet news, independent watchmakers, watch sourcing stories, henry ohler, watch concierge journal, secondary market watches">
     <meta name="author" content="Henry Ohler">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://dialedbyhenry.com/journal/">
@@ -18,13 +18,13 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dialedbyhenry.com/journal/">
     <meta property="og:title" content="Off-Catalog by Dialed By H">
-    <meta property="og:description" content="Market notes, sourcing stories, and gray-market analysis from a luxury watch concierge. New writing weekly.">
+    <meta property="og:description" content="Market notes, sourcing stories, and grey-market analysis from a luxury watch concierge. New writing weekly.">
     <meta property="og:image" content="https://dialedbyhenry.com/images/og-share.png">
     <meta property="og:site_name" content="Dialed By H">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Off-Catalog by Dialed By H">
-    <meta name="twitter:description" content="Market notes, sourcing stories, and gray-market analysis from a luxury watch concierge.">
+    <meta name="twitter:description" content="Market notes, sourcing stories, and grey-market analysis from a luxury watch concierge.">
     <meta name="twitter:image" content="https://dialedbyhenry.com/images/og-share.png">
 
     <script type="application/ld+json">
@@ -32,7 +32,7 @@
         "@context": "https://schema.org",
         "@type": "Blog",
         "name": "Off-Catalog",
-        "description": "Market notes, sourcing stories, and gray-market analysis from Dialed By H, a luxury watch concierge.",
+        "description": "Market notes, sourcing stories, and grey-market analysis from Dialed By H, a luxury watch concierge.",
         "url": "https://dialedbyhenry.com/journal/",
         "publisher": {
             "@type": "Organization",
@@ -55,7 +55,7 @@
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/dist/styles.css">
 
     <!-- Meta Pixel -->
@@ -70,91 +70,208 @@
     </script>
 
     <style>
-        /* ── Off-Catalog masthead ── */
-        .oc-masthead {
-            text-align: center;
-            padding: 80px 24px 60px;
-            position: relative;
+        /* ════════════════════════════════════
+           OFF-CATALOG · v3
+           Lives inside the Dialed By H brand:
+           same dark theme, same Space Grotesk + Inter,
+           same nav/footer. Adds journal-specific sub-nav
+           and a magazine-grade article layout.
+           ════════════════════════════════════ */
+
+        /* ── SUB-NAV (journal-specific menu under the main site nav) ── */
+        .oc-subnav {
+            border-top: 1px solid rgba(240,240,240,0.06);
+            border-bottom: 1px solid rgba(240,240,240,0.06);
+            background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 30;
         }
-        .oc-title {
+        .oc-subnav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .oc-subnav-inner::-webkit-scrollbar { display: none; }
+        .oc-subnav-brand {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
-            letter-spacing: -0.04em;
-            line-height: 0.85;
-            font-size: clamp(64px, 14vw, 200px);
             color: #f0f0f0;
-            margin: 0 0 24px;
+            padding: 6px 14px 6px 0;
+            margin-right: 12px;
+            border-right: 1px solid rgba(240,240,240,0.12);
+            white-space: nowrap;
         }
-        .oc-byline {
+        .oc-subnav-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.55);
+            padding: 6px 14px;
+            border-radius: 999px;
+            white-space: nowrap;
+            transition: color 0.2s, background 0.2s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+        .oc-subnav-link:hover { color: #f0f0f0; background: rgba(240,240,240,0.04); }
+        .oc-subnav-link.active {
+            color: #0a0a0a;
+            background: #f0f0f0;
+        }
+        .oc-subnav-link.trivia-pill {
+            margin-left: auto;
+            color: #f0f0f0;
+            background: rgba(240,240,240,0.04);
+            border: 1px solid rgba(240,240,240,0.15);
+        }
+        .oc-subnav-link.trivia-pill:hover { background: rgba(240,240,240,0.08); border-color: rgba(240,240,240,0.3); }
+
+        /* ── STATUS BANNER (?confirmed=1 etc.) ── */
+        .oc-status-banner {
+            max-width: 720px;
+            margin: 24px auto 0;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            text-align: center;
+            background: rgba(74,222,128,0.08);
+            border: 1px solid rgba(74,222,128,0.2);
+            color: #4ade80;
+            text-transform: none;
+        }
+        .oc-status-banner.warn {
+            background: rgba(248,113,113,0.08);
+            border-color: rgba(248,113,113,0.2);
+            color: #fca5a5;
+        }
+
+        /* ── MASTHEAD ── */
+        .oc-masthead {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px 56px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 64px;
+            align-items: end;
+        }
+        .oc-masthead-left { position: relative; }
+        .oc-masthead-issue {
             display: inline-flex;
             align-items: center;
-            gap: 14px;
-            color: #888;
+            gap: 12px;
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.32em;
             text-transform: uppercase;
+            color: rgba(240,240,240,0.45);
+            margin-bottom: 28px;
         }
-        .oc-byline img {
-            height: 18px;
-            width: auto;
-            object-fit: contain;
-            opacity: 0.85;
+        .oc-masthead-issue::before {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 1px;
+            background: rgba(240,240,240,0.3);
         }
-        .oc-tagline {
-            margin: 38px auto 0;
-            max-width: 640px;
-            font-family: 'Inter', sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #888;
-            text-transform: none;
-        }
-
-        /* ── Subscribe block ── */
-        .oc-subscribe {
-            max-width: 540px;
-            margin: 56px auto 0;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 30px 24px;
-            text-align: center;
-            backdrop-filter: blur(20px) saturate(1.4);
-            -webkit-backdrop-filter: blur(20px) saturate(1.4);
-        }
-        .oc-subscribe h2 {
+        .oc-masthead-title {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            font-size: 20px;
-            letter-spacing: -0.01em;
-            margin: 0 0 8px;
+            font-size: clamp(56px, 11vw, 152px);
+            line-height: 0.86;
+            letter-spacing: -0.045em;
+            text-transform: uppercase;
+            color: #f0f0f0;
+            margin: 0 0 18px;
+        }
+        .oc-masthead-title .stroke {
+            -webkit-text-stroke: 1.5px #f0f0f0;
+            color: transparent;
+        }
+        .oc-masthead-byline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.55);
+        }
+        .oc-masthead-byline img {
+            display: inline-block;
+            height: 14px;
+            margin-left: 8px;
+            vertical-align: middle;
+            opacity: 0.85;
+        }
+
+        /* ── Subscribe block (right side of masthead) ── */
+        .oc-sub-card {
+            background: rgba(240,240,240,0.03);
+            border: 1px solid rgba(240,240,240,0.1);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border-radius: 14px;
+            padding: 28px;
+        }
+        .oc-sub-card-eyebrow {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.5);
+            margin: 0 0 10px;
+        }
+        .oc-sub-card-headline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 22px;
+            line-height: 1.2;
+            letter-spacing: -0.015em;
+            color: #f0f0f0;
+            margin: 0 0 16px;
             text-transform: none;
         }
-        .oc-subscribe p {
+        .oc-sub-card p {
             font-family: 'Inter', sans-serif;
             font-size: 13px;
-            color: #888;
-            margin: 0 0 22px;
+            line-height: 1.5;
+            color: rgba(240,240,240,0.55);
+            margin: 0 0 18px;
             text-transform: none;
         }
-        .oc-sub-form { display: flex; flex-direction: column; gap: 12px; max-width: 380px; margin: 0 auto; }
         .oc-sub-input {
             width: 100%;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 4px;
+            background: rgba(10,10,10,0.4);
+            border: 1px solid rgba(240,240,240,0.15);
+            border-radius: 6px;
             padding: 12px 14px;
             color: #f0f0f0;
             font-family: 'Inter', sans-serif;
             font-size: 14px;
             outline: none;
             text-transform: none;
+            margin-bottom: 10px;
+            transition: border-color 0.2s, background 0.2s;
         }
-        .oc-sub-input::placeholder { color: rgba(136,136,136,0.7); }
-        .oc-sub-input:focus { border-color: rgba(255,255,255,0.4); }
+        .oc-sub-input::placeholder { color: rgba(240,240,240,0.35); }
+        .oc-sub-input:focus { border-color: rgba(240,240,240,0.4); background: rgba(10,10,10,0.6); }
         .oc-sub-btn {
             width: 100%;
             background: #f0f0f0;
@@ -166,44 +283,65 @@
             font-size: 11px;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             transition: opacity 0.2s, transform 0.15s;
         }
         .oc-sub-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .oc-sub-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .oc-sub-msg { font-size: 12px; margin-top: 10px; color: #4ade80; text-transform: none; }
         .oc-sub-msg.error { color: #f87171; }
 
-        /* ── Article cards ── */
-        .oc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 32px;
+        /* ── FEATURED LEAD ARTICLE ── */
+        .oc-lead-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+            border-top: 1px solid rgba(240,240,240,0.08);
         }
-        .oc-card {
-            display: flex;
-            flex-direction: column;
+        .oc-lead-section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.45);
+            margin: 32px 0 28px;
+        }
+        .oc-lead-section-label::after {
+            content: '';
+            display: block;
+            flex: 1;
+            min-width: 40px;
+            height: 1px;
+            background: rgba(240,240,240,0.15);
+        }
+        .oc-lead {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 56px;
+            align-items: center;
             text-decoration: none;
             color: inherit;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px;
+        }
+        .oc-lead-img-wrap {
+            position: relative;
+            aspect-ratio: 4/3;
             overflow: hidden;
-            transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+            border-radius: 4px;
+            background: rgba(240,240,240,0.04);
         }
-        .oc-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255,255,255,0.18);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-        }
-        .oc-card-img {
-            aspect-ratio: 16 / 9;
+        .oc-lead-img {
             width: 100%;
+            height: 100%;
             object-fit: cover;
-            background: rgba(255,255,255,0.04);
+            transition: transform 0.7s ease;
         }
-        .oc-card-body { padding: 22px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        .oc-card-meta {
+        .oc-lead:hover .oc-lead-img { transform: scale(1.02); }
+        .oc-lead-meta {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -212,72 +350,183 @@
             font-weight: 700;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: #888;
+            color: rgba(240,240,240,0.5);
+            margin-bottom: 18px;
+            flex-wrap: wrap;
         }
-        .oc-card-meta .oc-pill {
+        .oc-meta-pill {
+            background: rgba(240,240,240,0.07);
             color: #f0f0f0;
-            background: rgba(255,255,255,0.07);
-            padding: 4px 10px;
+            padding: 5px 11px;
             border-radius: 999px;
+        }
+        .oc-lead-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: clamp(32px, 4vw, 48px);
+            line-height: 1.05;
+            letter-spacing: -0.025em;
+            color: #f0f0f0;
+            margin: 0 0 18px;
+            text-transform: none;
+        }
+        .oc-lead:hover .oc-lead-title { color: #ffffff; }
+        .oc-lead-deck {
+            font-family: 'Inter', sans-serif;
+            font-size: 17px;
+            line-height: 1.55;
+            color: rgba(240,240,240,0.65);
+            margin: 0 0 26px;
+            text-transform: none;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .oc-lead-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+        .oc-lead-cta::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+        .oc-lead:hover .oc-lead-cta::after { transform: translateX(4px); }
+
+        /* ── RECENT ARTICLES GRID ── */
+        .oc-feed {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 96px;
+        }
+        .oc-feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid rgba(240,240,240,0.15);
+            padding-bottom: 16px;
+            margin-bottom: 56px;
+        }
+        .oc-feed-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: clamp(24px, 3vw, 32px);
+            letter-spacing: -0.02em;
+            text-transform: none;
+            color: #f0f0f0;
+            margin: 0;
+        }
+        .oc-feed-count {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.5);
+        }
+        .oc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 56px 40px;
+        }
+        .oc-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .oc-card-img-wrap {
+            position: relative;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            border-radius: 4px;
+            background: rgba(240,240,240,0.04);
+        }
+        .oc-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .oc-card:hover .oc-card-img { transform: scale(1.025); }
+        .oc-card-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.5);
+            margin-top: 4px;
         }
         .oc-card-title {
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            font-size: 20px;
-            line-height: 1.25;
-            letter-spacing: -0.01em;
+            font-size: 22px;
+            line-height: 1.15;
+            letter-spacing: -0.015em;
             color: #f0f0f0;
-            text-transform: none;
             margin: 0;
-        }
-        .oc-card-subtitle {
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            line-height: 1.55;
-            color: #888;
             text-transform: none;
-            margin: 0;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        .oc-card:hover .oc-card-title { color: #ffffff; }
 
+        /* ── EMPTY STATE ── */
         .oc-empty {
+            grid-column: 1 / -1;
             text-align: center;
-            padding: 60px 24px;
-            color: #888;
+            padding: 80px 24px;
             font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: rgba(240,240,240,0.55);
             text-transform: none;
-            background: rgba(255,255,255,0.02);
-            border: 1px dashed rgba(255,255,255,0.1);
-            border-radius: 14px;
+            border: 1px dashed rgba(240,240,240,0.1);
+            border-radius: 12px;
+        }
+        .oc-empty-label {
+            display: block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: rgba(240,240,240,0.45);
+            margin-bottom: 14px;
         }
 
-        /* ── URL-status banner (?confirmed=1 etc.) ── */
-        .oc-status-banner {
-            max-width: 600px;
-            margin: 0 auto 40px;
-            padding: 16px 22px;
-            border-radius: 10px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            text-align: center;
-            text-transform: none;
-            background: rgba(74,222,128,0.08);
-            border: 1px solid rgba(74,222,128,0.2);
-            color: #4ade80;
+        /* ── MOBILE ── */
+        @media (max-width: 880px) {
+            .oc-subnav-inner { padding: 12px 20px; gap: 4px; }
+            .oc-subnav-brand { padding: 6px 12px 6px 0; margin-right: 8px; font-size: 10px; }
+            .oc-subnav-link { font-size: 10px; padding: 6px 11px; }
+            .oc-subnav-link.trivia-pill { margin-left: 4px; }
+            .oc-masthead { grid-template-columns: 1fr; gap: 40px; padding: 48px 20px 40px; align-items: stretch; }
+            .oc-masthead-title { font-size: clamp(56px, 16vw, 96px); }
+            .oc-lead { grid-template-columns: 1fr; gap: 32px; }
+            .oc-lead-section { padding: 24px 20px 56px; }
+            .oc-lead-section-label { margin: 24px 0 24px; }
+            .oc-feed { padding: 0 20px 64px; }
+            .oc-feed-header { margin-bottom: 36px; }
+            .oc-grid { grid-template-columns: 1fr; gap: 40px; }
         }
-        .oc-status-banner.warn {
-            background: rgba(248,113,113,0.08);
-            border-color: rgba(248,113,113,0.2);
-            color: #fca5a5;
-        }
-
-        @media (max-width: 640px) {
-            .oc-masthead { padding: 52px 20px 40px; }
-            .oc-subscribe { margin: 36px 16px 0; padding: 26px 20px; }
-            .oc-grid { gap: 22px; }
+        @media (min-width: 881px) and (max-width: 1100px) {
+            .oc-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -285,7 +534,7 @@
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <!-- NAV (matches site) -->
+    <!-- MAIN SITE NAV (identical to other pages) -->
     <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
         <a href="/">
             <img src="/images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
@@ -298,54 +547,75 @@
         </div>
     </nav>
 
+    <!-- JOURNAL SUB-NAV (categories) -->
+    <nav class="oc-subnav" aria-label="Journal sections">
+        <div class="oc-subnav-inner">
+            <span class="oc-subnav-brand">Off-Catalog</span>
+            <button class="oc-subnav-link active" data-category="all">All</button>
+            <button class="oc-subnav-link" data-category="Market Notes">Market Notes</button>
+            <button class="oc-subnav-link" data-category="Releases">Releases</button>
+            <button class="oc-subnav-link" data-category="Sourcing Stories">Sourcing Stories</button>
+            <button class="oc-subnav-link" data-category="Predictions">Predictions</button>
+            <a href="/trivia/" class="oc-subnav-link trivia-pill">Trivia →</a>
+        </div>
+    </nav>
+
+    <!-- STATUS BANNER -->
+    <div id="oc-status" class="hidden" style="display:none"></div>
+
     <!-- MASTHEAD -->
     <header class="oc-masthead">
-        <h1 class="oc-title">Off-Catalog</h1>
-        <div class="oc-byline">
-            <span>By</span>
-            <img src="/images/logo.png" alt="Dialed By H">
+        <div class="oc-masthead-left">
+            <p class="oc-masthead-issue"><span id="oc-issue-stamp">Vol 01 · May 2026</span></p>
+            <h1 class="oc-masthead-title">Off-<span class="stroke">Catalog</span></h1>
+            <p class="oc-masthead-byline">By <img src="/images/logo.png" alt="Dialed By H"></p>
         </div>
-        <p class="oc-tagline">
-            Market notes, sourcing stories, and the occasional rare reference. Written by Henry Ohler from the inside of the gray market.
-        </p>
+        <aside class="oc-sub-card">
+            <p class="oc-sub-card-eyebrow">Get on the list</p>
+            <h2 class="oc-sub-card-headline">Off-Catalog in your inbox. About once a week.</h2>
+            <p>Market notes, sourcing stories, and the pieces I can't stop thinking about. No spam, just watches.</p>
+            <form id="oc-sub-form" novalidate>
+                <input id="oc-sub-email" class="oc-sub-input" type="email" name="email" placeholder="your@email.com" required>
+                <button id="oc-sub-btn" class="oc-sub-btn" type="submit">Subscribe</button>
+                <p id="oc-sub-msg" class="oc-sub-msg hidden" style="display:none"></p>
+            </form>
+        </aside>
     </header>
 
-    <!-- STATUS BANNER (confirmation/unsubscribe messages) -->
-    <div id="oc-status" class="hidden"></div>
-
-    <!-- SUBSCRIBE -->
-    <section class="px-6 sm:px-10">
-        <div class="oc-subscribe">
-            <h2>Never miss a story</h2>
-            <p>New writing in your inbox. No spam, just watches.</p>
-            <form id="oc-sub-form" class="oc-sub-form" novalidate>
-                <input id="oc-sub-email" class="oc-sub-input" type="email" name="email" placeholder="Email address" required>
-                <button id="oc-sub-btn" class="oc-sub-btn" type="submit">Subscribe</button>
-                <p id="oc-sub-msg" class="oc-sub-msg hidden"></p>
-            </form>
-        </div>
+    <!-- LEAD STORY -->
+    <section class="oc-lead-section">
+        <p class="oc-lead-section-label">Lead Story</p>
+        <div id="oc-lead-mount"></div>
     </section>
 
-    <!-- ARTICLES GRID -->
-    <section class="px-6 sm:px-10 md:px-16 max-w-6xl mx-auto py-20">
+    <!-- RECENT FEED -->
+    <section class="oc-feed">
+        <div class="oc-feed-header">
+            <h2 class="oc-feed-title" id="oc-feed-heading">More from the journal</h2>
+            <span class="oc-feed-count" id="oc-feed-count"></span>
+        </div>
         <div id="oc-grid" class="oc-grid">
-            <div class="oc-empty">Loading…</div>
+            <div class="oc-empty">
+                <span class="oc-empty-label">Coming soon · Issue 001</span>
+                The first piece is in proof. Subscribe above and it lands in your inbox the day it ships.
+            </div>
         </div>
     </section>
 
-    <!-- FOOTER (lightweight version of site footer) -->
+    <!-- FOOTER (matches site) -->
     <footer class="border-t border-ivory/5 py-12 sm:py-14 px-6 sm:px-10 md:px-16">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-[10px] tracking-widest uppercase text-muted font-space">
-            <a href="/" class="hover:text-ivory transition-colors">Dialed By H</a>
+            <a href="/" class="hover:text-ivory transition-colors">Dialed By H · © 2026</a>
             <div class="flex gap-6">
                 <a href="/about.html" class="hover:text-ivory transition-colors">About</a>
                 <a href="/inventory.html" class="hover:text-ivory transition-colors">Inventory</a>
+                <a href="/trivia/" class="hover:text-ivory transition-colors">Trivia</a>
                 <a href="/privacy.html" class="hover:text-ivory transition-colors">Privacy</a>
             </div>
         </div>
     </footer>
 
-    <!-- Floating WhatsApp -->
+    <!-- Floating WhatsApp (consistent with site) -->
     <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
        aria-label="Message Henry on WhatsApp"
        class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] w-14 h-14 sm:w-[58px] sm:h-[58px] rounded-full flex items-center justify-center shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95"
@@ -358,122 +628,181 @@
     <script src="/scripts/premium-ui.js"></script>
     <script>
         function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-        function formatDate(iso) {
+        function fmtDate(iso) {
             if (!iso) return "";
             try { return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }); }
             catch { return ""; }
         }
 
-        // ── Status banner from query params (?confirmed=1, ?unsubscribed=1) ──
-        (function showStatusBanner() {
+        // Auto-update issue stamp
+        (function () {
+            const el = document.getElementById("oc-issue-stamp");
+            if (!el) return;
+            const now = new Date();
+            const monthYear = now.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+            el.textContent = `Vol 01 · ${monthYear}`;
+        })();
+
+        // Status banner from ?confirmed=1 / ?unsubscribed=1
+        (function () {
             const params = new URLSearchParams(window.location.search);
             const el = document.getElementById("oc-status");
             let html = "";
             let isWarn = false;
-
             if (params.get("confirmed") === "1") {
-                html = params.get("already") === "1"
-                    ? "You're already confirmed. Welcome back."
-                    : "Confirmed. You're on the list.";
+                html = params.get("already") === "1" ? "You're already confirmed. Welcome back." : "Confirmed. You're on the list.";
             } else if (params.get("confirmed") === "0") {
-                html = "We couldn't confirm that link. Try subscribing again.";
-                isWarn = true;
+                html = "We couldn't confirm that link. Try subscribing again."; isWarn = true;
             } else if (params.get("unsubscribed") === "1") {
                 html = "You've been unsubscribed. Catch you on the next one.";
             } else if (params.get("unsubscribed") === "0") {
-                html = "Couldn't process that unsubscribe. Reply to a recent email and I'll handle it.";
-                isWarn = true;
+                html = "Couldn't process that unsubscribe. Reply to a recent email and I'll handle it."; isWarn = true;
             }
             if (html) {
                 el.className = isWarn ? "oc-status-banner warn" : "oc-status-banner";
                 el.textContent = html;
-                el.classList.remove("hidden");
-                // Clean URL after 5s
-                setTimeout(() => {
-                    history.replaceState({}, "", "/journal/");
-                }, 5000);
+                el.style.display = "block";
+                setTimeout(() => history.replaceState({}, "", "/journal/"), 5000);
             }
         })();
 
-        // ── Subscribe form ──
+        // Subscribe form
         const subForm = document.getElementById("oc-sub-form");
         const subEmail = document.getElementById("oc-sub-email");
         const subBtn = document.getElementById("oc-sub-btn");
         const subMsg = document.getElementById("oc-sub-msg");
-
         subForm.addEventListener("submit", async (ev) => {
             ev.preventDefault();
-            subMsg.classList.add("hidden");
-            subMsg.classList.remove("error");
-
-            const email = subEmail.value.trim();
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            subMsg.style.display = "none"; subMsg.classList.remove("error");
+            const v = subEmail.value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
                 subMsg.textContent = "That email doesn't look right.";
-                subMsg.classList.remove("hidden");
-                subMsg.classList.add("error");
-                return;
+                subMsg.style.display = "block"; subMsg.classList.add("error"); return;
             }
-
             subBtn.disabled = true;
             const original = subBtn.textContent;
             subBtn.textContent = "Sending…";
-
             try {
                 const r = await fetch("/api/journal-subscribe", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, source: "journal-index" }),
+                    body: JSON.stringify({ email: v, source: "journal-index-v3" }),
                 });
                 const json = await r.json().catch(() => ({}));
                 if (!r.ok) throw new Error(json.error || "Subscribe failed");
-
                 subMsg.textContent = json.alreadyConfirmed
                     ? "You're already on the list. Welcome back."
                     : "Check your email to confirm.";
-                subMsg.classList.remove("hidden");
+                subMsg.style.display = "block";
                 subForm.reset();
             } catch (e) {
                 subMsg.textContent = "Something broke. Try again in a sec.";
-                subMsg.classList.remove("hidden");
-                subMsg.classList.add("error");
+                subMsg.style.display = "block"; subMsg.classList.add("error");
             } finally {
-                subBtn.disabled = false;
-                subBtn.textContent = original;
+                subBtn.disabled = false; subBtn.textContent = original;
             }
         });
 
-        // ── Load articles ──
-        async function loadArticles() {
-            const grid = document.getElementById("oc-grid");
-            try {
-                const r = await fetch("/api/journal-list?limit=24", { cache: "no-store" });
-                const json = await r.json();
-                const articles = json.articles || [];
-                if (articles.length === 0) {
-                    grid.innerHTML = `<div class="oc-empty">First piece coming soon. Subscribe above to get it in your inbox.</div>`;
-                    return;
-                }
-                grid.innerHTML = articles.map(a => `
-                    <a href="/journal/${esc(a.slug)}" class="oc-card">
+        // Articles state
+        let allArticles = [];
+        let currentCategory = "all";
+
+        function renderLead(a) {
+            if (!a) return "";
+            return `
+                <a href="/journal/${esc(a.slug)}" class="oc-lead">
+                    <div class="oc-lead-img-wrap">
+                        ${a.hero_image_url
+                            ? `<img class="oc-lead-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="eager">`
+                            : ""}
+                    </div>
+                    <div>
+                        <div class="oc-lead-meta">
+                            ${a.category ? `<span class="oc-meta-pill">${esc(a.category)}</span>` : ""}
+                            <span>${fmtDate(a.published_at)}</span>
+                            ${a.reading_time_minutes ? `<span>· ${a.reading_time_minutes} min read</span>` : ""}
+                        </div>
+                        <h2 class="oc-lead-title">${esc(a.title)}</h2>
+                        ${a.subtitle ? `<p class="oc-lead-deck">${esc(a.subtitle)}</p>` : (a.excerpt ? `<p class="oc-lead-deck">${esc(a.excerpt)}</p>` : "")}
+                        <span class="oc-lead-cta">Read the piece</span>
+                    </div>
+                </a>
+            `;
+        }
+
+        function renderCard(a) {
+            return `
+                <a href="/journal/${esc(a.slug)}" class="oc-card">
+                    <div class="oc-card-img-wrap">
                         ${a.hero_image_url
                             ? `<img class="oc-card-img" src="${esc(a.hero_image_url)}" alt="${esc(a.title)}" loading="lazy">`
-                            : `<div class="oc-card-img"></div>`}
-                        <div class="oc-card-body">
-                            <div class="oc-card-meta">
-                                ${a.category ? `<span class="oc-pill">${esc(a.category)}</span>` : ""}
-                                <span>${formatDate(a.published_at)}</span>
-                                ${a.reading_time_minutes ? `<span>· ${a.reading_time_minutes} min read</span>` : ""}
-                            </div>
-                            <h3 class="oc-card-title">${esc(a.title)}</h3>
-                            ${a.subtitle ? `<p class="oc-card-subtitle">${esc(a.subtitle)}</p>` : ""}
-                        </div>
-                    </a>
-                `).join("");
-            } catch (e) {
-                grid.innerHTML = `<div class="oc-empty">Couldn't load articles. Refresh in a sec.</div>`;
+                            : ""}
+                    </div>
+                    <div class="oc-card-meta">
+                        ${a.category ? `<span class="oc-meta-pill">${esc(a.category)}</span>` : ""}
+                        <span>${fmtDate(a.published_at)}</span>
+                    </div>
+                    <h3 class="oc-card-title">${esc(a.title)}</h3>
+                </a>
+            `;
+        }
+
+        function renderFeed() {
+            const leadMount = document.getElementById("oc-lead-mount");
+            const grid = document.getElementById("oc-grid");
+            const count = document.getElementById("oc-feed-count");
+            const feedHeading = document.getElementById("oc-feed-heading");
+
+            const filtered = currentCategory === "all"
+                ? allArticles
+                : allArticles.filter(a => (a.category || "").toLowerCase() === currentCategory.toLowerCase());
+
+            if (filtered.length === 0) {
+                leadMount.innerHTML = "";
+                grid.innerHTML = `
+                    <div class="oc-empty">
+                        <span class="oc-empty-label">Nothing here yet</span>
+                        ${currentCategory === "all" ? "The first piece is in proof. Subscribe above to get it in your inbox." : `No "${esc(currentCategory)}" pieces yet. Check back, or pick another section.`}
+                    </div>`;
+                count.textContent = "";
+                feedHeading.textContent = currentCategory === "all" ? "More from the journal" : currentCategory;
+                return;
+            }
+
+            const [first, ...rest] = filtered;
+            leadMount.innerHTML = renderLead(first);
+            feedHeading.textContent = currentCategory === "all" ? "More from the journal" : currentCategory;
+
+            if (rest.length > 0) {
+                grid.innerHTML = rest.map(renderCard).join("");
+                count.textContent = `${String(rest.length).padStart(2, "0")} more`;
+            } else {
+                grid.innerHTML = `<div class="oc-empty"><span class="oc-empty-label">That's all for now</span>Subscribe above to catch the next one.</div>`;
+                count.textContent = "";
             }
         }
 
+        // Category filter pills
+        document.querySelectorAll(".oc-subnav-link[data-category]").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".oc-subnav-link[data-category]").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                currentCategory = btn.dataset.category;
+                renderFeed();
+                window.scrollTo({ top: document.querySelector(".oc-lead-section").offsetTop - 80, behavior: "smooth" });
+            });
+        });
+
+        async function loadArticles() {
+            try {
+                const r = await fetch("/api/journal-list?limit=48", { cache: "no-store" });
+                const json = await r.json();
+                allArticles = json.articles || [];
+                renderFeed();
+            } catch (e) {
+                document.getElementById("oc-grid").innerHTML = `<div class="oc-empty"><span class="oc-empty-label">Network</span>Couldn't load the feed. Refresh in a sec.</div>`;
+            }
+        }
         loadArticles();
     </script>
 </body>

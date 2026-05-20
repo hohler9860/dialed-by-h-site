@@ -64,7 +64,7 @@ Test your own confirm + unsubscribe flow before announcing:
 - Old Substack RSS pull (`/api/substack-feed.js`) → killed
 - Old `/journal.html` Substack-mirror page → 301'd to new journal
 - `dialedbyh.substack.com` → can stay live for now (acts as backup archive), but stop posting there
-- Email subscribers from the old "Private List" form (`dialed_submissions` where `submission_type='JOIN_LIST'`) are a **separate** list from journal subscribers. Roman's Gray Market Magazine treats news subscribers and customer list separately too; keeping them split is correct.
+- Email subscribers from the old "Private List" form (`dialed_submissions` where `submission_type='JOIN_LIST'`) are a **separate** list from journal subscribers. Roman's Grey Market Magazine treats news subscribers and customer list separately too; keeping them split is correct.
 
 ## 7. Routes added
 

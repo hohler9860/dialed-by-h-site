@@ -503,7 +503,7 @@
                 </div>
 
                 <!-- Navigation: arrows + dots -->
-                <div class="flex items-center justify-center gap-5 mt-4 sm:mt-5">
+                <div class="flex items-center justify-center gap-5 mt-14 sm:mt-10">
                     <button onclick="app.testimonialPrev()" aria-label="Previous testimonial" class="w-10 h-10 rounded-full border border-ivory/15 flex items-center justify-center text-muted hover:text-ivory hover:border-ivory/40 transition-all duration-300">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
                     </button>
@@ -915,7 +915,7 @@
                         pointer = 'none';
                     }
 
-                    wrap.style.transform = `translateX(calc(-50% + ${xPct}%)) scale(${scale})`;
+                    wrap.style.transform = `translateX(${xPct}%) scale(${scale})`;
                     wrap.style.opacity = opacity;
                     wrap.style.zIndex = z;
                     wrap.style.pointerEvents = pointer;

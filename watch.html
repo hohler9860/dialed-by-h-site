@@ -193,6 +193,15 @@
             // Update page title
             const displayName = watch.name + (watch.nickname ? ' "' + watch.nickname + '"' : '');
             document.title = `${displayName} | Dialed By H`;
+            // This legacy ?id page points its canonical at the server-rendered /watch/<slug>
+            // page so search/AI consolidate on the indexable URL (no duplicate content).
+            if (watch.slug) {
+                const canon = `https://dialedbyhenry.com/watch/${watch.slug}`;
+                const cEl = document.querySelector('link[rel="canonical"]');
+                if (cEl) cEl.href = canon;
+                const ogU = document.querySelector('meta[property="og:url"]');
+                if (ogU) ogU.setAttribute('content', canon);
+            }
             const safeDisplayName = esc(displayName);
 
             // Inject Product structured data

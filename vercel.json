@@ -9,7 +9,9 @@
   ],
   "rewrites": [
     { "source": "/journal/:slug", "destination": "/api/journal-article-render?slug=:slug" },
-    { "source": "/journal/:slug/", "destination": "/api/journal-article-render?slug=:slug" }
+    { "source": "/journal/:slug/", "destination": "/api/journal-article-render?slug=:slug" },
+    { "source": "/watch/:slug", "destination": "/api/watch-render?slug=:slug" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
   ],
   "redirects": [
     { "source": "/journal.html", "destination": "/journal/", "permanent": true },

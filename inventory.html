@@ -541,7 +541,7 @@
                 const imgSize = '88%';
 
                 return `
-                <a href="watch.html?id=${esc(w.id)}" class="watch-card group">
+                <a href="${w.slug ? '/watch/' + esc(w.slug) : 'watch.html?id=' + esc(w.id)}" class="watch-card group">
                     <div class="card-img-wrap relative overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center">
                         ${image
                             ? `<img src="${esc(image)}" alt="${esc(name)}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;object-position:center;margin:auto;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

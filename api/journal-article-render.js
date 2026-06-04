@@ -260,8 +260,8 @@ code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;
 <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
     <a href="/"><img src="/images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain"></a>
     <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
-        <a href="/about.html" class="nav-link hover:text-muted transition-colors">About Me</a>
-        <a href="/process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
+        <a href="/about" class="nav-link hover:text-muted transition-colors">About Me</a>
+        <a href="/process" class="nav-link hover:text-muted transition-colors">My Process</a>
         <a href="/journal/" class="nav-link nav-active hover:text-muted transition-colors">Journal</a>
         <a href="/" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted transition-colors">Back to Home</a>
     </div>
@@ -303,9 +303,9 @@ code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-[10px] tracking-widest uppercase text-muted font-space">
         <a href="/" class="hover:text-ivory transition-colors">Dialed By H</a>
         <div class="flex gap-6">
-            <a href="/about.html" class="hover:text-ivory transition-colors">About</a>
-            <a href="/inventory.html" class="hover:text-ivory transition-colors">Inventory</a>
-            <a href="/privacy.html" class="hover:text-ivory transition-colors">Privacy</a>
+            <a href="/about" class="hover:text-ivory transition-colors">About</a>
+            <a href="/inventory" class="hover:text-ivory transition-colors">Inventory</a>
+            <a href="/privacy" class="hover:text-ivory transition-colors">Privacy</a>
         </div>
     </div>
 </footer>

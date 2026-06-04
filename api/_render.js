@@ -26,7 +26,7 @@ function fourOhFour() {
 <p class="text-[10px] tracking-[0.32em] uppercase text-muted font-space mb-4">Dialed By H</p>
 <h1 class="font-space font-bold text-4xl tracking-tight mb-4">Piece not found</h1>
 <p class="text-muted mb-8" style="text-transform:none">This piece may no longer be available for sourcing.</p>
-<a href="/inventory.html" class="inline-block bg-ivory text-charcoal px-6 py-3 text-xs font-bold font-space uppercase tracking-[0.22em]">Browse all pieces</a>
+<a href="/inventory" class="inline-block bg-ivory text-charcoal px-6 py-3 text-xs font-bold font-space uppercase tracking-[0.22em]">Browse all pieces</a>
 </div></body></html>`;
 }
 
@@ -34,9 +34,9 @@ function navHtml() {
     return `<nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
     <a href="/"><img src="/images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain"></a>
     <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
-        <a href="/about.html" class="nav-link hover:text-muted transition-colors">About Me</a>
-        <a href="/inventory.html" class="nav-link nav-active hover:text-muted transition-colors">Browse Pieces</a>
-        <a href="/process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
+        <a href="/about" class="nav-link hover:text-muted transition-colors">About Me</a>
+        <a href="/inventory" class="nav-link nav-active hover:text-muted transition-colors">Browse Pieces</a>
+        <a href="/process" class="nav-link hover:text-muted transition-colors">My Process</a>
         <a href="/journal/" class="nav-link hover:text-muted transition-colors">Journal</a>
         <a href="/" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted transition-colors">Back to Home</a>
     </div>
@@ -83,7 +83,7 @@ function renderWatchPage(w) {
         '@context': 'https://schema.org', '@type': 'BreadcrumbList',
         itemListElement: [
             { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-            { '@type': 'ListItem', position: 2, name: 'Browse Pieces', item: `${SITE_URL}/inventory.html` },
+            { '@type': 'ListItem', position: 2, name: 'Browse Pieces', item: `${SITE_URL}/inventory` },
             { '@type': 'ListItem', position: 3, name: displayName, item: canonical },
         ],
     };
@@ -144,7 +144,7 @@ ${navHtml()}
 
 <main class="relative z-10 max-w-6xl mx-auto px-6 py-10 sm:py-16">
     <div class="mb-8">
-        <a href="/inventory.html" class="text-muted text-xs font-space tracking-widest hover:text-ivory transition-colors inline-flex items-center gap-2">
+        <a href="/inventory" class="text-muted text-xs font-space tracking-widest hover:text-ivory transition-colors inline-flex items-center gap-2">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
             Back to All Pieces
         </a>
@@ -243,12 +243,12 @@ ${navHtml()}
 function renderSitemap(pieces) {
     const CORE = [
         { loc: '/', changefreq: 'daily', priority: '1.0' },
-        { loc: '/inventory.html', changefreq: 'daily', priority: '0.9' },
+        { loc: '/inventory', changefreq: 'daily', priority: '0.9' },
         { loc: '/journal/', changefreq: 'weekly', priority: '0.8' },
-        { loc: '/about.html', changefreq: 'monthly', priority: '0.8' },
-        { loc: '/process.html', changefreq: 'monthly', priority: '0.7' },
-        { loc: '/boston.html', changefreq: 'monthly', priority: '0.7' },
-        { loc: '/privacy.html', changefreq: 'yearly', priority: '0.3' },
+        { loc: '/about', changefreq: 'monthly', priority: '0.8' },
+        { loc: '/process', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/boston', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
     ];
     const tag = ({ loc, changefreq, priority }) =>
         `  <url><loc>${SITE_URL}${loc}</loc>${changefreq ? `<changefreq>${changefreq}</changefreq>` : ''}${priority ? `<priority>${priority}</priority>` : ''}</url>`;

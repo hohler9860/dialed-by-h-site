@@ -29,7 +29,7 @@
         "@type": "BreadcrumbList",
         "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://dialedbyhenry.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Sourcing", "item": "https://dialedbyhenry.com/inventory.html" },
+            { "@type": "ListItem", "position": 2, "name": "Sourcing", "item": "https://dialedbyhenry.com/inventory" },
             { "@type": "ListItem", "position": 3, "name": "Watch Detail", "item": "https://dialedbyhenry.com/watch.html" }
         ]
     }
@@ -65,11 +65,11 @@
             <img src="images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
         </a>
         <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
-            <a href="about.html" class="nav-link hover:text-muted transition-colors">About Me</a>
-            <a href="inventory.html" class="nav-link hover:text-muted transition-colors">Browse Pieces</a>
-            <a href="process.html" class="nav-link hover:text-muted transition-colors">My Process</a>
+            <a href="/about" class="nav-link hover:text-muted transition-colors">About Me</a>
+            <a href="/inventory" class="nav-link hover:text-muted transition-colors">Browse Pieces</a>
+            <a href="/process" class="nav-link hover:text-muted transition-colors">My Process</a>
             <a href="/journal/" class="nav-link hover:text-muted transition-colors">Journal</a>
-            <a href="inventory.html" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Sourcing</a>
+            <a href="/inventory" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Sourcing</a>
         </div>
         <button onclick="document.getElementById('mobile-menu').style.opacity='1'; document.getElementById('mobile-menu').style.pointerEvents='auto'; document.body.style.overflow='hidden';" class="md:hidden text-ivory">
             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -85,11 +85,11 @@
                 <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
         </button>
-        <a href="about.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">About Me</a>
-        <a href="inventory.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Browse Pieces</a>
-        <a href="process.html" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
+        <a href="/about" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">About Me</a>
+        <a href="/inventory" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Browse Pieces</a>
+        <a href="/process" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
         <a href="/journal/" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
-        <a href="inventory.html" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Sourcing</a>
+        <a href="/inventory" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Sourcing</a>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -144,7 +144,7 @@
         </div>
         <span class="block mt-6 text-xs text-muted/60 font-space uppercase tracking-widest">&copy; 2026 DIALED BY H</span>
         <p class="text-[10px] text-muted/30 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
-        <a href="privacy.html" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
+        <a href="/privacy" class="text-[10px] text-muted/30 font-space uppercase tracking-widest hover:text-muted transition-colors">Privacy & Terms</a>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -178,7 +178,7 @@
                     <div class="text-center py-20">
                         <h2 class="font-space font-bold text-3xl tracking-tight mb-4">Piece Not Found</h2>
                         <p class="text-muted text-sm mb-8">This piece may no longer be available for sourcing.</p>
-                        <a href="inventory.html" class="inline-block bg-ivory text-charcoal px-8 py-4 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors">Browse All Pieces</a>
+                        <a href="/inventory" class="inline-block bg-ivory text-charcoal px-8 py-4 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors">Browse All Pieces</a>
                     </div>
                 `;
                 return;
@@ -253,7 +253,7 @@
             main.innerHTML = `
                 <!-- BREADCRUMB -->
                 <div class="mb-8">
-                    <a href="inventory.html" class="text-muted text-xs font-space tracking-widest hover:text-ivory transition-colors inline-flex items-center gap-2">
+                    <a href="/inventory" class="text-muted text-xs font-space tracking-widest hover:text-ivory transition-colors inline-flex items-center gap-2">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5m0 0l7 7m-7-7l7-7"/></svg>
                         Back to All Pieces
                     </a>

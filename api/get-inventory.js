@@ -42,6 +42,12 @@ function getImages(prop) {
     return prop.files.map(f => f.file?.url || f.external?.url || '').filter(Boolean);
 }
 
+// Get the list of names from a multi-select property (e.g. curated Collection tags).
+function getMulti(prop) {
+    if (!prop || prop.type !== 'multi_select') return [];
+    return (prop.multi_select || []).map(o => o.name).filter(Boolean);
+}
+
 module.exports = async (req, res) => {
     const allowedOrigins = ['https://dialedbyhenry.com', 'https://www.dialedbyhenry.com'];
     const origin = req.headers.origin;
@@ -90,6 +96,7 @@ module.exports = async (req, res) => {
             const set = get(p['Set']);
             const year = get(p['Year']);
             const images = getImages(p['Image']);
+            const collections = getMulti(p['Collection']);
 
             // Build display name
             const name = piece || `${brand} ${model}`.trim();
@@ -118,7 +125,8 @@ module.exports = async (req, res) => {
                 dialColor,
                 bracelet,
                 caseSize,
-                set
+                set,
+                collections
             };
         });
 

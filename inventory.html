@@ -126,8 +126,16 @@
 
         <!-- FILTER SYSTEM -->
         <div class="mb-10 sm:mb-14" id="filter-bar">
-            <!-- Brand pills - horizontal scroll on mobile, wrap on desktop, centered -->
-            <div class="flex sm:flex-wrap sm:justify-center gap-2 mb-5 overflow-x-auto no-scrollbar pb-1" id="brand-pills">
+            <!-- Curated collections - top-level lens, centered above brands -->
+            <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible" id="collection-pills">
+                <button onclick="selectCollection('2026 Novelties')" class="collection-pill shrink-0" data-collection="2026 Novelties">2026 Novelties</button>
+                <button onclick="selectCollection('Classics')" class="collection-pill shrink-0" data-collection="Classics">Classics</button>
+                <button onclick="selectCollection('Everyday Wear')" class="collection-pill shrink-0" data-collection="Everyday Wear">Everyday Wear</button>
+                <button onclick="selectCollection('My Picks')" class="collection-pill shrink-0" data-collection="My Picks">My Picks</button>
+            </div>
+
+            <!-- Brand pills - scroll on mobile; on desktop wrap left-aligned inside a centered fit-content block -->
+            <div class="flex gap-2 mb-5 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap sm:justify-start sm:overflow-visible sm:w-fit sm:max-w-full sm:mx-auto" id="brand-pills">
                 <button onclick="selectBrand('ALL')" class="brand-pill active shrink-0" data-brand="ALL">All</button>
             </div>
 
@@ -563,6 +571,30 @@
         }
 
         let activeBrand = 'ALL';
+        let activeCollection = null;
+
+        // Gate the Model dropdown: it stays disabled until a brand is chosen,
+        // and only ever lists that brand's models (see updateModelDropdown).
+        function setModelEnabled(enabled) {
+            ['filter-model', 'filter-model-m'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.disabled = !enabled;
+                if (!enabled) el.value = 'ALL';
+                const first = el.querySelector('option[value="ALL"]');
+                if (first) first.textContent = enabled ? 'Model' : 'Select brand first';
+            });
+        }
+
+        // Curated collections act as a single-select top-level lens.
+        function selectCollection(name) {
+            stopFilterAnimations();
+            activeCollection = (activeCollection === name) ? null : name; // click active to clear
+            document.querySelectorAll('.collection-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.collection === activeCollection);
+            });
+            applyFilters();
+        }
 
         function stopFilterAnimations() {
             document.querySelectorAll('.brand-pill:not(.active)').forEach(p => p.style.animation = 'none');
@@ -582,6 +614,7 @@
                 if (el) el.value = 'ALL';
             });
             updateModelDropdown();
+            setModelEnabled(brand !== 'ALL'); // Model only usable once a brand is picked
             applyFilters();
         }
 
@@ -594,7 +627,8 @@
         }
 
         function isFiltered() {
-            return activeBrand !== 'ALL' ||
+            return activeCollection !== null ||
+                activeBrand !== 'ALL' ||
                 document.getElementById('filter-model').value !== 'ALL' ||
                 document.getElementById('filter-dial').value !== 'ALL' ||
                 document.getElementById('filter-material').value !== 'ALL' ||
@@ -605,6 +639,8 @@
         function applyFilters() {
             stopFilterAnimations();
             let filtered = [...PIECES];
+
+            if (activeCollection) filtered = filtered.filter(w => (w.collections || []).includes(activeCollection));
 
             if (activeBrand !== 'ALL') filtered = filtered.filter(w => w.brand === activeBrand);
 
@@ -645,6 +681,8 @@
 
         function resetFilters() {
             activeBrand = 'ALL';
+            activeCollection = null;
+            document.querySelectorAll('.collection-pill').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.brand-pill').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.brand === 'ALL');
             });
@@ -659,6 +697,7 @@
             if (sb) sb.value = 'default';
             if (sbm) sbm.value = 'default';
             updateModelDropdown();
+            setModelEnabled(false); // back to no brand → model locked again
             applyFilters();
         }
 
@@ -968,6 +1007,7 @@
 
             // Populate filter dropdowns from normalized data
             updateModelDropdown();
+            setModelEnabled(false); // Model starts locked until a brand is chosen
 
             const dialSet = [...new Set(PIECES.map(w => w._dialGroup).filter(Boolean))];
             const dials = dialSet.filter(v => v !== 'Other').sort();

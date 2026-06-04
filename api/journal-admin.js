@@ -198,7 +198,7 @@ async function actionGet({ id }) {
     return { article: rows[0] };
 }
 
-async function actionSave({ id, title, subtitle, excerpt, category, hero_image_url, content_json, seo_title, seo_description, status }) {
+async function actionSave({ id, title, subtitle, excerpt, category, hero_image_url, content_json, seo_title, seo_description, status, published_at }) {
     if (!title || !String(title).trim()) throw new Error("Title required");
 
     const trimmedTitle = String(title).trim();
@@ -220,9 +220,21 @@ async function actionSave({ id, title, subtitle, excerpt, category, hero_image_u
         reading_time_minutes: readingTime,
     };
 
+    // Explicit article-date override from the editor. Lets the admin backdate or
+    // forward-date a post. "" or null clears it; a valid date string sets it.
+    if (published_at !== undefined) {
+        if (!published_at) {
+            payload.published_at = null;
+        } else {
+            const d = new Date(published_at);
+            if (!isNaN(d.getTime())) payload.published_at = d.toISOString();
+        }
+    }
+
     if (status === "published" || status === "draft" || status === "archived") {
         payload.status = status;
-        if (status === "published") {
+        // Publishing always needs a date. If the admin did not set one, default to now.
+        if (status === "published" && !payload.published_at) {
             payload.published_at = new Date().toISOString();
         }
     }

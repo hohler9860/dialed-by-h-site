@@ -425,6 +425,11 @@
                 <textarea id="setting-excerpt" rows="2" placeholder="Optional. Short preview shown on the journal index card."></textarea>
             </div>
 
+            <div class="settings-row">
+                <label for="setting-pubdate">Article date (the date shown on the journal and used for sort order. Leave blank to auto-set when you publish.)</label>
+                <input id="setting-pubdate" type="date">
+            </div>
+
             <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-ivory/8 mt-4">
                 <div class="text-xs text-muted" id="meta-info"></div>
                 <div class="flex flex-wrap items-center gap-3">
@@ -479,6 +484,7 @@
         const settingSeoTitle = document.getElementById("setting-seo-title");
         const settingSeoDesc  = document.getElementById("setting-seo-description");
         const settingExcerpt  = document.getElementById("setting-excerpt");
+        const settingPubdate  = document.getElementById("setting-pubdate");
 
         // ─── Auth check ────────────────────────────────────────
         if (!window.dialedAdmin.isAuthed()) {
@@ -696,6 +702,7 @@
                 settingSeoTitle.value = article.seo_title || "";
                 settingSeoDesc.value  = article.seo_description || "";
                 settingExcerpt.value  = article.excerpt || "";
+                settingPubdate.value  = article.published_at ? new Date(article.published_at).toISOString().slice(0, 10) : "";
 
                 initEditor(article.content_json || { blocks: [{ type: "paragraph", data: { text: "" } }] });
                 deleteBtn.style.display = "inline-block";
@@ -718,6 +725,7 @@
                     title: titleEl.value, subtitle: subtitleEl.value, hero: heroImageUrl,
                     category: settingCategory.value, seoTitle: settingSeoTitle.value,
                     seoDesc: settingSeoDesc.value, excerpt: settingExcerpt.value,
+                    pubdate: settingPubdate.value,
                 });
             } catch (e) {
                 if (e.message === "Unauthorized") return showUnauth();
@@ -743,6 +751,8 @@
                     content_json,
                     seo_title: settingSeoTitle.value.trim() || null,
                     seo_description: settingSeoDesc.value.trim() || null,
+                    // Sent as YYYY-MM-DD (or "" to clear). Noon UTC avoids a timezone day-shift.
+                    published_at: settingPubdate.value ? settingPubdate.value + "T12:00:00Z" : "",
                 };
                 if (status) payload.status = status;
 
@@ -846,6 +856,7 @@
         [settingCategory, settingSeoTitle, settingSeoDesc, settingExcerpt].forEach(el => {
             el.addEventListener("input", markDirty);
         });
+        settingPubdate.addEventListener("change", markDirty);
 
         // ─── Warn before leaving ───────────────────────────────
         window.addEventListener("beforeunload", (e) => {

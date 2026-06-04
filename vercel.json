@@ -10,8 +10,8 @@
   "rewrites": [
     { "source": "/journal/:slug", "destination": "/api/journal-article-render?slug=:slug" },
     { "source": "/journal/:slug/", "destination": "/api/journal-article-render?slug=:slug" },
-    { "source": "/watch/:slug", "destination": "/api/watch-render?slug=:slug" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+    { "source": "/watch/:slug", "destination": "/api/get-inventory?slug=:slug" },
+    { "source": "/sitemap.xml", "destination": "/api/get-inventory?sitemap=1" }
   ],
   "redirects": [
     { "source": "/journal.html", "destination": "/journal/", "permanent": true },

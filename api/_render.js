@@ -1,9 +1,6 @@
-// Server-side renderer for individual watch pages (AI/SEO-friendly).
-// Routed via vercel.json: /watch/:slug -> /api/watch-render?slug=:slug
-// Returns full HTML so AI crawlers and search engines get the complete piece
-// (name, specs, price/POA, schema) in the initial response — no JS required.
-const { fetchAllPieces } = require('./_pieces');
-
+// Pure render helpers (underscore = not a serverless function, just an import).
+// Used by get-inventory to serve SSR watch pages and the dynamic sitemap without
+// adding new functions (Hobby plan caps at 12).
 const SITE_URL = process.env.SITE_URL || 'https://dialedbyhenry.com';
 const WA_NUMBER = '19146211848';
 
@@ -46,7 +43,7 @@ function navHtml() {
 </nav>`;
 }
 
-function render(w) {
+function renderWatchPage(w) {
     const displayName = w.name + (w.nickname ? ` "${w.nickname}"` : '');
     const canonical = `${SITE_URL}/watch/${w.slug}`;
     const img = normUrl(w.image);
@@ -59,7 +56,6 @@ function render(w) {
         ['Dial Color', w.dialColor], ['Bracelet / Strap', w.bracelet], ['Condition', w.condition], ['Set', w.set],
     ].filter(([, v]) => v);
 
-    // Structured data: Product + Offer + per-spec PropertyValue (so AI can extract every detail).
     const productLD = {
         '@context': 'https://schema.org', '@type': 'Product',
         name: displayName,
@@ -175,7 +171,7 @@ ${navHtml()}
 
             <div class="glass rounded-xl p-6 mb-6">
                 <p class="text-ivory/70 text-xs font-inter tracking-wide mb-5 leading-relaxed">Interested in this piece? Inquire below and I'll get back to you with sourcing details, pricing, and availability.</p>
-                <a href="${waLink}" target="_blank" rel="noopener" class="block w-full text-center mb-3 py-4 font-bold font-space uppercase tracking-widest text-charcoal" style="background:#25D366;" onclick="fbq &amp;&amp; fbq('track','Contact')">Message on WhatsApp</a>
+                <a href="${waLink}" target="_blank" rel="noopener" class="block w-full text-center mb-3 py-4 font-bold font-space uppercase tracking-widest text-charcoal" style="background:#25D366;">Message on WhatsApp</a>
                 <button onclick="document.getElementById('inquiry-section').scrollIntoView({behavior:'smooth'})" class="w-full bg-ivory text-charcoal py-4 font-bold font-space uppercase tracking-widest hover:bg-white transition-colors">Inquire to Source</button>
             </div>
 
@@ -244,24 +240,26 @@ ${navHtml()}
 </html>`;
 }
 
-module.exports = async (req, res) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    const q = req.query || {};
-    const slug = q.slug ? String(q.slug).trim().toLowerCase() : null;
-    const id = q.id ? String(q.id).trim() : null;
+function renderSitemap(pieces) {
+    const CORE = [
+        { loc: '/', changefreq: 'daily', priority: '1.0' },
+        { loc: '/inventory.html', changefreq: 'daily', priority: '0.9' },
+        { loc: '/journal/', changefreq: 'weekly', priority: '0.8' },
+        { loc: '/about.html', changefreq: 'monthly', priority: '0.8' },
+        { loc: '/process.html', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/boston.html', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/privacy.html', changefreq: 'yearly', priority: '0.3' },
+    ];
+    const tag = ({ loc, changefreq, priority }) =>
+        `  <url><loc>${SITE_URL}${loc}</loc>${changefreq ? `<changefreq>${changefreq}</changefreq>` : ''}${priority ? `<priority>${priority}</priority>` : ''}</url>`;
+    const watchTags = (pieces || [])
+        .filter(p => p.image && p.slug)
+        .map(p => tag({ loc: `/watch/${p.slug}`, changefreq: 'weekly', priority: '0.8' }))
+        .join('\n');
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${CORE.map(tag).join('\n')}${watchTags ? '\n' + watchTags : ''}
+</urlset>`;
+}
 
-    if (!slug && !id) { res.status(404); return res.send(fourOhFour()); }
-
-    try {
-        const pieces = await fetchAllPieces();
-        const piece = id ? pieces.find(p => p.id === id) : pieces.find(p => p.slug === slug);
-        if (!piece || !piece.image) { res.status(404); return res.send(fourOhFour()); }
-        res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600');
-        res.status(200);
-        return res.send(render(piece));
-    } catch (err) {
-        console.error('[watch-render] error:', err && err.message);
-        res.status(500);
-        return res.send(fourOhFour());
-    }
-};
+module.exports = { renderWatchPage, renderSitemap, fourOhFour, SITE_URL };

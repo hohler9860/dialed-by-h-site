@@ -502,20 +502,27 @@
                 const rawNick = w.nickname ? w.nickname.replace(/^"|"$/g, '') : '';
                 const nickname = rawNick ? ` "${rawNick}"` : '';
                 const details = w.details || '';
-                const image = w.image || '';
+                const rawImage = w.image || '';
+                // Normalize every watch image to a uniform square via our own image endpoint:
+                // it trims the transparent padding around the watch and re-centers it on a
+                // 600x600 canvas, so each piece fills the same footprint no matter how the
+                // source was framed. Falls back to the raw image if normalization fails.
+                const image = rawImage
+                    ? `/api/normalize-image?u=${encodeURIComponent(rawImage)}`
+                    : '';
                 const condLabel = w.condition || '';
                 const setLabel = w.set || '';
                 const year = w.year || '';
                 const brand = (w.brand || '').toUpperCase();
                 const nm = (name + ' ' + details).toUpperCase();
-                const imgSize = brand === 'ROLEX' ? '100%' : brand.includes('AUDEMARS') ? '65%' : brand === 'TUDOR' && nm.includes('CARBON') ? '100%' : brand === 'TUDOR' ? '75%' : brand.includes('RICHARD') ? '135%' : '75%';
-                const imgOffset = brand.includes('RICHARD') ? 'transform:translateY(-10%);' : brand.includes('JOURNE') && !nm.includes('ELEGANTE') ? 'transform:translateY(14%);' : '';
+                // Images are normalized to a uniform square upstream, so one scale fits all.
+                const imgSize = '88%';
 
                 return `
                 <a href="watch.html?id=${esc(w.id)}" class="watch-card group">
                     <div class="card-img-wrap relative overflow-hidden rounded-t-2xl bg-[#111] flex items-center justify-center">
                         ${image
-                            ? `<img src="${esc(image)}" alt="${esc(name)}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;object-position:center;margin:auto;${imgOffset}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            ? `<img src="${esc(image)}" alt="${esc(name)}" class="card-img" style="width:${imgSize};height:${imgSize};object-fit:contain;object-position:center;margin:auto;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                <div class="w-full h-full bg-gradient-to-b from-charcoal/30 to-charcoal/80 items-center justify-center absolute inset-0" style="display:none;">
                                    <span class="text-muted/40 text-xs font-space tracking-widest">Image Coming Soon</span>
                                </div>`

@@ -8,3 +8,5 @@ deno.lock
 *.code-workspace
 dist/
 email-preview.html
+.idea/
+.firecrawl/

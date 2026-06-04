@@ -418,6 +418,15 @@
             populateDropdown(['filter-model', 'filter-model-m'], models, 'Model');
         }
 
+        // Fisher-Yates in-place shuffle
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
         function interleaveByBrand(pieces) {
             const byBrand = {};
             pieces.forEach(p => {
@@ -425,7 +434,10 @@
                 if (!byBrand[b]) byBrand[b] = [];
                 byBrand[b].push(p);
             });
-            const brands = Object.keys(byBrand);
+            // Shuffle each brand's pieces AND the brand order so the top of the grid
+            // cycles on every load, while still interleaving brands (no clustering).
+            Object.values(byBrand).forEach(shuffle);
+            const brands = shuffle(Object.keys(byBrand));
             const result = [];
             let i = 0;
             while (result.length < pieces.length) {

@@ -678,7 +678,7 @@
     </main>
 
     <!-- MODAL OVERLAY -->
-    <div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md opacity-0">
+    <div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex items-center justify-center opacity-0" style="background:rgba(0,0,0,0.82)">
         <div class="w-full max-w-lg glass-strong m-3 sm:m-4 relative shadow-2xl overflow-hidden rounded-2xl">
             <button onclick="app.closeModal()"
                     class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
@@ -692,8 +692,8 @@
 
     <!-- SUCCESS OVERLAY -->
     <div id="success-overlay" class="fixed inset-0 z-[60] flex items-center justify-center opacity-0" style="visibility:hidden; pointer-events:none;">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-xl"></div>
-        <div class="relative z-10 glass-strong rounded-2xl p-8 sm:p-12 max-w-sm mx-4 text-center">
+        <div class="absolute inset-0" style="background:rgba(0,0,0,0.88)"></div>
+        <div class="relative z-10 glass-strong rounded-2xl p-8 sm:p-12 max-w-sm mx-4 text-center" style="background:rgba(20,20,20,0.98);border:1px solid rgba(245,243,235,0.12);backdrop-filter:none;-webkit-backdrop-filter:none;">
             <button onclick="app.closeSuccessOverlay()" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>

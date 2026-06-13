@@ -139,7 +139,7 @@ fbq('init', '798516899968965'); fbq('track', 'PageView');
 </script>
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
-<div id="bg-blur">${w.image ? `<img src="${escAttr(img)}" alt="">` : ''}</div>
+<div id="bg-blur"></div>
 ${navHtml()}
 
 <main class="relative z-10 max-w-6xl mx-auto px-6 py-10 sm:py-16">
@@ -212,6 +212,27 @@ ${navHtml()}
 </a>
 
 <script>if (window.lucide) lucide.createIcons();</script>
+<script>
+// Inject the blurred background AFTER first paint. iOS WebKit / the Instagram
+// in-app browser render a fixed, full-viewport, heavily-blurred layer that is
+// present at first paint as an opaque black screen — blacking out the whole
+// page. Deferring the injection lets the real content paint first (matches the
+// legacy client-rendered watch page, which never had this issue).
+(function () {
+    const url = ${JSON.stringify(img)};
+    if (!url) return;
+    function inject() {
+        const el = document.getElementById('bg-blur');
+        if (!el || el.firstChild) return;
+        const im = new Image();
+        im.alt = '';
+        im.src = url;
+        el.appendChild(im);
+    }
+    if (document.readyState === 'complete') inject();
+    else window.addEventListener('load', inject);
+})();
+</script>
 <script>
 (function () {
     const form = document.getElementById('inquiry-form');

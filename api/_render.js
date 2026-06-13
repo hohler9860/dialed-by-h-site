@@ -257,6 +257,20 @@ ${navHtml()}
     });
 })();
 </script>
+<script>
+// Reveal the page. The global stylesheet hides the body (opacity:0) until the
+// 'page-ready' class is added — normally done by premium-ui.js's page-transition
+// init. premium-ui.js is loaded below for the full fade/transition behavior used
+// site-wide, but this inline net guarantees the body is never left invisible
+// (a black screen) even if that script fails to load.
+(function () {
+    function ready() { if (document.body) document.body.classList.add('page-ready'); }
+    if (document.readyState !== 'loading') ready();
+    else document.addEventListener('DOMContentLoaded', ready);
+    window.addEventListener('load', ready);
+})();
+</script>
+<script src="/scripts/premium-ui.js"></script>
 </body>
 </html>`;
 }

@@ -6,7 +6,7 @@ const { InquiryEmail } = require("../lib/emails/inquiry.js");
 
 // Supabase REST API — DialedbyH project
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVudG5yb2Zzbm1veXhkaWR4YmRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2ODgyMjQsImV4cCI6MjA4NjI2NDIyNH0.dlm7v9mq7OdA2nJX7BpNtEXRCLW0uZb7QLkhSMxWF1k";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 async function supabaseInsert(table, row) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
@@ -162,6 +162,11 @@ module.exports = async (req, res) => {
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  if (!SUPABASE_KEY) {
+    console.error("[submit-form] Missing SUPABASE_SERVICE_ROLE_KEY");
+    return res.status(500).json({ error: "Server misconfigured" });
   }
 
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);

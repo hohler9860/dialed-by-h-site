@@ -13,3 +13,7 @@ email-preview.html
 
 # Local sourcing assets (uploaded into Notion; not used by the site)
 Notion Sourcing Imags/
+
+# Generated email previews (scripts/render-broadcast.js output)
+broadcast-*.html
+inquiry-preview.html

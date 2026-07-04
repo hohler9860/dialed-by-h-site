@@ -96,13 +96,29 @@ function mapPage(page) {
     return out;
 }
 
-async function fetchAllPieces() {
+// SDK v5 / Notion API 2025-09-03 queries data sources, not databases.
+// NOTION_DATABASE_ID still holds the database ID, so resolve its (single)
+// data source once per cold start and cache it.
+let DATA_SOURCE_ID;
+
+async function getDataSourceId() {
+    if (DATA_SOURCE_ID) return DATA_SOURCE_ID;
     const { notion, DATABASE_ID } = getNotion();
+    const db = await notion.databases.retrieve({ database_id: DATABASE_ID });
+    const sources = db.data_sources || [];
+    if (!sources.length) throw new Error('Notion database has no data sources');
+    DATA_SOURCE_ID = sources[0].id;
+    return DATA_SOURCE_ID;
+}
+
+async function fetchAllPieces() {
+    const { notion } = getNotion();
+    const dataSourceId = await getDataSourceId();
     let results = [];
     let cursor;
     do {
-        const resp = await notion.databases.query({
-            database_id: DATABASE_ID,
+        const resp = await notion.dataSources.query({
+            data_source_id: dataSourceId,
             start_cursor: cursor,
             sorts: [{ timestamp: 'created_time', direction: 'ascending' }],
         });

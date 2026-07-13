@@ -68,7 +68,7 @@ function escHtml(s) {
         .replace(/'/g, "&#39;");
 }
 
-function renderBlock(block) {
+function renderBlock(block, fallbackAlt) {
     const { type, data } = block || {};
     if (!type || !data) return "";
 
@@ -93,7 +93,8 @@ function renderBlock(block) {
         case "image": {
             const url = (data.file && data.file.url) || data.url || "";
             if (!url) return "";
-            const alt = escHtml(data.caption || "");
+            // Alt text: caption if written, else the article title — never empty (SEO/a11y).
+            const alt = escHtml(data.caption || fallbackAlt || "");
             const caption = data.caption ? `<figcaption>${data.caption}</figcaption>` : "";
             return `<figure class="journal-figure"><img src="${escHtml(url)}" alt="${alt}" loading="lazy" />${caption}</figure>`;
         }
@@ -115,9 +116,9 @@ function renderBlock(block) {
     }
 }
 
-function renderEditorJson(json) {
+function renderEditorJson(json, fallbackAlt) {
     if (!json || !Array.isArray(json.blocks)) return "";
-    return json.blocks.map(renderBlock).join("\n");
+    return json.blocks.map((b) => renderBlock(b, fallbackAlt)).join("\n");
 }
 
 function plainTextFromJson(json) {
@@ -198,12 +199,12 @@ async function actionGet({ id }) {
     return { article: rows[0] };
 }
 
-async function actionSave({ id, title, subtitle, excerpt, category, hero_image_url, content_json, seo_title, seo_description, status, published_at }) {
+async function actionSave({ id, title, subtitle, excerpt, category, hero_image_url, hero_alt, content_json, seo_title, seo_description, status, published_at }) {
     if (!title || !String(title).trim()) throw new Error("Title required");
 
     const trimmedTitle = String(title).trim();
     const baseSlug = slugify(trimmedTitle);
-    const html = renderEditorJson(content_json);
+    const html = renderEditorJson(content_json, trimmedTitle);
     const plain = plainTextFromJson(content_json);
     const readingTime = readingTimeMinutes(plain);
 
@@ -213,6 +214,7 @@ async function actionSave({ id, title, subtitle, excerpt, category, hero_image_u
         excerpt: excerpt ? String(excerpt).trim() : (plain ? plain.slice(0, 220).trim() : null),
         category: category ? String(category).trim() : null,
         hero_image_url: hero_image_url || null,
+        hero_alt: hero_alt ? String(hero_alt).trim() : null,
         content_json: content_json || null,
         content_html: html,
         seo_title: seo_title || null,

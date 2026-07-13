@@ -354,6 +354,32 @@
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.error { border-color: rgba(248,113,113,0.4); color: #fca5a5; }
 
+        .field-help {
+            font-size: 11px;
+            line-height: 1.6;
+            color: rgba(240,240,240,0.38);
+            margin-top: 6px;
+            text-transform: none;
+            letter-spacing: 0.02em;
+        }
+        .char-count { float: right; font-variant-numeric: tabular-nums; }
+        .char-count.over { color: #e5735c; }
+        .seo-check { list-style: none; margin: 0; padding: 0; }
+        .seo-check li {
+            display: flex;
+            gap: 10px;
+            align-items: baseline;
+            padding: 7px 0;
+            font-size: 12px;
+            color: rgba(240,240,240,0.75);
+            border-bottom: 1px solid rgba(240,240,240,0.06);
+            text-transform: none;
+        }
+        .seo-check li:last-child { border-bottom: none; }
+        .seo-check .mark { flex: none; font-weight: 700; }
+        .seo-check li.ok .mark { color: #6fbf8f; }
+        .seo-check li.bad .mark { color: #e5735c; }
+        .seo-check li.ok { color: rgba(240,240,240,0.45); }
         #unauth-gate {
             position: fixed;
             inset: 0;
@@ -388,7 +414,7 @@
     <main class="editor-shell">
         <!-- Hero image -->
         <div id="hero-upload" class="hero-upload">
-            <div class="hero-placeholder">+ Upload hero image (16:9 looks best)</div>
+            <div class="hero-placeholder">+ Upload hero image (16:9, at least 1600px wide &mdash; sharp, high-contrast shots of the actual watch work best)</div>
             <img id="hero-img" src="" alt="Hero">
             <button id="hero-remove-btn" class="hero-remove" type="button">Remove</button>
             <input id="hero-file-input" type="file" accept="image/*" class="hidden">
@@ -397,6 +423,7 @@
         <!-- Title + Subtitle -->
         <textarea id="title-input" class="title-input" rows="1" placeholder="Title"></textarea>
         <textarea id="subtitle-input" class="subtitle-input" rows="1" placeholder="A short subtitle (optional)"></textarea>
+        <p class="field-help" style="margin-top:-6px;margin-bottom:18px">Title is your H1 and browser-tab text. Include the main keyword (brand + model or topic), keep it under 70 characters, make it specific. <span class="char-count" id="title-count"></span></p>
 
         <!-- Editor.js mount point -->
         <div id="editor"></div>
@@ -406,23 +433,33 @@
             <h3 class="font-space font-bold text-lg tracking-tight mb-5">Article Settings</h3>
 
             <div class="settings-row">
+                <label for="setting-hero-alt">Hero Image Alt Text</label>
+                <input id="setting-hero-alt" type="text" placeholder='Describe the photo, e.g. "Rolex GMT-Master II Batman on a grey suit cuff"'>
+                <p class="field-help">Read by Google Images and screen readers. Describe what is actually in the photo and include the reference when relevant. Also used as the social share image description.</p>
+            </div>
+
+            <div class="settings-row">
                 <label for="setting-category">Category</label>
                 <input id="setting-category" type="text" placeholder="e.g. Market Notes, Releases, Sourcing Stories">
+                <p class="field-help">Groups posts on the journal index. Reuse an existing category instead of inventing a new one each time.</p>
             </div>
 
             <div class="settings-row">
                 <label for="setting-seo-title">SEO Title (defaults to article title)</label>
                 <input id="setting-seo-title" type="text" placeholder="Optional. Overrides title in search results.">
+                <p class="field-help">Only set this when the article title is too long or too clever for Google. Under 70 characters, keyword first. <span class="char-count" id="seo-title-count"></span></p>
             </div>
 
             <div class="settings-row">
                 <label for="setting-seo-description">SEO Description (defaults to excerpt)</label>
                 <textarea id="setting-seo-description" rows="3" placeholder="Optional. 1 to 2 sentences shown in search results."></textarea>
+                <p class="field-help">Shows in Google under the title &mdash; 50 to 160 characters. Lead with the main keyword and give a reason to click. <span class="char-count" id="seo-desc-count"></span></p>
             </div>
 
             <div class="settings-row">
                 <label for="setting-excerpt">Excerpt (defaults to first paragraph)</label>
                 <textarea id="setting-excerpt" rows="2" placeholder="Optional. Short preview shown on the journal index card."></textarea>
+                <p class="field-help">Journal card preview. Also the fallback search description when the SEO Description above is empty.</p>
             </div>
 
             <div class="settings-row">
@@ -438,6 +475,13 @@
                     <button id="delete-btn" class="btn-secondary btn-danger" style="display:none">Delete Article</button>
                 </div>
             </div>
+        </div>
+
+        <!-- Live SEO checklist -->
+        <div class="settings-card" id="seo-check-card">
+            <h3 class="font-space font-bold text-lg tracking-tight mb-2">SEO Check</h3>
+            <p class="field-help" style="margin:0 0 12px">Updates as you write. All green before publishing = best shot at ranking.</p>
+            <ul id="seo-checklist" class="seo-check"></ul>
         </div>
     </main>
 
@@ -481,6 +525,7 @@
         const toastEl       = document.getElementById("toast");
         const unauthEl      = document.getElementById("unauth-gate");
         const settingCategory = document.getElementById("setting-category");
+        const settingHeroAlt  = document.getElementById("setting-hero-alt");
         const settingSeoTitle = document.getElementById("setting-seo-title");
         const settingSeoDesc  = document.getElementById("setting-seo-description");
         const settingExcerpt  = document.getElementById("setting-excerpt");
@@ -514,6 +559,7 @@
             saveStateEl.textContent = "Unsaved";
             pendingDirty = true;
             scheduleAutoSave();
+            scheduleSeoCheck();
         }
 
         function scheduleAutoSave() {
@@ -699,6 +745,7 @@
                     heroUploadEl.classList.add("has-image");
                 }
                 settingCategory.value = article.category || "";
+                settingHeroAlt.value = article.hero_alt || "";
                 settingSeoTitle.value = article.seo_title || "";
                 settingSeoDesc.value  = article.seo_description || "";
                 settingExcerpt.value  = article.excerpt || "";
@@ -723,7 +770,7 @@
                 autoResize(subtitleEl);
                 lastSavedState = JSON.stringify({
                     title: titleEl.value, subtitle: subtitleEl.value, hero: heroImageUrl,
-                    category: settingCategory.value, seoTitle: settingSeoTitle.value,
+                    category: settingCategory.value, heroAlt: settingHeroAlt.value, seoTitle: settingSeoTitle.value,
                     seoDesc: settingSeoDesc.value, excerpt: settingExcerpt.value,
                     pubdate: settingPubdate.value,
                 });
@@ -748,6 +795,7 @@
                     excerpt: settingExcerpt.value.trim() || null,
                     category: settingCategory.value.trim() || null,
                     hero_image_url: heroImageUrl || null,
+                    hero_alt: settingHeroAlt.value.trim() || null,
                     content_json,
                     seo_title: settingSeoTitle.value.trim() || null,
                     seo_description: settingSeoDesc.value.trim() || null,
@@ -784,11 +832,16 @@
         }
 
         saveDraftBtn.addEventListener("click", () => save({ status: "draft" }));
-        publishBtn.addEventListener("click", () => {
+        publishBtn.addEventListener("click", async () => {
             if (!titleEl.value.trim()) {
                 showToast("Title required to publish", true);
                 titleEl.focus();
                 return;
+            }
+            await updateSeoCheck();
+            if (seoIssues.length) {
+                const go = confirm("SEO check has open items:\n\n\u2717 " + seoIssues.join("\n\u2717 ") + "\n\nPublish anyway?");
+                if (!go) return;
             }
             save({ status: "published" });
         });
@@ -852,8 +905,66 @@
         });
         emailBroadcastBtn.addEventListener("click", () => sendBroadcast());
 
+        // ─── Live SEO check ────────────────────────────────────
+        const seoListEl = document.getElementById("seo-checklist");
+        let seoIssues = [];
+        let seoTimer = null;
+
+        function scheduleSeoCheck() {
+            clearTimeout(seoTimer);
+            seoTimer = setTimeout(() => { updateSeoCheck(); }, 800);
+        }
+
+        function bindCount(el, countEl, max) {
+            const upd = () => {
+                const n = el.value.trim().length;
+                countEl.textContent = n ? `${n}/${max}` : "";
+                countEl.classList.toggle("over", n > max);
+            };
+            el.addEventListener("input", upd);
+            bindCount._all = (bindCount._all || []).concat(upd);
+        }
+        bindCount(titleEl, document.getElementById("title-count"), 70);
+        bindCount(settingSeoTitle, document.getElementById("seo-title-count"), 70);
+        bindCount(settingSeoDesc, document.getElementById("seo-desc-count"), 160);
+        function refreshCounts() { (bindCount._all || []).forEach(fn => fn()); }
+
+        async function updateSeoCheck() {
+            if (!seoListEl) return;
+            let blocks = [];
+            try { blocks = (await editor.save()).blocks || []; } catch (e) { /* editor not ready */ }
+
+            const titleLen = (settingSeoTitle.value.trim() || titleEl.value.trim()).length;
+            const desc = settingSeoDesc.value.trim() || settingExcerpt.value.trim();
+            const words = blocks.map(b => {
+                const d = b.data || {};
+                if (b.type === "paragraph" || b.type === "header" || b.type === "quote") return String(d.text || "").replace(/<[^>]+>/g, "");
+                if (b.type === "list") return (d.items || []).map(it => typeof it === "string" ? it : (it && it.content) || "").join(" ").replace(/<[^>]+>/g, "");
+                return "";
+            }).join(" ").split(/\s+/).filter(Boolean).length;
+            const images = blocks.filter(b => b.type === "image");
+            const missingCaptions = images.filter(b => !(b.data && String(b.data.caption || "").replace(/<[^>]+>/g, "").trim())).length;
+            const hasSubhead = blocks.some(b => b.type === "header");
+
+            const checks = [
+                { ok: titleLen >= 20 && titleLen <= 70, label: `Search title 20–70 characters (now ${titleLen})` },
+                { ok: desc.length >= 50 && desc.length <= 160, label: `Search description 50–160 characters (now ${desc.length})` },
+                { ok: !!heroImageUrl, label: "Hero image uploaded" },
+                { ok: !heroImageUrl || !!settingHeroAlt.value.trim(), label: "Hero image alt text written" },
+                { ok: images.length === 0 || missingCaptions === 0, label: images.length === 0 ? "Inline images have captions (alt text)" : (missingCaptions ? `${missingCaptions} inline image${missingCaptions > 1 ? "s" : ""} missing a caption (used as alt text)` : "All inline images have captions (alt text)") },
+                { ok: hasSubhead, label: "At least one subheading (H2/H3) in the body" },
+                { ok: words >= 300, label: `300+ words of body copy (now ${words})` },
+                { ok: !!settingCategory.value.trim(), label: "Category set" },
+            ];
+
+            seoIssues = checks.filter(c => !c.ok).map(c => c.label);
+            seoListEl.innerHTML = checks.map(c =>
+                `<li class="${c.ok ? "ok" : "bad"}"><span class="mark">${c.ok ? "\u2713" : "\u2717"}</span><span>${c.label}</span></li>`
+            ).join("");
+        }
+
         // ─── Setting change tracking ───────────────────────────
-        [settingCategory, settingSeoTitle, settingSeoDesc, settingExcerpt].forEach(el => {
+        [settingCategory, settingHeroAlt, settingSeoTitle, settingSeoDesc, settingExcerpt].forEach(el => {
             el.addEventListener("input", markDirty);
         });
         settingPubdate.addEventListener("change", markDirty);
@@ -867,7 +978,7 @@
         });
 
         // ─── Boot ──────────────────────────────────────────────
-        loadArticle();
+        loadArticle().then(() => { refreshCounts(); updateSeoCheck(); });
     </script>
 </body>
 </html>

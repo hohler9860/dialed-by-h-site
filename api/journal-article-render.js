@@ -109,6 +109,7 @@ function renderArticleHtml(a) {
 <meta property="og:title" content="${escAttr(title)}">
 <meta property="og:description" content="${escAttr(description)}">
 <meta property="og:image" content="${escAttr(heroUrl)}">
+<meta property="og:image:alt" content="${escAttr(a.hero_alt || title)}">
 <meta property="og:site_name" content="Dialed By H">
 <meta property="article:author" content="${escAttr(a.author_name || "Henry Ohler")}">
 ${pubDate ? `<meta property="article:published_time" content="${escAttr(pubDate)}">` : ""}
@@ -279,7 +280,7 @@ code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;
     <h1 class="oc-article-title">${escHtml(title)}</h1>
     ${subtitle ? `<p class="oc-article-subtitle">${escHtml(subtitle)}</p>` : ""}
 
-    ${heroUrl && a.hero_image_url ? `<img class="oc-hero" src="${escAttr(heroUrl)}" alt="${escAttr(title)}" loading="eager">` : ""}
+    ${heroUrl && a.hero_image_url ? `<img class="oc-hero" src="${escAttr(heroUrl)}" alt="${escAttr(a.hero_alt || title)}" loading="eager">` : ""}
 
     <div class="oc-byline">
         <span class="oc-author">By ${escHtml(a.author_name || "Henry Ohler")}</span>

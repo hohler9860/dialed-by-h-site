@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
             const pieces = await fetchAllPieces();
             const piece = q.id ? pieces.find(p => p.id === q.id) : pieces.find(p => p.slug === slug);
             if (!piece || !piece.image) return res.status(404).send(fourOhFour());
-            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600');
+            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400');
             return res.status(200).send(renderWatchPage(piece));
         } catch (err) {
             console.error('[get-inventory:watch] error:', err && err.message);
@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
         res.setHeader('Access-Control-Allow-Origin', origin || '*');
     }
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 

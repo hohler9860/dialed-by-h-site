@@ -111,21 +111,44 @@ async function getDataSourceId() {
     return DATA_SOURCE_ID;
 }
 
-async function fetchAllPieces() {
-    const { notion } = getNotion();
-    const dataSourceId = await getDataSourceId();
-    let results = [];
-    let cursor;
-    do {
-        const resp = await notion.dataSources.query({
-            data_source_id: dataSourceId,
-            start_cursor: cursor,
-            sorts: [{ timestamp: 'created_time', direction: 'ascending' }],
-        });
-        results = results.concat(resp.results);
-        cursor = resp.has_more ? resp.next_cursor : undefined;
-    } while (cursor);
-    return results.map(mapPage);
+// In-memory cache shared across warm invocations of the same function instance.
+// Notion is the slow part (~1.2s/full query); serving from memory turns most
+// cache-missed edge requests into sub-100ms responses. TTL keeps inventory edits
+// visible within a few minutes. On a Notion error we serve the last good copy
+// (stale-on-error) rather than 500ing.
+let _piecesCache = null;
+let _piecesCacheAt = 0;
+const PIECES_TTL_MS = 180 * 1000;
+
+async function fetchAllPieces({ force = false } = {}) {
+    const now = Date.now();
+    if (!force && _piecesCache && now - _piecesCacheAt < PIECES_TTL_MS) {
+        return _piecesCache;
+    }
+    try {
+        const { notion } = getNotion();
+        const dataSourceId = await getDataSourceId();
+        let results = [];
+        let cursor;
+        do {
+            const resp = await notion.dataSources.query({
+                data_source_id: dataSourceId,
+                start_cursor: cursor,
+                sorts: [{ timestamp: 'created_time', direction: 'ascending' }],
+            });
+            results = results.concat(resp.results);
+            cursor = resp.has_more ? resp.next_cursor : undefined;
+        } while (cursor);
+        _piecesCache = results.map(mapPage);
+        _piecesCacheAt = now;
+        return _piecesCache;
+    } catch (err) {
+        if (_piecesCache) {
+            console.error('[pieces] Notion fetch failed, serving stale cache:', err && err.message);
+            return _piecesCache;
+        }
+        throw err;
+    }
 }
 
 module.exports = { getNotion, get, getImages, getMulti, slugify, pieceSlug, mapPage, fetchAllPieces };

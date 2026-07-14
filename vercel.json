@@ -9,13 +9,37 @@
     }
   ],
   "rewrites": [
-    { "source": "/journal/:slug", "destination": "/api/journal-article-render?slug=:slug" },
-    { "source": "/journal/:slug/", "destination": "/api/journal-article-render?slug=:slug" },
-    { "source": "/watch/:slug", "destination": "/api/get-inventory?slug=:slug" },
-    { "source": "/sitemap.xml", "destination": "/api/get-inventory?sitemap=1" }
+    {
+      "source": "/img",
+      "destination": "/api/img"
+    },
+    {
+      "source": "/journal/:slug",
+      "destination": "/api/journal-article-render?slug=:slug"
+    },
+    {
+      "source": "/journal/:slug/",
+      "destination": "/api/journal-article-render?slug=:slug"
+    },
+    {
+      "source": "/watch/:slug",
+      "destination": "/api/get-inventory?slug=:slug"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/get-inventory?sitemap=1"
+    }
   ],
   "redirects": [
-    { "source": "/journal.html", "destination": "/journal/", "permanent": true },
-    { "source": "/index.html", "destination": "/", "permanent": true }
+    {
+      "source": "/journal.html",
+      "destination": "/journal/",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    }
   ]
 }

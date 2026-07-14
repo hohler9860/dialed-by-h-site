@@ -36,6 +36,22 @@ function getResend() {
   return resend;
 }
 
+// Escape user-supplied values before they land in the notification email HTML.
+// Without this, a submitter could inject markup/links into the inbox Henry reads.
+function escHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Strip CR/LF and collapse whitespace so user input can't mangle the subject line.
+function cleanSubject(s) {
+  return String(s == null ? "" : s).replace(/[\r\n\t]+/g, " ").trim().slice(0, 160);
+}
+
 // Styled notification wrapper
 function wrapNotification(bodyHtml) {
   return `
@@ -56,7 +72,7 @@ function fieldRow(label, value) {
   return `
     <tr>
       <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #888; width: 100px; vertical-align: top;">${label}</td>
-      <td style="padding: 10px 0 10px 16px; border-bottom: 1px solid #eee; font-size: 15px; color: #1a1a1a; vertical-align: top;">${value}</td>
+      <td style="padding: 10px 0 10px 16px; border-bottom: 1px solid #eee; font-size: 15px; color: #1a1a1a; vertical-align: top;">${escHtml(value)}</td>
     </tr>
   `;
 }
@@ -77,7 +93,7 @@ function buildEmail(type, data) {
 
   const templates = {
     JOIN_LIST: {
-      subject: `\u{1F7E2} New Signup: ${name}`,
+      subject: cleanSubject(`\u{1F7E2} New Signup: ${name}`),
       body: wrapNotification(`
         <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Private List Signup</h2>
         ${fieldTable([
@@ -88,7 +104,7 @@ function buildEmail(type, data) {
       `),
     },
     BUY: {
-      subject: `\u{1F535} Sourcing: ${watch || "New Request"}`,
+      subject: cleanSubject(`\u{1F535} Sourcing: ${watch || "New Request"}`),
       body: wrapNotification(`
         <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Sourcing Request</h2>
         ${fieldTable([
@@ -101,7 +117,7 @@ function buildEmail(type, data) {
       `),
     },
     SELL: {
-      subject: `\u{1F7E1} Sell: ${watch || "New Request"}`,
+      subject: cleanSubject(`\u{1F7E1} Sell: ${watch || "New Request"}`),
       body: wrapNotification(`
         <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Sell Request</h2>
         ${fieldTable([
@@ -114,7 +130,7 @@ function buildEmail(type, data) {
       `),
     },
     TRADE: {
-      subject: `\u{1F504} Trade: ${watch || "New Request"}`,
+      subject: cleanSubject(`\u{1F504} Trade: ${watch || "New Request"}`),
       body: wrapNotification(`
         <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Trade Request</h2>
         ${fieldTable([
@@ -127,7 +143,7 @@ function buildEmail(type, data) {
       `),
     },
     WATCH_DETAIL: {
-      subject: `\u{1F441} Inquiry: ${watch || "Unknown"}`,
+      subject: cleanSubject(`\u{1F441} Inquiry: ${watch || "Unknown"}`),
       body: wrapNotification(`
         <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Watch Inquiry</h2>
         ${fieldTable([
@@ -294,7 +310,7 @@ module.exports = async (req, res) => {
               getResend().emails.send({
                 from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
                 to: data.email,
-                subject: `Your Inquiry: ${data.watch_name || "Watch Inquiry"}`,
+                subject: cleanSubject(`Your Inquiry: ${data.watch_name || "Watch Inquiry"}`),
                 html: inquiryHtml,
               })
             )

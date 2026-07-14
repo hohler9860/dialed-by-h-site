@@ -55,22 +55,34 @@ async function supabaseUpsertSubscriber(row) {
 
 function confirmEmailHtml({ confirmUrl }) {
     return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a; background: #fafafa;">
-        <div style="border-bottom: 2px solid #1a1a1a; padding-bottom: 14px; margin-bottom: 28px;">
-            <strong style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a;">OFF-CATALOG · DIALED BY H</strong>
+    <div style="max-width: 600px; margin: 0 auto; padding: 44px 32px; background: #ffffff; color: #0a0a0a;">
+        <div style="text-align: center; margin-bottom: 32px;">
+            <img src="https://www.dialedbyhenry.com/images/logo-dark.png" alt="Dialed By H" width="170" style="display: inline-block; border: none;">
         </div>
-        <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 18px; color: #1a1a1a;">Confirm your subscription</h2>
-        <p style="font-size: 15px; line-height: 1.6; color: #444; margin: 0 0 24px;">
-            Click below to confirm and start receiving Off-Catalog, the journal from Dialed By H. Market notes, sourcing stories, and the occasional rare reference.
-        </p>
-        <a href="${confirmUrl}" style="display: inline-block; background: #1a1a1a; color: #ffffff; padding: 14px 28px; text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; border-radius: 2px;">
-            Confirm Subscription
-        </a>
-        <p style="font-size: 12px; line-height: 1.6; color: #999; margin: 32px 0 0;">
-            If you didn't sign up for this, ignore this email.
-        </p>
-        <div style="border-top: 1px solid #e5e5e5; margin-top: 32px; padding-top: 14px; font-size: 11px; color: #aaa;">
-            Sent from dialedbyhenry.com
+        <div style="border-top: 1px solid #e5e5e5; padding-top: 36px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
+                <tr>
+                    <td style="vertical-align: top;">
+                        <p style="font-family: 'Courier New', Courier, monospace; font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: #999; margin: 0 0 18px;">Off-Catalog &mdash; The Journal</p>
+                        <h1 style="font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; color: #0a0a0a; margin: 0;">Confirm your spot.</h1>
+                    </td>
+                    <td width="104" style="vertical-align: top; padding-left: 18px;">
+                        <img src="https://www.dialedbyhenry.com/images/email/sticker-3.png" alt="" width="104" style="display: block; border: none;">
+                    </td>
+                </tr>
+            </table>
+            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #555; margin: 24px 0 28px;">
+                One click and you're on the list for Off-Catalog, the journal from Dialed By H. Market notes, sourcing stories, and the occasional rare reference. No spam, ever.
+            </p>
+            <a href="${confirmUrl}" style="display: inline-block; background: #0a0a0a; color: #ffffff; padding: 18px 46px; text-decoration: none; font-family: 'Courier New', Courier, monospace; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; border-radius: 0;">
+                Confirm Subscription
+            </a>
+            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #999; margin: 32px 0 0;">
+                If you didn't sign up for this, ignore this email.
+            </p>
+        </div>
+        <div style="border-top: 1px solid #e5e5e5; margin-top: 36px; padding-top: 16px; text-align: center;">
+            <p style="font-family: 'Courier New', Courier, monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: #999; margin: 0;">&copy; 2026 Dialed By H &mdash; dialedbyhenry.com</p>
         </div>
     </div>
     `;

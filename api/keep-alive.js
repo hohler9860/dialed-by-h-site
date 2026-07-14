@@ -10,6 +10,18 @@ module.exports = async (req, res) => {
       },
     });
     console.log("[keep-alive] Pinged Supabase, status:", response.status);
+
+    // Sweep stale rate-limit rows (windows reset in minutes; anything a day old is dead weight).
+    try {
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      await fetch(`${SUPABASE_URL}/rest/v1/rate_limits?window_start=lt.${encodeURIComponent(cutoff)}`, {
+        method: "DELETE",
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: "return=minimal" },
+      });
+    } catch (e) {
+      console.error("[keep-alive] rate_limits sweep failed:", e.message);
+    }
+
     return res.status(200).json({ ok: true, timestamp: new Date().toISOString() });
   } catch (err) {
     console.error("[keep-alive] Failed:", err.message);

@@ -57,7 +57,7 @@ function confirmEmailHtml({ confirmUrl }) {
     return `
     <div style="max-width: 600px; margin: 0 auto; padding: 44px 32px; background: #ffffff; color: #0a0a0a;">
         <div style="text-align: center; margin-bottom: 32px;">
-            <img src="https://www.dialedbyhenry.com/images/logo-dark.png" alt="Dialed By H" width="170" style="display: inline-block; border: none;">
+            <img src="https://www.dialedbyhenry.com/images/email/logo-plaque.png" alt="Dialed By H" width="252" style="display: inline-block; border: none;">
         </div>
         <div style="border-top: 1px solid #e5e5e5; padding-top: 36px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">

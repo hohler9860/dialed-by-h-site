@@ -292,6 +292,13 @@ body{background:#fff;color:#000;font-family:var(--pt-mono)}
 :root{--pt-serif:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif}
 .pt-title,.pt-specs h2{font-weight:700!important;font-variation-settings:"wdth" 120;letter-spacing:-.02em!important;word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important}
 .pt-modal .pm-title{font-size:clamp(30px,3.6vw,58px)!important;line-height:1!important}
+
+/* mobile nav: working hamburger menu; hide desktop-only header items on phones */
+.dbh-mnav{position:fixed;inset:0;z-index:90;background:rgba(255,255,255,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;font-family:var(--pt-mono)}
+.dbh-mnav.is-open{display:flex}
+.dbh-mnav a,.dbh-mnav button{font-size:17px;letter-spacing:.16em;text-transform:uppercase;color:#000;background:none;border:none;text-decoration:none;font-family:var(--pt-mono);cursor:pointer;padding:4px 8px}
+.dbh-mnav .x{position:absolute;top:16px;right:20px;font-size:24px;line-height:1}
+@media(max-width:1023px){.header .cart-icon{display:none!important}.header .js-search-icon{display:none!important}}
 </style>
 
 <script>
@@ -397,6 +404,24 @@ document.querySelectorAll('.pt-thumbs button').forEach(function (b) {
         b.classList.add('is-active');
     });
 });
+</script>
+<div class="dbh-mnav js-dbh-mnav" aria-hidden="true">
+<button class="x" type="button" aria-label="Close menu">&#10005;</button>
+<a href="/buy/">Buy</a>
+<button type="button" data-modal="trade">Trade</button>
+<button type="button" data-modal="sell">Sell</button>
+<a href="/about/">About</a>
+<a href="/process/">Process</a>
+<a href="/journal/">Journal</a>
+<button type="button" data-modal="source">Request to Source</button>
+</div>
+<script>
+(function(){
+  var m=document.querySelector('.js-dbh-mnav');var t=document.querySelector('.js-nav-mobile-toggle');
+  if(!m||!t)return;
+  t.addEventListener('click',function(e){e.preventDefault();m.classList.toggle('is-open')});
+  m.addEventListener('click',function(e){ if(e.target.closest('a,button')) m.classList.remove('is-open'); });
+})();
 </script>
 </body>
 </html>`;

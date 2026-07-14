@@ -65,6 +65,11 @@
       "source": "/watch.html",
       "destination": "/buy/",
       "permanent": true
+    },
+    {
+      "source": "/watch",
+      "destination": "/buy/",
+      "permanent": true
     }
   ]
 }

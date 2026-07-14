@@ -279,6 +279,12 @@ body{background:#fff;color:#000;font-family:var(--pt-mono)}
 .pt-reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .9s cubic-bezier(.19,1,.22,1)}
 .pt-reveal.is-in{opacity:1;transform:none}
 @media(max-width:900px){.pt-detail{grid-template-columns:1fr}.pt-media{position:static}}
+@media(max-width:640px){
+.pt-page{padding:96px 0 70px}
+.pt-page .container{padding:0 20px}
+.pt-title{font-size:clamp(26px,8.4vw,40px)!important}
+.pt-specs h2{font-size:26px}
+}
 </style>
 <style id="dbh-grot">
 /* Archivo everywhere: BWC bold display cut replaces the serif */

@@ -67,7 +67,7 @@ function confirmEmailHtml({ confirmUrl }) {
                         <h1 style="font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; color: #0a0a0a; margin: 0;">Confirm your spot.</h1>
                     </td>
                     <td width="104" style="vertical-align: top; padding-left: 18px;">
-                        <img src="https://www.dialedbyhenry.com/images/email/sticker-3.png" alt="" width="104" style="display: block; border: none;">
+                        <img src="https://www.dialedbyhenry.com/images/email/sticker-5.png" alt="" width="104" style="display: block; border: none;">
                     </td>
                 </tr>
             </table>

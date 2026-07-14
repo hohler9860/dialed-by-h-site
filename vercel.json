@@ -40,6 +40,31 @@
       "source": "/index.html",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/inventory",
+      "destination": "/buy/",
+      "permanent": true
+    },
+    {
+      "source": "/inventory.html",
+      "destination": "/buy/",
+      "permanent": true
+    },
+    {
+      "source": "/about.html",
+      "destination": "/about/",
+      "permanent": true
+    },
+    {
+      "source": "/process.html",
+      "destination": "/process/",
+      "permanent": true
+    },
+    {
+      "source": "/watch.html",
+      "destination": "/buy/",
+      "permanent": true
     }
   ]
 }

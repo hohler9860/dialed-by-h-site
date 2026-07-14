@@ -323,7 +323,14 @@
     .dbh-header__logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:30px;padding:0}
     .dbh-header__logo img{height:100%;width:auto;display:block;filter:invert(1)}
     .dbh-header__burger{display:none;background:none;border:none;color:inherit;cursor:pointer;padding:6px}
-    @media(max-width:1023px){.dbh-header__left,.dbh-header__right{display:none}.dbh-header__burger{display:block;margin-left:auto}}
+    @media(max-width:1023px){.dbh-header .dbh-header__left,.dbh-header .dbh-header__right{display:none!important}.dbh-header__burger{display:block;margin-left:auto}}
+    /* mobile breathing room: hero rhythm, full-width CTAs */
+    @media(max-width:640px){
+      .dbh-hero #hero-title{margin-bottom:28px}
+      .dbh-hero #hero-sub{line-height:2;margin-bottom:38px;padding:0 10px}
+      .dbh-hero .dbh-btn{width:min(330px,86vw);padding:18px 0}
+      .dbh-hero .pt-reveal.flex{gap:14px}
+    }
     @media(max-width:640px){.dbh-header{padding:16px 20px}}
     /* rebuild buttons: square mono, invert on hover */
     .dbh-check{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1px solid rgba(0,0,0,.4);background:transparent;cursor:pointer;margin:0;flex-shrink:0}

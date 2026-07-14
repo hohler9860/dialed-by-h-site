@@ -53,7 +53,14 @@ async function supabaseUpsertSubscriber(row) {
     return data[0];
 }
 
-function confirmEmailHtml({ confirmUrl }) {
+function stickerFor(seed) {
+    let h = 0;
+    const str = String(seed || "dbh");
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return `https://www.dialedbyhenry.com/images/email/sticker-${(h % 8) + 1}.png`;
+}
+
+function confirmEmailHtml({ confirmUrl, email }) {
     return `
     <div style="max-width: 600px; margin: 0 auto; padding: 44px 32px; background: #ffffff; color: #0a0a0a;">
         <div style="text-align: center; margin-bottom: 32px;">
@@ -67,7 +74,7 @@ function confirmEmailHtml({ confirmUrl }) {
                         <h1 style="font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; color: #0a0a0a; margin: 0;">Confirm your spot.</h1>
                     </td>
                     <td width="104" style="vertical-align: top; padding-left: 18px;">
-                        <img src="https://www.dialedbyhenry.com/images/email/sticker-5.png" alt="" width="104" style="display: block; border: none;">
+                        <img src="${stickerFor(email)}" alt="" width="104" style="display: block; border: none;">
                     </td>
                 </tr>
             </table>
@@ -131,7 +138,7 @@ module.exports = async (req, res) => {
                 from: "Off-Catalog <inquiries@mail.dialedbyhenry.com>",
                 to: email,
                 subject: "Confirm your Off-Catalog subscription",
-                html: confirmEmailHtml({ confirmUrl }),
+                html: confirmEmailHtml({ confirmUrl, email }),
             });
             if (sendRes.error) {
                 console.error("[journal-subscribe] Resend error:", JSON.stringify(sendRes.error));

@@ -9,13 +9,67 @@
     }
   ],
   "rewrites": [
-    { "source": "/journal/:slug", "destination": "/api/journal-article-render?slug=:slug" },
-    { "source": "/journal/:slug/", "destination": "/api/journal-article-render?slug=:slug" },
-    { "source": "/watch/:slug", "destination": "/api/get-inventory?slug=:slug" },
-    { "source": "/sitemap.xml", "destination": "/api/get-inventory?sitemap=1" }
+    {
+      "source": "/img",
+      "destination": "/api/img"
+    },
+    {
+      "source": "/journal/:slug",
+      "destination": "/api/journal-article-render?slug=:slug"
+    },
+    {
+      "source": "/journal/:slug/",
+      "destination": "/api/journal-article-render?slug=:slug"
+    },
+    {
+      "source": "/watch/:slug",
+      "destination": "/api/get-inventory?slug=:slug"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/get-inventory?sitemap=1"
+    }
   ],
   "redirects": [
-    { "source": "/journal.html", "destination": "/journal/", "permanent": true },
-    { "source": "/index.html", "destination": "/", "permanent": true }
+    {
+      "source": "/journal.html",
+      "destination": "/journal/",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/inventory",
+      "destination": "/buy/",
+      "permanent": true
+    },
+    {
+      "source": "/inventory.html",
+      "destination": "/buy/",
+      "permanent": true
+    },
+    {
+      "source": "/about.html",
+      "destination": "/about/",
+      "permanent": true
+    },
+    {
+      "source": "/process.html",
+      "destination": "/process/",
+      "permanent": true
+    },
+    {
+      "source": "/watch.html",
+      "destination": "/buy/",
+      "permanent": true
+    },
+    {
+      "source": "/watch",
+      "destination": "/buy/",
+      "permanent": true
+    }
   ]
 }

@@ -345,6 +345,7 @@ ${heroUrl && a.hero_image_url ? `<img class="pa-hero" src="${escAttr(heroUrl)}" 
 <h3>Get the next one</h3>
 <p>New writing from the desk. Unsubscribe whenever.</p>
 <form id="oc-end-form" novalidate>
+<input id="oc-end-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
 <input id="oc-end-email" type="email" name="email" placeholder="EMAIL ADDRESS" required>
 <button type="submit">Subscribe</button>
 <p id="oc-end-msg" class="oc-end-msg" style="display:none"></p>
@@ -411,7 +412,7 @@ ${heroUrl && a.hero_image_url ? `<img class="pa-hero" src="${escAttr(heroUrl)}" 
             const r = await fetch("/api/journal-subscribe", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: v, source: "article-${escAttr(a.slug)}" }),
+                body: JSON.stringify({ email: v, source: "article-${escAttr(a.slug)}", website: (document.getElementById("oc-end-hp") || {}).value || "" }),
             });
             const json = await r.json().catch(() => ({}));
             if (!r.ok) throw new Error(json.error || "Subscribe failed");

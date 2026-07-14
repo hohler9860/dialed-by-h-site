@@ -5,6 +5,7 @@
 
 const { Resend } = require("resend");
 const crypto = require("crypto");
+const { guard } = require("../lib/ratelimit.js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -103,6 +104,23 @@ module.exports = async (req, res) => {
     if (!SUPABASE_KEY) {
         console.error("[journal-subscribe] Missing SUPABASE_SERVICE_ROLE_KEY");
         return res.status(500).json({ error: "Server misconfigured" });
+    }
+
+    // Honeypot: hidden field only bots fill. Fake success, do nothing.
+    if (req.body && (req.body.website || req.body.company_url)) {
+        console.warn("[journal-subscribe] Honeypot tripped — silently dropping");
+        return res.status(200).json({ success: true, alreadyConfirmed: false });
+    }
+
+    // Rate limit: 4 / 10 min per IP + 40 / 10 min global backstop.
+    const rl = await guard({
+        req, name: "journal-subscribe",
+        perIp: { max: 4, windowSeconds: 600 },
+        global: { max: 40, windowSeconds: 600 },
+    });
+    if (!rl.allowed) {
+        console.warn("[journal-subscribe] Rate limited, scope:", rl.scope);
+        return res.status(429).json({ error: "Too many requests. Please try again in a few minutes." });
     }
 
     try {

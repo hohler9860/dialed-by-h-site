@@ -3,6 +3,7 @@ const { render } = require("@react-email/render");
 const React = require("react");
 const { WelcomeEmail } = require("../lib/emails/welcome.js");
 const { InquiryEmail } = require("../lib/emails/inquiry.js");
+const { guard } = require("../lib/ratelimit.js");
 
 // Supabase REST API — DialedbyH project
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
@@ -183,6 +184,26 @@ module.exports = async (req, res) => {
   if (!SUPABASE_KEY) {
     console.error("[submit-form] Missing SUPABASE_SERVICE_ROLE_KEY");
     return res.status(500).json({ error: "Server misconfigured" });
+  }
+
+  // Honeypot: real users never see or fill this field. Bots fill every input.
+  // Return a fake success so the bot thinks it worked and moves on — no DB row,
+  // no emails, nothing happens.
+  if (req.body && (req.body.website || req.body.company_url)) {
+    console.warn("[submit-form] Honeypot tripped — silently dropping");
+    return res.status(200).json({ success: true });
+  }
+
+  // Rate limit: 6 submissions / 10 min per IP, plus a 40 / 10 min global backstop
+  // so no single machine (or a distributed flood) can drain the email quota.
+  const rl = await guard({
+    req, name: "submit-form",
+    perIp: { max: 6, windowSeconds: 600 },
+    global: { max: 40, windowSeconds: 600 },
+  });
+  if (!rl.allowed) {
+    console.warn("[submit-form] Rate limited, scope:", rl.scope);
+    return res.status(429).json({ error: "Too many requests. Please try again in a few minutes." });
   }
 
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);

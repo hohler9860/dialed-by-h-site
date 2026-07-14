@@ -1103,6 +1103,7 @@
                                         Want this one? Drop your info and I'll be in touch.
                                     </p>
                                     <form onsubmit="event.preventDefault(); app.submitForm(this, 'WATCH_DETAIL', { watchName: '${esc(data.name)}', watchRef: '${esc(data.ref)}' });" class="space-y-4">
+                                        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
                                         <div>
                                             <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
                                             <input required type="text" name="fullName" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
@@ -1139,6 +1140,7 @@
                             <h2 class="dbh-display text-2xl font-space font-bold tracking-tight mb-2">${title}</h2>
                             <p class="text-xs text-muted mb-8 tracking-wide">Quick form. I'll text you back.</p>
                             <form onsubmit="event.preventDefault(); app.submitForm(this, '${type}');" class="space-y-4">
+                                <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
                                 <div>
                                     <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Full Name</label>
                                     <input required type="text" name="fullName" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase">
@@ -1312,6 +1314,7 @@
                     watchDetails: watchDetailsStr || null,
                     watchName: brand && model ? brand + ' ' + model : extraData.watchName || null,
                     watchRef: ref || extraData.watchRef || null,
+                    website: formData.get('website') || '',
                 };
                 // Merge extraData but don't let it override form fields
                 if (extraData.watchName && !payload.watchName) payload.watchName = extraData.watchName;

@@ -122,6 +122,7 @@
         '<p class="pm-sub" data-pm-scramble>' + cfg.sub + '</p>' +
         '</div>' +
         '<form novalidate><div class="pt-grid">' + cfg.fields +
+        '<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">' +
         '<label class="pm-check pt-field pt-field--full" style="transition-delay:600ms"><input type="checkbox" name="textok"> OK to text me about this request</label>' +
         '<button type="submit" class="pt-submit">Send request</button></div></form></div>';
 
@@ -157,7 +158,8 @@
             watchName: [get('brand'), get('model')].filter(Boolean).join(' '),
             watchBrand: get('brand'),
             watchRef: get('reference'),
-            watchDetails: detailParts.join(' | ')
+            watchDetails: detailParts.join(' | '),
+            website: get('website')
           })
         }).then(function (r) {
           if (!r.ok) throw new Error(r.status);

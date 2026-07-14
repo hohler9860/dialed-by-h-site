@@ -247,8 +247,8 @@ body{background:#fff;color:#000;font-family:var(--pt-mono)}
 .pt-page .container{max-width:1360px;margin:0 auto;padding:0 40px}
 .pt-back{display:inline-flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.5);text-decoration:none;margin-bottom:40px;transition:color .25s ease}
 .pt-back:hover{color:#000}
-.pt-detail{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:60px;align-items:start}
-.pt-media{position:sticky;top:110px}
+.pt-detail{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,6fr);gap:56px;align-items:start}
+.pt-media{position:sticky;top:110px;max-width:600px}
 .pt-media__main{width:100%;aspect-ratio:1/1;background:#0d0d0d;position:relative;overflow:hidden}
 .pt-media__main img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pt-thumbs{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
@@ -256,7 +256,7 @@ body{background:#fff;color:#000;font-family:var(--pt-mono)}
 .pt-thumbs button.is-active{border-color:#000}
 .pt-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
 .pt-kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(0,0,0,.45);margin:0 0 12px}
-.pt-title{font-family:var(--pt-serif);font-size:clamp(38px,4.2vw,64px);font-weight:400;text-transform:uppercase;letter-spacing:.01em;line-height:1.02;margin:0 0 14px}
+.pt-title{font-family:var(--pt-serif);font-size:clamp(26px,2.9vw,44px);font-weight:400;text-transform:uppercase;letter-spacing:.01em;line-height:1.05;margin:0 0 14px}
 .pt-ref{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(0,0,0,.5);margin:0 0 26px}
 .pt-attrs{font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 18px}
 .pt-blurb{font-size:12px;line-height:1.7;color:rgba(0,0,0,.5);margin:0 0 34px}
@@ -268,8 +268,8 @@ body{background:#fff;color:#000;font-family:var(--pt-mono)}
 .pt-btn--ghost{background:#000;color:#fff}
 .pt-chips{display:flex;gap:10px;flex-wrap:wrap}
 .pt-chip{font-size:9px;letter-spacing:.18em;text-transform:uppercase;border:1px solid rgba(0,0,0,.2);padding:9px 14px;color:rgba(0,0,0,.65)}
-.pt-specs{margin-top:90px}
-.pt-specs h2{font-family:var(--pt-serif);font-size:38px;font-weight:400;text-transform:uppercase;letter-spacing:.01em;margin:0 0 26px}
+.pt-specs{margin-top:64px}
+.pt-specs h2{font-family:var(--pt-serif);font-size:28px;font-weight:400;text-transform:uppercase;letter-spacing:.01em;margin:0 0 26px}
 .pt-specs table{width:100%;border-collapse:collapse}
 .pt-specs td{padding:17px 2px;border-top:1px solid rgba(0,0,0,.12);font-size:12px}
 .pt-specs tr:last-child td{border-bottom:1px solid rgba(0,0,0,.12)}
@@ -343,7 +343,6 @@ ${thumbsHtml}
 <p class="pt-kicker">${escHtml(w.brand)}</p>
 <h1 class="pt-title">${escHtml(w.name || w.model)}</h1>
 ${w.ref ? `<p class="pt-ref">Ref. ${escHtml(w.ref)}</p>` : ''}
-${attrs ? `<p class="pt-attrs">${attrs}</p>` : ''}
 ${w.details ? `<p class="pt-blurb">${escHtml(w.details)}</p>` : ''}
 <p class="pt-blurb">Sourced for clients nationwide. Independently authenticated, with fully insured shipping anywhere in the US.</p>
 <div class="pt-inquiry">

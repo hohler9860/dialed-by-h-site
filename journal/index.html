@@ -274,18 +274,26 @@ fbq('track', 'PageView');
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.
     // Add new rules here as new stickers land.
     var SPECIALS = [
-      { re: /royal\s*pop|moon\s*swatch|moonswatch/i, idx: 121 },   // w_122 - AP Royal Pop
-      { re: /offshore/i, idx: 122 },                                // w_123 - AP Offshore
-      { re: /tudor|black\s*bay|bumblebee/i, idx: 117 },            // w_118 - yellow Tudor chrono
-      { re: /nautilus|patek/i, idx: 28 },                           // w_29 - Patek
+      { re: /royal\s*pop|moon\s*swatch|moonswatch/i, pool: [121] },   // w_122 - AP Royal Pop
+      { re: /offshore/i, pool: [122] },                                // w_123 - AP Offshore
+      { re: /tudor|black\s*bay|bumblebee/i, pool: [117] },            // w_118 - yellow Tudor chrono
+      { re: /nautilus|patek/i, pool: [28] },                           // w_29 - Patek
+      { re: /rolex|watches\s*(and|&)\s*wonders|daytona|submariner|gmt|datejust|day[-\s]*date|oyster/i, pool: [4, 17, 60] } // w_05, w_18, w_61 - Rolex
     ];
     wrap.innerHTML = arts.map(function(a){
       var date = a.published_at ? new Date(a.published_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
       var txt = (a.title || '') + ' ' + (a.subtitle || '');
-      var idx = -1;
-      for (var si = 0; si < SPECIALS.length; si++) { if (SPECIALS[si].re.test(txt)) { idx = SPECIALS[si].idx; break; } }
       var h = 0;
       for (var i = 0; i < a.slug.length; i++) { h = (h * 31 + a.slug.charCodeAt(i)) >>> 0; }
+      var idx = -1;
+      for (var si = 0; si < SPECIALS.length; si++) {
+        if (SPECIALS[si].re.test(txt)) {
+          var pool = SPECIALS[si].pool;
+          idx = pool[h % pool.length];
+          for (var pi = 0; pi < pool.length && usedStickers.indexOf(idx) !== -1; pi++) idx = pool[(h + pi + 1) % pool.length];
+          break;
+        }
+      }
       if (idx === -1) {
         idx = h % 121;
         while (usedStickers.indexOf(idx) !== -1) idx = (idx + 7) % 121;

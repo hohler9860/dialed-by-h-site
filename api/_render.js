@@ -14,7 +14,7 @@ function escHtml(s) {
 const escAttr = escHtml;
 
 function normUrl(raw) {
-    return raw ? `${SITE_URL}/img?src=${encodeURIComponent(raw)}` : `${SITE_URL}/images/og-share.png`;
+    return raw ? `${SITE_URL}/img?src=${encodeURIComponent(raw)}` : `${SITE_URL}/images/og-share-v2.png`;
 }
 function normPath(raw) {
     return `/img?src=${encodeURIComponent(raw)}`;
@@ -24,7 +24,7 @@ function fourOhFour() {
     return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Piece not found - Dialed By H</title><meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/x-icon" href="/favicon-v2.ico?v=3" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
 <style>
 @font-face{font-display:swap;font-family:"Archivo";font-style:normal;font-weight:100 900;font-stretch:62% 125%;src:url(/assets/fonts/Archivo-wdth-wght.woff2) format("woff2")}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;color:#000;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;text-align:center;padding:24px}
@@ -106,9 +106,9 @@ function renderWatchPage(w) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/x-icon" href="/favicon-v2.ico?v=3" />
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=4" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4" />
 <title>${escHtml(title)}</title>
 <meta name="description" content="${escAttr(description)}">
 <meta name="author" content="Henry Ohler">

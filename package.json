@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./dist/styles.css --minify",
-    "dev": "vercel dev"
+    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./dist/styles.css --minify && node scripts/inline-css.js",
+    "dev": "vercel dev",
+    "build:scene": "npx esbuild assets/dbh-scene.js --bundle --minify --format=esm --outfile=assets/dbh-scene.bundle.js"
   },
   "dependencies": {
     "@notionhq/client": "^5.22.0",

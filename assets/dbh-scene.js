@@ -8,7 +8,7 @@
  * Constants are copied verbatim from the source. Glass/hello model, DOM image
  * layers, vignette, and dark theme are intentionally not ported.
  */
-import * as THREE from '/assets/three.module.min.js'
+import * as THREE from './three-slim.js'
 
 // artificial sky config — observed from the live bundle (verbatim)
 const BG = {

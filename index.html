@@ -247,11 +247,8 @@
     }
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="/scripts/lucide.min.js"></script>
+    <script src="/assets/vendor/gsap.min.js" defer></script>
+    <script src="/scripts/lucide.min.js" defer></script>
     <link rel="stylesheet" href="/dist/styles.css">
     <!-- Rebuild type system: Archivo display (BWC bold) + mono -->
     <style id="dbh-fonts">
@@ -344,6 +341,12 @@
     /* rebuild reveal: staggered fade */
     .pt-reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .9s cubic-bezier(.19,1,.22,1)}
     .pt-reveal.is-in{opacity:1;transform:none}
+    /* Hero reveals run as pure CSS on load: same fade-up look, but the LCP
+       text paints immediately instead of waiting for JS (was +3s LCP). */
+    @keyframes ptIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    .dbh-hero .pt-reveal{animation:ptIn .7s ease both}
+    .dbh-hero #hero-sub{animation-delay:.12s}
+    .dbh-hero .pt-reveal.flex{animation-delay:.24s}
     /* faq: BWC-simple — tiny mono tag left, ruled sentence-case list right */
     .dbh-faq{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;max-width:1360px;margin:0 auto}
     .dbh-faq__tag{grid-column:1/4;font-family:var(--pt-mono);font-size:11px;letter-spacing:.08em;color:#999;text-transform:uppercase}

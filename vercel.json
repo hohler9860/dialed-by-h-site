@@ -28,6 +28,14 @@
   ],
   "rewrites": [
     {
+      "source": "/source",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/source/",
+      "destination": "/index.html"
+    },
+    {
       "source": "/img",
       "destination": "/api/img"
     },

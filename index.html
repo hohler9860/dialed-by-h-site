@@ -988,6 +988,11 @@
                 app.initTickerGSAP();
                 app.initAnimations();
                 safeCreateIcons();
+                // Direct link support: dialedbyhenry.com/source (or /?source, #source) opens the sourcing form
+                const p = location.pathname.replace(/\/+$/, '');
+                if (p === '/source' || location.hash === '#source' || new URLSearchParams(location.search).has('source')) {
+                    app.openModal('BUY');
+                }
             },
 
             getWatchById: (id) => {

@@ -232,6 +232,29 @@ if (arg === '--sample') {
   }
 } else if (arg === '--all') {
   batch = keep.filter(r => !done.has(r.file));
+} else if (arg === '--restore') {
+  // insert ONLY the audit-identified lost colorways; brand+ref check bypassed on purpose
+  const lost = new Set(JSON.parse(fs.readFileSync(path.join(DIR, 'wa_lost.json'))));
+  batch = keep.filter(r => lost.has(r.file) && !done.has(r.file));
+} else if (arg === '--audit') {
+  // replay within-batch dedupe over the whole catalog and classify each collision
+  const seen2 = new Map();
+  let trueDupes = 0; const collapsed = [];
+  for (const r of keep) {
+    if (/RM\s?27|Crash|Minute Repeater|Sonnerie|Grande? Complication\b|Baguette Diamonds|Grandmaster|Tiffany/i.test(r.title)) continue;
+    const p = parse(r);
+    const k = [p.brand, p.ref, p.dial, p.material].join('|').toLowerCase().replace(/\s/g, '');
+    const norm = t => t.toLowerCase().replace(/\((19|20)\d{2}(\/\d{4})?\)/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+    if (seen2.has(k)) {
+      if (norm(seen2.get(k)) === norm(r.title)) trueDupes++;
+      else collapsed.push({ kept: seen2.get(k), lost: r.title, file: r.file });
+    } else seen2.set(k, r.title);
+  }
+  console.log(`true duplicates correctly skipped: ${trueDupes}`);
+  console.log(`distinct pieces collapsed by dedupe key: ${collapsed.length}`);
+  collapsed.forEach(x => console.log(`KEPT: ${x.kept.slice(0, 62)}\n LOST: ${x.lost.slice(0, 62)}`));
+  fs.writeFileSync(path.join(DIR, 'wa_lost.json'), JSON.stringify(collapsed.map(x => x.file), null, 1));
+  process.exit(0);
 } else if (arg === '--dry') {
   const stats = { noModel: [], noRef: [], all: 0 };
   for (const r of keep) {
@@ -267,8 +290,10 @@ const batchSeen = new Set();
 batch = batch.filter(r => {
   const p = parse(r);
   const dbKey = (p.brand + '|' + p.ref).toLowerCase().replace(/\s/g, '');
-  const varKey = [p.brand, p.ref, p.dial, p.material].join('|').toLowerCase().replace(/\s/g, '');
-  if (p.ref && seen.has(dbKey)) { dupes.push(p.brand + ' ' + p.ref + ' (in inventory)'); return false; }
+  // full normalized title so colorway variants sharing a ref are NOT collapsed;
+  // only listings that are word-for-word the same watch dedupe
+  const varKey = p.brand + '|' + r.title.toLowerCase().replace(/\((19|20)\d{2}(\/\d{4})?\)/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  if (arg !== '--restore' && p.ref && seen.has(dbKey)) { dupes.push(p.brand + ' ' + p.ref + ' (in inventory)'); return false; }
   if (batchSeen.has(varKey)) { dupes.push(p.brand + ' ' + p.ref + ' (batch dupe)'); return false; }
   batchSeen.add(varKey);
   return true;

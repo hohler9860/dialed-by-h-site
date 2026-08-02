@@ -64,6 +64,7 @@ function renderWatchPage(w) {
         ...(w.ref ? { sku: w.ref, mpn: w.ref } : {}),
         ...(w.caseMaterial ? { material: w.caseMaterial } : {}),
         ...(w.year ? { releaseDate: String(w.year) } : {}),
+        ...(w.tags ? { keywords: w.tags } : {}),
         additionalProperty: specs.map(([name, value]) => ({ '@type': 'PropertyValue', name, value: String(value) })),
         offers: {
             '@type': 'Offer',
@@ -111,6 +112,7 @@ function renderWatchPage(w) {
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4" />
 <title>${escHtml(title)}</title>
 <meta name="description" content="${escAttr(description)}">
+${w.tags ? `<meta name="keywords" content="${escAttr(w.tags)}">` : ''}
 <meta name="author" content="Henry Ohler">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="${canonical}">

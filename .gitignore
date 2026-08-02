@@ -17,3 +17,5 @@ Notion Sourcing Imags/
 # Generated email previews (scripts/render-broadcast.js output)
 broadcast-*.html
 inquiry-preview.html
+.vercel
+.env*

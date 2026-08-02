@@ -73,6 +73,7 @@ function mapPage(page) {
     const year = get(p['Year']);
     const images = getImages(p['Image']);
     const collections = getMulti(p['Collection']);
+    const tags = get(p['Tags']);
 
     const name = piece || `${brand} ${model}`.trim();
 
@@ -90,7 +91,7 @@ function mapPage(page) {
         images,
         year: year ? String(Math.round(year)) : '',
         condition, caseMaterial, dialColor, bracelet, caseSize, set,
-        collections,
+        collections, tags,
     };
     out.slug = pieceSlug(out);
     return out;

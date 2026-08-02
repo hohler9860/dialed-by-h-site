@@ -7,11 +7,22 @@
   var FACETS = [];
 
   // curated Collection pills — must match Notion multi-select names exactly
-  var COLLECTIONS = ['2026 Novelties', 'Classics', 'Everyday Wear', 'My Picks'];
+  var COLLECTIONS = ["Women's", '2026 Novelties', 'Classics', 'Everyday Wear', 'My Picks'];
 
   function uniq(key) {
     var out = [];
     INV.forEach(function (w) { var v = w[key]; if (v && out.indexOf(v) < 0) out.push(v); });
+    return out.sort();
+  }
+
+  // Model options narrow to the brands currently selected (dealer-style drill-down)
+  function modelOptions() {
+    var brands = selected.brand || [];
+    var out = [];
+    INV.forEach(function (w) {
+      if (brands.length && brands.indexOf(w.brand) < 0) return;
+      if (w.model && out.indexOf(w.model) < 0) out.push(w.model);
+    });
     return out.sort();
   }
 
@@ -20,6 +31,7 @@
     FACETS = [
       { id: 'collection', label: 'Collection', options: COLLECTIONS, match: function (w, sel) { return (w.collections || []).some(function (c) { return sel.indexOf(c) >= 0; }); } },
       { id: 'brand', label: 'Brand', options: uniq('brand'), match: function (w, sel) { return sel.indexOf(w.brand) >= 0; } },
+      { id: 'model', label: 'Model', options: modelOptions(), match: function (w, sel) { return sel.indexOf(w.model) >= 0; } },
       { id: 'caseMaterial', label: 'Case Material', options: uniq('caseMaterial'), match: function (w, sel) { return sel.indexOf(w.caseMaterial) >= 0; } },
       { id: 'condition', label: 'Condition', options: uniq('condition'), match: function (w, sel) { return sel.indexOf(w.condition) >= 0; } },
       { id: 'year', label: 'Year', options: years, match: function (w, sel) { return sel.indexOf(w.year) >= 0; } }
@@ -58,6 +70,7 @@
           var i = selected[f.id].indexOf(opt);
           if (cb.checked && i < 0) selected[f.id].push(opt);
           if (!cb.checked && i >= 0) selected[f.id].splice(i, 1);
+          if (f.id === 'brand') refreshModelPanel();
           render();
         });
         lab.appendChild(cb);
@@ -75,9 +88,61 @@
     clear.addEventListener('click', function () {
       selected = {};
       panels.querySelectorAll('input').forEach(function (c) { c.checked = false; });
+      refreshModelPanel();
       render();
     });
     fbar.appendChild(clear);
+
+    var sort = document.createElement('select');
+    sort.className = 'pt-fbtn pt-sort';
+    sort.setAttribute('aria-label', 'Sort pieces');
+    [['featured', 'Sort: Featured'], ['brand', 'Sort: Brand A–Z'], ['model', 'Sort: Model A–Z']].forEach(function (o) {
+      var op = document.createElement('option');
+      op.value = o[0]; op.textContent = o[1];
+      sort.appendChild(op);
+    });
+    sort.addEventListener('change', function () { sortMode = sort.value; render(); });
+    fbar.appendChild(sort);
+  }
+
+  // re-scope the Model panel to whatever brands are checked
+  function refreshModelPanel() {
+    var f = null;
+    FACETS.forEach(function (x) { if (x.id === 'model') f = x; });
+    var panel = panels.querySelector('.pt-panel[data-facet="model"]');
+    if (!f || !panel) return;
+    f.options = modelOptions();
+    selected.model = (selected.model || []).filter(function (m) { return f.options.indexOf(m) >= 0; });
+    panel.innerHTML = '';
+    f.options.forEach(function (opt) {
+      var lab = document.createElement('label');
+      lab.className = 'pt-opt';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = opt;
+      cb.checked = (selected.model || []).indexOf(opt) >= 0;
+      cb.addEventListener('change', function () {
+        selected.model = selected.model || [];
+        var i = selected.model.indexOf(opt);
+        if (cb.checked && i < 0) selected.model.push(opt);
+        if (!cb.checked && i >= 0) selected.model.splice(i, 1);
+        render();
+      });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode(opt));
+      panel.appendChild(lab);
+    });
+  }
+
+  var sortMode = 'featured';
+  function sortList(list) {
+    if (sortMode === 'featured') return list; // keeps the per-visit shuffle
+    var key = function (w) {
+      return sortMode === 'brand'
+        ? [w.brand || '', w.model || '', w.name || ''].join('|')
+        : [w.model || '￿', w.brand || '', w.name || ''].join('|');
+    };
+    return list.slice().sort(function (a, b) { return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0; });
   }
 
   function togglePanel(id, btn) {
@@ -100,7 +165,7 @@
   }
 
   function render() {
-    var list = filtered();
+    var list = sortList(filtered());
     grid.innerHTML = '';
     list.forEach(function (w, i) {
       var art = document.createElement('article');

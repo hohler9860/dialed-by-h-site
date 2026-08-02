@@ -332,6 +332,9 @@
     @media(max-width:640px){.dbh-header{padding:16px 20px}}
     /* rebuild buttons: square mono, invert on hover */
     .dbh-modal-scroll{scrollbar-width:none;-ms-overflow-style:none}
+    .dbh-modal-scroll2{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
+    .dbh-modal-scroll2::-webkit-scrollbar{width:5px}
+    .dbh-modal-scroll2::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px}
     .dbh-modal-scroll::-webkit-scrollbar{display:none;width:0}
     .dbh-check{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1px solid rgba(0,0,0,.4);background:transparent;cursor:pointer;margin:0;flex-shrink:0}
     .dbh-check:checked{background:#0a0a0a}
@@ -812,7 +815,7 @@
 
     <!-- MODAL OVERLAY -->
     <div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex items-center justify-center opacity-0" style="background:rgba(0,0,0,0.82)">
-        <div class="w-full max-w-lg glass-strong m-3 sm:m-4 relative shadow-2xl rounded-2xl dbh-modal-scroll" style="max-height:88vh;overflow-y:auto;overflow-x:hidden">
+        <div class="w-full max-w-lg glass-strong m-3 sm:m-4 relative shadow-2xl rounded-2xl dbh-modal-scroll2" style="max-height:88vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">
             <button onclick="app.closeModal()"
                     class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

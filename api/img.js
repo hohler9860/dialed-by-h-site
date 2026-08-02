@@ -18,11 +18,37 @@ function isAllowed(urlStr) {
     return ALLOWED.some((d) => u.hostname === d || u.hostname.endsWith('.' + d));
 }
 
+// Resolve /img?piece=<pageId>&i=<n> to a fresh signed Notion file URL.
+// The page-id form is the stable CDN cache key; signed URLs rotate hourly,
+// so we re-fetch them server-side and memoize per warm instance.
+const _fileUrlCache = new Map(); // pageId -> { urls, at }
+async function resolvePieceImage(pageId, idx) {
+    const hit = _fileUrlCache.get(pageId);
+    if (hit && Date.now() - hit.at < 40 * 60 * 1000) return hit.urls[idx] || '';
+    const r = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        headers: { Authorization: `Bearer ${process.env.NOTION_API_KEY}`, 'Notion-Version': '2022-06-28' },
+    });
+    if (!r.ok) return '';
+    const j = await r.json();
+    const files = j.properties?.Image?.files || [];
+    const urls = files.map(f => f.file?.url || f.external?.url || '').filter(Boolean);
+    _fileUrlCache.set(pageId, { urls, at: Date.now() });
+    return urls[idx] || '';
+}
+
 module.exports = async (req, res) => {
     const raw = req.query.src;
-    const src = Array.isArray(raw) ? raw[0] : raw;
+    let src = Array.isArray(raw) ? raw[0] : raw;
     const modeRaw = req.query.mode;
     const mode = Array.isArray(modeRaw) ? modeRaw[0] : modeRaw;
+
+    const pieceRaw = req.query.piece;
+    const piece = Array.isArray(pieceRaw) ? pieceRaw[0] : pieceRaw;
+    if (piece && /^[a-f0-9]{32}$/.test(piece)) {
+        const idx = parseInt(req.query.i || '0') || 0;
+        src = await resolvePieceImage(piece, idx);
+        if (!src) { res.statusCode = 404; return res.end(); }
+    }
 
     if (!src) { res.statusCode = 400; return res.end('Missing src'); }
     if (!isAllowed(src)) { res.statusCode = 404; return res.end(); }
@@ -42,7 +68,7 @@ module.exports = async (req, res) => {
         const alphaCh = stats.channels[3];
         const SIZE = 900, FILL = 0.66, BG = { r: 13, g: 13, b: 13, alpha: 1 };
         let outBuf;
-        let contentType = 'image/png';
+        let contentType = 'image/webp';
 
         if (alphaCh && alphaCh.min < 200) {
             // background-removed piece: clean halo, trim, center at FILL on BG
@@ -57,7 +83,7 @@ module.exports = async (req, res) => {
             const halo = await sharp(rgbBuf).joinChannel(alphaBuf).png().toBuffer();
             const trimmed = await sharp(halo).trim({ threshold: 12 }).toBuffer();
             if (mode === 'cutout') {
-                outBuf = await sharp(trimmed).resize(520, 520, { fit: 'inside', kernel: 'lanczos3' }).png().toBuffer();
+                outBuf = await sharp(trimmed).resize(520, 520, { fit: 'inside', kernel: 'lanczos3' }).webp({ quality: 84 }).toBuffer();
             } else {
                 const meta = await sharp(trimmed).metadata();
                 const target = Math.round(SIZE * FILL);
@@ -67,11 +93,11 @@ module.exports = async (req, res) => {
                 const piece = await sharp(trimmed).resize(w, hgt, { kernel: 'lanczos3' }).toBuffer();
                 outBuf = await sharp({ create: { width: SIZE, height: SIZE, channels: 4, background: BG } })
                     .composite([{ input: piece, left: Math.round((SIZE - w) / 2), top: Math.round((SIZE - hgt) / 2) }])
-                    .png().toBuffer();
+                    .webp({ quality: 84 }).toBuffer();
             }
         } else {
             // opaque photo: center-crop square, cap size
-            outBuf = await sharp(buf).resize(SIZE, SIZE, { fit: 'cover', position: 'attention' }).png().toBuffer();
+            outBuf = await sharp(buf).resize(SIZE, SIZE, { fit: 'cover', position: 'attention' }).webp({ quality: 84 }).toBuffer();
         }
 
         res.statusCode = 200;

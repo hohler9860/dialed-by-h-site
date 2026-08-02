@@ -14,10 +14,11 @@ function escHtml(s) {
 const escAttr = escHtml;
 
 function normUrl(raw) {
-    return raw ? `${SITE_URL}/img?src=${encodeURIComponent(raw)}` : `${SITE_URL}/images/og-share-v2.png`;
+    if (!raw) return `${SITE_URL}/images/og-share-v2.png`;
+    return raw.startsWith('/') ? `${SITE_URL}${raw}` : `${SITE_URL}/img?src=${encodeURIComponent(raw)}`;
 }
 function normPath(raw) {
-    return `/img?src=${encodeURIComponent(raw)}`;
+    return raw && raw.startsWith('/') ? raw : `/img?src=${encodeURIComponent(raw)}`;
 }
 
 function fourOhFour() {

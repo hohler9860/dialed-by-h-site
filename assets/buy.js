@@ -98,7 +98,7 @@
     var sort = document.createElement('select');
     sort.className = 'pt-sort';
     sort.setAttribute('aria-label', 'Sort pieces');
-    [['featured', 'Sort: Featured'], ['brand', 'Sort: Brand A–Z'], ['model', 'Sort: Model A–Z']].forEach(function (o) {
+    [['featured', 'Sort: Featured'], ['brand', 'Sort: Brand A–Z'], ['model', 'Sort: Model A–Z'], ['year-new', 'Sort: Newest'], ['year-old', 'Sort: Oldest']].forEach(function (o) {
       var op = document.createElement('option');
       op.value = o[0]; op.textContent = o[1];
       sort.appendChild(op);
@@ -142,13 +142,46 @@
 
   var sortMode = 'featured';
   function sortList(list) {
-    if (sortMode === 'featured') return list; // keeps the per-visit shuffle
+    if (sortMode === 'featured') return list; // popular-first order built at load
+    if (sortMode === 'year-new' || sortMode === 'year-old') {
+      var dir = sortMode === 'year-new' ? -1 : 1;
+      return list.slice().sort(function (a, b) {
+        var ya = parseInt(a.year) || 0, yb = parseInt(b.year) || 0;
+        if (ya === yb) return 0;
+        if (!ya) return 1;           // undated pieces sink to the bottom either way
+        if (!yb) return -1;
+        return (ya - yb) * dir;
+      });
+    }
     var key = function (w) {
       return sortMode === 'brand'
         ? [w.brand || '', w.model || '', w.name || ''].join('|')
         : [w.model || '￿', w.brand || '', w.name || ''].join('|');
     };
     return list.slice().sort(function (a, b) { return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0; });
+  }
+
+  // Featured order: the first ~3 rows are the hitters (Royal Oak, Aquanaut,
+  // Journe, hot Rolex, RM) shuffled, then everything else mixes in.
+  function featuredOrder() {
+    var POPULAR = [
+      function (w) { return w.brand === 'Audemars Piguet' && /royal oak/i.test(w.model || ''); },
+      function (w) { return w.brand === 'Patek Philippe' && /aquanaut|nautilus/i.test(w.model || ''); },
+      function (w) { return /journe/i.test(w.brand || ''); },
+      function (w) { return w.brand === 'Rolex' && /daytona|gmt|submariner|day-date/i.test(w.model || ''); },
+      function (w) { return w.brand === 'Richard Mille'; }
+    ];
+    var lead = [], rest = [];
+    INV.forEach(function (w) {
+      (POPULAR.some(function (f) { return f(w); }) && lead.length < 24 ? lead : rest).push(w);
+    });
+    var head = lead.slice(0, 12);           // ~3 rows of hitters
+    var tail = lead.slice(12).concat(rest); // extras mix back in
+    for (var i = tail.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = tail[i]; tail[i] = tail[j]; tail[j] = t;
+    }
+    INV = head.concat(tail);
   }
 
   function togglePanel(id, btn) {
@@ -178,8 +211,10 @@
       art.className = 'pt-item pt-reveal';
       var escf = function (x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
-      var img = w.image
-        ? '<img src="/img?src=' + encodeURIComponent(w.image) + '" alt="" loading="lazy">'
+      var imgSrc = w.image ? (w.image.charAt(0) === '/' ? w.image : '/img?src=' + encodeURIComponent(w.image)) : '';
+      var eager = i < 8 ? ' fetchpriority="high"' : ' loading="lazy"';
+      var img = imgSrc
+        ? '<img src="' + imgSrc + '" alt=""' + eager + '>'
         : '<span class="ph">DIALED BY H</span>';
       art.innerHTML =
         '<a href="/watch/' + (w.slug || '') + '" aria-label="' + title.replace(/"/g, '') + '">' +
@@ -234,11 +269,12 @@
         else if (/ceramic/.test(m)) w.caseMaterial = 'Ceramic';
         else if (/tantalum/.test(m)) w.caseMaterial = 'Tantalum';
       });
-      // fresh order every visit (Fisher-Yates)
+      // fresh order every visit (Fisher-Yates), then pull the hitters up front
       for (var i = INV.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
         var tmp = INV[i]; INV[i] = INV[j]; INV[j] = tmp;
       }
+      featuredOrder();
       buildFacets();
       buildBar();
       refreshModelPanel();

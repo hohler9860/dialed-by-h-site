@@ -33,6 +33,13 @@ function getImages(prop) {
     return prop.files.map(f => f.file?.url || f.external?.url || '').filter(Boolean);
 }
 
+// Stable proxy paths for a page's images. Notion's signed S3 URLs rotate on
+// every API response, which used to bust the CDN cache on /img?src=... —
+// keying by page id keeps the edge cache warm for a year.
+function imagePaths(pageId, images) {
+    return images.map((_, i) => `/img?piece=${pageId.replace(/-/g, '')}&i=${i}`);
+}
+
 function getMulti(prop) {
     if (!prop || prop.type !== 'multi_select') return [];
     return (prop.multi_select || []).map(o => o.name).filter(Boolean);
@@ -84,11 +91,12 @@ function mapPage(page) {
     if (bracelet) descParts.push(bracelet);
     const details = descParts.join(' · ');
 
+    const stable = imagePaths(page.id, images);
     const out = {
         id: page.id,
         brand, model, name, nickname, ref, details,
-        image: images[0] || '',
-        images,
+        image: stable[0] || '',
+        images: stable,
         year: year ? String(Math.round(year)) : '',
         condition, caseMaterial, dialColor, bracelet, caseSize, set,
         collections, tags,

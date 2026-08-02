@@ -15,6 +15,12 @@
     return out.sort();
   }
 
+  // Models collapse to families: "Oyster Perpetual 31/36/41" all filter as
+  // "Oyster Perpetual" — sizes get their own filter once brand+model are picked.
+  function modelFamily(m) {
+    return String(m || '').replace(/\s\d{2}(\.\d)?$/, '');
+  }
+
   // Model options exist only for the brands currently selected (dealer-style drill-down);
   // with no brand picked the Model filter stays hidden entirely.
   function modelOptions() {
@@ -23,9 +29,22 @@
     var out = [];
     INV.forEach(function (w) {
       if (brands.indexOf(w.brand) < 0) return;
-      if (w.model && out.indexOf(w.model) < 0) out.push(w.model);
+      var fam = modelFamily(w.model);
+      if (fam && out.indexOf(fam) < 0) out.push(fam);
     });
     return out.sort();
+  }
+
+  // Case Size options appear only after brand AND model are both selected.
+  function sizeOptions() {
+    if (!(selected.brand || []).length || !(selected.model || []).length) return [];
+    var out = [];
+    INV.forEach(function (w) {
+      if (selected.brand.indexOf(w.brand) < 0) return;
+      if (selected.model.indexOf(modelFamily(w.model)) < 0) return;
+      if (w.caseSize && out.indexOf(w.caseSize) < 0) out.push(w.caseSize);
+    });
+    return out.sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
   }
 
   function buildFacets() {
@@ -33,11 +52,12 @@
     FACETS = [
       { id: 'collection', label: 'Collection', options: COLLECTIONS, match: function (w, sel) { return (w.collections || []).some(function (c) { return sel.indexOf(c) >= 0; }); } },
       { id: 'brand', label: 'Brand', options: uniq('brand'), match: function (w, sel) { return sel.indexOf(w.brand) >= 0; } },
-      { id: 'model', label: 'Model', options: modelOptions(), match: function (w, sel) { return sel.indexOf(w.model) >= 0; } },
+      { id: 'model', label: 'Model', options: modelOptions(), match: function (w, sel) { return sel.indexOf(modelFamily(w.model)) >= 0; } },
+      { id: 'size', label: 'Case Size', options: sizeOptions(), match: function (w, sel) { return sel.indexOf(w.caseSize) >= 0; } },
       { id: 'caseMaterial', label: 'Case Material', options: uniq('caseMaterial'), match: function (w, sel) { return sel.indexOf(w.caseMaterial) >= 0; } },
       { id: 'condition', label: 'Condition', options: uniq('condition'), match: function (w, sel) { return sel.indexOf(w.condition) >= 0; } },
       { id: 'year', label: 'Year', options: years, match: function (w, sel) { return sel.indexOf(w.year) >= 0; } }
-    ].filter(function (f) { return f.id === 'model' || f.options.length > 1; });
+    ].filter(function (f) { return f.id === 'model' || f.id === 'size' || f.options.length > 1; });
   }
 
   var selected = {}; // facetId -> [values]
@@ -72,7 +92,7 @@
           var i = selected[f.id].indexOf(opt);
           if (cb.checked && i < 0) selected[f.id].push(opt);
           if (!cb.checked && i >= 0) selected[f.id].splice(i, 1);
-          if (f.id === 'brand') refreshModelPanel();
+          if (f.id === 'brand' || f.id === 'model') refreshModelPanel();
           render();
         });
         lab.appendChild(cb);
@@ -107,36 +127,43 @@
     fbar.appendChild(sort);
   }
 
-  // re-scope the Model panel to whatever brands are checked; hidden until a brand is picked
+  // Drill-down panels: Model appears once a brand is checked; Case Size once
+  // brand AND model are checked. Both rebuild whenever upstream selections change.
   function refreshModelPanel() {
-    var f = null;
-    FACETS.forEach(function (x) { if (x.id === 'model') f = x; });
-    var panel = panels.querySelector('.pt-panel[data-facet="model"]');
-    var btn = fbar.querySelector('.pt-fbtn[data-facet="model"]');
-    if (!f || !panel) return;
-    var hasBrand = (selected.brand || []).length > 0;
-    if (btn) btn.style.display = hasBrand ? '' : 'none';
-    if (!hasBrand) { panel.classList.remove('is-open'); if (btn) btn.classList.remove('is-open'); selected.model = []; }
-    f.options = modelOptions();
-    selected.model = (selected.model || []).filter(function (m) { return f.options.indexOf(m) >= 0; });
-    panel.innerHTML = '';
-    f.options.forEach(function (opt) {
-      var lab = document.createElement('label');
-      lab.className = 'pt-opt';
-      var cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.value = opt;
-      cb.checked = (selected.model || []).indexOf(opt) >= 0;
-      cb.addEventListener('change', function () {
-        selected.model = selected.model || [];
-        var i = selected.model.indexOf(opt);
-        if (cb.checked && i < 0) selected.model.push(opt);
-        if (!cb.checked && i >= 0) selected.model.splice(i, 1);
-        render();
+    [
+      { id: 'model', opts: modelOptions, visible: function () { return (selected.brand || []).length > 0; } },
+      { id: 'size', opts: sizeOptions, visible: function () { return (selected.brand || []).length > 0 && (selected.model || []).length > 0; } }
+    ].forEach(function (cfg) {
+      var f = null;
+      FACETS.forEach(function (x) { if (x.id === cfg.id) f = x; });
+      var panel = panels.querySelector('.pt-panel[data-facet="' + cfg.id + '"]');
+      var btn = fbar.querySelector('.pt-fbtn[data-facet="' + cfg.id + '"]');
+      if (!f || !panel) return;
+      var show = cfg.visible();
+      if (btn) btn.style.display = show ? '' : 'none';
+      if (!show) { panel.classList.remove('is-open'); if (btn) btn.classList.remove('is-open'); selected[cfg.id] = []; }
+      f.options = cfg.opts();
+      selected[cfg.id] = (selected[cfg.id] || []).filter(function (m) { return f.options.indexOf(m) >= 0; });
+      panel.innerHTML = '';
+      f.options.forEach(function (opt) {
+        var lab = document.createElement('label');
+        lab.className = 'pt-opt';
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = opt;
+        cb.checked = (selected[cfg.id] || []).indexOf(opt) >= 0;
+        cb.addEventListener('change', function () {
+          selected[cfg.id] = selected[cfg.id] || [];
+          var i = selected[cfg.id].indexOf(opt);
+          if (cb.checked && i < 0) selected[cfg.id].push(opt);
+          if (!cb.checked && i >= 0) selected[cfg.id].splice(i, 1);
+          if (cfg.id === 'model') refreshModelPanel();
+          render();
+        });
+        lab.appendChild(cb);
+        lab.appendChild(document.createTextNode(opt));
+        panel.appendChild(lab);
       });
-      lab.appendChild(cb);
-      lab.appendChild(document.createTextNode(opt));
-      panel.appendChild(lab);
     });
   }
 

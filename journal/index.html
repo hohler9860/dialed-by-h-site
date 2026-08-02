@@ -275,12 +275,13 @@ fbq('track', 'PageView');
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.
     // Add new rules here as new stickers land.
     var SPECIALS = [
-      { re: /royal\s*pop|moon\s*swatch|moonswatch/i, pool: [121] },   // w_122 - AP Royal Pop
+      { re: /royal\s*pop|moon\s*swatch|moonswatch/i, pool: [121, 126] }, // w_122 AP Royal Pop / w_127 Swatch (Henry's shot)
       { re: /offshore/i, pool: [122] },                                // w_123 - AP Offshore
       { re: /tudor|black\s*bay|bumblebee/i, pool: [117] },            // w_118 - yellow Tudor chrono
       { re: /nautilus|patek/i, pool: [28] },                           // w_29 - Patek
-      { re: /just\s*dropped/i, pool: [49] },                          // w_50 - Land-Dweller (the W&W novelty)
-      { re: /my\s*day\s*at\s*watches/i, pool: [55] },                 // w_56 - rainbow Daytona novelty
+      { re: /\(probably\)\s*dropping/i, pool: [123] },                // w_124 - OP jubilee-motif dial (2026 novelty)
+      { re: /just\s*dropped/i, pool: [124] },                         // w_125 - Day-Date 40 Jubilee Gold aventurine
+      { re: /my\s*day\s*at\s*watches/i, pool: [125] },                // w_126 - Patek Nautilus 50th 5810/1G
       { re: /rolex|watches\s*(and|&)\s*wonders|daytona|submariner|gmt|datejust|day[-\s]*date|oyster/i, pool: [4, 17, 60] } // w_05, w_18, w_61 - Rolex
     ];
     wrap.innerHTML = arts.map(function(a){

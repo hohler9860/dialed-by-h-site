@@ -94,7 +94,7 @@
     fbar.appendChild(clear);
 
     var sort = document.createElement('select');
-    sort.className = 'pt-fbtn pt-sort';
+    sort.className = 'pt-sort';
     sort.setAttribute('aria-label', 'Sort pieces');
     [['featured', 'Sort: Featured'], ['brand', 'Sort: Brand A–Z'], ['model', 'Sort: Model A–Z']].forEach(function (o) {
       var op = document.createElement('option');
@@ -188,8 +188,10 @@
     count.textContent = list.length + ' of ' + INV.length + ' pieces' + (act.length ? ' — filtered' : '');
     document.getElementById('pt-clear').classList.toggle('is-visible', act.length > 0);
     fbar.querySelectorAll('.pt-fbtn').forEach(function (b) {
+      var nEl = b.querySelector('.n');
+      if (!nEl) return;
       var n = (selected[b.dataset.facet] || []).length;
-      b.querySelector('.n').textContent = n ? '(' + n + ')' : '';
+      nEl.textContent = n ? '(' + n + ')' : '';
     });
     // staggered scroll reveal (haoqi work-grid pattern)
     var io = new IntersectionObserver(function (es) {

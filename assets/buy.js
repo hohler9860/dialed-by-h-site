@@ -15,12 +15,14 @@
     return out.sort();
   }
 
-  // Model options narrow to the brands currently selected (dealer-style drill-down)
+  // Model options exist only for the brands currently selected (dealer-style drill-down);
+  // with no brand picked the Model filter stays hidden entirely.
   function modelOptions() {
     var brands = selected.brand || [];
+    if (!brands.length) return [];
     var out = [];
     INV.forEach(function (w) {
-      if (brands.length && brands.indexOf(w.brand) < 0) return;
+      if (brands.indexOf(w.brand) < 0) return;
       if (w.model && out.indexOf(w.model) < 0) out.push(w.model);
     });
     return out.sort();
@@ -35,7 +37,7 @@
       { id: 'caseMaterial', label: 'Case Material', options: uniq('caseMaterial'), match: function (w, sel) { return sel.indexOf(w.caseMaterial) >= 0; } },
       { id: 'condition', label: 'Condition', options: uniq('condition'), match: function (w, sel) { return sel.indexOf(w.condition) >= 0; } },
       { id: 'year', label: 'Year', options: years, match: function (w, sel) { return sel.indexOf(w.year) >= 0; } }
-    ].filter(function (f) { return f.options.length > 1; });
+    ].filter(function (f) { return f.id === 'model' || f.options.length > 1; });
   }
 
   var selected = {}; // facetId -> [values]
@@ -105,12 +107,16 @@
     fbar.appendChild(sort);
   }
 
-  // re-scope the Model panel to whatever brands are checked
+  // re-scope the Model panel to whatever brands are checked; hidden until a brand is picked
   function refreshModelPanel() {
     var f = null;
     FACETS.forEach(function (x) { if (x.id === 'model') f = x; });
     var panel = panels.querySelector('.pt-panel[data-facet="model"]');
+    var btn = fbar.querySelector('.pt-fbtn[data-facet="model"]');
     if (!f || !panel) return;
+    var hasBrand = (selected.brand || []).length > 0;
+    if (btn) btn.style.display = hasBrand ? '' : 'none';
+    if (!hasBrand) { panel.classList.remove('is-open'); if (btn) btn.classList.remove('is-open'); selected.model = []; }
     f.options = modelOptions();
     selected.model = (selected.model || []).filter(function (m) { return f.options.indexOf(m) >= 0; });
     panel.innerHTML = '';
@@ -235,6 +241,7 @@
       }
       buildFacets();
       buildBar();
+      refreshModelPanel();
       render();
     })
     .catch(function () { count.textContent = 'Inventory unavailable \u2014 DM me on WhatsApp.'; });

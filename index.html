@@ -1006,7 +1006,7 @@
                     <button onclick="app.openModal('WATCH_DETAIL', app.getWatchById('${item.id}'))"
                             class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none flex-shrink-0">
                         <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110 bg-white/5">
-                            <img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" decoding="async" class="w-full h-full object-contain">
+                            <img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy" decoding="async" class="w-full h-full object-contain" style="padding:4px">
                         </div>
                         <div class="flex flex-col items-start">
                             <span class="dbh-display text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300 whitespace-nowrap">
@@ -1026,18 +1026,23 @@
 
             initTickerGSAP: () => {
                 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-                // Main watch ticker — GSAP driven for smooth, jank-free animation
+                // Main watch ticker — GSAP driven for smooth, jank-free animation.
+                // Kill any prior tween (ticker re-renders once inventory loads) so
+                // animations never stack, and keep speed constant per item.
                 const mainTicker = document.getElementById('main-ticker');
                 if (mainTicker) {
+                    if (app.tickerTween) { app.tickerTween.kill(); app.tickerTween = null; }
+                    gsap.set(mainTicker, { xPercent: 0 });
                     // Use xPercent: -50 because the element has two identical halves
                     app.tickerTween = gsap.to(mainTicker, {
                         xPercent: -50,
-                        duration: 80,
+                        duration: Math.max(80, CONFIG.TICKER_ITEMS.length * 4.2),
                         ease: "none",
                         repeat: -1,
                         force3D: true
                     });
                 }
+                if (app.footerTickerTween) { app.footerTickerTween.kill(); app.footerTickerTween = null; }
                 // Footer "Private List" ticker (slow & subtle)
                 const footerTicker = document.getElementById('footer-ticker');
                 if (footerTicker) {

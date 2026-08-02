@@ -129,11 +129,27 @@ let _piecesCache = null;
 let _piecesCacheAt = 0;
 const PIECES_TTL_MS = 180 * 1000;
 
+let _refreshing = null;
+
+// Stale-while-revalidate: with ~3k pieces a full Notion re-read takes ~30s of
+// paginated queries, so expired requests get the stale copy instantly while a
+// single background refresh updates the cache for the next hit.
 async function fetchAllPieces({ force = false } = {}) {
     const now = Date.now();
     if (!force && _piecesCache && now - _piecesCacheAt < PIECES_TTL_MS) {
         return _piecesCache;
     }
+    if (!force && _piecesCache) {
+        if (!_refreshing) {
+            _refreshing = _refreshPieces().finally(() => { _refreshing = null; });
+        }
+        return _piecesCache; // stale but instant; refresh is underway
+    }
+    return _refreshPieces();
+}
+
+async function _refreshPieces() {
+    const now = Date.now();
     try {
         const { notion } = getNotion();
         const dataSourceId = await getDataSourceId();

@@ -1083,13 +1083,14 @@
             openModal: (type, data = null) => {
                 const overlay = document.getElementById('modal-overlay');
                 const body = document.getElementById('modal-body');
+                document.body.style.overflow = 'hidden'; // one scrollbar: the modal's
 
                 let html = '';
                 if (type === 'WATCH_DETAIL' && data) {
                     html = `
                         <div id="form-view">
                             <div class="w-full overflow-hidden" style="height:210px">
-                                <img src="${esc((data.image || '').replace(/^images\/ticker\//, 'images/ticker/crop/').replace(/\.[a-z]+$/i, '.jpg'))}" onerror="this.src='${esc(data.image)}'" class="w-full h-full object-cover" style="object-position:center">
+                                <img src="${esc((data.image || '').replace(/^images\/ticker\//, 'images/ticker/crop/').replace(/\.[a-z]+$/i, '.jpg'))}" onerror="this.src='${esc(data.image)}'" class="w-full h-full ${(data.image || '').charAt(0) === '/' ? 'object-contain' : 'object-cover'}" style="object-position:center;${(data.image || '').charAt(0) === '/' ? 'padding:12px' : ''}">
                             </div>
                             <div class="p-5 sm:p-6 space-y-4">
                                 <div>
@@ -1229,6 +1230,7 @@
                     duration: 0.3,
                     delay: 0.05,
                     onComplete: () => {
+                        document.body.style.overflow = '';
                         overlay.classList.remove('modal-visible');
                         overlay.classList.add('modal-hidden');
                         document.body.style.overflow = '';

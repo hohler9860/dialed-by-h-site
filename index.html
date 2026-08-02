@@ -937,7 +937,8 @@
             // Ticker is inventory-driven: same processed images as the buy grid,
             // hot brands weighted first, anything not in Notion drops out on its own.
             buildTickerFromInventory: (pieces) => {
-                const withImg = pieces.filter(w => w.image);
+                const TICKER_EXCLUDE = ['richard-mille-rm-07-01-rm07-01-2be983']; // Henry-vetoed pieces
+                const withImg = pieces.filter(w => w.image && TICKER_EXCLUDE.indexOf(w.slug) < 0);
                 const hot = ['Audemars Piguet', 'Patek Philippe', 'F.P. Journe', 'Rolex', 'Richard Mille', 'Vacheron Constantin', 'A. Lange & Söhne', 'Cartier'];
                 const byBrand = {};
                 withImg.forEach(w => { (byBrand[w.brand] = byBrand[w.brand] || []).push(w); });

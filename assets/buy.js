@@ -53,6 +53,66 @@
     return out.sort();
   }
 
+
+  // ── Celebrity gallery ─────────────────────────────────────────────
+  // Click "Celebrity" -> overlay of celeb cards -> click one -> filtered grid.
+  // Card art = the celeb's flagship piece cutout; a portrait at
+  // /images/celebs/<slug>.webp automatically takes over if Henry adds one.
+  var HOT_ORDER = ['Richard Mille', 'Patek Philippe', 'Audemars Piguet', 'F.P. Journe', 'Rolex'];
+  function celebSlug(n) {
+    return String(n).toLowerCase().replace(/["']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function celebCards() {
+    var map = {};
+    INV.forEach(function (w) {
+      (w.celebs || []).forEach(function (c) {
+        map[c] = map[c] || { name: c, count: 0, piece: null, rank: 99 };
+        map[c].count++;
+        var r = HOT_ORDER.indexOf(w.brand);
+        if (r < 0) r = 50;
+        if (w.image && r < map[c].rank) { map[c].rank = r; map[c].piece = w.image; }
+      });
+    });
+    return Object.keys(map).sort().map(function (k) { return map[k]; });
+  }
+  var celebOverlay = null;
+  function openCelebOverlay() {
+    if (celebOverlay) { celebOverlay.remove(); celebOverlay = null; }
+    var ov = document.createElement('div');
+    ov.className = 'pt-celeb-ov';
+    var cards = celebCards();
+    ov.innerHTML =
+      '<div class="pt-celeb-ov__bar"><span>Celebrity Collections</span>' +
+      '<button type="button" class="pt-celeb-ov__all">All pieces</button>' +
+      '<button type="button" class="pt-celeb-ov__x" aria-label="Close">&times;</button></div>' +
+      '<div class="pt-celeb-ov__grid">' + cards.map(function (c) {
+        var slug = celebSlug(c.name);
+        var watchImg = c.piece ? (c.piece + (c.piece.indexOf('?') >= 0 ? '&' : '?') + 'mode=cutout') : '';
+        return '<button type="button" class="pt-celeb-card" data-celeb="' + c.name.replace(/"/g, '&quot;') + '">' +
+          '<span class="pt-celeb-card__media">' +
+          '<img src="/images/celebs/' + slug + '.webp" onerror="this.onerror=null;this.src=\'' + watchImg + '\';this.classList.add(\'is-watch\')" alt="' + c.name.replace(/"/g, '&quot;') + ' watch collection" loading="lazy">' +
+          '</span><span class="pt-celeb-card__name">' + c.name + '</span>' +
+          '<span class="pt-celeb-card__n">' + c.count + ' piece' + (c.count === 1 ? '' : 's') + '</span></button>';
+      }).join('') + '</div>';
+    document.body.appendChild(ov);
+    document.body.style.overflow = 'hidden';
+    function close() { ov.remove(); celebOverlay = null; document.body.style.overflow = ''; }
+    ov.querySelector('.pt-celeb-ov__x').addEventListener('click', close);
+    ov.querySelector('.pt-celeb-ov__all').addEventListener('click', function () {
+      selected.celeb = [];
+      close(); render();
+    });
+    ov.querySelectorAll('.pt-celeb-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        selected.celeb = [card.dataset.celeb];
+        close();
+        render();
+        window.scrollTo({ top: grid.getBoundingClientRect().top + window.scrollY - 140, behavior: 'smooth' });
+      });
+    });
+    celebOverlay = ov;
+  }
+
   function buildFacets() {
     var years = uniq('year');
     FACETS = [
@@ -81,7 +141,11 @@
       btn.type = 'button';
       btn.className = 'pt-fbtn';
       btn.innerHTML = f.label + '<span class="n"></span><i>+</i>';
-      btn.addEventListener('click', function () { togglePanel(f.id, btn); });
+      if (f.id === 'celeb') {
+        btn.addEventListener('click', function () { openCelebOverlay(); });
+      } else {
+        btn.addEventListener('click', function () { togglePanel(f.id, btn); });
+      }
       btn.dataset.facet = f.id;
       fbar.appendChild(btn);
 

@@ -17,10 +17,11 @@
         try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* swallow */ }
     }
 
-    async function adminFetch(action, body = {}) {
+    // Generic form: any admin endpoint sharing the Bearer <ADMIN_PASSWORD> scheme.
+    async function adminFetchTo(endpoint, action, body = {}) {
         const token = getToken();
         if (!token) throw new Error("Not authenticated");
-        const r = await fetch("/api/journal-admin", {
+        const r = await fetch(endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -37,11 +38,18 @@
         return json;
     }
 
-    async function tryLogin(password) {
-        // Probe with list-all; succeeds if password is right.
+    // Journal pages call this. Kept as-is so their call sites do not change.
+    async function adminFetch(action, body = {}) {
+        return adminFetchTo("/api/journal-admin", action, body);
+    }
+
+    // Probe an endpoint with a harmless read to check the password.
+    // Pages pass the probe that suits them, so the leads console does not need
+    // the journal endpoint to be reachable in order to log in.
+    async function tryLoginWith(password, endpoint, action) {
         setToken(password);
         try {
-            await adminFetch("list-all");
+            await adminFetchTo(endpoint, action);
             return true;
         } catch (e) {
             clearToken();
@@ -49,12 +57,18 @@
         }
     }
 
+    async function tryLogin(password) {
+        return tryLoginWith(password, "/api/journal-admin", "list-all");
+    }
+
     window.dialedAdmin = {
         getToken,
         setToken,
         clearToken,
         adminFetch,
+        adminFetchTo,
         tryLogin,
+        tryLoginWith,
         isAuthed: () => !!getToken(),
     };
 })();

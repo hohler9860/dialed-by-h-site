@@ -32,9 +32,13 @@ async function supabaseInsert(table, row) {
 // writes lead_class / lead_quality back onto the row. It must never affect whether
 // the visitor's submission succeeds.
 //
-// We deliberately send ONLY the row id. The n8n host is currently plain HTTP, so
-// anything in this request body would cross the open internet unencrypted. n8n
-// reads the name/email/phone back out of Supabase itself over TLS.
+// We deliberately send ONLY the row id, never the lead's name/email/phone. n8n reads
+// those back out of Supabase itself. This started as a workaround for n8n being plain
+// HTTP; it is kept now that TLS is in place because there is no reason to copy PII
+// across a second hop when an id is enough.
+//
+// N8N_LEAD_WEBHOOK_URL must stay on https. The host 302-redirects http to https, and
+// fetch() downgrades a redirected POST to GET, which would silently drop the payload.
 const N8N_WEBHOOK_URL = process.env.N8N_LEAD_WEBHOOK_URL;
 const N8N_WEBHOOK_SECRET = process.env.N8N_LEAD_WEBHOOK_SECRET;
 

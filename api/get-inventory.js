@@ -53,6 +53,13 @@ module.exports = async (req, res) => {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     try {
+        // ?fresh=1 — Henry's manual lever: force a full Notion re-read (slow) and
+        // rewrite the snapshot, bypassing every cache layer. For after edits.
+        if (q.fresh) {
+            res.setHeader('Cache-Control', 'no-store');
+            const fresh = await fetchAllPieces({ force: true });
+            return res.status(200).json({ refreshed: true, pieces: fresh.length, note: 'Snapshot rebuilt. Site serves the new data as CDN cache expires (up to 15 min) or immediately after the next deploy.' });
+        }
         const pieces = await fetchAllPieces();
         if (q.id) {
             const piece = pieces.find(w => w.id === q.id);

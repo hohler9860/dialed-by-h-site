@@ -28,6 +28,42 @@ async function supabaseInsert(table, row) {
   return data[0];
 }
 
+// n8n lead classifier. Fire-and-forget: it grades the lead in the background and
+// writes lead_class / lead_quality back onto the row. It must never affect whether
+// the visitor's submission succeeds.
+//
+// We deliberately send ONLY the row id. The n8n host is currently plain HTTP, so
+// anything in this request body would cross the open internet unencrypted. n8n
+// reads the name/email/phone back out of Supabase itself over TLS.
+const N8N_WEBHOOK_URL = process.env.N8N_LEAD_WEBHOOK_URL;
+const N8N_WEBHOOK_SECRET = process.env.N8N_LEAD_WEBHOOK_SECRET;
+
+async function notifyClassifier(id) {
+  if (!N8N_WEBHOOK_URL || !N8N_WEBHOOK_SECRET) {
+    console.log("[submit-form] Classifier webhook not configured, skipping");
+    return;
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000);
+  try {
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-dialed-signature": N8N_WEBHOOK_SECRET,
+      },
+      body: JSON.stringify({ id }),
+      signal: controller.signal,
+    });
+    if (!res.ok) console.error("[submit-form] Classifier webhook HTTP", res.status);
+    else console.log("[submit-form] Classifier notified for id:", id);
+  } catch (err) {
+    console.error("[submit-form] Classifier webhook failed (non-fatal):", err.message);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // Lazy-init Resend
 let resend;
 function getResend() {
@@ -230,6 +266,24 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Invalid email" });
     }
 
+    // Phone is required on every real lead form. JOIN_LIST is the footer newsletter
+    // capture — it has no phone field and asking for one there would gut signups.
+    // The `required` attribute on the inputs is only a hint; this is the real gate,
+    // since anyone can POST straight to this endpoint.
+    const phoneClean = (phone || "").trim();
+    if (type !== "JOIN_LIST") {
+      const digits = phoneClean.replace(/\D/g, "");
+      if (!digits) {
+        console.error("[submit-form] VALIDATION FAIL -missing phone for type:", type);
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+      // 7 is the shortest plausible national number; 15 is the E.164 maximum.
+      if (digits.length < 7 || digits.length > 15) {
+        console.error("[submit-form] VALIDATION FAIL -implausible phone length:", digits.length);
+        return res.status(400).json({ error: "Please enter a valid phone number" });
+      }
+    }
+
     // For JOIN_LIST from footer form, pack intent/budget/lookingFor into watch_details
     // so Henry actually sees the qualifying info in his inbox + Supabase
     let detailsForRow = watchDetails?.trim() || null;
@@ -249,7 +303,7 @@ module.exports = async (req, res) => {
       watch_details: detailsForRow,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
-      phone: phone?.trim() || null,
+      phone: phoneClean || null,
       budget: budget?.trim() || null,
       status: "new",
     };
@@ -257,6 +311,10 @@ module.exports = async (req, res) => {
     console.log("[submit-form] Inserting into Supabase...");
     const data = await supabaseInsert("dialed_submissions", row);
     console.log("[submit-form] Supabase insert SUCCESS -id:", data.id);
+
+    // Kick this off now so it runs alongside the emails rather than after them.
+    // notifyClassifier swallows its own errors, so this promise never rejects.
+    const classifierPromise = notifyClassifier(data.id);
 
     // ── EMAIL SENDING (non-critical — never fails the request) ──
     let emailSent = false;
@@ -353,6 +411,9 @@ module.exports = async (req, res) => {
       emailDebug = emailErr.message;
       console.error("[submit-form] EMAIL BLOCK ERROR (non-fatal):", emailErr.message);
     }
+
+    // Vercel freezes the function once we respond, so settle this before returning.
+    await classifierPromise;
 
     return res.status(200).json({
       success: true,

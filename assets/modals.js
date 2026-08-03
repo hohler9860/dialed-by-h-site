@@ -25,7 +25,7 @@
     return (
       field('Full name', '<input type="text" name="name" autocomplete="name">') +
       field('Email', '<input type="email" name="email" autocomplete="email">') +
-      field('Mobile / WhatsApp', '<input type="tel" name="phone" autocomplete="tel" placeholder="+1 ...">') +
+      field('Mobile / WhatsApp', '<input required type="tel" name="phone" autocomplete="tel" placeholder="+1 ...">') +
       field('Preferred contact', '<select name="preferred"><option value="">Select platform</option><option>WhatsApp</option><option>Text message</option><option>Email</option><option>Instagram DM</option></select>') +
       field('Brand', '<select name="brand" class="js-brand"><option value="">Select brand</option>' + brands + '</select>') +
       field('Model', '<select name="model" class="js-model" disabled><option value="">Select brand first</option></select>') +

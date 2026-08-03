@@ -307,10 +307,7 @@ fbq('track', 'PageView');
       }
       usedStickers.push(idx);
       var n = String(idx + 1); if (n.length < 2) n = '0' + n;
-      // Hero image is the cover when the article has one; watch cutout is the fallback.
-      var cover = a.hero_image_url
-        ? '<img class="jimg jimg--hero" src="' + a.hero_image_url + '" alt="" loading="lazy">'
-        : '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
+      var cover = '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
       return '<a class="pt-jitem" href="/journal/' + a.slug + '">' +
         cover +
         '<span class="jd">' + date + '</span>' +

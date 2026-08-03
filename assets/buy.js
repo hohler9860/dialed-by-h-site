@@ -114,7 +114,13 @@
         if (!map[c].piece && w.image) map[c].piece = w.image;
       });
     });
-    return Object.keys(map).sort().map(function (k) { return map[k]; });
+    var FEATURED = ['Travis Scott', 'Tom Brady', 'Drake', 'DJ Khaled', 'Charles Leclerc', 'Central Cee'];
+    return Object.keys(map).sort(function (a, b) {
+      var fa = FEATURED.indexOf(a), fb = FEATURED.indexOf(b);
+      if (fa < 0) fa = 99; if (fb < 0) fb = 99;
+      if (fa !== fb) return fa - fb;
+      return a < b ? -1 : a > b ? 1 : 0;
+    }).map(function (k) { return map[k]; });
   }
   function celebsMode() {
     return (selected.collection || []).indexOf('Celebrities') >= 0;

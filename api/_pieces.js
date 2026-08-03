@@ -212,7 +212,7 @@ async function _refreshPieces() {
         } while (cursor);
         _piecesCache = results.map(mapPage);
         _piecesCacheAt = now;
-        writeSnapshot(_piecesCache); // persist for cold starts (fire and forget)
+        await writeSnapshot(_piecesCache); // persist for cold starts (~300ms, trivial next to the refresh itself)
         return _piecesCache;
     } catch (err) {
         if (_piecesCache) {

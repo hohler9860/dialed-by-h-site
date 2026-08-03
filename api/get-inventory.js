@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
             const pieces = await fetchAllPieces();
             const piece = q.id ? pieces.find(p => p.id === q.id) : pieces.find(p => p.slug === slug);
             if (!piece || !piece.image) return res.status(404).send(fourOhFour());
-            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400');
+            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
             return res.status(200).send(renderWatchPage(piece, pieces));
         } catch (err) {
             console.error('[get-inventory:watch] error:', err && err.message);
@@ -59,7 +59,13 @@ module.exports = async (req, res) => {
             if (!piece) return res.status(404).json({ error: 'Piece not found' });
             return res.status(200).json(piece);
         }
-        return res.status(200).json(pieces);
+        // list payload: the grid/ticker never use tags or secondary images —
+        // stripping them cuts ~40% off the JSON the browser has to download
+        const slim = pieces.map(w => {
+            const { tags, images, ...rest } = w;
+            return rest;
+        });
+        return res.status(200).json(slim);
     } catch (err) {
         console.error('get-inventory failed:', err && err.message);
         return res.status(500).json({ error: 'Failed to load inventory' });

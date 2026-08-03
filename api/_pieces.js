@@ -132,9 +132,42 @@ const PIECES_TTL_MS = 180 * 1000;
 
 let _refreshing = null;
 
-// Stale-while-revalidate: with ~3k pieces a full Notion re-read takes ~30s of
-// paginated queries, so expired requests get the stale copy instantly while a
-// single background refresh updates the cache for the next hit.
+// ── Persistent snapshot (Supabase storage) ─────────────────────────────
+// A full Notion re-read is ~20-30s of sequential paginated queries. That must
+// NEVER happen inside a visitor's request. Every refresh writes the mapped
+// piece list to Supabase storage; cold serverless instances hydrate from that
+// snapshot in ~200ms and trigger a background Notion refresh instead.
+const SNAP_BUCKET = 'site-cache';
+const SNAP_PATH = 'pieces-snapshot.json';
+const SNAP_FRESH_MS = 10 * 60 * 1000; // snapshot considered fine for 10 min
+
+async function readSnapshot() {
+    if (!process.env.SUPABASE_URL) return null;
+    try {
+        const r = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/public/${SNAP_BUCKET}/${SNAP_PATH}?t=${Math.floor(Date.now() / 60000)}`);
+        if (!r.ok) return null;
+        const snap = await r.json();
+        if (!snap || !Array.isArray(snap.pieces)) return null;
+        return snap; // { at: epoch-ms, pieces: [...] }
+    } catch { return null; }
+}
+
+async function writeSnapshot(pieces) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return;
+    try {
+        await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/${SNAP_BUCKET}/${SNAP_PATH}`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+                'Content-Type': 'application/json',
+                'x-upsert': 'true',
+                'Cache-Control': 'max-age=60',
+            },
+            body: JSON.stringify({ at: Date.now(), pieces }),
+        });
+    } catch (e) { console.error('[pieces] snapshot write failed:', e && e.message); }
+}
+
 async function fetchAllPieces({ force = false } = {}) {
     const now = Date.now();
     if (!force && _piecesCache && now - _piecesCacheAt < PIECES_TTL_MS) {
@@ -145,6 +178,18 @@ async function fetchAllPieces({ force = false } = {}) {
             _refreshing = _refreshPieces().finally(() => { _refreshing = null; });
         }
         return _piecesCache; // stale but instant; refresh is underway
+    }
+    if (!force) {
+        // cold instance: hydrate from the snapshot instead of blocking on Notion
+        const snap = await readSnapshot();
+        if (snap) {
+            _piecesCache = snap.pieces;
+            _piecesCacheAt = snap.at || 0;
+            if (now - _piecesCacheAt > SNAP_FRESH_MS && !_refreshing) {
+                _refreshing = _refreshPieces().finally(() => { _refreshing = null; });
+            }
+            return _piecesCache;
+        }
     }
     return _refreshPieces();
 }
@@ -167,6 +212,7 @@ async function _refreshPieces() {
         } while (cursor);
         _piecesCache = results.map(mapPage);
         _piecesCacheAt = now;
+        writeSnapshot(_piecesCache); // persist for cold starts (fire and forget)
         return _piecesCache;
     } catch (err) {
         if (_piecesCache) {

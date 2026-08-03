@@ -83,7 +83,7 @@
     var cards = celebCards();
     ov.innerHTML =
       '<div class="pt-celeb-ov__bar"><span>Celebrity Collections</span>' +
-      '<button type="button" class="pt-celeb-ov__all">All pieces</button>' +
+      '<a class="pt-celeb-ov__credits" href="/images/celebs/credits.html" target="_blank" rel="noopener">Photo credits</a>' + '<button type="button" class="pt-celeb-ov__all">All pieces</button>' +
       '<button type="button" class="pt-celeb-ov__x" aria-label="Close">&times;</button></div>' +
       '<div class="pt-celeb-ov__grid">' + cards.map(function (c) {
         var slug = celebSlug(c.name);

@@ -115,5 +115,10 @@
       "destination": "/buy/",
       "permanent": true
     }
-  ]
+  ],
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 60
+    }
+  }
 }

@@ -167,8 +167,33 @@
     });
   }
 
+  // Henry's exact OP presentation order when the Oyster Perpetual model is selected
+  var OP_DIAL_ORDER = [
+    ['khaki', 0], ['yellow', 1], ['coral', 2], ['red coral', 2], ['green', 3], ['pistachio', 4], ['matcha', 4],
+    ['celebration', 5], ['jubilee', 6], ['pink', 7], ['lavender', 8], ['turquoise', 9], ['tiffany', 9],
+    ['blue', 10], ['black', 11], ['slate', 12]
+  ];
+  function opRank(w) {
+    var d = (w.dialColor || '').toLowerCase();
+    var m = (w.caseMaterial || '').toLowerCase();
+    var best = 99;
+    OP_DIAL_ORDER.forEach(function (p) { if (d.indexOf(p[0]) >= 0 && p[1] < best) best = p[1]; });
+    if (best === 99 && (/two-tone|rolesor|yellow gold|everose/.test(m))) best = 12;
+    return best;
+  }
+  function opSelected() {
+    return (selected.model || []).indexOf('Oyster Perpetual') >= 0;
+  }
+
   var sortMode = 'featured';
   function sortList(list) {
+    if (sortMode === 'featured' && opSelected()) {
+      return list.slice().sort(function (a, b) {
+        var r = opRank(a) - opRank(b);
+        if (r !== 0) return r;
+        return (parseFloat(a.caseSize) || 0) - (parseFloat(b.caseSize) || 0);
+      });
+    }
     if (sortMode === 'featured') return list; // popular-first order built at load
     if (sortMode === 'year-new' || sortMode === 'year-old') {
       var dir = sortMode === 'year-new' ? -1 : 1;

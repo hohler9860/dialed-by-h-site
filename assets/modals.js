@@ -160,6 +160,8 @@
             watchName: [get('brand'), get('model')].filter(Boolean).join(' '),
             watchBrand: get('brand'),
             watchRef: get('reference'),
+            phone: get('phone') || null,
+            budget: get('budget') || null,
             watchDetails: detailParts.join(' | '),
             website: get('website')
           })

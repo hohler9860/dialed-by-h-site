@@ -209,7 +209,7 @@ module.exports = async (req, res) => {
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);
 
   try {
-    const { type, fullName, email, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor } = req.body;
+    const { type, fullName, email, phone, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -249,6 +249,8 @@ module.exports = async (req, res) => {
       watch_details: detailsForRow,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
+      phone: phone?.trim() || null,
+      budget: budget?.trim() || null,
       status: "new",
     };
 

@@ -1339,6 +1339,8 @@
                     type,
                     fullName: formData.get('fullName'),
                     email: formData.get('email'),
+                    phone: phone || null,
+                    budget: budget || null,
                     watchDetails: watchDetailsStr || null,
                     watchName: brand && model ? brand + ' ' + model : extraData.watchName || null,
                     watchRef: ref || extraData.watchRef || null,

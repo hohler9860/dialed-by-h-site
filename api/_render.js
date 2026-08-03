@@ -42,12 +42,20 @@ small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
 </div></body></html>`;
 }
 
-function renderWatchPage(w) {
+function renderWatchPage(w, all = []) {
+    // Related pieces: same model family first, then same brand — server-rendered
+    // links so crawlers index the internal mesh (and buyers keep browsing).
+    const fam = m => String(m || '').replace(/\s\d{2}(\.\d)?$/, '');
+    const pool = all.filter(p => p.slug !== w.slug && p.image);
+    const related = [
+        ...pool.filter(p => p.brand === w.brand && fam(p.model) === fam(w.model)),
+        ...pool.filter(p => p.brand === w.brand && fam(p.model) !== fam(w.model)),
+    ].slice(0, 4);
     const displayName = w.name + (w.nickname ? ` "${w.nickname}"` : '');
     const canonical = `${SITE_URL}/watch/${w.slug}`;
     const img = normUrl(w.image);
     const title = `${displayName}${w.ref ? ' ' + w.ref : ''} | Dialed By H`;
-    const description = `${displayName}${w.ref ? ' (Ref. ' + w.ref + ')' : ''} — ${w.brand} available through Dialed By H, a nationwide US luxury watch concierge based in New York & Boston. Authenticated, with fully insured shipping anywhere in the United States. Inquire for pricing and availability.`;
+    const description = `${displayName}${w.ref ? ' (Ref. ' + w.ref + ')' : ''} — ${w.brand} available through Dialed By H, a nationwide US luxury watch concierge based in Boston, New York City, and Miami. Authenticated, with fully insured shipping anywhere in the United States. Inquire for pricing and availability.`;
 
     const specs = [
         ['Brand', w.brand], ['Model', w.model], ['Reference', w.ref], ['Nickname', w.nickname],
@@ -69,6 +77,7 @@ function renderWatchPage(w) {
         additionalProperty: specs.map(([name, value]) => ({ '@type': 'PropertyValue', name, value: String(value) })),
         offers: {
             '@type': 'Offer',
+            areaServed: ['Boston', 'New York City', 'Miami', 'United States'],
             availability: 'https://schema.org/InStock',
             itemCondition: w.condition && /new|unworn/i.test(w.condition) ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
             priceCurrency: 'USD',
@@ -347,7 +356,7 @@ ${thumbsHtml}
 <h1 class="pt-title">${escHtml(w.name || w.model)}</h1>
 ${w.ref ? `<p class="pt-ref">Ref. ${escHtml(w.ref)}</p>` : ''}
 ${w.details ? `<p class="pt-blurb">${escHtml(w.details)}</p>` : ''}
-<p class="pt-blurb">Sourced for clients nationwide. Independently authenticated, with fully insured shipping anywhere in the US.</p>
+<p class="pt-blurb">Sourced for clients in Boston, New York, Miami, and nationwide. Independently authenticated, with fully insured shipping anywhere in the US.</p>
 <div class="pt-inquiry">
 <p>Interested in this piece? Inquire below and I&rsquo;ll get back to you with sourcing details, pricing, and availability.</p>
 <a class="pt-btn pt-btn--wa" href="${waLink}" target="_blank" rel="noopener">Message on WhatsApp</a>
@@ -357,6 +366,25 @@ ${w.details ? `<p class="pt-blurb">${escHtml(w.details)}</p>` : ''}
 </div>
 </div>
 <section class="pt-specs"><h2>Specifications</h2><table>${specsHtml}</table></section>
+${related.length ? `
+<section class="pt-specs pt-related"><h2>Related Pieces</h2>
+<style>
+.pt-relgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+@media(max-width:820px){.pt-relgrid{grid-template-columns:repeat(2,1fr)}}
+.pt-relgrid a{text-decoration:none;color:#000;display:block}
+.pt-relgrid .rimg{aspect-ratio:1/1;overflow:hidden;background:#0d0d0d}
+.pt-relgrid img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.19,1,.22,1)}
+.pt-relgrid a:hover img{transform:scale(1.04)}
+.pt-relgrid .rname{font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-top:10px;display:block}
+.pt-relgrid .rref{font-family:var(--pt-mono);font-size:10px;letter-spacing:.12em;color:rgba(0,0,0,.45);display:block;margin-top:3px}
+</style>
+<div class="pt-relgrid">
+${related.map(p => `<a href="/watch/${p.slug}" aria-label="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' ' + escAttr(p.ref) : ''}">
+<div class="rimg"><img src="${escAttr(normPath(p.image))}" alt="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy"></div>
+<span class="rname">${escHtml((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}</span>
+${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
+</a>`).join('')}
+</div></section>` : ''}
 </div>
 </main>
 <footer class="footer relative pb-5 b768:pt-20 b768:pb-16 bg-beige text-black border border-t border-black border-opacity-10 js-footer"><div class="container"><div class="grid grid-cols-24 b768:gap-5">

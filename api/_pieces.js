@@ -81,6 +81,7 @@ function mapPage(page) {
     const images = getImages(p['Image']);
     const collections = getMulti(p['Collection']);
     const tags = get(p['Tags']);
+    const celebs = getMulti(p['Celebrity']);
 
     const name = piece || `${brand} ${model}`.trim();
 
@@ -99,7 +100,7 @@ function mapPage(page) {
         images: stable,
         year: year ? String(Math.round(year)) : '',
         condition, caseMaterial, dialColor, bracelet, caseSize, set,
-        collections, tags,
+        collections, tags, celebs,
     };
     out.slug = pieceSlug(out);
     return out;

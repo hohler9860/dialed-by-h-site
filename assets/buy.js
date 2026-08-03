@@ -47,10 +47,17 @@
     return out.sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
   }
 
+  function celebOptions() {
+    var out = [];
+    INV.forEach(function (w) { (w.celebs || []).forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); }); });
+    return out.sort();
+  }
+
   function buildFacets() {
     var years = uniq('year');
     FACETS = [
       { id: 'collection', label: 'Collection', options: COLLECTIONS, match: function (w, sel) { return (w.collections || []).some(function (c) { return sel.indexOf(c) >= 0; }); } },
+      { id: 'celeb', label: 'Celebrity', options: celebOptions(), match: function (w, sel) { return (w.celebs || []).some(function (c) { return sel.indexOf(c) >= 0; }); } },
       { id: 'brand', label: 'Brand', options: uniq('brand'), match: function (w, sel) { return sel.indexOf(w.brand) >= 0; } },
       { id: 'model', label: 'Model', options: modelOptions(), match: function (w, sel) { return sel.indexOf(modelFamily(w.model)) >= 0; } },
       { id: 'size', label: 'Case Size', options: sizeOptions(), match: function (w, sel) { return sel.indexOf(w.caseSize) >= 0; } },

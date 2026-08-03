@@ -56,7 +56,9 @@
     source: {
       title: 'Request to source.',
       sub: "Tell us what you're after. I'll text you back.",
-      fields: baseFields() + detailsField(true)
+      fields: baseFields() +
+        field('Budget', '<select name="budget" required><option value="">Select budget</option><option>Under $10k</option><option>$10k - $25k</option><option>$25k - $50k</option><option>$50k - $100k</option><option>$100k - $250k</option><option>$250k+</option></select>') +
+        detailsField(true)
     }
   };
 
@@ -141,7 +143,7 @@
         var fd = new FormData(e.target);
         var get = function (k) { return (fd.get(k) || '').toString().trim(); };
         var detailParts = [];
-        [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
+        [['Reference', 'reference'], ['Budget', 'budget'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
           if (get(p[1])) detailParts.push(p[0] + ': ' + get(p[1]));
         });
         detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
@@ -167,7 +169,7 @@
           setTimeout(close, 1200);
         }).catch(function () {
           var lines = [cfg.title + ' — Dialed By H'];
-          var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', price: 'Asking price', reason: 'Reason', details: 'Details' };
+          var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', budget: 'Budget', price: 'Asking price', reason: 'Reason', details: 'Details' };
           Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
           window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
           close();

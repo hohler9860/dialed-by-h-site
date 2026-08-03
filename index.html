@@ -1192,6 +1192,20 @@
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reference Number (if known)</label>
                                         <input type="text" name="watchRef" placeholder="e.g. 126500LN" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
                                     </div>
+                                    ${type === 'BUY' ? `
+                                    <div>
+                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Budget</label>
+                                        <select name="budget" required class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
+                                            <option value="" class="bg-charcoal">Select Budget</option>
+                                            <option value="Under $10k" class="bg-charcoal">Under $10k</option>
+                                            <option value="$10k - $25k" class="bg-charcoal">$10k - $25k</option>
+                                            <option value="$25k - $50k" class="bg-charcoal">$25k - $50k</option>
+                                            <option value="$50k - $100k" class="bg-charcoal">$50k - $100k</option>
+                                            <option value="$100k - $250k" class="bg-charcoal">$100k - $250k</option>
+                                            <option value="$250k+" class="bg-charcoal">$250k+</option>
+                                        </select>
+                                    </div>
+                                    ` : ''}
                                     ${(type === 'SELL' || type === 'TRADE') ? `
                                     <div>
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reason for ${type === 'SELL' ? 'Selling' : 'Trading'}</label>
@@ -1295,6 +1309,7 @@
                 const ref = formData.get('watchRef') || '';
                 const reason = formData.get('reason') || '';
                 const details = formData.get('watchDetails') || '';
+                const budget = formData.get('budget') || '';
                 const phone = formData.get('phone') || '';
                 const preferred = formData.get('preferred') || '';
 
@@ -1306,6 +1321,9 @@
                 }
                 if (reason) {
                     watchDetailsStr = (watchDetailsStr ? watchDetailsStr + ' | ' : '') + 'Reason: ' + reason;
+                }
+                if (budget) {
+                    watchDetailsStr = (watchDetailsStr ? watchDetailsStr + ' | ' : '') + 'Budget: ' + budget;
                 }
                 if (formData.has('phone')) {
                     const contactParts = [

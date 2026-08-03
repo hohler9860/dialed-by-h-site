@@ -126,6 +126,7 @@ a.pt-cta{text-decoration:none;display:inline-block}
 .pt-modal .pm-check{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:26px;cursor:pointer}
 .pt-modal .pm-check input{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1px solid rgba(255,255,255,.4);background:transparent;cursor:pointer;margin:0;flex-shrink:0}
 .pt-modal .pm-check input:checked{background:#fff}
+.jimg--hero{object-fit:cover;border-radius:6px;aspect-ratio:1/1}
 </style>
 <style>
 .pt-page{padding:120px 0 110px;font-family:var(--pt-mono);background:#fff;color:#000}
@@ -306,8 +307,10 @@ fbq('track', 'PageView');
       }
       usedStickers.push(idx);
       var n = String(idx + 1); if (n.length < 2) n = '0' + n;
-      var rot = 0; // Henry: all covers straight
-      var cover = '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy" style="transform:rotate(' + rot + 'deg)">';
+      // Hero image is the cover when the article has one; watch cutout is the fallback.
+      var cover = a.hero_image_url
+        ? '<img class="jimg jimg--hero" src="' + a.hero_image_url + '" alt="" loading="lazy">'
+        : '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
       return '<a class="pt-jitem" href="/journal/' + a.slug + '">' +
         cover +
         '<span class="jd">' + date + '</span>' +

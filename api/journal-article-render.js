@@ -43,6 +43,7 @@ p{font-size:13px;color:rgba(0,0,0,.55);margin:0 0 28px}
 a{display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;padding:16px 34px;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
 small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.4);margin-bottom:16px}
 </style>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 <div>

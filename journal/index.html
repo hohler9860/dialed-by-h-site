@@ -305,7 +305,7 @@ fbq('track', 'PageView');
       }
       usedStickers.push(idx);
       var n = String(idx + 1); if (n.length < 2) n = '0' + n;
-      var rot = (h % 13) - 6;
+      var rot = 0; // Henry: all covers straight
       var cover = '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy" style="transform:rotate(' + rot + 'deg)">';
       return '<a class="pt-jitem" href="/journal/' + a.slug + '">' +
         cover +

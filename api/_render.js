@@ -394,6 +394,7 @@ ${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
 <li class="flex"><span class="text-navy">WhatsApp</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener">+1 914 621 1848</a></li>
 <li class="flex"><span class="text-navy">Email</span><a href="mailto:dialedbyh@gmail.com">dialedbyh@gmail.com</a></li>
 <li class="flex"><span class="text-navy">Instagram</span><a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">@dialedbyh</a></li>
+<li class="flex"><span class="text-navy">LinkedIn</span><a href="https://www.linkedin.com/company/dialedbyh/" target="_blank" rel="noopener">DialedbyH</a></li>
 </ul></div>
 <div class="col-span-24 b768:col-span-6 border">
 <span class="text-10 b768:text-navy py-5 b768:py-0 b768:mb-5 flex relative">Menu</span>

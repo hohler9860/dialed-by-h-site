@@ -77,6 +77,25 @@ async function supabase(path, options = {}) {
     return res.json();
 }
 
+// PostgREST refuses to return more than 1000 rows no matter what limit you ask
+// for, so a plain "limit=2000" silently hands back 1000 and everything past it
+// vanishes without an error. Walk the range in pages instead.
+async function supabaseAll(path, options = {}, cap = 20000) {
+    const PAGE = 1000;
+    const out = [];
+    for (let from = 0; from < cap; from += PAGE) {
+        const to = from + PAGE - 1;
+        const page = await supabase(path, {
+            ...options,
+            headers: { ...(options.headers || {}), Range: `${from}-${to}`, "Range-Unit": "items" },
+        });
+        if (!Array.isArray(page) || page.length === 0) break;
+        out.push(...page);
+        if (page.length < PAGE) break;
+    }
+    return out;
+}
+
 // A lead is "real" only once the classifier has said so. Unclassified rows are
 // counted separately rather than being lumped in with the good ones.
 function buildStats(leads) {
@@ -228,12 +247,13 @@ module.exports = async (req, res) => {
         // 13th route would fail the build. Same auth, different data.
         if (action === "wholesale") {
             const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+            const qAll = (path) => supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } });
 
             const [listings, stats, variants, alerts, groups] = await Promise.all([
                 // The view carries the stored photo path alongside the listing.
-                q("listings_with_image?select=*&order=message_ts.desc&limit=1000"),
-                q("reference_stats?select=*&order=n.desc&limit=1000"),
-                q("variant_stats?select=*&order=n.desc&limit=1000"),
+                qAll("listings_with_image?select=*&order=message_ts.desc"),
+                qAll("reference_stats?select=*&order=n.desc"),
+                qAll("variant_stats?select=*&order=n.desc"),
                 // Join through to the listing so the UI can show what was on offer.
                 q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200"),
                 q("groups?select=jid,name,is_price_baseline,active"),
@@ -581,9 +601,9 @@ module.exports = async (req, res) => {
         if (action === "retail") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
             const [rows, sources] = await Promise.all([
-                wh("retail_listings?select=id,source_slug,title,brand,reference,price_usd,available," +
+                supabaseAll("retail_listings?select=id,source_slug,title,brand,reference,price_usd,available," +
                    "year,condition,set_completeness,url,image_url,last_seen" +
-                   "&order=last_seen.desc&limit=2000"),
+                   "&order=last_seen.desc", { headers: { "Accept-Profile": "wholesale" } }),
                 wh("retail_sources?select=slug,name,feed_type,last_sync,last_count"),
             ]);
 

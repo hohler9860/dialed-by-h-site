@@ -313,7 +313,7 @@
     .glass-strong{background:rgba(255,255,255,.97)!important;border:1px solid rgba(0,0,0,.1)!important}
     .dbh-solid{background:#fff}
     /* sticker scene: fixed layer behind everything (BWC field) */
-    .dbh-scene{position:fixed;top:0;left:0;width:100%;height:100vh;height:100svh;z-index:-1;pointer-events:none}
+    
     /* rebuild header: centered logo, mono nav, sibling-dim hover */
     .dbh-header{position:fixed;top:0;left:0;right:0;z-index:40;padding:20px 40px;font-family:var(--pt-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0a0a0a}
     .dbh-header__bar{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:36px}
@@ -444,7 +444,6 @@
         <button onclick="app.toggleMobileMenu(); app.openModal('BUY')" class="text-[11px] font-space tracking-widest text-muted/70 hover:text-ivory transition-colors uppercase pt-2">Request to Source &rarr;</button>
     </div>
 
-    <div class="dbh-scene js-dbh-scene" aria-hidden="true"></div>
 
     <main>
         <!-- HERO SECTION -->
@@ -1468,25 +1467,6 @@
 })();
 </script>
 <script>
-/* sticker field: hero only — fully faded out before any content below the hero */
-(function(){
-  var scene = document.querySelector('.js-dbh-scene'), hero = document.querySelector('.dbh-hero');
-  if(!scene || !hero) return;
-  var ticking = false;
-  function upd(){
-    ticking = false;
-    var vh = window.innerHeight || 1;
-    var bottom = hero.getBoundingClientRect().bottom;
-    /* opacity 1 while the hero fills the screen, 0 by the time its bottom passes 40% of the viewport */
-    var o = (bottom - 0.4 * vh) / (0.5 * vh);
-    scene.style.opacity = Math.max(0, Math.min(1, o));
-  }
-  window.addEventListener('scroll', function(){ if(!ticking){ ticking = true; requestAnimationFrame(upd); } }, { passive: true });
-  window.addEventListener('resize', upd);
-  upd();
-})();
-</script>
-<script>
 /* FAQ accordion — BWC discover-panel behavior, one open at a time */
 (function(){
   var items = document.querySelectorAll('.dbh-faq__item');
@@ -1523,6 +1503,5 @@
   }).observe(root, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
 })();
 </script>
-<script type="module" src="/assets/dbh-scene.bundle.js"></script>
 </body>
 </html>

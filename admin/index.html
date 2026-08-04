@@ -2149,8 +2149,13 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var rows = [
             ['Reference',   l.reference || '—'],
             ['Asking',      money(l.price_usd)],
-            ['Market',      l.baseline_usd ? money(l.baseline_usd) + ' (median of ' + l.baseline_n +
-                            (l.baseline_basis === 'VARIANT' ? ' exact matches)' : ' same ref)') : 'not enough quotes yet'],
+            // An exact match now means same dial colour too, which is the single
+            // biggest price driver. Where there is no number, say which reason.
+            ['Market',      l.baseline_usd
+                              ? money(l.baseline_usd) + ' (median of ' + l.baseline_n +
+                                (l.baseline_basis === 'VARIANT'
+                                  ? ' exact matches, same dial)' : ' same ref)')
+                              : (l.baseline_note || 'not enough quotes yet')],
             ['Condition',   (l.condition || 'UNKNOWN').replace(/_/g, ' ')],
             ['Set',         (l.set_completeness || 'UNKNOWN').replace(/_/g, ' ')],
             ['Year',        l.year || '—'],

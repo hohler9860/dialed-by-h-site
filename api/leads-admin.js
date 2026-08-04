@@ -273,10 +273,28 @@ module.exports = async (req, res) => {
             for (const l of listings) {
                 const v = l.variant_key ? byVariant[l.variant_key] : null;
                 const r = l.reference ? byRef[l.reference] : null;
-                const base = (v && v.n >= 4) ? v : r;
+
+                // Prefer the variant, which now includes dial colour. Colour is
+                // the single biggest price driver: on a 124300 it separates an
+                // $8,100 silver from a $22,600 white.
+                //
+                // Falling back to the bare reference is only safe when that
+                // reference's own prices hang together. Roughly a fifth of them
+                // do not, because one reference number covers several different
+                // watches, and showing a median of unlike things as "market" is
+                // worse than admitting there is no baseline.
+                const useVariant = v && v.n >= 3;
+                const refOk = r && r.n >= 4 && r.coherent !== false;
+                const base = useVariant ? v : (refOk ? r : null);
+
                 l.baseline_usd = base ? Number(base.median_usd) : null;
                 l.baseline_n = base ? base.n : 0;
-                l.baseline_basis = base ? ((v && v.n >= 4) ? "VARIANT" : "REFERENCE") : null;
+                l.baseline_basis = base ? (useVariant ? "VARIANT" : "REFERENCE") : null;
+                // Say why there is no number, rather than leaving it blank.
+                l.baseline_note = base ? null
+                    : (r && r.coherent === false
+                        ? "reference mixes different watches"
+                        : "not enough comparable quotes yet");
                 l.delta_pct = (l.baseline_usd && l.price_usd)
                     ? Math.round(((l.baseline_usd - l.price_usd) / l.baseline_usd) * 1000) / 10
                     : null;

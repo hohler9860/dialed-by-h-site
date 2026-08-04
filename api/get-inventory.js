@@ -305,6 +305,52 @@ module.exports = async (req, res) => {
             return res.status(200).json({ refreshed: true, pieces: fresh.length });
         }
         const pieces = await fetchAllPieces();
+
+        // ?ticker=1 — the homepage strip, and nothing else.
+        //
+        // The ticker used to pull the default list: 1741 pieces, 22 fields each,
+        // 1.95MB of JSON parsed on the main thread to render 44 rows. It was the
+        // longest chain on the homepage at ~3.1s. Selection moves here because the
+        // server already holds the whole catalog warm in memory, so the browser
+        // downloads the 44 it will actually paint.
+        if (q.ticker) {
+            const HOT = ['Audemars Piguet', 'Patek Philippe', 'F.P. Journe', 'Rolex',
+                         'Richard Mille', 'Vacheron Constantin', 'A. Lange & Söhne', 'Cartier'];
+            const VETO = ['richard-mille-rm-07-01-rm07-01-2be983'];
+            // ?ticker=1 is the flag form and means "the usual strip", not "one
+            // piece". Only a value above 1 is read as a count.
+            const asked = Number(q.ticker);
+            const want = Math.min(asked > 1 ? asked : 44, 60);
+
+            const byBrand = {};
+            for (const w of pieces) {
+                if (!/-cutout\.webp$/.test(w.imageCutout || '')) continue;
+                if (VETO.includes(w.slug)) continue;
+                (byBrand[w.brand] = byBrand[w.brand] || []).push(w);
+            }
+            // Rotate by the day so the strip is not frozen on one set forever,
+            // but stays identical within a day — the CDN caches this for 15
+            // minutes and a per-request shuffle would make that pointless.
+            const day = Math.floor(Date.now() / 864e5);
+            const out = [];
+            for (let round = 0; out.length < want; round++) {
+                let added = 0;
+                for (const b of HOT) {
+                    const list = byBrand[b];
+                    if (!list || !list.length) continue;
+                    out.push(list[(day * 7 + round * 13) % list.length]);
+                    added++;
+                    if (out.length >= want) break;
+                }
+                if (!added) break;
+            }
+            return res.status(200).json(out.map(w => ({
+                id: w.id, slug: w.slug, brand: w.brand, model: w.model,
+                nickname: w.nickname, name: w.name, ref: w.ref, details: w.details,
+                imageCutout: w.imageCutout, imageCutoutThumb: w.imageCutoutThumb,
+            })));
+        }
+
         if (q.id) {
             const piece = pieces.find(w => w.id === q.id);
             if (!piece) return res.status(404).json({ error: 'Piece not found' });

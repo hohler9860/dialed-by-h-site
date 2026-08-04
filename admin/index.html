@@ -1285,7 +1285,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         document.getElementById('p-refresh').addEventListener('click', function () {
             view.innerHTML = '<p class="count">Refreshing…</p>';
-            renderPieces(true);
+            renderPieces(true).catch(function (e) {
+                view.innerHTML = '<p class="err">Could not refresh: ' + esc(e.message || e) + '</p>';
+            });
         });
         document.getElementById('p-new').addEventListener('click', function () { editPiece(null); });
     }
@@ -1866,7 +1868,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         document.getElementById('l-refresh').addEventListener('click', function () {
             view.innerHTML = '<p class="count">Refreshing…</p>';
-            renderLeads();
+            renderLeads().catch(function (e) {
+                view.innerHTML = '<p class="err">Could not refresh: ' + esc(e.message || e) + '</p>';
+            });
         });
         document.getElementById('l-csv').addEventListener('click', exportLeads);
     }
@@ -2953,7 +2957,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
         });
         var rf = document.getElementById('by-refresh');
-        if (rf) rf.addEventListener('click', renderBuyers);
+        if (rf) rf.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Refreshing…</p>';
+            renderBuyers().catch(function (e) {
+                view.innerHTML = '<p class="err">Could not refresh: ' + esc(e.message || e) + '</p>';
+            });
+        });
     }
 
     // ══════════════════════════════════════════════════════════

@@ -353,12 +353,15 @@ module.exports = async (req, res) => {
         // Bearer check above. The dbh_* tables have RLS on with zero policies,
         // so the service-role key is the only way to read them.
         if (action === "books") {
+            // These are the money tiles. A limit above 1000 is a lie -- PostgREST
+            // caps the response there and says nothing -- so a growing bank
+            // register would have started quietly understating cash and profit.
             const [deals, expenses, subscriptions, capital, bank] = await Promise.all([
-                supabase("dbh_deals?select=*&order=date_bought.asc&limit=2000"),
-                supabase("dbh_expenses?select=*&order=spent_on.asc&limit=5000"),
-                supabase("dbh_subscriptions?select=*&order=monthly_cost.desc&limit=200"),
-                supabase("dbh_capital?select=*&order=moved_on.asc&limit=500"),
-                supabase("dbh_bank_txns?select=*&order=posted_on.asc&limit=5000"),
+                supabaseAll("dbh_deals?select=*&order=date_bought.asc"),
+                supabaseAll("dbh_expenses?select=*&order=spent_on.asc"),
+                supabaseAll("dbh_subscriptions?select=*&order=monthly_cost.desc"),
+                supabaseAll("dbh_capital?select=*&order=moved_on.asc"),
+                supabaseAll("dbh_bank_txns?select=*&order=posted_on.asc"),
             ]);
 
             // Cash is a whole-account fact, not a period one: it is every row the
@@ -463,12 +466,14 @@ module.exports = async (req, res) => {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
 
             const [wants, matches, alerts] = await Promise.all([
-                supabase("open_wants_board?select=*&limit=500"),
+                supabaseAll("open_wants_board?select=*"),
                 // Best (cheapest) match per want is what matters operationally;
                 // the rest are noise from one client matching every Daytona posted.
-                supabase(
+                // This has to read ALL of them: picking the cheapest out of only
+                // the 400 newest quietly showed a worse price than was available.
+                supabaseAll(
                     "want_matches?select=*,want:client_wants(client_name,client_phone,ok_to_text,lead_quality,brand,model,reference,opened_at,status)" +
-                    "&order=created_at.desc&limit=400"
+                    "&order=created_at.desc"
                 ),
                 wh("deal_alerts?select=*&order=created_at.desc&limit=100"),
             ]);
@@ -641,9 +646,10 @@ module.exports = async (req, res) => {
 
         if (action === "dealers") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-            const dealers = await wh(
+            const dealers = await supabaseAll(
                 "dealers?select=lid,phone,wa_name,push_name,listings_count,first_seen,last_seen,groups" +
-                "&listings_count=gt.0&order=listings_count.desc&limit=1000"
+                "&listings_count=gt.0&order=listings_count.desc",
+                { headers: { "Accept-Profile": "wholesale" } }
             );
             return res.status(200).json({
                 dealers,
@@ -663,7 +669,7 @@ module.exports = async (req, res) => {
         if (action === "quote-book") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
             const [rows, manual] = await Promise.all([
-                wh("quote_book?select=*&limit=1000"),
+                supabaseAll("quote_book?select=*", { headers: { "Accept-Profile": "wholesale" } }),
                 wh("manual_benchmarks?select=*&order=updated_at.desc&limit=500"),
             ]);
             const by = (c) => rows.filter((r) => r.quote_confidence === c).length;

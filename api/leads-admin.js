@@ -529,6 +529,48 @@ module.exports = async (req, res) => {
         // ── Dealer directory ───────────────────────────────────────────────
         // Group members are only exposed as an opaque @lid; the phone number
         // comes from the participant roster, which is why this is worth keeping.
+        // The retail catalogue itself: what the public is being asked to pay.
+        // Separate from quote-book, which only covers references we can price.
+        if (action === "retail") {
+            const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+            const [rows, sources] = await Promise.all([
+                wh("retail_listings?select=id,source_slug,title,brand,reference,price_usd,available," +
+                   "year,condition,set_completeness,url,image_url,last_seen" +
+                   "&order=last_seen.desc&limit=2000"),
+                wh("retail_sources?select=slug,name,feed_type,last_sync,last_count"),
+            ]);
+
+            const nameBySlug = {};
+            for (const s of sources || []) nameBySlug[s.slug] = s.name;
+
+            // Per-source quality. This is the honest answer to "can I trust this
+            // number": a source that never states condition or contents can only
+            // ever support a reference-only comparison.
+            const bySource = {};
+            for (const r of rows) {
+                const s = (bySource[r.source_slug] ||= {
+                    slug: r.source_slug, name: nameBySlug[r.source_slug] || r.source_slug,
+                    products: 0, with_ref: 0, with_year: 0, with_condition: 0, with_set: 0,
+                });
+                s.products += 1;
+                if (r.reference) s.with_ref += 1;
+                if (r.year) s.with_year += 1;
+                if (r.condition) s.with_condition += 1;
+                if (r.set_completeness) s.with_set += 1;
+            }
+
+            return res.status(200).json({
+                rows, sources,
+                bySource: Object.values(bySource).sort((a, b) => b.products - a.products),
+                counters: {
+                    total: rows.length,
+                    with_ref: rows.filter((r) => r.reference).length,
+                    comparable: rows.filter((r) => r.reference && r.condition && r.set_completeness).length,
+                    sources: Object.keys(bySource).length,
+                },
+            });
+        }
+
         if (action === "dealers") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
             const dealers = await wh(

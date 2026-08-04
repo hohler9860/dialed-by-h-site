@@ -2171,6 +2171,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     var MX = { wants: [], best: [], alerts: [], counters: {} };
     var mxView = 'matched';
     var QB = { rows: [], counters: {} };
+    var RT = { rows: [], bySource: [], counters: {} };
     var mxq = '';
 
     async function renderMatches() {
@@ -2183,6 +2184,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var qb = await A.adminFetchTo('/api/leads-admin', 'quote-book');
             QB.rows = qb.rows || []; QB.counters = qb.counters || {};
         } catch (e) { QB = { rows: [], counters: {} }; }
+        try {
+            var rt = await A.adminFetchTo('/api/leads-admin', 'retail');
+            RT.rows = rt.rows || []; RT.bySource = rt.bySource || []; RT.counters = rt.counters || {};
+        } catch (e) { RT = { rows: [], bySource: [], counters: {} }; }
         paintMatches();
     }
 
@@ -2205,6 +2210,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             { k: 'waiting', l: 'Still hunting', v: MX.wants.length - MX.best.length },
             { k: 'alerts',  l: 'Under market', v: MX.alerts.length },
             { k: 'prices',  l: 'Quotable', v: (QB.counters.quotable != null ? QB.counters.quotable : '—') },
+            { k: 'retail',  l: 'Retail',   v: (RT.counters.total != null ? RT.counters.total : '—') },
         ];
 
         var html =
@@ -2237,6 +2243,53 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                           '<td>' + (w.client_phone ? '<a class="tmono" href="https://wa.me/' + esc(String(w.client_phone).replace(/\D/g,'')) + '" target="_blank" rel="noopener">WhatsApp</a>' : '<span class="tmono">—</span>') + '</td>' +
                         '</tr>';
                     }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">Nothing open.</span></td></tr>') +
+                    '</tbody></table></div>';
+        } else if (mxView === 'retail') {
+            var rt = RT.rows.filter(function (r) { return !q || hay(r).indexOf(q) >= 0; }).slice(0, 400);
+            var c3 = RT.counters;
+            html += '<p class="count">' + (c3.total || 0) + ' retail products from ' + (c3.sources || 0) +
+                    ' sites · ' + (c3.with_ref || 0) + ' with a reference · ' +
+                    (c3.comparable || 0) + ' complete enough to compare like for like</p>' +
+                    // Source quality is the honest answer to "can I trust this":
+                    // a site that never states condition can only support a
+                    // reference-only comparison.
+                    '<div class="tbl-wrap" style="margin-bottom:14px"><table class="leads"><thead><tr>' +
+                      '<th>Source</th><th style="width:80px">Products</th><th style="width:80px">Ref</th>' +
+                      '<th style="width:70px">Year</th><th style="width:90px">Condition</th><th style="width:90px">Contents</th>' +
+                    '</tr></thead><tbody>' +
+                    RT.bySource.map(function (s) {
+                        var pct = function (n) { return s.products ? Math.round(100 * n / s.products) + '%' : '—'; };
+                        return '<tr>' +
+                          '<td><div class="tname">' + esc(s.name) + '</div></td>' +
+                          '<td><span class="tmono">' + s.products + '</span></td>' +
+                          '<td><span class="tmono">' + pct(s.with_ref) + '</span></td>' +
+                          '<td><span class="tmono">' + pct(s.with_year) + '</span></td>' +
+                          '<td><span class="tmono">' + pct(s.with_condition) + '</span></td>' +
+                          '<td><span class="tmono">' + pct(s.with_set) + '</span></td>' +
+                        '</tr>';
+                    }).join('') +
+                    '</tbody></table></div>' +
+                    '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+                      '<th style="width:56px"></th><th>Watch</th><th style="width:120px">Source</th>' +
+                      '<th style="width:110px">Price</th><th style="width:170px">Spec</th>' +
+                    '</tr></thead><tbody>' +
+                    (rt.length ? rt.map(function (r) {
+                        var sp = [r.year, r.condition ? r.condition.replace(/_/g,' ') : null,
+                                  r.set_completeness ? r.set_completeness.replace(/_/g,' ') : null]
+                                 .filter(Boolean).join(' · ');
+                        return '<tr>' +
+                          '<td>' + (r.image_url
+                              ? '<img class="wthumb" src="' + esc(r.image_url) + '" alt="" loading="lazy" decoding="async">'
+                              : '<span class="wthumb wthumb--none"></span>') + '</td>' +
+                          '<td><div class="tname">' + esc((r.title || '').slice(0, 70) || '—') + '</div>' +
+                              '<div class="tsub">' + esc(r.reference || 'no reference') + '</div></td>' +
+                          '<td><span class="tsub">' + esc(r.source_slug) + '</span></td>' +
+                          '<td><span class="tmono">' + esc(money(r.price_usd)) + '</span>' +
+                              (r.available === false ? '<div class="tsub">sold</div>' : '') + '</td>' +
+                          '<td>' + (sp ? '<span class="tsub">' + esc(sp) + '</span>'
+                                       : '<span class="tmono">not stated</span>') + '</td>' +
+                        '</tr>';
+                    }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">No retail products yet.</span></td></tr>') +
                     '</tbody></table></div>';
         } else if (mxView === 'prices') {
             var qb = QB.rows.filter(function (r) { return !q || hay(r).indexOf(q) >= 0; });

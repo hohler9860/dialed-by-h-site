@@ -281,6 +281,7 @@ select.stat {
             <button data-tab="pieces"  aria-selected="true">Pieces</button>
             <button data-tab="journal" aria-selected="false">Journal</button>
             <button data-tab="leads"   aria-selected="false">Leads</button>
+            <button data-tab="wholesale" aria-selected="false">Wholesale</button>
         </nav>
 
         <section class="body" id="view"></section>
@@ -334,7 +335,7 @@ select.stat {
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { pieces: renderPieces, journal: renderJournal, leads: renderLeads };
+    var TABS = { pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -933,6 +934,278 @@ select.stat {
         var a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
         a.download = 'dialed-leads.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // WHOLESALE  — the price index scraped out of the dealer groups
+    // ══════════════════════════════════════════════════════════
+    var WS = { listings: [], stats: [], variants: [], alerts: [], names: {}, counters: {} };
+    var wq = '';
+    var wfilter = { tile: '', brand: '', group: '', days: '' };
+    var wsort = 'message_ts';
+    var wdir = -1;
+    var wopen = null;
+
+    async function renderWholesale() {
+        var r = await A.adminFetchTo('/api/leads-admin', 'wholesale');
+        WS.listings = r.listings || [];
+        WS.stats    = r.stats || [];
+        WS.variants = r.variants || [];
+        WS.alerts   = r.alerts || [];
+        WS.names    = r.nameByJid || {};
+        WS.counters = r.counters || {};
+        paintWholesale();
+    }
+
+    var WTILES = [
+        { k: '',         l: 'All' },
+        { k: 'deals',    l: 'Under market' },
+        { k: 'priced',   l: 'Priced' },
+        { k: 'wtb',      l: 'Wanted' },
+        { k: 'diamonds', l: 'Diamonds' },
+        { k: 'mismatch', l: 'Photo ≠ text' },
+    ];
+
+    function matchWTile(l, k) {
+        if (!k) return true;
+        if (k === 'deals')    return l.delta_pct != null && l.delta_pct >= 10;
+        if (k === 'priced')   return l.price_usd != null;
+        if (k === 'wtb')      return l.listing_type === 'WTB' || l.listing_type === 'NTQ';
+        if (k === 'diamonds') return !!l.has_diamonds;
+        if (k === 'mismatch') return !!l.vision_mismatch;
+        return true;
+    }
+
+    function wsAfter(tile, brand, group, days, q) {
+        var cutoff = days ? Date.now() - (+days * 864e5) : 0;
+        var needle = (q || '').toLowerCase();
+        return WS.listings.filter(function (l) {
+            if (!matchWTile(l, tile)) return false;
+            if (brand && (l.brand || '') !== brand) return false;
+            if (group && l.group_jid !== group) return false;
+            if (cutoff && new Date(l.message_ts).getTime() < cutoff) return false;
+            if (needle) {
+                var hay = [l.brand, l.model, l.reference, l.nickname, l.seller_name,
+                           l.dial_material, l.case_material, l.bracelet].filter(Boolean).join(' ').toLowerCase();
+                if (hay.indexOf(needle) < 0) return false;
+            }
+            return true;
+        });
+    }
+
+    var WCOLS = [
+        { k: 'message_ts',   l: 'Seen',   w: '92px' },
+        { k: 'brand',        l: 'Watch' },
+        { k: 'spec',         l: 'Spec' },
+        { k: 'price_usd',    l: 'Asking', w: '104px' },
+        { k: 'delta_pct',    l: 'vs Mkt', w: '104px' },
+        { k: 'seller_name',  l: 'Seller', w: '150px' },
+    ];
+
+    function specOf(l) {
+        return [
+            l.dial_material && l.dial_material !== 'STANDARD' ? l.dial_material : null,
+            l.case_material ? l.case_material.replace(/_/g, ' ') : null,
+            l.bracelet,
+            l.has_diamonds ? 'diamonds' : null,
+            l.nickname ? '"' + l.nickname + '"' : null,
+        ].filter(Boolean).join(' · ');
+    }
+
+    function money(n) {
+        if (n == null) return '—';
+        return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+
+    function wcell(l, k) {
+        if (k === 'spec')  return specOf(l);
+        if (k === 'brand') return [l.brand, l.model, l.reference].filter(Boolean).join(' ');
+        return l[k];
+    }
+
+    function sortWs(list) {
+        var k = wsort;
+        return list.slice().sort(function (a, b) {
+            var av = wcell(a, k), bv = wcell(b, k);
+            if (k === 'message_ts') return (new Date(av) - new Date(bv)) * wdir;
+            // numeric columns: nulls always sink, whichever way you sort
+            if (k === 'price_usd' || k === 'delta_pct') {
+                if (av == null && bv == null) return 0;
+                if (av == null) return 1;
+                if (bv == null) return -1;
+                return (Number(av) - Number(bv)) * wdir;
+            }
+            return String(av == null ? '' : av).localeCompare(String(bv == null ? '' : bv)) * wdir;
+        });
+    }
+
+    function paintWholesale() {
+        var list = sortWs(wsAfter(wfilter.tile, wfilter.brand, wfilter.group, wfilter.days, wq));
+        var c = WS.counters;
+        var brands = Object.keys(WS.listings.reduce(function (m, l) {
+            if (l.brand) m[l.brand] = 1; return m;
+        }, {})).sort();
+
+        var html =
+            '<div class="tiles">' + WTILES.map(function (t) {
+                var n = wsAfter(t.k, wfilter.brand, wfilter.group, wfilter.days, wq).length;
+                return '<button class="tile" data-wtile="' + t.k + '" aria-pressed="' + (wfilter.tile === t.k) + '">' +
+                    '<span class="tk">' + esc(t.l) + '</span><span class="tv">' + n + '</span></button>';
+            }).join('') + '</div>' +
+
+            '<div class="bar">' +
+              '<input id="w-q" class="ctl grow" type="search" placeholder="SEARCH BRAND, MODEL, REF, NICKNAME, SELLER…" value="' + esc(wq) + '">' +
+              '<select id="w-brand" class="ctl"><option value="">ANY BRAND</option>' +
+                brands.map(function (b) {
+                    return '<option value="' + esc(b) + '"' + (wfilter.brand === b ? ' selected' : '') + '>' + esc(b.toUpperCase()) + '</option>';
+                }).join('') + '</select>' +
+              '<select id="w-group" class="ctl"><option value="">ANY GROUP</option>' +
+                Object.keys(WS.names).map(function (j) {
+                    return '<option value="' + esc(j) + '"' + (wfilter.group === j ? ' selected' : '') + '>' + esc((WS.names[j] || '').toUpperCase()) + '</option>';
+                }).join('') + '</select>' +
+              '<select id="w-days" class="ctl">' +
+                [['', 'ALL TIME'], ['1', 'LAST 24H'], ['7', 'LAST 7 DAYS'], ['30', 'LAST 30 DAYS']].map(function (o) {
+                    return '<option value="' + o[0] + '"' + (wfilter.days === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+                }).join('') + '</select>' +
+              '<button class="btn ghost" id="w-csv">Export</button>' +
+              '<button class="btn ghost" id="w-refresh">Refresh</button>' +
+            '</div>' +
+
+            '<p class="count">' + list.length + ' of ' + WS.listings.length + ' listing' + (WS.listings.length === 1 ? '' : 's') +
+              ' · ' + (c.quotable || 0) + ' reference' + (c.quotable === 1 ? '' : 's') + ' priceable' +
+              ' · ' + (c.variants || 0) + ' variants tracked' +
+              ((c.alerts || 0) ? ' · ' + c.alerts + ' alert' + (c.alerts === 1 ? '' : 's') + ' fired' : '') + '</p>' +
+
+            '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+              WCOLS.map(function (col) {
+                  var on = wsort === col.k;
+                  return '<th class="s' + (on ? ' on' : '') + '" data-wsort="' + col.k + '"' +
+                      (col.w ? ' style="width:' + col.w + '"' : '') + '>' + esc(col.l) +
+                      '<span class="ar">' + (on ? (wdir < 0 ? '↓' : '↑') : '↕') + '</span></th>';
+              }).join('') +
+            '</tr></thead><tbody>' +
+              (list.length ? list.map(wsRow).join('')
+                           : '<tr><td colspan="6" style="padding:28px 0"><span class="tmono">Nothing matches those filters.</span></td></tr>') +
+            '</tbody></table></div>';
+
+        view.innerHTML = html;
+        wireWholesale();
+    }
+
+    function wsRow(l) {
+        var open = wopen === l.id;
+        var d = l.delta_pct;
+        // Only call something a deal when there is a real baseline behind it.
+        var deltaCell = (d == null)
+            ? '<span class="tmono">—</span>'
+            : '<span class="tag ' + (d >= 10 ? 'hot' : (d <= -10 ? 'spam' : 'warm')) + '">' +
+                  (d > 0 ? '-' : '+') + Math.abs(d) + '%</span>';
+
+        var main = '<tr data-wid="' + esc(l.id) + '">' +
+            '<td><span class="tmono">' + esc(fmtDate(l.message_ts)) + '</span></td>' +
+            '<td><div class="tname">' + esc([l.brand, l.model].filter(Boolean).join(' ') || '—') + '</div>' +
+                '<div class="tsub">' + esc(l.reference || 'no ref') + '</div></td>' +
+            '<td>' + (specOf(l) ? esc(specOf(l)) : '<span class="tmono">—</span>') + '</td>' +
+            '<td><span class="tmono">' + esc(money(l.price_usd)) + '</span></td>' +
+            '<td>' + deltaCell + '</td>' +
+            '<td><span class="tsub">' + esc(l.seller_name || '—') + '</span></td>' +
+        '</tr>';
+
+        if (!open) return main;
+
+        var rows = [
+            ['Reference',   l.reference || '—'],
+            ['Asking',      money(l.price_usd)],
+            ['Market',      l.baseline_usd ? money(l.baseline_usd) + ' (median of ' + l.baseline_n +
+                            (l.baseline_basis === 'VARIANT' ? ' exact matches)' : ' same ref)') : 'not enough quotes yet'],
+            ['Condition',   (l.condition || 'UNKNOWN').replace(/_/g, ' ')],
+            ['Set',         (l.set_completeness || 'UNKNOWN').replace(/_/g, ' ')],
+            ['Year',        l.year || '—'],
+            ['Dial',        [l.dial_color, l.dial_material].filter(Boolean).join(' ') || '—'],
+            ['Case',        [l.case_material, l.case_size_mm ? l.case_size_mm + 'mm' : null].filter(Boolean).join(' ').replace(/_/g, ' ') || '—'],
+            ['Bracelet',    l.bracelet || '—'],
+            ['Bezel',       l.bezel || '—'],
+            ['Complications', (l.complications || []).join(', ').replace(/_/g, ' ') || '—'],
+            ['Diamonds',    l.has_diamonds ? (l.diamonds_factory === true ? 'factory' : l.diamonds_factory === false ? 'aftermarket' : 'yes, source unstated') : 'no'],
+            ['Group',       WS.names[l.group_jid] || l.group_jid],
+            ['Type',        l.listing_type],
+            ['Confidence',  (l.confidence == null ? '—' : l.confidence + '%')],
+            ['Read by',     l.model_used || '—'],
+        ];
+        if (l.vision_mismatch) {
+            rows.push(['Photo says', [l.vision_brand, l.vision_model, l.vision_reference].filter(Boolean).join(' ') || '—']);
+        }
+
+        return main +
+            '<tr class="detail"><td colspan="6"><div class="dgrid">' +
+              rows.map(function (r) {
+                  return '<div><div class="dk">' + esc(r[0]) + '</div><div class="dv">' + esc(String(r[1])) + '</div></div>';
+              }).join('') +
+            '</div>' +
+            (l.vision_mismatch ? '<p class="note">The photo does not match the reference in the caption. Worth a look before quoting.</p>' : '') +
+            '</td></tr>';
+    }
+
+    function wireWholesale() {
+        var q = document.getElementById('w-q');
+        if (q) q.addEventListener('input', function () { wq = this.value; var p = this.selectionStart; paintWholesale();
+            var n = document.getElementById('w-q'); if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} } });
+
+        [['w-brand', 'brand'], ['w-group', 'group'], ['w-days', 'days']].forEach(function (pair) {
+            var el = document.getElementById(pair[0]);
+            if (el) el.addEventListener('change', function () { wfilter[pair[1]] = this.value; paintWholesale(); });
+        });
+
+        var rf = document.getElementById('w-refresh');
+        if (rf) rf.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderWholesale().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+
+        var csv = document.getElementById('w-csv');
+        if (csv) csv.addEventListener('click', exportWholesale);
+
+        [].forEach.call(document.querySelectorAll('[data-wtile]'), function (b) {
+            b.addEventListener('click', function () { wfilter.tile = this.dataset.wtile; paintWholesale(); });
+        });
+
+        [].forEach.call(document.querySelectorAll('[data-wsort]'), function (th) {
+            th.addEventListener('click', function () {
+                var k = this.dataset.wsort;
+                if (wsort === k) wdir = -wdir;
+                else { wsort = k; wdir = (k === 'message_ts' || k === 'price_usd' || k === 'delta_pct') ? -1 : 1; }
+                paintWholesale();
+            });
+        });
+
+        [].forEach.call(document.querySelectorAll('tr[data-wid]'), function (tr) {
+            tr.addEventListener('click', function () {
+                var id = Number(this.dataset.wid);
+                wopen = (wopen === id) ? null : id;
+                paintWholesale();
+            });
+        });
+    }
+
+    function exportWholesale() {
+        var list = sortWs(wsAfter(wfilter.tile, wfilter.brand, wfilter.group, wfilter.days, wq));
+        var cols = ['message_ts', 'brand', 'model', 'reference', 'price_usd', 'baseline_usd', 'delta_pct',
+                    'condition', 'set_completeness', 'year', 'dial_color', 'dial_material', 'case_material',
+                    'case_size_mm', 'bracelet', 'bezel', 'has_diamonds', 'nickname', 'seller_name',
+                    'listing_type', 'confidence', 'model_used'];
+        var csv = [cols.join(',')].concat(list.map(function (l) {
+            return cols.map(function (k) {
+                var s = l[k] == null ? '' : String(l[k]);
+                // stop a dealer's text executing as a formula in Excel
+                if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+                return '"' + s.replace(/"/g, '""') + '"';
+            }).join(',');
+        })).join('\n');
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = 'dialed-wholesale.csv';
         a.click();
         URL.revokeObjectURL(a.href);
     }

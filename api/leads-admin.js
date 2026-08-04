@@ -160,9 +160,10 @@ module.exports = async (req, res) => {
         if (action === "wholesale") {
             const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
 
-            const [listings, stats, alerts, groups] = await Promise.all([
+            const [listings, stats, variants, alerts, groups] = await Promise.all([
                 q("listings?select=*&order=message_ts.desc&limit=1000"),
                 q("reference_stats?select=*&order=n.desc&limit=1000"),
+                q("variant_stats?select=*&order=n.desc&limit=1000"),
                 // Join through to the listing so the UI can show what was on offer.
                 q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200"),
                 q("groups?select=jid,name,is_price_baseline,active"),
@@ -171,13 +172,34 @@ module.exports = async (req, res) => {
             const nameByJid = {};
             for (const g of groups || []) nameByJid[g.jid] = g.name;
 
+            // Index the baselines so the table can show each listing against the
+            // market without a second round trip. Variant wins when it has enough
+            // quotes; otherwise the looser reference median stands in.
+            const byVariant = {};
+            for (const v of variants || []) byVariant[v.variant_key] = v;
+            const byRef = {};
+            for (const s of stats || []) byRef[s.reference] = s;
+
+            for (const l of listings) {
+                const v = l.variant_key ? byVariant[l.variant_key] : null;
+                const r = l.reference ? byRef[l.reference] : null;
+                const base = (v && v.n >= 4) ? v : r;
+                l.baseline_usd = base ? Number(base.median_usd) : null;
+                l.baseline_n = base ? base.n : 0;
+                l.baseline_basis = base ? ((v && v.n >= 4) ? "VARIANT" : "REFERENCE") : null;
+                l.delta_pct = (l.baseline_usd && l.price_usd)
+                    ? Math.round(((l.baseline_usd - l.price_usd) / l.baseline_usd) * 1000) / 10
+                    : null;
+            }
+
             return res.status(200).json({
-                listings, stats, alerts, groups, nameByJid,
+                listings, stats, variants, alerts, groups, nameByJid,
                 counters: {
                     listings: listings.length,
                     priced: listings.filter((l) => l.price_usd != null).length,
                     references: stats.length,
-                    // A reference is only quotable once it has enough quotes behind it.
+                    variants: variants.length,
+                    // Only quotable once enough quotes sit behind the median.
                     quotable: stats.filter((s) => s.n >= 4).length,
                     alerts: alerts.length,
                     mismatches: listings.filter((l) => l.vision_mismatch).length,

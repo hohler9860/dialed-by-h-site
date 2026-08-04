@@ -7,6 +7,7 @@
 //
 // The admin actions live here rather than in their own pieces-admin.js purely
 // because of that 12-function cap: api/ is already at exactly 12.
+const crypto = require('crypto');
 const {
     fetchAllPieces, invalidatePieces, pieceSlug, mapRow, PIECES_URL, sbHeaders,
 } = require('./_pieces');
@@ -57,11 +58,24 @@ function publicUrl(objPath) {
 }
 
 // ── admin ──────────────────────────────────────────────────────────────
+// Same Bearer scheme and same timing-safe compare as leads-admin.js. This gates
+// catalogue writes and image uploads on the SAME shared ADMIN_PASSWORD, so a
+// sloppy compare here would weaken every admin endpoint, not just this one.
+function timingSafeEq(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    if (a.length !== b.length) return false;
+    try {
+        return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+    } catch {
+        return false;
+    }
+}
+
 async function handleAdmin(req, res) {
     const expected = process.env.ADMIN_PASSWORD;
     const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    if (!expected || token !== expected) {
+    const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+    if (!expected || !timingSafeEq(token, expected)) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 

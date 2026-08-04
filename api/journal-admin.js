@@ -68,26 +68,56 @@ function escHtml(s) {
         .replace(/'/g, "&#39;");
 }
 
+// Editor.js sends real HTML for inline formatting, so these fields cannot just
+// be escaped without losing bold, italics and links. Allow that short list and
+// strip everything else, including any tag that can execute and any attribute
+// that can carry a handler. Anything not on the list is neutered into text.
+const INLINE_OK = new Set(["b", "strong", "i", "em", "u", "s", "mark", "code", "br", "a"]);
+
+function sanitizeInline(html) {
+    if (html == null) return "";
+    let out = String(html);
+
+    // Kill whole elements that can execute, contents and all, before anything else.
+    out = out.replace(/<(script|style|iframe|object|embed|svg|math|template)\b[\s\S]*?<\/\1\s*>/gi, "");
+    out = out.replace(/<(script|style|iframe|object|embed|svg|math|template)\b[^>]*\/?>/gi, "");
+
+    return out.replace(/<\/?([a-zA-Z0-9-]+)([^>]*)>/g, (tag, name, attrs) => {
+        const n = String(name).toLowerCase();
+        if (!INLINE_OK.has(n)) return escHtml(tag);          // show it, never run it
+        if (tag.startsWith("</")) return `</${n}>`;
+        if (n !== "a") return `<${n}>`;                       // drop all attributes
+
+        // Links keep only an href, and only to somewhere harmless.
+        const href = /href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs || "");
+        const url = href ? (href[2] ?? href[3] ?? href[4] ?? "").trim() : "";
+        if (!/^(https?:\/\/|mailto:|\/|#)/i.test(url)) return "<a>";
+        return `<a href="${escHtml(url)}" rel="noopener nofollow" target="_blank">`;
+    });
+}
+
 function renderBlock(block, fallbackAlt) {
     const { type, data } = block || {};
     if (!type || !data) return "";
 
     switch (type) {
         case "paragraph":
-            return `<p>${data.text || ""}</p>`;
+            return `<p>${sanitizeInline(data.text)}</p>`;
         case "header": {
             const level = Math.min(Math.max(parseInt(data.level, 10) || 2, 2), 4);
-            return `<h${level}>${data.text || ""}</h${level}>`;
+            return `<h${level}>${sanitizeInline(data.text)}</h${level}>`;
         }
         case "list": {
             const tag = data.style === "ordered" ? "ol" : "ul";
             const items = Array.isArray(data.items) ? data.items : [];
-            const lis = items.map((it) => `<li>${typeof it === "string" ? it : (it && it.content) || ""}</li>`).join("");
+            const lis = items
+                .map((it) => `<li>${sanitizeInline(typeof it === "string" ? it : (it && it.content) || "")}</li>`)
+                .join("");
             return `<${tag}>${lis}</${tag}>`;
         }
         case "quote": {
-            const text = data.text || "";
-            const caption = data.caption ? `<footer>${data.caption}</footer>` : "";
+            const text = sanitizeInline(data.text);
+            const caption = data.caption ? `<footer>${sanitizeInline(data.caption)}</footer>` : "";
             return `<blockquote>${text}${caption}</blockquote>`;
         }
         case "image": {

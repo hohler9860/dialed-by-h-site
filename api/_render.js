@@ -13,12 +13,22 @@ function escHtml(s) {
 }
 const escAttr = escHtml;
 
+// Piece images are now absolute Supabase Storage URLs, already processed and
+// permanently cacheable. They must be emitted AS-IS: routing them back through
+// /img?src= would reintroduce the serverless hop this migration removed.
+// The /img fallbacks stay for any legacy relative/foreign path still in flight.
+function isAbsolute(raw) {
+    return /^https?:\/\//i.test(raw);
+}
 function normUrl(raw) {
     if (!raw) return `${SITE_URL}/images/og-share-v2.png`;
+    if (isAbsolute(raw)) return raw;
     return raw.startsWith('/') ? `${SITE_URL}${raw}` : `${SITE_URL}/img?src=${encodeURIComponent(raw)}`;
 }
 function normPath(raw) {
-    return raw && raw.startsWith('/') ? raw : `/img?src=${encodeURIComponent(raw)}`;
+    if (!raw) return '';
+    if (isAbsolute(raw) || raw.startsWith('/')) return raw;
+    return `/img?src=${encodeURIComponent(raw)}`;
 }
 
 function fourOhFour() {

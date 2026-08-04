@@ -111,7 +111,9 @@
       (w.celebs || []).forEach(function (c) {
         map[c] = map[c] || { name: c, count: 0, piece: null };
         map[c].count++;
-        if (!map[c].piece && w.image) map[c].piece = w.image;
+        // Store the transparent cutout up front. The old code appended
+        // ?mode=cutout to the /img path; a static Storage URL ignores that.
+        if (!map[c].piece && w.image) map[c].piece = w.imageCutout || w.image;
       });
     });
     var FEATURED = ['Travis Scott', 'Tom Brady', 'Drake', 'DJ Khaled', 'Charles Leclerc', 'Central Cee'];
@@ -129,7 +131,7 @@
     var art = document.createElement('article');
     art.className = 'pt-item pt-reveal';
     var slug = celebSlug(c.name);
-    var fallback = c.piece ? (c.piece + (c.piece.indexOf('?') >= 0 ? '&' : '?') + 'mode=cutout') : '';
+    var fallback = c.piece || '';
     art.innerHTML =
       '<a href="#celeb=' + slug + '" aria-label="' + c.name.replace(/"/g, '') + ' watch collection">' +
       '<div class="pt-item__media pt-item__media--celeb"><img src="/images/celebs/' + slug + '.webp" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'' + fallback + '\'"></div>' +
@@ -464,7 +466,7 @@
       art.className = 'pt-item pt-reveal';
       var escf = function (x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
-      var imgSrc = w.image ? (w.image.charAt(0) === '/' ? w.image : '/img?src=' + encodeURIComponent(w.image)) : '';
+      var imgSrc = w.image ? (/^https?:\/\//i.test(w.image) || w.image.charAt(0) === '/' ? w.image : '/img?src=' + encodeURIComponent(w.image)) : '';
       var eager = i < 8 ? ' fetchpriority="high"' : ' loading="lazy"';
       var img = imgSrc
         ? '<img src="' + imgSrc + '" alt=""' + eager + '>'

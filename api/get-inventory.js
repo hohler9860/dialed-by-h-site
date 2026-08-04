@@ -1,13 +1,250 @@
 // Single multi-purpose endpoint (Hobby plan caps serverless functions at 12):
-//  - default            -> JSON array of all pieces
-//  - ?id=<pageId>       -> JSON for one piece
-//  - ?slug=<slug>       -> server-rendered watch HTML  (rewrite: /watch/:slug)
-//  - ?sitemap=1         -> dynamic sitemap XML         (rewrite: /sitemap.xml)
-const { fetchAllPieces } = require('./_pieces');
+//  - GET  default          -> JSON array of all pieces
+//  - GET  ?id=<pieceId>    -> JSON for one piece
+//  - GET  ?slug=<slug>     -> server-rendered watch HTML  (rewrite: /watch/:slug)
+//  - GET  ?sitemap=1       -> dynamic sitemap XML         (rewrite: /sitemap.xml)
+//  - POST + Bearer         -> admin CMS actions (see handleAdmin)
+//
+// The admin actions live here rather than in their own pieces-admin.js purely
+// because of that 12-function cap: api/ is already at exactly 12.
+const {
+    fetchAllPieces, invalidatePieces, pieceSlug, mapRow, PIECES_URL, sbHeaders,
+} = require('./_pieces');
 const { renderWatchPage, renderSitemap, fourOhFour } = require('./_render');
+const { processWatchImage } = require('../lib/watch-image');
 
+const BUCKET = 'pieces';
+
+// Columns the admin is allowed to write. Anything else in the payload is
+// dropped, so a stray client-side field can never reach the database.
+const WRITABLE = [
+    'piece', 'brand', 'model', 'nickname', 'ref',
+    'case_material', 'case_size_mm', 'dial_color', 'bracelet',
+    'condition', 'set_included', 'year',
+    'collections', 'celebs', 'tags',
+    'images', 'images_cutout', 'sort_order',
+];
+
+function pick(body) {
+    const out = {};
+    for (const k of WRITABLE) {
+        if (!(k in body)) continue;
+        let v = body[k];
+        if (k === 'case_size_mm' || k === 'year' || k === 'sort_order') {
+            v = (v === '' || v == null) ? null : Number(v);
+            if (v != null && Number.isNaN(v)) v = null;
+        } else if (k === 'collections' || k === 'celebs' || k === 'images' || k === 'images_cutout') {
+            v = Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+        } else {
+            v = v == null ? '' : String(v);
+        }
+        out[k] = v;
+    }
+    return out;
+}
+
+async function sbFetch(path, init = {}) {
+    const r = await fetch(`${PIECES_URL}${path}`, {
+        ...init,
+        headers: { ...sbHeaders(), ...(init.headers || {}) },
+    });
+    if (!r.ok) throw new Error(`${init.method || 'GET'} ${path} -> ${r.status}: ${await r.text()}`);
+    return r;
+}
+
+function publicUrl(objPath) {
+    return `${PIECES_URL}/storage/v1/object/public/${BUCKET}/${objPath}`;
+}
+
+// ── admin ──────────────────────────────────────────────────────────────
+async function handleAdmin(req, res) {
+    const expected = process.env.ADMIN_PASSWORD;
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    if (!expected || token !== expected) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const action = body.action;
+
+    try {
+        switch (action) {
+            // Probe used by the login gate, and the admin catalog view.
+            case 'list': {
+                const pieces = await fetchAllPieces({ force: !!body.force });
+                return res.status(200).json({ pieces });
+            }
+
+            case 'get': {
+                const pieces = await fetchAllPieces();
+                const piece = pieces.find(p => p.id === body.id);
+                if (!piece) return res.status(404).json({ error: 'Piece not found' });
+                return res.status(200).json({ piece });
+            }
+
+            // Create (no id) or update (id). Returns the piece in site shape so
+            // the admin can render it without a second round trip.
+            case 'save': {
+                const fields = pick(body.fields || {});
+                let row;
+                if (body.id) {
+                    const r = await sbFetch(`/rest/v1/pieces?id=eq.${encodeURIComponent(body.id)}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+                        body: JSON.stringify(fields),
+                    });
+                    row = (await r.json())[0];
+                    if (!row) return res.status(404).json({ error: 'Piece not found' });
+                } else {
+                    const r = await sbFetch('/rest/v1/pieces', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+                        body: JSON.stringify([fields]),
+                    });
+                    row = (await r.json())[0];
+                }
+                invalidatePieces();
+                return res.status(200).json({ ok: true, piece: mapRow(row) });
+            }
+
+            case 'delete': {
+                if (!body.id) return res.status(400).json({ error: 'Missing id' });
+                // Storage objects go first; an orphaned row is easier to notice
+                // and fix than orphaned files nobody can see.
+                await deleteAllImages(body.id);
+                await sbFetch(`/rest/v1/pieces?id=eq.${encodeURIComponent(body.id)}`, { method: 'DELETE' });
+                invalidatePieces();
+                return res.status(200).json({ ok: true });
+            }
+
+            // Accepts a base64 data URL, runs the SAME sharp pipeline the Notion
+            // import used, and stores both variants. Returns the permanent URLs.
+            case 'upload-image': {
+                if (!body.id) return res.status(400).json({ error: 'Missing id' });
+                const dataUrl = String(body.data || '');
+                const b64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
+                if (!b64) return res.status(400).json({ error: 'Missing image data' });
+                const src = Buffer.from(b64, 'base64');
+
+                const pieces = await fetchAllPieces();
+                const piece = pieces.find(p => p.id === body.id);
+                if (!piece) return res.status(404).json({ error: 'Piece not found' });
+
+                // Append at the next free index. Indices are never reused within
+                // a session, so a replaced image can't be served from a stale CDN
+                // copy of the same URL.
+                const idx = Math.max(piece.images.length, piece.imagesCutout.length, Number(body.nextIndex) || 0);
+                const stamp = Date.now().toString(36);
+                const stdPath = `${body.id}/${idx}-${stamp}.webp`;
+                const cutPath = `${body.id}/${idx}-${stamp}-cutout.webp`;
+
+                const { standard, cutout } = await processWatchImage(src);
+                await putObject(stdPath, standard);
+                if (cutout) await putObject(cutPath, cutout);
+
+                const images = piece.images.concat(publicUrl(stdPath));
+                const imagesCutout = piece.imagesCutout.concat(cutout ? publicUrl(cutPath) : publicUrl(stdPath));
+
+                const r = await sbFetch(`/rest/v1/pieces?id=eq.${encodeURIComponent(body.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+                    body: JSON.stringify({ images, images_cutout: imagesCutout }),
+                });
+                invalidatePieces();
+                return res.status(200).json({ ok: true, piece: mapRow((await r.json())[0]) });
+            }
+
+            // Reorder or remove images. The client sends the desired final order
+            // as a list of indices into the current arrays.
+            case 'set-images': {
+                if (!body.id) return res.status(400).json({ error: 'Missing id' });
+                const order = Array.isArray(body.order) ? body.order : null;
+                if (!order) return res.status(400).json({ error: 'Missing order' });
+
+                const pieces = await fetchAllPieces();
+                const piece = pieces.find(p => p.id === body.id);
+                if (!piece) return res.status(404).json({ error: 'Piece not found' });
+
+                const images = order.map(i => piece.images[i]).filter(Boolean);
+                const imagesCutout = order.map(i => piece.imagesCutout[i] || piece.images[i]).filter(Boolean);
+
+                const r = await sbFetch(`/rest/v1/pieces?id=eq.${encodeURIComponent(body.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+                    body: JSON.stringify({ images, images_cutout: imagesCutout }),
+                });
+                invalidatePieces();
+                return res.status(200).json({ ok: true, piece: mapRow((await r.json())[0]) });
+            }
+
+            // Distinct values for the admin's dropdowns, derived from live data
+            // so the vocabulary matches whatever is actually in the catalog.
+            case 'facets': {
+                const pieces = await fetchAllPieces();
+                const uniq = (fn) => [...new Set(pieces.flatMap(fn).filter(Boolean))].sort();
+                return res.status(200).json({
+                    brands: uniq(p => [p.brand]),
+                    conditions: uniq(p => [p.condition]),
+                    materials: uniq(p => [p.caseMaterial]),
+                    dials: uniq(p => [p.dialColor]),
+                    bracelets: uniq(p => [p.bracelet]),
+                    sets: uniq(p => [p.set]),
+                    collections: uniq(p => p.collections),
+                    celebs: uniq(p => p.celebs),
+                });
+            }
+
+            default:
+                return res.status(400).json({ error: `Unknown action: ${action}` });
+        }
+    } catch (err) {
+        console.error('[get-inventory:admin]', action, err && err.message);
+        return res.status(500).json({ error: err.message || 'Admin action failed' });
+    }
+}
+
+async function putObject(objPath, buf) {
+    const r = await fetch(`${PIECES_URL}/storage/v1/object/${BUCKET}/${objPath}`, {
+        method: 'POST',
+        headers: {
+            ...sbHeaders(),
+            'Content-Type': 'image/webp',
+            'x-upsert': 'true',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+        },
+        body: buf,
+    });
+    if (!r.ok) throw new Error(`upload ${objPath} failed ${r.status}: ${await r.text()}`);
+    return publicUrl(objPath);
+}
+
+async function deleteAllImages(pieceId) {
+    try {
+        const r = await fetch(`${PIECES_URL}/storage/v1/object/list/${BUCKET}`, {
+            method: 'POST',
+            headers: { ...sbHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefix: `${pieceId}/`, limit: 200 }),
+        });
+        if (!r.ok) return;
+        const files = await r.json();
+        const prefixes = (Array.isArray(files) ? files : []).map(f => `${pieceId}/${f.name}`);
+        if (!prefixes.length) return;
+        await fetch(`${PIECES_URL}/storage/v1/object/${BUCKET}`, {
+            method: 'DELETE',
+            headers: { ...sbHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prefixes }),
+        });
+    } catch (e) {
+        console.error('[get-inventory:deleteImages]', e && e.message);
+    }
+}
+
+// ── public ─────────────────────────────────────────────────────────────
 module.exports = async (req, res) => {
     const q = req.query || {};
+
+    if (req.method === 'POST') return handleAdmin(req, res);
 
     // ── Sitemap (XML) ──
     if (q.sitemap) {
@@ -47,18 +284,18 @@ module.exports = async (req, res) => {
     } else if (process.env.VERCEL_ENV !== 'production') {
         res.setHeader('Access-Control-Allow-Origin', origin || '*');
     }
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     try {
-        // ?fresh=1 — Henry's manual lever: force a full Notion re-read (slow) and
-        // rewrite the snapshot, bypassing every cache layer. For after edits.
+        // ?fresh=1 — manual lever: drop the warm cache and re-read Postgres.
+        // Far cheaper than the Notion era, but still handy right after an edit.
         if (q.fresh) {
             res.setHeader('Cache-Control', 'no-store');
             const fresh = await fetchAllPieces({ force: true });
-            return res.status(200).json({ refreshed: true, pieces: fresh.length, note: 'Snapshot rebuilt. Site serves the new data as CDN cache expires (up to 15 min) or immediately after the next deploy.' });
+            return res.status(200).json({ refreshed: true, pieces: fresh.length });
         }
         const pieces = await fetchAllPieces();
         if (q.id) {
@@ -67,9 +304,10 @@ module.exports = async (req, res) => {
             return res.status(200).json(piece);
         }
         // list payload: the grid/ticker never use tags or secondary images —
-        // stripping them cuts ~40% off the JSON the browser has to download
+        // stripping them cuts ~40% off the JSON the browser has to download.
+        // imageCutout (scalar) stays: the homepage ticker needs it.
         const slim = pieces.map(w => {
-            const { tags, images, ...rest } = w;
+            const { tags, images, imagesCutout, ...rest } = w;
             return rest;
         });
         return res.status(200).json(slim);

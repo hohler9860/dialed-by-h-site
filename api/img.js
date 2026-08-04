@@ -18,22 +18,22 @@ function isAllowed(urlStr) {
     return ALLOWED.some((d) => u.hostname === d || u.hostname.endsWith('.' + d));
 }
 
-// Resolve /img?piece=<pageId>&i=<n> to a fresh signed Notion file URL.
-// The page-id form is the stable CDN cache key; signed URLs rotate hourly,
-// so we re-fetch them server-side and memoize per warm instance.
-const _fileUrlCache = new Map(); // pageId -> { urls, at }
-async function resolvePieceImage(pageId, idx) {
-    const hit = _fileUrlCache.get(pageId);
-    if (hit && Date.now() - hit.at < 40 * 60 * 1000) return hit.urls[idx] || '';
-    const r = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-        headers: { Authorization: `Bearer ${process.env.NOTION_API_KEY}`, 'Notion-Version': '2022-06-28' },
-    });
-    if (!r.ok) return '';
-    const j = await r.json();
-    const files = j.properties?.Image?.files || [];
-    const urls = files.map(f => f.file?.url || f.external?.url || '').filter(Boolean);
-    _fileUrlCache.set(pageId, { urls, at: Date.now() });
-    return urls[idx] || '';
+// LEGACY ONLY. /img?piece=<pageId>&i=<n> was the old image path: it called the
+// Notion API to re-sign an expiring URL, one call per piece, on every CDN miss.
+// That is exactly what this migration removed. Nothing on the site emits this
+// shape anymore, but Google indexed these URLs, so resolve them to the piece's
+// permanent Supabase URL and redirect. No Notion involvement.
+const { fetchAllPieces } = require('./_pieces');
+
+async function resolveLegacyPieceImage(pageId, idx, mode) {
+    // Incoming ids are dashless 32-char hex; stored ids are dashed UUIDs.
+    const pieces = await fetchAllPieces();
+    const piece = pieces.find(p => String(p.id).replace(/-/g, '') === pageId);
+    if (!piece) return '';
+    const list = mode === 'cutout'
+        ? (piece.imagesCutout && piece.imagesCutout.length ? piece.imagesCutout : piece.images)
+        : piece.images;
+    return (list && list[idx]) || '';
 }
 
 module.exports = async (req, res) => {
@@ -46,8 +46,14 @@ module.exports = async (req, res) => {
     const piece = Array.isArray(pieceRaw) ? pieceRaw[0] : pieceRaw;
     if (piece && /^[a-f0-9]{32}$/.test(piece)) {
         const idx = parseInt(req.query.i || '0') || 0;
-        src = await resolvePieceImage(piece, idx);
-        if (!src) { res.statusCode = 404; return res.end(); }
+        const target = await resolveLegacyPieceImage(piece, idx, mode);
+        if (!target) { res.statusCode = 404; return res.end(); }
+        // The stored image is already fully processed, so redirect rather than
+        // re-download and re-encode it. 301 lets crawlers relearn the new URL.
+        res.statusCode = 301;
+        res.setHeader('Location', target);
+        res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=31536000');
+        return res.end();
     }
 
     if (!src) { res.statusCode = 400; return res.end('Missing src'); }

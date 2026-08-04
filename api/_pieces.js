@@ -1,53 +1,31 @@
-// Shared server-side data layer for Notion "Pieces for Sourcing".
-// Used by get-inventory (JSON API), watch-render (SSR pages) and sitemap so
-// they always agree on the piece shape AND the slug → page mapping.
-const { Client } = require('@notionhq/client');
+// Shared server-side data layer for the sourcing catalog.
+// Used by get-inventory (JSON API), the SSR watch pages and the sitemap so they
+// always agree on the piece shape AND the slug -> page mapping.
+//
+// Backed by Supabase Postgres. This replaced Notion, which was rate limited to
+// 3 requests/second and handed out image URLs that expired every hour - meaning
+// every CDN cache miss cost one Notion API call PER PIECE just to re-sign an
+// image. A cold cache or a crawler could burn the whole quota and break images.
+//
+// Now: image URLs are permanent and public, stored on the row, served straight
+// from Supabase's CDN to the browser. No per-image lookup, no expiry, no quota.
 
-let notion;
-let DATABASE_ID;
+const PIECES_URL = (() => {
+    let u = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+    if (u && !/^https?:\/\//.test(u)) u = 'https://' + u;
+    return u;
+})();
 
-function getNotion() {
-    if (!notion) {
-        if (!process.env.NOTION_API_KEY) throw new Error('NOTION_API_KEY environment variable is not set');
-        if (!process.env.NOTION_DATABASE_ID) throw new Error('NOTION_DATABASE_ID environment variable is not set');
-        notion = new Client({ auth: process.env.NOTION_API_KEY });
-        DATABASE_ID = process.env.NOTION_DATABASE_ID;
-    }
-    return { notion, DATABASE_ID };
-}
-
-function get(prop) {
-    if (!prop) return '';
-    switch (prop.type) {
-        case 'title': return prop.title?.map(t => t.plain_text).join('') || '';
-        case 'rich_text': return prop.rich_text?.map(t => t.plain_text).join('') || '';
-        case 'select': return prop.select?.name || '';
-        case 'number': return prop.number ?? '';
-        case 'checkbox': return prop.checkbox;
-        default: return '';
-    }
-}
-
-function getImages(prop) {
-    if (!prop || !prop.files) return [];
-    return prop.files.map(f => f.file?.url || f.external?.url || '').filter(Boolean);
-}
-
-// Stable proxy paths for a page's images. Notion's signed S3 URLs rotate on
-// every API response, which used to bust the CDN cache on /img?src=... —
-// keying by page id keeps the edge cache warm for a year.
-function imagePaths(pageId, images) {
-    return images.map((_, i) => `/img?piece=${pageId.replace(/-/g, '')}&i=${i}`);
-}
-
-function getMulti(prop) {
-    if (!prop || prop.type !== 'multi_select') return [];
-    return (prop.multi_select || []).map(o => o.name).filter(Boolean);
+function sbHeaders() {
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!PIECES_URL || !key) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not set');
+    return { apikey: key, Authorization: `Bearer ${key}` };
 }
 
 // Build a stable, SEO-friendly slug. The trailing id fragment guarantees
-// uniqueness even when two pieces share brand/model/ref, and lets us resolve
-// a slug back to its Notion page without a separate lookup table.
+// uniqueness even when two pieces share brand/model/ref, and lets us resolve a
+// slug back to its row without a separate lookup table. The ids are the ORIGINAL
+// Notion page UUIDs, so every /watch/<slug> URL survived the migration intact.
 function slugify(str) {
     return String(str || '')
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // strip accents
@@ -63,164 +41,111 @@ function pieceSlug(p) {
     return `${text}-${idTail}`;
 }
 
-function mapPage(page) {
-    const p = page.properties;
-    const piece = get(p['Piece']);
-    const brand = get(p['Brand']);
-    const model = get(p['Model']);
-    const nickname = get(p['Nickname']);
-    const ref = get(p['Reference Number']);
-    const caseMaterial = get(p['Case Material']);
-    const caseSizeNum = get(p['Case Size (mm)']);
-    const caseSize = caseSizeNum ? `${caseSizeNum}mm` : '';
-    const dialColor = get(p['Dial Color']);
-    const bracelet = get(p['Bracelet/Strap']);
-    const condition = get(p['Condition']);
-    const set = get(p['Set']);
-    const year = get(p['Year']);
-    const images = getImages(p['Image']);
-    const collections = getMulti(p['Collection']);
-    const tags = get(p['Tags']);
-    const celebs = getMulti(p['Celebrity']);
-
-    const name = piece || `${brand} ${model}`.trim();
+// Row -> the piece shape the site has always consumed. Field names and derived
+// strings are unchanged from the Notion era so nothing downstream had to move.
+function mapRow(r) {
+    const caseSize = r.case_size_mm ? `${r.case_size_mm}mm` : '';
+    const name = r.piece || `${r.brand || ''} ${r.model || ''}`.trim();
 
     const descParts = [];
-    if (caseMaterial) descParts.push(caseMaterial);
-    if (dialColor) descParts.push(dialColor + ' dial');
+    if (r.case_material) descParts.push(r.case_material);
+    if (r.dial_color) descParts.push(r.dial_color + ' dial');
     if (caseSize) descParts.push(caseSize);
-    if (bracelet) descParts.push(bracelet);
-    const details = descParts.join(' · ');
+    if (r.bracelet) descParts.push(r.bracelet);
 
-    const stable = imagePaths(page.id, images);
+    const images = Array.isArray(r.images) ? r.images : [];
+    const cutouts = Array.isArray(r.images_cutout) ? r.images_cutout : [];
+
     const out = {
-        id: page.id,
-        brand, model, name, nickname, ref, details,
-        image: stable[0] || '',
-        images: stable,
-        year: year ? String(Math.round(year)) : '',
-        condition, caseMaterial, dialColor, bracelet, caseSize, set,
-        collections, tags, celebs,
+        id: r.id,
+        brand: r.brand || '',
+        model: r.model || '',
+        name,
+        nickname: r.nickname || '',
+        ref: r.ref || '',
+        details: descParts.join(' · '),
+        image: images[0] || '',
+        images,
+        // Transparent 520px variant for the homepage ticker and celeb cards.
+        // Falls back to the standard image, which is what the old `?mode=cutout`
+        // effectively did for opaque photos that have no meaningful cutout.
+        imageCutout: cutouts[0] || images[0] || '',
+        imagesCutout: cutouts,
+        year: r.year ? String(Math.round(r.year)) : '',
+        condition: r.condition || '',
+        caseMaterial: r.case_material || '',
+        dialColor: r.dial_color || '',
+        bracelet: r.bracelet || '',
+        caseSize,
+        set: r.set_included || '',
+        collections: Array.isArray(r.collections) ? r.collections : [],
+        tags: r.tags || '',
+        celebs: Array.isArray(r.celebs) ? r.celebs : [],
     };
     out.slug = pieceSlug(out);
     return out;
 }
 
-// SDK v5 / Notion API 2025-09-03 queries data sources, not databases.
-// NOTION_DATABASE_ID still holds the database ID, so resolve its (single)
-// data source once per cold start and cache it.
-let DATA_SOURCE_ID;
-
-async function getDataSourceId() {
-    if (DATA_SOURCE_ID) return DATA_SOURCE_ID;
-    const { notion, DATABASE_ID } = getNotion();
-    const db = await notion.databases.retrieve({ database_id: DATABASE_ID });
-    const sources = db.data_sources || [];
-    if (!sources.length) throw new Error('Notion database has no data sources');
-    DATA_SOURCE_ID = sources[0].id;
-    return DATA_SOURCE_ID;
-}
-
-// In-memory cache shared across warm invocations of the same function instance.
-// Notion is the slow part (~1.2s/full query); serving from memory turns most
-// cache-missed edge requests into sub-100ms responses. TTL keeps inventory edits
-// visible within a few minutes. On a Notion error we serve the last good copy
-// (stale-on-error) rather than 500ing.
+// In-memory cache shared across warm invocations of the same instance. Supabase
+// is fast enough (~250ms for the full catalog) that the elaborate Notion-era
+// storage snapshot is gone; a short TTL plus stale-while-revalidate is plenty.
 let _piecesCache = null;
 let _piecesCacheAt = 0;
+let _refreshing = null;
 const PIECES_TTL_MS = 180 * 1000;
 
-let _refreshing = null;
-
-// ── Persistent snapshot (Supabase storage) ─────────────────────────────
-// A full Notion re-read is ~20-30s of sequential paginated queries. That must
-// NEVER happen inside a visitor's request. Every refresh writes the mapped
-// piece list to Supabase storage; cold serverless instances hydrate from that
-// snapshot in ~200ms and trigger a background Notion refresh instead.
-const SNAP_BUCKET = 'site-cache';
-const SNAP_PATH = 'pieces-snapshot.json';
-const SNAP_FRESH_MS = 10 * 60 * 1000; // snapshot considered fine for 10 min
-
-async function readSnapshot() {
-    if (!process.env.SUPABASE_URL) return null;
-    try {
-        const r = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/public/${SNAP_BUCKET}/${SNAP_PATH}?t=${Math.floor(Date.now() / 60000)}`);
-        if (!r.ok) return null;
-        const snap = await r.json();
-        if (!snap || !Array.isArray(snap.pieces)) return null;
-        return snap; // { at: epoch-ms, pieces: [...] }
-    } catch { return null; }
-}
-
-async function writeSnapshot(pieces) {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return;
-    try {
-        await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/${SNAP_BUCKET}/${SNAP_PATH}`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-                'Content-Type': 'application/json',
-                'x-upsert': 'true',
-                'Cache-Control': 'max-age=60',
-            },
-            body: JSON.stringify({ at: Date.now(), pieces }),
-        });
-    } catch (e) { console.error('[pieces] snapshot write failed:', e && e.message); }
-}
-
-async function fetchAllPieces({ force = false } = {}) {
-    const now = Date.now();
-    if (!force && _piecesCache && now - _piecesCacheAt < PIECES_TTL_MS) {
-        return _piecesCache;
+// PostgREST caps a response at 1000 rows and the catalog is larger than that,
+// so page through with Range until the server stops filling the window.
+async function queryAll() {
+    const PAGE = 1000;
+    const rows = [];
+    for (let from = 0; ; from += PAGE) {
+        const to = from + PAGE - 1;
+        const r = await fetch(
+            `${PIECES_URL}/rest/v1/pieces?select=*&order=sort_order.asc.nullslast,created_at.asc`,
+            { headers: { ...sbHeaders(), Range: `${from}-${to}`, 'Range-Unit': 'items' } }
+        );
+        if (!r.ok) throw new Error(`pieces query failed ${r.status}: ${await r.text()}`);
+        const batch = await r.json();
+        rows.push(...batch);
+        if (batch.length < PAGE) break;
     }
-    if (!force && _piecesCache) {
-        if (!_refreshing) {
-            _refreshing = _refreshPieces().finally(() => { _refreshing = null; });
-        }
-        return _piecesCache; // stale but instant; refresh is underway
-    }
-    if (!force) {
-        // cold instance: hydrate from the snapshot instead of blocking on Notion
-        const snap = await readSnapshot();
-        if (snap) {
-            _piecesCache = snap.pieces;
-            _piecesCacheAt = snap.at || 0;
-            if (now - _piecesCacheAt > SNAP_FRESH_MS && !_refreshing) {
-                _refreshing = _refreshPieces().finally(() => { _refreshing = null; });
-            }
-            return _piecesCache;
-        }
-    }
-    return _refreshPieces();
+    return rows.map(mapRow);
 }
 
 async function _refreshPieces() {
-    const now = Date.now();
     try {
-        const { notion } = getNotion();
-        const dataSourceId = await getDataSourceId();
-        let results = [];
-        let cursor;
-        do {
-            const resp = await notion.dataSources.query({
-                data_source_id: dataSourceId,
-                start_cursor: cursor,
-                sorts: [{ timestamp: 'created_time', direction: 'ascending' }],
-            });
-            results = results.concat(resp.results);
-            cursor = resp.has_more ? resp.next_cursor : undefined;
-        } while (cursor);
-        _piecesCache = results.map(mapPage);
-        _piecesCacheAt = now;
-        await writeSnapshot(_piecesCache); // persist for cold starts (~300ms, trivial next to the refresh itself)
-        return _piecesCache;
+        const pieces = await queryAll();
+        _piecesCache = pieces;
+        _piecesCacheAt = Date.now();
+        return pieces;
     } catch (err) {
         if (_piecesCache) {
-            console.error('[pieces] Notion fetch failed, serving stale cache:', err && err.message);
+            console.error('[pieces] query failed, serving stale cache:', err && err.message);
             return _piecesCache;
         }
         throw err;
     }
 }
 
-module.exports = { getNotion, get, getImages, getMulti, slugify, pieceSlug, mapPage, fetchAllPieces };
+async function fetchAllPieces({ force = false } = {}) {
+    const now = Date.now();
+    if (!force && _piecesCache && now - _piecesCacheAt < PIECES_TTL_MS) return _piecesCache;
+    if (!force && _piecesCache) {
+        // stale but instant; kick off a refresh behind the response
+        if (!_refreshing) _refreshing = _refreshPieces().finally(() => { _refreshing = null; });
+        return _piecesCache;
+    }
+    return _refreshPieces();
+}
+
+// Admin writes call this so the very next read reflects the edit.
+function invalidatePieces() {
+    _piecesCache = null;
+    _piecesCacheAt = 0;
+}
+
+module.exports = {
+    slugify, pieceSlug, mapRow, fetchAllPieces, invalidatePieces,
+    PIECES_URL, sbHeaders,
+};

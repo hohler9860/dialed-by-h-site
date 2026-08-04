@@ -960,7 +960,7 @@
                     name: (w.brand + ' ' + (w.nickname || w.model || w.name || '')).trim(),
                     ref: w.ref || w.details || '',
                     price: 'Inquire',
-                    image: w.image + (w.image.indexOf('?') >= 0 ? '&' : '?') + 'mode=cutout',
+                    image: w.imageCutout || w.image,
                     slug: w.slug,
                 }));
             },

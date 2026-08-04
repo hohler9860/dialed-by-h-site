@@ -7,8 +7,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=4" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4" />
-    <title>Dialed By H | Boston Luxury Watch Concierge - Buy, Sell & Trade Rare Timepieces</title>
-    <meta name="description" content="Dialed By H is a Boston-based luxury watch concierge service specializing in sourcing, selling, and trading rare and hard-to-find timepieces. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Discreet service.">
+    <title>Dialed By H | Boston Luxury Watch Dealer & Concierge - Buy, Sell & Trade Rare Timepieces</title>
+    <meta name="description" content="Dialed By H is an independent luxury watch dealer and concierge in Boston specializing in sourcing, selling, and trading rare and hard-to-find timepieces. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Discreet service.">
     <meta name="keywords" content="boston luxury watches, boston watch dealer, buy rolex boston, luxury watch concierge boston, luxury watch concierge, buy rolex, sell patek philippe, trade audemars piguet, richard mille dealer, rare watches, watch sourcing, authenticated timepieces, luxury watch broker, pre-owned luxury watches, watch consignment, dialed by h">
     <meta name="author" content="Henry Ohler">
     <meta name="geo.region" content="US-MA">
@@ -21,15 +21,15 @@
     <!-- Open Graph / Social -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dialedbyhenry.com/">
-    <meta property="og:title" content="Dialed By H | Boston Luxury Watch Concierge">
-    <meta property="og:description" content="Boston-based concierge sourcing for the world's most elusive references. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Discreet service.">
+    <meta property="og:title" content="Dialed By H | Boston Luxury Watch Dealer & Concierge">
+    <meta property="og:description" content="Independent Boston watch dealer with concierge sourcing for the world's most elusive references. Rolex, Patek Philippe, Audemars Piguet, Richard Mille & more. Verified provenance. Discreet service.">
     <meta property="og:image" content="https://dialedbyhenry.com/images/og-share-v2.png">
     <meta property="og:site_name" content="Dialed By H">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Dialed By H | Luxury Watch Concierge">
-    <meta name="twitter:description" content="Boston-based concierge sourcing for the world's most elusive references. Verified provenance. Discreet service.">
+    <meta name="twitter:description" content="Independent Boston watch dealer with concierge sourcing for the world's most elusive references. Verified provenance. Discreet service.">
     <meta name="twitter:image" content="https://dialedbyhenry.com/images/og-share-v2.png">
 
     <!-- Structured Data -->
@@ -38,7 +38,7 @@
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": "Dialed By H",
-        "description": "Luxury watch concierge service specializing in sourcing, selling, and trading rare and hard-to-find timepieces including Rolex, Patek Philippe, Audemars Piguet, and Richard Mille.",
+        "description": "Independent luxury watch dealer and concierge in Boston specializing in sourcing, selling, and trading rare and hard-to-find timepieces including Rolex, Patek Philippe, Audemars Piguet, and Richard Mille.",
         "url": "https://dialedbyhenry.com",
         "logo": "https://dialedbyhenry.com/images/logo.png",
         "image": "https://dialedbyhenry.com/images/trust-auth.webp",
@@ -123,7 +123,7 @@
         "@type": "WebSite",
         "name": "Dialed By H",
         "url": "https://dialedbyhenry.com",
-        "description": "Luxury watch concierge service specializing in sourcing, selling, and trading rare timepieces.",
+        "description": "Independent luxury watch dealer and concierge in Boston specializing in sourcing, selling, and trading rare timepieces.",
         "publisher": {
             "@type": "Organization",
             "name": "Dialed By H",
@@ -964,29 +964,37 @@
                     name: (w.brand + ' ' + (w.nickname || w.model || w.name || '')).trim(),
                     ref: w.ref || w.details || '',
                     price: 'Inquire',
-                    // The 900px standard render, NOT the cutout. The cutout is
-                    // trimmed tight to the watch and is tall, so the ticker's
-                    // rounded-full mask clipped its top and bottom - which read
-                    // as the watch being zoomed in. The standard render centres
-                    // the piece at 66% fill, so the whole watch sits inside the
-                    // circle.
-                    image: w.imageThumb || w.image,
+                    // The transparent cutout, at its 224px variant.
+                    //
+                    // This used to point at imageThumb -- the standard render --
+                    // because the cutout is portrait and the ticker's old
+                    // rounded-full mask sliced its top and bottom off. But the
+                    // standard render is composited on #0d0d0d, and this strip is
+                    // white, so every piece sat in a dark disc. The mask was the
+                    // actual problem; it is gone now and the piece floats on the
+                    // strip with its whole case and strap visible.
+                    image: w.imageCutoutThumb || w.imageCutout,
                     slug: w.slug,
                 }));
             },
 
             init: () => {
-                app.renderTicker();
-                app.initTickerGSAP();
+                // The ticker deliberately paints nothing until the catalog answers.
+                // CONFIG.TICKER_ITEMS is a hardcoded list of wrist shots -- opaque
+                // photos of a watch on an arm -- which is the one thing this strip
+                // must never show. It stays as a last-resort fallback if the API is
+                // down, but rendering it first meant it flashed on every load.
                 fetch('/api/get-inventory')
                     .then(r => r.json())
                     .then(data => {
                         const pieces = Array.isArray(data) ? data : (data.pieces || []);
                         app.buildTickerFromInventory(pieces);
+                    })
+                    .catch(() => {})
+                    .finally(() => {
                         app.renderTicker();
                         app.initTickerGSAP();
-                    })
-                    .catch(() => {});
+                    });
                 app.initAnimations();
                 safeCreateIcons();
                 // Direct link support: dialedbyhenry.com/source (or /?source, #source) opens the sourcing form
@@ -1025,8 +1033,8 @@
                 const html = CONFIG.TICKER_ITEMS.map(item => `
                     <button onclick="app.openModal('WATCH_DETAIL', app.getWatchById('${item.id}'))"
                             class="group flex items-center space-x-5 mx-6 sm:mx-8 focus:outline-none flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full overflow-hidden border border-ivory/20 flex-shrink-0 group-hover:border-ivory/60 transition-all duration-300 group-hover:scale-110 bg-white/5">
-                            <img src="${esc(item.image)}" alt="${esc(item.name)}" width="40" height="40" loading="lazy" decoding="async" class="w-full h-full object-contain" style="padding:4px">
+                        <div class="w-16 h-16 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                            <img src="${esc(item.image)}" alt="${esc(item.name)}" width="64" height="64" loading="lazy" decoding="async" class="w-full h-full object-contain">
                         </div>
                         <div class="flex flex-col items-start">
                             <span class="dbh-display text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300 whitespace-nowrap">

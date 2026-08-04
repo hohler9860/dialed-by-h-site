@@ -80,6 +80,12 @@ function mapRow(r) {
         // Falls back to the standard image, which is what the old `?mode=cutout`
         // effectively did for opaque photos that have no meaningful cutout.
         imageCutout: cutouts[0] || images[0] || '',
+        // 140px transparent variant, by the same naming convention as
+        // thumb/medium. The ticker paints at ~50px; the full cutout is ~30KB
+        // against ~4KB here, times 44 items on the homepage.
+        imageCutoutThumb: /-cutout\.webp$/.test(cutouts[0] || '')
+            ? variant(cutouts[0], 'thumb')
+            : '',
         imagesCutout: cutouts,
         year: r.year ? String(Math.round(r.year)) : '',
         condition: r.condition || '',

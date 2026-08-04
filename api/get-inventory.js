@@ -139,9 +139,12 @@ async function handleAdmin(req, res) {
                 const stdPath = `${body.id}/${idx}-${stamp}.webp`;
                 const cutPath = `${body.id}/${idx}-${stamp}-cutout.webp`;
 
-                const { standard, cutout, thumb, medium } = await processWatchImage(src);
+                const { standard, cutout, cutoutThumb, thumb, medium } = await processWatchImage(src);
                 await putObject(stdPath, standard);
                 if (cutout) await putObject(cutPath, cutout);
+                // Small transparent variant for the homepage ticker. Same naming
+                // convention as thumb/medium, so no extra column is needed.
+                if (cutoutThumb) await putObject(variantPath(cutPath, 'thumb'), cutoutThumb);
                 // Responsive variants, written now so nothing is ever resized
                 // per request. Their URLs are derived from the standard's path.
                 await putObject(variantPath(stdPath, 'thumb'), thumb);

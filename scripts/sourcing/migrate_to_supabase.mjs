@@ -204,9 +204,14 @@ async function migrateImages(pageId, urls) {
         const stdPath = `${pageId}/${i}.webp`;
         const cutPath = `${pageId}/${i}-cutout.webp`;
 
-        if (!FORCE && await objectExists(stdPath)) {
+        // Resume: skip only when BOTH variants are already present. Checking
+        // the standard alone meant that if a cutout upload had failed (Supabase
+        // throws transient 429s under concurrency), the retry saw the standard,
+        // skipped, and permanently baked in the standard URL as the cutout
+        // fallback - silently costing the piece its transparent render.
+        if (!FORCE && await objectExists(stdPath) && await objectExists(cutPath)) {
             images.push(publicUrl(stdPath));
-            cutouts.push(await objectExists(cutPath) ? publicUrl(cutPath) : publicUrl(stdPath));
+            cutouts.push(publicUrl(cutPath));
             continue;
         }
 

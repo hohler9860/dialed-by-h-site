@@ -418,6 +418,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="wholesale" aria-selected="false">Wholesale</button>
             <button data-tab="matches" aria-selected="false">Matches</button>
             <button data-tab="dealers" aria-selected="false">Dealers</button>
+            <button data-tab="retail"  aria-selected="false">Retail</button>
         </nav>
 
         <section class="body" id="view"></section>
@@ -471,7 +472,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers };
+    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2520,6 +2521,114 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (r) r.addEventListener('click', function () {
             view.innerHTML = '<p class="count">Loading…</p>';
             renderDealers().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // RETAIL  — what the public is asked to pay
+    // ══════════════════════════════════════════════════════════
+    var rtq = '';
+    var rtSource = '';
+
+    async function renderRetail() {
+        var r = await A.adminFetchTo('/api/leads-admin', 'retail');
+        RT.rows = r.rows || []; RT.bySource = r.bySource || []; RT.counters = r.counters || {};
+        paintRetail();
+    }
+
+    function paintRetail() {
+        var q = rtq.trim().toLowerCase();
+        var rows = RT.rows.filter(function (r) {
+            if (rtSource && r.source_slug !== rtSource) return false;
+            if (!q) return true;
+            return [r.title, r.reference, r.brand, r.source_slug].filter(Boolean)
+                   .join(' ').toLowerCase().indexOf(q) >= 0;
+        });
+        var c = RT.counters;
+        var shown = rows.slice(0, 400);
+
+        view.innerHTML =
+          '<div class="tiles">' +
+            '<div class="tile"><span class="tk">Products</span><span class="tv">' + (c.total || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">With reference</span><span class="tv">' + (c.with_ref || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">Comparable</span><span class="tv">' + (c.comparable || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">Sources</span><span class="tv">' + (c.sources || 0) + '</span></div>' +
+          '</div>' +
+
+          // Source quality first: this is the honest answer to "can I trust this
+          // price". A site that never states condition or contents can only ever
+          // support a reference-only comparison, which is not quotable.
+          '<p class="count">Coverage by source · a price is only usable for quoting when the ' +
+          'reference, condition and contents are all stated</p>' +
+          '<div class="tbl-wrap" style="margin-bottom:18px"><table class="leads"><thead><tr>' +
+            '<th>Source</th><th style="width:90px">Products</th><th style="width:80px">Ref</th>' +
+            '<th style="width:70px">Year</th><th style="width:100px">Condition</th>' +
+            '<th style="width:100px">Contents</th><th style="width:90px"></th>' +
+          '</tr></thead><tbody>' +
+          RT.bySource.map(function (s) {
+              var pct = function (n) { return s.products ? Math.round(100 * n / s.products) + '%' : '—'; };
+              var usable = s.products ? Math.round(100 * s.with_set / s.products) : 0;
+              return '<tr>' +
+                '<td><div class="tname">' + esc(s.name) + '</div></td>' +
+                '<td><span class="tmono">' + s.products + '</span></td>' +
+                '<td><span class="tmono">' + pct(s.with_ref) + '</span></td>' +
+                '<td><span class="tmono">' + pct(s.with_year) + '</span></td>' +
+                '<td><span class="tmono">' + pct(s.with_condition) + '</span></td>' +
+                '<td><span class="tmono">' + pct(s.with_set) + '</span></td>' +
+                '<td>' + (usable > 0 ? '<span class="tag warm">usable</span>'
+                                     : '<span class="tag spam">ref only</span>') + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>' +
+
+          '<div class="bar">' +
+            '<input id="rt-q" class="ctl grow" type="search" placeholder="SEARCH WATCH, REFERENCE, BRAND…" value="' + esc(rtq) + '">' +
+            '<select id="rt-src" class="ctl"><option value="">ALL SOURCES</option>' +
+              RT.bySource.map(function (s) {
+                  return '<option value="' + esc(s.slug) + '"' + (rtSource === s.slug ? ' selected' : '') + '>' +
+                         esc(s.name.toUpperCase()) + '</option>';
+              }).join('') + '</select>' +
+            '<button class="btn ghost" id="rt-refresh">Refresh</button>' +
+          '</div>' +
+          '<p class="count">' + rows.length + ' of ' + RT.rows.length +
+            (rows.length > 400 ? ' · showing first 400' : '') + '</p>' +
+
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:56px"></th><th>Watch</th><th style="width:130px">Source</th>' +
+            '<th style="width:110px">Price</th><th style="width:180px">Spec</th>' +
+          '</tr></thead><tbody>' +
+          (shown.length ? shown.map(function (r) {
+              var sp = [r.year, r.condition ? r.condition.replace(/_/g,' ') : null,
+                        r.set_completeness ? r.set_completeness.replace(/_/g,' ') : null]
+                       .filter(Boolean).join(' · ');
+              return '<tr>' +
+                '<td>' + (r.image_url
+                    ? '<img class="wthumb" src="' + esc(r.image_url) + '" alt="" loading="lazy" decoding="async">'
+                    : '<span class="wthumb wthumb--none"></span>') + '</td>' +
+                '<td><div class="tname">' + esc((r.title || '').slice(0, 72) || '—') + '</div>' +
+                    '<div class="tsub">' + esc(r.reference || 'no reference') + '</div></td>' +
+                '<td><span class="tsub">' + esc(r.source_slug) + '</span></td>' +
+                '<td><span class="tmono">' + esc(money(r.price_usd)) + '</span>' +
+                    (r.available === false ? '<div class="tsub">sold</div>' : '') + '</td>' +
+                '<td>' + (sp ? '<span class="tsub">' + esc(sp) + '</span>'
+                             : '<span class="tmono">not stated</span>') + '</td>' +
+                (r.url ? '' : '') +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">Nothing matches.</span></td></tr>') +
+          '</tbody></table></div>';
+
+        var qi = document.getElementById('rt-q');
+        if (qi) qi.addEventListener('input', function () {
+            rtq = this.value; var p = this.selectionStart; paintRetail();
+            var n = document.getElementById('rt-q');
+            if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+        });
+        var sel = document.getElementById('rt-src');
+        if (sel) sel.addEventListener('change', function () { rtSource = this.value; paintRetail(); });
+        var rf = document.getElementById('rt-refresh');
+        if (rf) rf.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderRetail().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
         });
     }
 

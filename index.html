@@ -960,10 +960,25 @@
                     hot.forEach(b => { const a = byBrand[b]; if (a && a.length) picked.push(a.shift()); });
                 }
                 if (!picked.length) return; // API hiccup: keep the static fallback list
+                // Catalog names run long ("Vacheron Constantin Overseas Perpetual
+                // Calendar Ultra-Thin Skeleton") and one of those fills the whole
+                // strip on its own. Cut on a word boundary for the ticker only —
+                // `name` stays intact for the detail modal and the lead email.
+                const shorten = (s, max = 34) => {
+                    if (s.length <= max) return s;
+                    const cut = s.slice(0, max);
+                    const sp = cut.lastIndexOf(' ');
+                    return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,\-–]+$/, '') + '…';
+                };
                 CONFIG.TICKER_ITEMS = picked.slice(0, 44).map(w => ({
                     id: w.slug || w.id,
                     name: (w.brand + ' ' + (w.nickname || w.model || w.name || '')).trim(),
+                    label: shorten((w.brand + ' ' + (w.nickname || w.model || w.name || '')).trim()),
                     ref: w.ref || w.details || '',
+                    // Pieces with no reference fall back to the spec string
+                    // ("Titanium · Yellow dial · 44mm · Stainless Steel Bracelet"),
+                    // which runs just as long as the names do.
+                    refLabel: shorten(w.ref || w.details || '', 46),
                     price: 'Inquire',
                     // The transparent cutout, at its 224px variant.
                     //
@@ -975,6 +990,10 @@
                     // actual problem; it is gone now and the piece floats on the
                     // strip with its whole case and strap visible.
                     image: w.imageCutoutThumb || w.imageCutout,
+                    // Full 520px cutout for the detail modal's banner. The ticker's
+                    // 224px variant is sized for a 64px row and would be upscaled
+                    // to mush across a full-width header.
+                    imageLarge: w.imageCutout,
                     slug: w.slug,
                 }));
             },
@@ -1039,10 +1058,10 @@
                         </div>
                         <div class="flex flex-col items-start">
                             <span class="dbh-display text-2xl sm:text-3xl font-space font-bold tracking-tight text-ivory/80 group-hover:text-ivory transition-colors duration-300 whitespace-nowrap">
-                                ${esc(item.name)}
+                                ${esc(item.label || item.name)}
                             </span>
                             <span class="text-muted text-[10px] font-bold tracking-widest group-hover:text-ivory/60 transition-colors duration-300 whitespace-nowrap">
-                                ${esc(item.ref)}
+                                ${esc(item.refLabel || item.ref)}
                             </span>
                         </div>
                         <div class="w-1.5 h-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory transition-colors duration-300 ml-2 flex-shrink-0"></div>
@@ -1118,8 +1137,21 @@
                 if (type === 'WATCH_DETAIL' && data) {
                     html = `
                         <div id="form-view">
-                            <div class="w-full overflow-hidden" style="height:210px">
-                                <img src="${esc((data.image || '').replace(/^images\/ticker\//, 'images/ticker/crop/').replace(/\.[a-z]+$/i, '.jpg'))}" onerror="this.src='${esc(data.image)}'" class="w-full h-full ${(data.image || '').charAt(0) === '/' ? 'object-contain' : 'object-cover'}" style="object-position:center;${(data.image || '').charAt(0) === '/' ? 'padding:12px' : ''}">
+                            <!--
+                                Always object-contain. This used to switch to
+                                object-cover for any src that was not a local
+                                absolute path, which meant every catalog piece got
+                                its dial blown up and cropped inside a 210px band.
+                                A cutout is the whole watch or it is nothing.
+                                The crop/.jpg rewrite still applies to the static
+                                wrist-shot fallback, where a squared-off crop is the
+                                best available option.
+                            -->
+                            <div class="w-full overflow-hidden flex items-center justify-center" style="height:210px">
+                                <img src="${esc(data.imageLarge || (data.image || '').replace(/^images\/ticker\/sm\//, 'images/ticker/crop/').replace(/\.webp$/i, '.jpg'))}"
+                                     onerror="this.src='${esc(data.image)}'"
+                                     alt="${esc(data.name)}"
+                                     class="w-full h-full object-contain" style="padding:14px">
                             </div>
                             <div class="p-5 sm:p-6 space-y-4">
                                 <div>

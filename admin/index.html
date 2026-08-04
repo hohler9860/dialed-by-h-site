@@ -2285,7 +2285,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           '</div>' +
           '<div class="row" style="gap:8px;margin-top:10px">' +
             (cp ? '<a class="btn ghost" href="https://wa.me/' + esc(cp) + '" target="_blank" rel="noopener">Message client</a>' : '') +
-            (dp ? '<a class="btn ghost" href="https://wa.me/' + esc(dp) + '" target="_blank" rel="noopener">Message dealer</a>' : '') +
+            (dp ? '<a class="btn ghost" href="https://wa.me/' + esc(dp) + '" target="_blank" rel="noopener">Open dealer chat</a>' : '') +
+            (dp ? '<button class="btn ghost js-ask" data-listing="' + esc(m.listing_id) + '">Ask if available</button>' : '') +
           '</div>' +
         '</div>';
     }
@@ -2304,6 +2305,25 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (r) r.addEventListener('click', function () {
             view.innerHTML = '<p class="count">Loading…</p>';
             renderMatches().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+
+        // Sends from Henry's own WhatsApp, so confirm first. Deliberately one
+        // dealer at a time: an automated blast to people he trades with is the
+        // quickest way to get the number flagged.
+        [].forEach.call(document.querySelectorAll('.js-ask'), function (b) {
+            b.addEventListener('click', async function () {
+                var id = this.dataset.listing;
+                if (!confirm('Send "is this still available?" to this dealer from your WhatsApp?')) return;
+                var btn = this;
+                btn.disabled = true; btn.textContent = 'Sending…';
+                try {
+                    var r = await A.adminFetchTo('/api/leads-admin', 'ask-dealer', { listing_id: Number(id) });
+                    btn.textContent = 'Asked ✓';
+                } catch (e) {
+                    btn.disabled = false; btn.textContent = 'Ask if available';
+                    alert('Could not send: ' + e.message);
+                }
+            });
         });
     }
 

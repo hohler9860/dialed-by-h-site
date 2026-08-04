@@ -12,6 +12,12 @@ const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.s
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
+// Evolution powers the "is this still available" message. Server-side only:
+// the key must never reach the browser.
+const EVOLUTION_URL = (process.env.EVOLUTION_URL || "").replace(/\/+$/, "");
+const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY;
+const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE || "dialedbyh";
+
 const TABLE = "dialed_submissions";
 
 // Statuses the console is allowed to set. Anything else is rejected, so a tampered
@@ -498,6 +504,77 @@ module.exports = async (req, res) => {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
             const rows = await wh("quote_book?select=*&limit=500");
             return res.status(200).json({ rows });
+        }
+
+        // ── Ask a dealer if a piece is still available ─────────────────────
+        // Deliberately NOT an n8n flow. Messaging dealers is case by case, and an
+        // automated blast from Henry's own number to people he trades with is the
+        // fastest way to get it flagged. This only fires when he clicks.
+        if (action === "ask-dealer") {
+            const { listing_id, text: override } = body;
+            if (!listing_id) return res.status(400).json({ error: "Missing listing_id" });
+            if (!EVOLUTION_URL || !EVOLUTION_KEY) {
+                return res.status(500).json({ error: "Evolution not configured" });
+            }
+
+            const rows = await supabase(
+                `listings_with_image?select=*&id=eq.${encodeURIComponent(listing_id)}&limit=1`,
+                { headers: { "Accept-Profile": "wholesale" } }
+            );
+            const l = rows && rows[0];
+            if (!l) return res.status(404).json({ error: "Listing not found" });
+
+            // Resolve the dealer's real number from the roster via the message sender.
+            const msg = await supabase(
+                `messages?select=sender_jid&id=eq.${encodeURIComponent(l.message_pk)}&limit=1`,
+                { headers: { "Accept-Profile": "wholesale" } }
+            );
+            const lid = msg && msg[0] && msg[0].sender_jid;
+            const dealer = lid
+                ? await supabase(`dealers?select=phone,wa_name,push_name&lid=eq.${encodeURIComponent(lid)}&limit=1`,
+                                 { headers: { "Accept-Profile": "wholesale" } })
+                : [];
+            const phone = dealer && dealer[0] && dealer[0].phone;
+            if (!phone) return res.status(400).json({ error: "No phone number for this dealer yet" });
+
+            const piece = [l.brand, l.model, l.reference].filter(Boolean).join(" ");
+            const message = override && String(override).trim()
+                ? String(override).trim()
+                : `Hey, is the ${piece} still available?`;
+
+            const send = await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", apikey: EVOLUTION_KEY },
+                body: JSON.stringify({ number: phone, text: message }),
+            });
+            const sendBody = await send.json().catch(() => ({}));
+            const ok = send.ok;
+
+            // Log either way: a failed send is worth seeing, and the unique index
+            // on listing_id is what stops the same dealer being asked twice.
+            await supabase("dealer_messages", {
+                method: "POST",
+                headers: {
+                    "Content-Profile": "wholesale",
+                    Prefer: "resolution=merge-duplicates,return=minimal",
+                },
+                body: JSON.stringify([{
+                    dealer_lid: lid || null,
+                    listing_id: Number(listing_id),
+                    phone_jid: phone,
+                    body: message,
+                    status: ok ? "sent" : "failed",
+                    error: ok ? null : JSON.stringify(sendBody).slice(0, 400),
+                    sent_at: ok ? new Date().toISOString() : null,
+                }]),
+            }).catch((e) => console.error("[leads-admin] dealer_messages log failed:", e.message));
+
+            if (!ok) {
+                console.error("[leads-admin] dealer send failed:", JSON.stringify(sendBody).slice(0, 300));
+                return res.status(502).json({ error: "Send failed", details: sendBody });
+            }
+            console.log("[leads-admin] asked dealer", phone, "about listing", listing_id);
+            return res.status(200).json({ sent: true, phone, message });
         }
 
         return res.status(400).json({ error: "Unknown action" });

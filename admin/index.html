@@ -2318,13 +2318,32 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var verified = (m.quote_confidence === 'HIGH' || m.quote_confidence === 'MEDIUM')
                        && m.quote_high != null;
 
+        var spec = [
+            m.listing && m.listing.year,
+            m.listing && m.listing.condition && m.listing.condition !== 'UNKNOWN'
+                ? m.listing.condition.replace(/_/g, ' ') : null,
+            m.listing && m.listing.set_completeness && m.listing.set_completeness !== 'UNKNOWN'
+                ? m.listing.set_completeness.replace(/_/g, ' ') : null,
+            m.listing && m.listing.case_material ? m.listing.case_material.replace(/_/g, ' ') : null,
+            m.listing && m.listing.dial_material && m.listing.dial_material !== 'STANDARD'
+                ? m.listing.dial_material : null,
+            m.listing && m.listing.has_diamonds ? 'diamonds' : null,
+            m.listing && m.listing.nickname ? '"' + m.listing.nickname + '"' : null,
+        ].filter(Boolean).join(' · ');
+
         return '<div class="bcard" style="margin-bottom:10px">' +
           '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">' +
-            '<div>' +
+            // The dealer's own photo: how condition actually gets judged.
+            (m.image_url
+              ? '<img class="wthumb" style="width:64px;height:64px;flex:0 0 64px" ' +
+                'src="' + esc(m.image_url) + '" alt="" loading="lazy" decoding="async">'
+              : '') +
+            '<div style="flex:1">' +
               '<div class="tname">' + esc(w.client_name || 'Client') +
                 (w.lead_quality ? ' <span class="tag ' + w.lead_quality.toLowerCase() + '">' + esc(w.lead_quality) + '</span>' : '') +
                 (w.ok_to_text === false ? ' <span class="tag spam">no texts</span>' : '') + '</div>' +
               '<div class="tsub">' + esc(piece) + ' · asked ' + (days === 0 ? 'today' : days + 'd ago') + '</div>' +
+              (spec ? '<div class="tsub">' + esc(spec) + '</div>' : '') +
             '</div>' +
             // Only show a range when retail was matched like for like. Otherwise
             // the floor is the only number the system can stand behind.

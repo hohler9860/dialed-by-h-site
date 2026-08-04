@@ -453,6 +453,54 @@ module.exports = async (req, res) => {
                 wh("deal_alerts?select=*&order=created_at.desc&limit=100"),
             ]);
 
+            // Attach the dealer's own photo of the piece. Seeing the watch is how
+            // Henry judges condition before he spends anything chasing it.
+            const listingIds = [...new Set((matches || []).map((m) => m.listing_id).filter(Boolean))];
+            if (listingIds.length) {
+                try {
+                    const shots = await wh(
+                        "listings_with_image?select=id,image_path,year,condition,set_completeness," +
+                        "dial_material,case_material,bracelet,has_diamonds,nickname" +
+                        `&id=in.(${listingIds.join(",")})`
+                    );
+                    const byId = {};
+                    for (const s of shots || []) byId[s.id] = s;
+
+                    const paths = [...new Set((shots || []).map((s) => s.image_path).filter(Boolean))];
+                    let urlByPath = {};
+                    if (paths.length) {
+                        const signed = await fetch(
+                            `${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    apikey: SUPABASE_KEY,
+                                    Authorization: `Bearer ${SUPABASE_KEY}`,
+                                },
+                                body: JSON.stringify({ expiresIn: 3600, paths }),
+                            }
+                        ).then((r) => (r.ok ? r.json() : []));
+                        for (const s of signed || []) {
+                            if (s.signedURL) urlByPath[s.path] = `${SUPABASE_URL}/storage/v1${s.signedURL}`;
+                        }
+                    }
+                    for (const m of matches || []) {
+                        const l = byId[m.listing_id];
+                        if (!l) continue;
+                        m.image_url = l.image_path ? urlByPath[l.image_path] || null : null;
+                        m.listing = {
+                            year: l.year, condition: l.condition, set_completeness: l.set_completeness,
+                            dial_material: l.dial_material, case_material: l.case_material,
+                            bracelet: l.bracelet, has_diamonds: l.has_diamonds, nickname: l.nickname,
+                        };
+                    }
+                } catch (err) {
+                    // Photos are a nicety; never take the whole view down for them.
+                    console.error("[leads-admin] match photos failed:", err.message);
+                }
+            }
+
             // Collapse to one row per want: cheapest wins, ties broken by profit.
             const bestByWant = {};
             for (const m of matches || []) {

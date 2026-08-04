@@ -114,6 +114,26 @@
       "source": "/watch",
       "destination": "/buy/",
       "permanent": true
+    },
+    {
+      "source": "/admin/journal",
+      "destination": "/admin/#journal",
+      "permanent": false
+    },
+    {
+      "source": "/admin/journal/",
+      "destination": "/admin/#journal",
+      "permanent": false
+    },
+    {
+      "source": "/admin/leads",
+      "destination": "/admin/#leads",
+      "permanent": false
+    },
+    {
+      "source": "/admin/leads/",
+      "destination": "/admin/#leads",
+      "permanent": false
     }
   ],
   "functions": {

@@ -191,6 +191,54 @@ input.ctl::placeholder { color: var(--l3); }
 .note { font-family: var(--mono); font-size: 12px; color: var(--l2); margin-top: 8px; }
 .err { font-family: var(--mono); font-size: 13px; color: #b3261e; text-transform: uppercase; margin-top: 12px; }
 
+/* ── leads dashboard ────────────────────────────────────── */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px; margin-bottom: 20px; }
+.tile {
+    border: 1px solid var(--line); padding: 12px 13px; cursor: pointer;
+    background: transparent; text-align: left; transition: border-color .15s, background .15s;
+}
+.tile:hover { border-color: var(--l1); }
+.tile[aria-pressed="true"] { background: #000; border-color: #000; }
+.tile[aria-pressed="true"] .tk, .tile[aria-pressed="true"] .tv { color: var(--b1); }
+.tk { display: block; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); }
+.tv { display: block; font-family: var(--mono); font-size: 24px; line-height: 1.1; margin-top: 5px; color: var(--l1); }
+
+.tbl-wrap { border-top: 1px solid var(--line); overflow-x: auto; }
+table.leads { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.leads th {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--l2); text-align: left; font-weight: 400; padding: 10px 10px 10px 0;
+    border-bottom: 1px solid var(--line); white-space: nowrap;
+    position: sticky; top: 0; background: var(--b1); z-index: 2;
+}
+table.leads th.s { cursor: pointer; user-select: none; }
+table.leads th.s:hover { color: var(--l1); }
+table.leads th .ar { color: var(--l3); margin-left: 3px; }
+table.leads th.on { color: var(--l1); }
+table.leads th.on .ar { color: var(--l1); }
+table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.leads tbody tr { cursor: pointer; }
+table.leads tbody tr:hover { background: rgba(var(--label-d),.04); }
+.tname { font-weight: 700; letter-spacing: -.01em; }
+.tsub { font-family: var(--mono); font-size: 11px; color: var(--l2); margin-top: 2px; }
+.tmono { font-family: var(--mono); font-size: 11px; color: var(--l2); white-space: nowrap; }
+.tag {
+    display: inline-block; font-family: var(--mono); font-size: 9px; text-transform: uppercase;
+    letter-spacing: .06em; border: 1px solid var(--line); padding: 2px 6px; white-space: nowrap;
+}
+.tag.hot { background: #000; color: var(--b1); border-color: #000; }
+.tag.warm { border-color: var(--l1); color: var(--l1); }
+.tag.spam, .tag.test { color: var(--l3); }
+.detail { background: rgba(var(--label-d),.03); }
+.detail td { padding: 16px 10px 20px 0; }
+.dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 26px; }
+.dk { font-family: var(--mono); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--l2); margin-bottom: 3px; }
+.dv { font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+select.stat {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--line); padding: 3px 5px; cursor: pointer; color: var(--l1);
+}
+
 /* ── login ──────────────────────────────────────────────── */
 #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 #gate .box { width: 100%; max-width: 400px; }
@@ -207,7 +255,7 @@ input.ctl::placeholder { color: var(--l3); }
 <!-- LOGIN -->
 <section id="gate">
     <div class="box">
-        <img src="/images/logo.png" alt="Dialed By H" style="height:18px;width:auto;display:block;margin-bottom:28px">
+        <img src="/images/logo-dark.png" alt="Dialed By H" style="height:18px;width:auto;display:block;margin-bottom:28px">
         <p class="eyebrow">Control Room</p>
         <h1 class="title" style="font-size:40px;margin-bottom:28px">Admin</h1>
         <form id="gate-form">
@@ -221,7 +269,7 @@ input.ctl::placeholder { color: var(--l3); }
 <!-- CONSOLE -->
 <div id="app" class="hidden">
     <header>
-        <a href="/"><img src="/images/logo.png" alt="Dialed By H"></a>
+        <a href="/"><img src="/images/logo-dark.png" alt="Dialed By H"></a>
         <button id="signout" class="hbtn">Sign Out</button>
     </header>
 
@@ -638,58 +686,255 @@ input.ctl::placeholder { color: var(--l3); }
     // ══════════════════════════════════════════════════════════
     // LEADS
     // ══════════════════════════════════════════════════════════
-    var LEADS = [];
-    var lq = '';
+    var LEADS = [], STATS = null;
+    var lq = '', lsort = 'created_at', ldir = -1, lopen = null;
+    var lfilter = { tile: '', status: '', days: '' };
+
+    var STATUSES = ['new', 'contacted', 'negotiating', 'closed', 'archived'];
 
     async function renderLeads() {
         var r = await A.adminFetchTo('/api/leads-admin', 'list');
         LEADS = r.leads || [];
+        STATS = r.stats || null;
         paintLeads();
     }
 
-    function paintLeads() {
-        var q = lq.toLowerCase();
-        var list = q ? LEADS.filter(function (l) {
-            return JSON.stringify(l).toLowerCase().indexOf(q) >= 0;
-        }) : LEADS;
+    // Tiles double as one-click filters — the fastest way to answer
+    // "who do I call next" without touching a dropdown.
+    var TILES = [
+        { k: '',            l: 'All' },
+        { k: 'new',         l: 'New' },
+        { k: 'HOT',         l: 'Hot' },
+        { k: 'WARM',        l: 'Warm' },
+        { k: 'COLD',        l: 'Cold' },
+        { k: 'REAL',        l: 'Real' },
+        { k: 'JUNK',        l: 'Spam/Test' },
+    ];
 
-        view.innerHTML =
+    function tileCount(k) {
+        return leadsAfter(k, lfilter.status, lfilter.days, lq).length;
+    }
+
+    function matchTile(l, k) {
+        if (!k) return true;
+        if (k === 'new') return !l.status || l.status === 'new';
+        if (k === 'REAL') return l.lead_class === 'REAL';
+        if (k === 'JUNK') return l.lead_class === 'SPAM' || l.lead_class === 'TEST';
+        // quality tiles only mean anything on real leads
+        return l.lead_class === 'REAL' && l.lead_quality === k;
+    }
+
+    function leadsAfter(tile, status, days, q) {
+        var cutoff = days ? Date.now() - (+days * 864e5) : 0;
+        var needle = (q || '').toLowerCase();
+        return LEADS.filter(function (l) {
+            if (!matchTile(l, tile)) return false;
+            if (status && (l.status || 'new') !== status) return false;
+            if (cutoff && new Date(l.created_at).getTime() < cutoff) return false;
+            if (needle && JSON.stringify(l).toLowerCase().indexOf(needle) < 0) return false;
+            return true;
+        });
+    }
+
+    var COLS = [
+        { k: 'created_at',      l: 'Date',    w: '96px' },
+        { k: 'full_name',       l: 'Name' },
+        { k: 'submission_type', l: 'Type',    w: '110px' },
+        { k: 'watch',           l: 'Watch' },
+        { k: 'lead_quality',    l: 'Quality', w: '80px' },
+        { k: 'lead_class',      l: 'Class',   w: '78px' },
+        { k: 'status',          l: 'Status',  w: '124px' },
+    ];
+
+    function cell(l, k) {
+        if (k === 'watch') return l.watch_details || l.watch_interest || '';
+        if (k === 'created_at') return l.created_at || '';
+        return l[k] || '';
+    }
+
+    function sortLeads(list) {
+        var k = lsort;
+        return list.slice().sort(function (a, b) {
+            var av = cell(a, k), bv = cell(b, k);
+            if (k === 'created_at') {
+                return (new Date(av).getTime() - new Date(bv).getTime()) * ldir;
+            }
+            // quality sorts by real urgency, not alphabetically
+            if (k === 'lead_quality') {
+                var R = { HOT: 3, WARM: 2, COLD: 1, '': 0 };
+                return ((R[av] || 0) - (R[bv] || 0)) * ldir;
+            }
+            return String(av).localeCompare(String(bv)) * ldir;
+        });
+    }
+
+    function fmtDate(d) {
+        if (!d) return '—';
+        var t = new Date(d), now = new Date();
+        var days = Math.floor((now - t) / 864e5);
+        if (days === 0) return 'Today';
+        if (days === 1) return 'Yesterday';
+        if (days < 7) return days + 'd ago';
+        return t.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: t.getFullYear() === now.getFullYear() ? undefined : '2-digit' });
+    }
+
+    function paintLeads() {
+        var list = sortLeads(leadsAfter(lfilter.tile, lfilter.status, lfilter.days, lq));
+
+        var html =
+            '<div class="tiles">' + TILES.map(function (t) {
+                var n = leadsAfter(t.k, lfilter.status, lfilter.days, lq).length;
+                return '<button class="tile" data-tile="' + t.k + '" aria-pressed="' + (lfilter.tile === t.k) + '">' +
+                    '<span class="tk">' + esc(t.l) + '</span><span class="tv">' + n + '</span></button>';
+            }).join('') + '</div>' +
+
             '<div class="bar">' +
-              '<input id="l-q" class="ctl grow" type="search" placeholder="SEARCH LEADS…" value="' + esc(lq) + '">' +
+              '<input id="l-q" class="ctl grow" type="search" placeholder="SEARCH NAME, EMAIL, PHONE, WATCH…" value="' + esc(lq) + '">' +
+              '<select id="l-days" class="ctl">' +
+                [['', 'ALL TIME'], ['7', 'LAST 7 DAYS'], ['30', 'LAST 30 DAYS'], ['90', 'LAST 90 DAYS']].map(function (o) {
+                    return '<option value="' + o[0] + '"' + (lfilter.days === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+                }).join('') +
+              '</select>' +
+              '<select id="l-status" class="ctl">' +
+                '<option value=""' + (lfilter.status ? '' : ' selected') + '>ANY STATUS</option>' +
+                STATUSES.map(function (v) {
+                    return '<option value="' + v + '"' + (lfilter.status === v ? ' selected' : '') + '>' + v.toUpperCase() + '</option>';
+                }).join('') +
+              '</select>' +
+              '<button class="btn ghost" id="l-csv">Export</button>' +
               '<button class="btn ghost" id="l-refresh">Refresh</button>' +
             '</div>' +
-            '<p class="count">' + list.length + ' lead' + (list.length === 1 ? '' : 's') + '</p>' +
-            (list.length ? list.slice(0, 200).map(function (l) {
-                var meta = [
-                    l.email, l.phone,
-                    l.created_at ? new Date(l.created_at).toLocaleDateString() : '',
-                    l.submission_type,
-                ].filter(Boolean).join(' · ');
-                var cls = l.lead_class || '';
-                return '<div class="row" style="cursor:default">' +
-                    '<div class="rgrow">' +
-                        '<div class="rname">' + esc(l.full_name || l.email || 'Unknown') + '</div>' +
-                        '<div class="rmeta">' + esc(meta) + '</div>' +
-                        (l.watch_details ? '<div class="rmeta">' + esc(l.watch_details) + '</div>' : '') +
-                    '</div>' +
-                    (l.lead_quality ? '<span class="pill">' + esc(l.lead_quality) + '</span>' : '') +
-                    (cls ? '<span class="pill' + (cls === 'REAL' ? ' on' : '') + '">' + esc(cls) + '</span>' : '') +
-                '</div>';
-            }).join('') : '<p class="note">No leads yet.</p>') +
-            (list.length > 200 ? '<p class="note">Showing the first 200. Use search to narrow.</p>' : '');
 
-        var qi = document.getElementById('l-q');
-        qi.addEventListener('input', function () {
+            '<p class="count">' + list.length + ' of ' + LEADS.length + ' lead' + (LEADS.length === 1 ? '' : 's') +
+              ' · sorted by ' + esc(COLS.filter(function (c) { return c.k === lsort; })[0].l.toLowerCase()) +
+              (ldir < 0 ? ' (newest first)' : ' (oldest first)') + '</p>' +
+
+            '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+              COLS.map(function (c) {
+                  var on = lsort === c.k;
+                  return '<th class="s' + (on ? ' on' : '') + '" data-sort="' + c.k + '"' +
+                      (c.w ? ' style="width:' + c.w + '"' : '') + '>' + esc(c.l) +
+                      '<span class="ar">' + (on ? (ldir < 0 ? '↓' : '↑') : '↕') + '</span></th>';
+              }).join('') +
+            '</tr></thead><tbody>' +
+              (list.length ? list.map(leadRow).join('')
+                           : '<tr><td colspan="7" style="padding:28px 0"><span class="tmono">No leads match those filters.</span></td></tr>') +
+            '</tbody></table></div>';
+
+        view.innerHTML = html;
+        wireLeads();
+    }
+
+    function leadRow(l) {
+        var q = l.lead_quality || '';
+        var c = l.lead_class || '';
+        var watch = l.watch_details || l.watch_interest || '';
+        var open = lopen === l.id;
+
+        var main = '<tr data-id="' + esc(l.id) + '">' +
+            '<td><span class="tmono">' + esc(fmtDate(l.created_at)) + '</span></td>' +
+            '<td><div class="tname">' + esc(l.full_name || '—') + '</div>' +
+                '<div class="tsub">' + esc(l.email || l.phone || '') + '</div></td>' +
+            '<td><span class="tmono">' + esc(l.submission_type || '—') + '</span></td>' +
+            '<td>' + (watch ? esc(watch.length > 60 ? watch.slice(0, 60) + '…' : watch) : '<span class="tmono">—</span>') + '</td>' +
+            '<td>' + (q ? '<span class="tag ' + q.toLowerCase() + '">' + esc(q) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
+            '<td>' + (c ? '<span class="tag ' + c.toLowerCase() + '">' + esc(c) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
+            '<td><select class="stat" data-status-for="' + esc(l.id) + '">' +
+                STATUSES.map(function (v) {
+                    return '<option value="' + v + '"' + ((l.status || 'new') === v ? ' selected' : '') + '>' + v.toUpperCase() + '</option>';
+                }).join('') +
+            '</select></td>' +
+        '</tr>';
+
+        if (!open) return main;
+
+        var D = [
+            ['Email', l.email], ['Phone', l.phone], ['Budget', l.budget],
+            ['Type', l.submission_type], ['Watch', watch],
+            ['Confidence', l.lead_confidence], ['Reason', l.lead_reason],
+            ['Message', l.message || l.notes],
+            ['Submitted', l.created_at ? new Date(l.created_at).toLocaleString() : ''],
+        ].filter(function (d) { return d[1]; });
+
+        return main + '<tr class="detail"><td colspan="7"><div class="dgrid">' +
+            D.map(function (d) {
+                return '<div><div class="dk">' + esc(d[0]) + '</div><div class="dv">' + esc(d[1]) + '</div></div>';
+            }).join('') +
+        '</div></td></tr>';
+    }
+
+    function wireLeads() {
+        [].forEach.call(view.querySelectorAll('.tile'), function (b) {
+            b.addEventListener('click', function () {
+                lfilter.tile = b.dataset.tile; paintLeads();
+            });
+        });
+        [].forEach.call(view.querySelectorAll('th.s'), function (th) {
+            th.addEventListener('click', function () {
+                var k = th.dataset.sort;
+                // same column flips direction; a new column starts descending,
+                // which is what you want for dates and quality
+                if (lsort === k) ldir = -ldir; else { lsort = k; ldir = -1; }
+                paintLeads();
+            });
+        });
+        [].forEach.call(view.querySelectorAll('tbody tr[data-id]'), function (tr) {
+            tr.addEventListener('click', function (e) {
+                if (e.target.closest('select')) return;   // status control is not a row click
+                lopen = lopen === tr.dataset.id ? null : tr.dataset.id;
+                paintLeads();
+            });
+        });
+        [].forEach.call(view.querySelectorAll('[data-status-for]'), function (sel) {
+            sel.addEventListener('change', async function () {
+                var id = sel.dataset.statusFor, val = sel.value;
+                sel.disabled = true;
+                try {
+                    await A.adminFetchTo('/api/leads-admin', 'set-status', { id: id, status: val });
+                    var l = LEADS.filter(function (x) { return x.id === id; })[0];
+                    if (l) l.status = val;
+                } catch (err) {
+                    alert('Could not update status: ' + err.message);
+                }
+                sel.disabled = false;
+                paintLeads();
+            });
+        });
+
+        var q = document.getElementById('l-q');
+        q.addEventListener('input', function () {
             lq = this.value;
             var pos = this.selectionStart;
             paintLeads();
             var n = document.getElementById('l-q');
             n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {}
         });
+        document.getElementById('l-days').addEventListener('change', function () {
+            lfilter.days = this.value; paintLeads();
+        });
+        document.getElementById('l-status').addEventListener('change', function () {
+            lfilter.status = this.value; paintLeads();
+        });
         document.getElementById('l-refresh').addEventListener('click', function () {
             view.innerHTML = '<p class="count">Refreshing…</p>';
             renderLeads();
         });
+        document.getElementById('l-csv').addEventListener('click', exportLeads);
+    }
+
+    function exportLeads() {
+        var list = sortLeads(leadsAfter(lfilter.tile, lfilter.status, lfilter.days, lq));
+        var cols = ['created_at', 'full_name', 'email', 'phone', 'submission_type', 'watch_details', 'budget', 'lead_class', 'lead_quality', 'lead_confidence', 'status'];
+        var csv = [cols.join(',')].concat(list.map(function (l) {
+            return cols.map(function (k) {
+                return '"' + String(l[k] == null ? '' : l[k]).replace(/"/g, '""') + '"';
+            }).join(',');
+        })).join('\n');
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = 'dialed-leads.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
     }
 
     // ── go ──────────────────────────────────────────────────

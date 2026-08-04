@@ -270,6 +270,12 @@
     /* ===== fullscreen sell/trade takeover — same modal system as the subpages ===== */
     @keyframes hsstFadeIn{from{opacity:0}to{opacity:1}}
     .hsst-char{display:inline-block;white-space:pre}
+    /* Ticker watch-detail popup on mobile: ~75% of the screen, even gap all
+       around, backdrop visible on every side. Card scrolls inside itself. */
+    @media (max-width:640px){
+        #modal-overlay.is-watch-detail{padding:12.5vw}
+        #modal-overlay.is-watch-detail>div{max-height:calc(100vh - 25vw);max-height:calc(100dvh - 25vw);overflow-y:auto}
+    }
     .pt-modal-backdrop{display:none}
     .pt-modal{position:fixed;inset:0;z-index:81;background:#0a0a0a;color:#fff;font-family:var(--pt-mono);opacity:0;pointer-events:none;clip-path:inset(0 0 100% 0);transition:clip-path .65s cubic-bezier(.77,0,.18,1),opacity .2s linear .5s}
     .pt-modal.is-open{opacity:1;pointer-events:all;clip-path:inset(0 0 0% 0);transition:clip-path .65s cubic-bezier(.77,0,.18,1),opacity .1s linear}
@@ -1147,6 +1153,9 @@
 
             openModal: (type, data = null) => {
                 const overlay = document.getElementById('modal-overlay');
+                // Watch-detail (ticker) popup gets the 75%-with-even-borders
+                // treatment on mobile; the form modals keep full width.
+                overlay.classList.toggle('is-watch-detail', type === 'WATCH_DETAIL');
                 const body = document.getElementById('modal-body');
                 document.body.style.overflow = 'hidden'; // one scrollbar: the modal's
 

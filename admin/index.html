@@ -419,6 +419,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="matches" aria-selected="false">Matches</button>
             <button data-tab="dealers" aria-selected="false">Dealers</button>
             <button data-tab="retail"  aria-selected="false">Retail</button>
+            <button data-tab="buyers"  aria-selected="false">Buyers</button>
             <button data-tab="health"  aria-selected="false">Health</button>
         </nav>
 
@@ -473,7 +474,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, health: renderHealth };
+    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2794,6 +2795,105 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // ══════════════════════════════════════════════════════════
     var rtq = '';
     var rtSource = '';
+
+    // ══════════════════════════════════════════════════════════
+    // BUYERS  — who is hunting what, and can Henry get one
+    // ══════════════════════════════════════════════════════════
+    var BY = { rows: [], counters: {} };
+    var byq = '', byFilter = 'sourceable';
+
+    async function renderBuyers() {
+        var d = await A.adminFetchTo('/api/leads-admin', 'buyers');
+        BY.rows = d.rows || []; BY.counters = d.counters || {};
+        paintBuyers();
+    }
+
+    function byAfter(f, q) {
+        var needle = (q || '').toLowerCase();
+        return BY.rows.filter(function (r) {
+            if (f === 'sourceable' && !r.can_source) return false;
+            if (f === 'store' && !r.store_beats_group) return false;
+            if (f === 'nosupply' && r.can_source) return false;
+            if (needle) {
+                var hay = [r.reference, r.brand, r.model, r.nickname].filter(Boolean).join(' ').toLowerCase();
+                if (hay.indexOf(needle) < 0) return false;
+            }
+            return true;
+        });
+    }
+
+    function byRow(r) {
+        var piece = [r.brand, r.model].filter(Boolean).join(' ') || '—';
+        var who = (r.wanters || []).map(function (w) {
+            var ph = String(w.phone || '').replace(/\D/g, '');
+            return '<div class="count" style="margin-top:3px">' +
+                   (ph ? '<a href="https://wa.me/' + esc(ph) + '" target="_blank" rel="noopener">' +
+                         esc(w.dealer || ph) + '</a>' : esc(w.dealer || 'unknown')) +
+                   ' · ' + esc(w.kind) + ' · ' + esc(fmtAgo(w.at)) + '</div>';
+        }).join('');
+
+        // Where the cheapest one he can actually reach is sitting.
+        var best = r.best_price == null ? '<span class="count">nobody selling</span>'
+            : '<span class="tag ' + (r.best_source === 'STORE' ? 'warm' : 'hot') + '">' +
+              esc(r.best_source === 'STORE' ? 'STORE' : 'GROUP') + '</span> ' + esc(money(r.best_price));
+
+        return '<tr>' +
+          '<td><div class="tname">' + esc(r.reference) + '</div>' +
+              '<div class="count">' + esc(piece) + (r.nickname ? ' "' + esc(r.nickname) + '"' : '') + '</div></td>' +
+          '<td><div class="tname">' + r.buyers + '</div>' +
+              '<div class="count">' + r.posts + ' post' + (r.posts === 1 ? '' : 's') + '</div>' + who + '</td>' +
+          '<td>' + best +
+              (r.store_beats_group
+                ? '<div class="count">store undercuts the groups, check it is the same watch</div>' : '') + '</td>' +
+          '<td style="text-align:right">' + esc(money(r.market_median)) +
+              '<div class="count">' + r.supply_n + ' in groups · ' + r.retail_n + ' in stores</div></td>' +
+          '<td>' + esc(fmtAgo(r.last_want_at)) + '</td>' +
+        '</tr>';
+    }
+
+    function paintBuyers() {
+        var c = BY.counters;
+        var TILES = [
+            { k: 'sourceable', l: 'Can source' },
+            { k: '',           l: 'All wanted' },
+            { k: 'store',      l: 'Store cheaper' },
+            { k: 'nosupply',   l: 'No supply yet' },
+        ];
+        var rows = byAfter(byFilter, byq);
+
+        view.innerHTML =
+          '<div class="tiles">' + TILES.map(function (t) {
+              return '<button class="tile" data-by="' + t.k + '" aria-pressed="' + (byFilter === t.k) + '">' +
+                '<span class="tk">' + esc(t.l) + '</span><span class="tv">' +
+                byAfter(t.k, byq).length + '</span></button>';
+          }).join('') + '</div>' +
+          '<div class="bar"><input id="by-q" class="ctl grow" type="search" ' +
+            'placeholder="SEARCH REFERENCE, BRAND, MODEL…" value="' + esc(byq) + '">' +
+            '<button class="btn ghost" id="by-refresh">Refresh</button></div>' +
+          '<p class="count">' + rows.length + ' of ' + BY.rows.length +
+            ' references dealers have asked for in the last 30 days. Buyers post "please DM" ' +
+            'rather than a price, so nothing here guesses what they would pay.</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:170px">Wanted</th><th style="width:230px">Who wants it</th>' +
+            '<th style="width:210px">Cheapest you can reach</th>' +
+            '<th style="width:160px;text-align:right">Market</th><th style="width:90px">Last asked</th>' +
+          '</tr></thead><tbody>' +
+          (rows.length ? rows.map(byRow).join('')
+            : '<tr><td colspan="5" class="count">Nothing here yet.</td></tr>') +
+          '</tbody></table></div>';
+
+        [].forEach.call(document.querySelectorAll('[data-by]'), function (b) {
+            b.addEventListener('click', function () { byFilter = this.dataset.by; paintBuyers(); });
+        });
+        var q = document.getElementById('by-q');
+        if (q) q.addEventListener('input', function () {
+            byq = this.value; var p = this.selectionStart; paintBuyers();
+            var n = document.getElementById('by-q');
+            if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+        });
+        var rf = document.getElementById('by-refresh');
+        if (rf) rf.addEventListener('click', renderBuyers);
+    }
 
     // ══════════════════════════════════════════════════════════
     // HEALTH  — is anything actually flowing

@@ -1937,6 +1937,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         { k: 'wtb',      l: 'Wanted' },
         { k: 'diamonds', l: 'Diamonds' },
         { k: 'mismatch', l: 'Photo ≠ text' },
+        { k: 'weak',     l: 'Check these' },
     ];
 
     function matchWTile(l, k) {
@@ -1946,6 +1947,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (k === 'wtb')      return l.listing_type === 'WTB' || l.listing_type === 'NTQ';
         if (k === 'diamonds') return !!l.has_diamonds;
         if (k === 'mismatch') return !!l.vision_mismatch;
+        // Anything the extractor could not back up against the original message.
+        if (k === 'weak')     return l.trust_score != null && l.trust_score < 70;
         return true;
     }
 
@@ -2011,8 +2014,22 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
     }
 
+    // The model's own confidence sat at 97% average and never moved, so it told
+    // us nothing. Trust is computed from things that can be checked against the
+    // original message: was the reference actually written, was the price
+    // written, is there a photo, does the photo agree with the caption.
+    function trustCell(l) {
+        if (l.trust_score == null) return '—';
+        var t = Number(l.trust_score);
+        var cls = t >= 85 ? 'hot' : t >= 70 ? 'warm' : 'spam';
+        var why = (l.trust_why || []).join(' · ');
+        return '<span class="tag ' + cls + '">' + t + '%</span>' +
+               (why ? '<span class="count" style="margin-left:8px">' + esc(why) + '</span>' : '');
+    }
+
     function wcell(l, k) {
         if (k === 'spec')  return specOf(l);
+        if (k === 'trust_score') return l.trust_score == null ? null : Number(l.trust_score);
         if (k === 'brand') return [l.brand, l.model, l.reference].filter(Boolean).join(' ');
         return l[k];
     }
@@ -2023,7 +2040,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var av = wcell(a, k), bv = wcell(b, k);
             if (k === 'message_ts') return (new Date(av) - new Date(bv)) * wdir;
             // numeric columns: nulls always sink, whichever way you sort
-            if (k === 'price_usd' || k === 'delta_pct') {
+            if (k === 'price_usd' || k === 'delta_pct' || k === 'trust_score') {
                 if (av == null && bv == null) return 0;
                 if (av == null) return 1;
                 if (bv == null) return -1;
@@ -2138,7 +2155,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             ['Diamonds',    l.has_diamonds ? (l.diamonds_factory === true ? 'factory' : l.diamonds_factory === false ? 'aftermarket' : 'yes, source unstated') : 'no'],
             ['Group',       WS.names[l.group_jid] || l.group_jid],
             ['Type',        l.listing_type],
-            ['Confidence',  (l.confidence == null ? '—' : l.confidence + '%')],
+            ['Trust',       trustCell(l)],
             ['Read by',     l.model_used || '—'],
         ];
         if (l.vision_mismatch) {
@@ -2261,7 +2278,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var cols = ['message_ts', 'brand', 'model', 'reference', 'price_usd', 'baseline_usd', 'delta_pct',
                     'condition', 'set_completeness', 'year', 'dial_color', 'dial_material', 'case_material',
                     'case_size_mm', 'bracelet', 'bezel', 'has_diamonds', 'nickname', 'seller_name',
-                    'listing_type', 'confidence', 'model_used'];
+                    'listing_type', 'trust_score', 'model_used'];
         var csv = [cols.join(',')].concat(list.map(function (l) {
             return cols.map(function (k) {
                 var s = l[k] == null ? '' : String(l[k]);

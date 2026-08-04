@@ -420,6 +420,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="dealers" aria-selected="false">Dealers</button>
             <button data-tab="retail"  aria-selected="false">Retail</button>
             <button data-tab="buyers"  aria-selected="false">Buyers</button>
+            <button data-tab="accuracy" aria-selected="false">Accuracy</button>
             <button data-tab="health"  aria-selected="false">Health</button>
         </nav>
 
@@ -474,7 +475,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, health: renderHealth };
+    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2893,6 +2894,176 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         var rf = document.getElementById('by-refresh');
         if (rf) rf.addEventListener('click', renderBuyers);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // ACCURACY  — everything needed to tune the extractor
+    // ══════════════════════════════════════════════════════════
+    var AC = { flows: [], scorecard: [], coverage: [], samples: [] };
+    var acOnly = '', acSort = 'recent', acOpen = null;
+
+    async function renderAccuracy() {
+        AC = await A.adminFetchTo('/api/leads-admin', 'accuracy', { only: acOnly, sort: acSort });
+        paintAccuracy();
+    }
+
+    function acSample(s) {
+        var out = [
+            ['Reference', s.reference], ['Price', s.price_usd ? money(s.price_usd) : null],
+            ['Brand', s.brand], ['Model', s.model], ['Year', s.year],
+            ['Condition', s.condition], ['Contents', s.set_completeness],
+            ['Dial', [s.dial_color, s.dial_material].filter(Boolean).join(' ')],
+            ['Case', s.case_material], ['Bracelet', s.bracelet], ['Nickname', s.nickname],
+        ].filter(function (r) { return r[1]; })
+         .map(function (r) { return '<div><div class="dk">' + r[0] + '</div><div class="dv">' +
+                esc(String(r[1]).replace(/_/g, ' ')) + '</div></div>'; }).join('');
+
+        var vis = (s.vision_brand || s.vision_model || s.vision_reference)
+            ? '<p class="count" style="margin-top:8px">Photo read as: ' +
+              esc([s.vision_brand, s.vision_model, s.vision_reference].filter(Boolean).join(' ')) +
+              (s.vision_mismatch ? ' — disagrees with the caption' : '') + '</p>' : '';
+
+        return '<tr class="ac-detail"><td colspan="7">' +
+          '<p class="count">What the dealer actually wrote</p>' +
+          '<pre style="white-space:pre-wrap;font-size:12px;margin:6px 0 12px;opacity:.85">' +
+            esc(s.source_text || '(no caption, photo only)') + '</pre>' +
+          '<p class="count">What the model returned</p>' +
+          '<div class="dgrid" style="margin-top:6px">' + (out || '<div class="count">nothing</div>') + '</div>' +
+          vis +
+          '<p class="count" style="margin-top:10px">' +
+            'self-rated ' + esc(s.self_confidence == null ? '—' : s.self_confidence + '%') +
+            ' · measured ' + esc(s.trust_score == null ? '—' : s.trust_score) +
+            (s.trust_why && s.trust_why.length ? ' (' + esc(s.trust_why.join(', ')) + ')' : '') +
+            ' · ' + esc(s.run_model) +
+            (s.latency_ms ? ' · ' + Math.round(s.latency_ms / 100) / 10 + 's' : '') +
+            (s.tokens_in ? ' · ' + s.tokens_in + ' in / ' + s.tokens_out + ' out' : '') +
+            (s.corrected_fields && s.corrected_fields.length
+              ? ' · you fixed: ' + esc(s.corrected_fields.join(', ')) : '') +
+          '</p></td></tr>';
+    }
+
+    function paintAccuracy() {
+        var FILTERS = [
+            { k: '',          l: 'Recent' },
+            { k: 'weak',      l: 'Weak reads' },
+            { k: 'mismatch',  l: 'Photo ≠ text' },
+            { k: 'noref',     l: 'No reference' },
+            { k: 'noprice',   l: 'No price' },
+            { k: 'corrected', l: 'You corrected' },
+        ];
+
+        view.innerHTML =
+          // n8n's own numbers, collected every 15 minutes.
+          '<p class="count">Flow runs, last 24 hours · collected from n8n every 15 minutes</p>' +
+          '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
+            '<th style="width:90px">State</th><th>Flow</th><th style="width:80px">Runs</th>' +
+            '<th style="width:80px">Errors</th><th style="width:90px">Fail rate</th>' +
+            '<th style="width:110px">Last run</th>' +
+          '</tr></thead><tbody>' +
+          (AC.flows || []).map(function (f) {
+              var cls = f.status === 'OK' ? 'hot' : f.status === 'IDLE' ? 'warm'
+                      : f.status === 'FLAKY' ? 'warm' : 'spam';
+              return '<tr>' +
+                '<td><span class="tag ' + cls + '">' + esc(f.status) + '</span></td>' +
+                '<td>' + esc(f.workflow_name) + (f.active === false
+                    ? ' <span class="count">(off)</span>' : '') + '</td>' +
+                '<td>' + Number(f.runs).toLocaleString() + '</td>' +
+                '<td>' + Number(f.errors).toLocaleString() + '</td>' +
+                '<td>' + esc(f.failure_pct) + '%</td>' +
+                '<td>' + esc(fmtAgo(f.last_run_at)) + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>' +
+
+          '<p class="count">Model scorecard · graded against the original message, not the ' +
+          'model\'s own confidence</p>' +
+          '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
+            '<th>Model</th><th style="width:80px">Read</th><th style="width:80px">Trust</th>' +
+            '<th style="width:80px">Solid</th><th style="width:80px">Weak</th>' +
+            '<th style="width:80px">Ref</th><th style="width:80px">Price</th>' +
+            '<th style="width:90px">Mismatch</th><th style="width:90px">Corrected</th>' +
+            '<th style="width:80px">Speed</th><th style="width:110px">Tokens</th>' +
+          '</tr></thead><tbody>' +
+          (AC.scorecard || []).map(function (m) {
+              var tcls = m.avg_trust >= 90 ? 'hot' : m.avg_trust >= 80 ? 'warm' : 'spam';
+              return '<tr>' +
+                '<td>' + esc(m.model) + (m.fixed_fields
+                    ? '<div class="count">fixed: ' + esc(m.fixed_fields) + '</div>' : '') + '</td>' +
+                '<td>' + Number(m.listings).toLocaleString() + '</td>' +
+                '<td><span class="tag ' + tcls + '">' + esc(m.avg_trust) + '</span></td>' +
+                '<td>' + esc(m.pct_solid) + '%</td><td>' + esc(m.pct_weak) + '%</td>' +
+                '<td>' + esc(m.pct_reference) + '%</td><td>' + esc(m.pct_price) + '%</td>' +
+                '<td>' + esc(m.pct_mismatch) + '%</td><td>' + esc(m.pct_corrected) + '%</td>' +
+                '<td>' + (m.avg_ms ? Math.round(m.avg_ms / 1000) + 's' : '—') + '</td>' +
+                '<td>' + (m.avg_tokens_in ? m.avg_tokens_in + ' / ' + m.avg_tokens_out : '—') + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>' +
+
+          // Where the extractor is thin, worst first. This is the list that
+          // tells you what to change in the prompt.
+          '<p class="count">Field coverage · how often each field comes back filled, worst first</p>' +
+          '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
+            '<th style="width:180px">Field</th><th style="width:180px">Model</th>' +
+            '<th style="width:110px">Filled</th><th>Rate</th>' +
+          '</tr></thead><tbody>' +
+          (AC.coverage || []).filter(function (c) { return c.listings > 20; }).map(function (c) {
+              var w = Math.max(0, Math.min(100, Number(c.pct)));
+              return '<tr>' +
+                '<td>' + esc(c.field) + '</td><td class="count">' + esc(c.run_model) + '</td>' +
+                '<td>' + c.filled + ' / ' + c.listings + '</td>' +
+                '<td><div style="background:var(--line);height:8px;border-radius:4px;overflow:hidden">' +
+                  '<div style="width:' + w + '%;height:8px;background:' +
+                  (w >= 90 ? 'var(--l1)' : w >= 70 ? '#b98900' : '#b23') + '"></div></div>' +
+                  '<div class="count">' + esc(c.pct) + '%</div></td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>' +
+
+          '<div class="bar">' +
+            FILTERS.map(function (f) {
+                return '<button class="btn ghost" data-ac="' + f.k + '" ' +
+                  (acOnly === f.k ? 'style="border-color:var(--l1)"' : '') + '>' + esc(f.l) + '</button>';
+            }).join('') +
+            '<button class="btn ghost" data-acsort="' + (acSort === 'worst' ? 'recent' : 'worst') + '">' +
+              (acSort === 'worst' ? 'Sorted: worst first' : 'Sorted: newest first') + '</button>' +
+          '</div>' +
+          '<p class="count">' + (AC.samples || []).length + ' reads · click any row to see the ' +
+          'dealer\'s original message next to what the model returned</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:70px">Trust</th><th style="width:150px">Watch</th>' +
+            '<th style="width:110px">Reference</th><th style="width:110px">Price</th>' +
+            '<th>Why it scored that</th><th style="width:90px">Model</th>' +
+            '<th style="width:80px">Seen</th>' +
+          '</tr></thead><tbody>' +
+          (AC.samples || []).map(function (s) {
+              var tcls = s.trust_score >= 85 ? 'hot' : s.trust_score >= 70 ? 'warm' : 'spam';
+              var row = '<tr data-acrow="' + esc(s.id) + '" style="cursor:pointer">' +
+                '<td><span class="tag ' + tcls + '">' + esc(s.trust_score == null ? '—' : s.trust_score) + '</span></td>' +
+                '<td>' + esc([s.brand, s.model].filter(Boolean).join(' ') || '—') + '</td>' +
+                '<td>' + esc(s.reference || '—') + '</td>' +
+                '<td>' + esc(s.price_usd ? money(s.price_usd) : '—') + '</td>' +
+                '<td class="count">' + esc((s.trust_why || []).join(' · ') || 'nothing against it') + '</td>' +
+                '<td class="count">' + esc(String(s.run_model).split('/').pop()) + '</td>' +
+                '<td>' + esc(fmtAgo(s.message_ts)) + '</td>' +
+              '</tr>';
+              return row + (acOpen === s.id ? acSample(s) : '');
+          }).join('') +
+          '</tbody></table></div>';
+
+        [].forEach.call(document.querySelectorAll('[data-ac]'), function (b) {
+            b.addEventListener('click', function () { acOnly = this.dataset.ac; acOpen = null; renderAccuracy(); });
+        });
+        [].forEach.call(document.querySelectorAll('[data-acsort]'), function (b) {
+            b.addEventListener('click', function () { acSort = this.dataset.acsort; acOpen = null; renderAccuracy(); });
+        });
+        [].forEach.call(document.querySelectorAll('[data-acrow]'), function (r) {
+            r.addEventListener('click', function () {
+                var id = Number(this.dataset.acrow);
+                acOpen = (acOpen === id) ? null : id;
+                paintAccuracy();
+            });
+        });
     }
 
     // ══════════════════════════════════════════════════════════

@@ -736,6 +736,32 @@ module.exports = async (req, res) => {
             });
         }
 
+        // Everything needed to tune the extractor: how each flow is running,
+        // how each model scores, where the fields are thin, and the raw input
+        // next to the parsed output so a bad read can be judged on the spot.
+        if (action === "accuracy") {
+            const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
+            const sort = body.sort === "worst" ? "trust_score.asc" : "created_at.desc";
+            const only = body.only || "";
+            let filter = "";
+            if (only === "weak")      filter = "&trust_score=lt.70";
+            if (only === "mismatch")  filter = "&vision_mismatch=is.true";
+            if (only === "corrected") filter = "&corrected_at=not.is.null";
+            if (only === "noref")     filter = "&reference=is.null";
+            if (only === "noprice")   filter = "&price_usd=is.null";
+
+            const [flows, scorecard, coverage, samples] = await Promise.all([
+                wh("flow_health?select=*&order=errors.desc"),
+                wh("model_scorecard?select=*"),
+                wh("field_coverage?select=*&order=pct.asc"),
+                wh(`extraction_samples?select=*${filter}&order=${sort}&limit=300`),
+            ]);
+            return res.status(200).json({
+                flows: flows || [], scorecard: scorecard || [],
+                coverage: coverage || [], samples: samples || [],
+            });
+        }
+
         // Who in the groups is hunting what, paired with whether Henry can
         // actually get hold of one. Buyers post "Please DM" and almost never a
         // price, so nothing here guesses what they would pay.

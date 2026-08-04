@@ -1886,12 +1886,14 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // ══════════════════════════════════════════════════════════
     // WHOLESALE  — the price index scraped out of the dealer groups
     // ══════════════════════════════════════════════════════════
-    var WS = { listings: [], stats: [], variants: [], alerts: [], names: {}, counters: {} };
+    var WS = { listings: [], stats: [], variants: [], alerts: [], names: {}, counters: {}, loadedAt: null };
     var wq = '';
     var wfilter = { tile: '', brand: '', group: '', days: '' };
     var wsort = 'message_ts';
     var wdir = -1;
     var wopen = null;
+
+    var wsTimer = null;
 
     async function renderWholesale() {
         var r = await A.adminFetchTo('/api/leads-admin', 'wholesale');
@@ -1901,7 +1903,31 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         WS.alerts   = r.alerts || [];
         WS.names    = r.nameByJid || {};
         WS.counters = r.counters || {};
+        WS.loadedAt = new Date().toISOString();
         paintWholesale();
+        startWholesaleAuto();
+    }
+
+    // The groups post continuously and the ingest runs every minute, so a tab
+    // left open goes stale within minutes. Poll on the same cadence, and stop
+    // the moment another tab is showing so it is not fetching in the background.
+    function startWholesaleAuto() {
+        if (wsTimer) clearInterval(wsTimer);
+        wsTimer = setInterval(function () {
+            var onTab = document.querySelector('#tabs button[data-tab="wholesale"][aria-selected="true"]');
+            if (!onTab) { clearInterval(wsTimer); wsTimer = null; return; }
+            if (document.hidden) return;              // don't poll a background tab
+            A.adminFetchTo('/api/leads-admin', 'wholesale').then(function (r) {
+                WS.listings = r.listings || [];
+                WS.stats    = r.stats || [];
+                WS.variants = r.variants || [];
+                WS.alerts   = r.alerts || [];
+                WS.names    = r.nameByJid || {};
+                WS.counters = r.counters || {};
+                WS.loadedAt = new Date().toISOString();
+                paintWholesale();
+            }).catch(function () { /* a failed poll must not break the view */ });
+        }, 60000);
     }
 
     var WTILES = [
@@ -1948,6 +1974,27 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         { k: 'delta_pct',    l: 'vs Mkt', w: '104px' },
         { k: 'seller_name',  l: 'Seller', w: '150px' },
     ];
+
+    // The dealer feed moves every minute, so "Today" tells you nothing. Show how
+    // stale a listing is, because a good price posted 3 minutes ago is a very
+    // different thing from the same price posted yesterday.
+    function fmtAgo(t) {
+        if (!t) return '—';
+        var s = Math.floor((Date.now() - new Date(t).getTime()) / 1000);
+        if (s < 0) s = 0;
+        if (s < 60) return s + 's ago';
+        if (s < 3600) return Math.floor(s / 60) + 'm ago';
+        if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+        return Math.floor(s / 86400) + 'd ago';
+    }
+    function fmtClock(t) {
+        if (!t) return '';
+        var d = new Date(t), now = new Date();
+        var time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        return d.toDateString() === now.toDateString()
+            ? time
+            : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + time;
+    }
 
     function specOf(l) {
         return [
@@ -2018,6 +2065,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '<button class="btn ghost" id="w-refresh">Refresh</button>' +
             '</div>' +
 
+            // Newest listing age is the real health signal: the ingest runs every
+            // minute, so anything older than a few minutes means it has stalled.
+            '<p class="count">' +
+              (WS.listings.length
+                ? 'Newest ' + esc(fmtAgo(WS.listings.reduce(function (a, b) {
+                      return new Date(a.message_ts) > new Date(b.message_ts) ? a : b;
+                  }).message_ts)) + ' · refreshed ' + esc(fmtAgo(WS.loadedAt)) + ' · auto every 60s'
+                : '') +
+            '</p>' +
             '<p class="count">' + list.length + ' of ' + WS.listings.length + ' listing' + (WS.listings.length === 1 ? '' : 's') +
               ' · ' + (c.quotable || 0) + ' reference' + (c.quotable === 1 ? '' : 's') + ' priceable' +
               ' · ' + (c.variants || 0) + ' variants tracked' +
@@ -2049,7 +2105,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                   (d > 0 ? '-' : '+') + Math.abs(d) + '%</span>';
 
         var main = '<tr data-wid="' + esc(l.id) + '">' +
-            '<td><span class="tmono">' + esc(fmtDate(l.message_ts)) + '</span></td>' +
+            '<td><span class="tmono">' + esc(fmtAgo(l.message_ts)) + '</span>' +
+                '<div class="tsub">' + esc(fmtClock(l.message_ts)) + '</div></td>' +
             '<td><div class="wcell">' +
                 (l.image_url
                     ? '<img class="wthumb" src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">'

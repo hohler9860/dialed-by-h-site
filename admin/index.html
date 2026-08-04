@@ -2170,12 +2170,19 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // ══════════════════════════════════════════════════════════
     var MX = { wants: [], best: [], alerts: [], counters: {} };
     var mxView = 'matched';
+    var QB = { rows: [], counters: {} };
     var mxq = '';
 
     async function renderMatches() {
         var r = await A.adminFetchTo('/api/leads-admin', 'matches');
         MX.wants = r.wants || []; MX.best = r.best || [];
         MX.alerts = r.alerts || []; MX.counters = r.counters || {};
+        // Quote book rides along: the Prices view is where the confidence gate is
+        // actually visible, and the tile count comes from it.
+        try {
+            var qb = await A.adminFetchTo('/api/leads-admin', 'quote-book');
+            QB.rows = qb.rows || []; QB.counters = qb.counters || {};
+        } catch (e) { QB = { rows: [], counters: {} }; }
         paintMatches();
     }
 
@@ -2197,6 +2204,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             { k: 'matched', l: 'Matched',  v: MX.best.length },
             { k: 'waiting', l: 'Still hunting', v: MX.wants.length - MX.best.length },
             { k: 'alerts',  l: 'Under market', v: MX.alerts.length },
+            { k: 'prices',  l: 'Quotable', v: (QB.counters.quotable != null ? QB.counters.quotable : '—') },
         ];
 
         var html =
@@ -2229,6 +2237,49 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                           '<td>' + (w.client_phone ? '<a class="tmono" href="https://wa.me/' + esc(String(w.client_phone).replace(/\D/g,'')) + '" target="_blank" rel="noopener">WhatsApp</a>' : '<span class="tmono">—</span>') + '</td>' +
                         '</tr>';
                     }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">Nothing open.</span></td></tr>') +
+                    '</tbody></table></div>';
+        } else if (mxView === 'prices') {
+            var qb = QB.rows.filter(function (r) { return !q || hay(r).indexOf(q) >= 0; });
+            var c2 = QB.counters;
+            html += '<p class="count">' +
+                    (c2.quotable || 0) + ' of ' + (c2.total || 0) + ' references safe to quote · ' +
+                    (c2.high || 0) + ' high confidence, ' + (c2.medium || 0) + ' medium · ' +
+                    (c2.indicative || 0) + ' reference-only, ' + (c2.no_retail || 0) + ' no retail data' +
+                    '</p>' +
+                    '<p class="count">A reference is only quotable when retail can be compared like for like: ' +
+                    'same reference, same condition, same contents. Anything else is for your eyes only.</p>' +
+                    '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+                      '<th>Reference</th><th style="width:150px">Trades as</th>' +
+                      '<th style="width:100px">Wholesale</th><th style="width:100px">Retail</th>' +
+                      '<th style="width:120px">You quote</th><th style="width:110px">You make</th>' +
+                      '<th style="width:110px">Confidence</th>' +
+                    '</tr></thead><tbody>' +
+                    (qb.length ? qb.map(function (r) {
+                        var ok = r.quote_confidence === 'HIGH' || r.quote_confidence === 'MEDIUM';
+                        var conf = r.quote_confidence === 'HIGH' ? 'hot'
+                                 : r.quote_confidence === 'MEDIUM' ? 'warm' : 'spam';
+                        var spec = [r.spec_year, r.spec_condition ? r.spec_condition.replace(/_/g,' ') : null,
+                                    r.spec_set ? r.spec_set.replace(/_/g,' ') : null].filter(Boolean).join(' · ');
+                        return '<tr>' +
+                          '<td><div class="tname">' + esc(r.reference || '—') + '</div>' +
+                              '<div class="tsub">' + esc([r.brand, r.model].filter(Boolean).join(' ')) + ' · ' + (r.quotes || 0) + ' quotes</div></td>' +
+                          '<td><span class="tsub">' + esc(spec || '—') + '</span></td>' +
+                          '<td><span class="tmono">' + esc(money(r.wholesale_median)) + '</span></td>' +
+                          '<td>' + (r.retail_benchmark
+                              ? '<span class="tmono">' + esc(money(r.retail_benchmark)) + '</span>' +
+                                '<div class="tsub">' + esc(r.retail_source || '') + ' · ' + (r.retail_n || 0) + '</div>'
+                              : '<span class="tmono">—</span>') + '</td>' +
+                          // Never show a target the system cannot defend.
+                          '<td>' + (ok && r.target_quote
+                              ? '<span class="tmono">' + esc(money(r.floor_quote)) + ' to ' + esc(money(r.target_quote)) + '</span>'
+                              : '<span class="tmono">' + esc(money(r.floor_quote)) + ' floor only</span>') + '</td>' +
+                          '<td>' + (ok && r.target_profit
+                              ? '<span class="tmono">' + esc(money(r.floor_profit)) + ' to ' + esc(money(r.target_profit)) + '</span>'
+                              : '<span class="tmono">' + esc(money(r.floor_profit)) + '</span>') + '</td>' +
+                          '<td><span class="tag ' + conf + '">' + esc(r.quote_confidence || 'NONE') + '</span>' +
+                              '<div class="tsub">' + esc(r.match_tier || '') + '</div></td>' +
+                        '</tr>';
+                    }).join('') : '<tr><td colspan="7" style="padding:28px 0"><span class="tmono">No references priced yet.</span></td></tr>') +
                     '</tbody></table></div>';
         } else {
             html += '<p class="count">' + alerts.length + ' listing' + (alerts.length === 1 ? '' : 's') +
@@ -2263,6 +2314,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var days = w.opened_at ? Math.floor((Date.now() - new Date(w.opened_at).getTime()) / 864e5) : 0;
         var cp = String(w.client_phone || '').replace(/\D/g, '');
         var dp = String(m.dealer_phone || '').replace(/\D/g, '');
+        // A target price only exists when retail was matched like for like.
+        var verified = (m.quote_confidence === 'HIGH' || m.quote_confidence === 'MEDIUM')
+                       && m.quote_high != null;
 
         return '<div class="bcard" style="margin-bottom:10px">' +
           '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">' +
@@ -2272,15 +2326,25 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 (w.ok_to_text === false ? ' <span class="tag spam">no texts</span>' : '') + '</div>' +
               '<div class="tsub">' + esc(piece) + ' · asked ' + (days === 0 ? 'today' : days + 'd ago') + '</div>' +
             '</div>' +
+            // Only show a range when retail was matched like for like. Otherwise
+            // the floor is the only number the system can stand behind.
             '<div style="text-align:right">' +
-              '<div class="tname">' + esc(money(m.profit_low)) + ' to ' + esc(money(m.profit_high)) + '</div>' +
-              '<div class="tsub">your margin</div>' +
+              '<div class="tname">' + (verified
+                  ? esc(money(m.profit_low)) + ' to ' + esc(money(m.profit_high))
+                  : esc(money(m.profit_low)) + '+') + '</div>' +
+              '<div class="tsub">' + (verified ? 'your margin' : 'floor margin, retail unverified') + '</div>' +
             '</div>' +
           '</div>' +
           '<div class="dgrid" style="margin-top:10px">' +
             '<div><div class="dk">Dealer asks</div><div class="dv">' + esc(money(m.dealer_price)) + '</div></div>' +
-            '<div><div class="dk">You quote</div><div class="dv">' + esc(money(m.quote_low)) + ' to ' + esc(money(m.quote_high)) + '</div></div>' +
-            '<div><div class="dk">Retail</div><div class="dv">' + (m.retail_median ? esc(money(m.retail_median)) : 'no data') + '</div></div>' +
+            '<div><div class="dk">You quote</div><div class="dv">' + (verified
+                ? esc(money(m.quote_low)) + ' to ' + esc(money(m.quote_high))
+                : esc(money(m.quote_low)) + ' floor') + '</div></div>' +
+            '<div><div class="dk">Retail</div><div class="dv">' + (m.retail_median
+                ? esc(money(m.retail_median)) + (m.retail_source ? ' (' + esc(m.retail_source) + ')' : '')
+                : 'not comparable yet') + '</div></div>' +
+            '<div><div class="dk">Confidence</div><div class="dv">' +
+                esc(m.quote_confidence || 'NONE') + (m.match_tier ? ' · ' + esc(m.match_tier) : '') + '</div></div>' +
             '<div><div class="dk">Dealer</div><div class="dv">' + esc(m.dealer_name || 'unknown') + '</div></div>' +
           '</div>' +
           '<div class="row" style="gap:8px;margin-top:10px">' +

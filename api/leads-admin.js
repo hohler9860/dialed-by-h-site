@@ -499,11 +499,25 @@ module.exports = async (req, res) => {
             });
         }
 
-        // What to charge, per reference, at Henry's 5-8%.
+        // What to charge, per reference. Every row carries the evidence behind it:
+        // how many dealer quotes, how many comparable retail listings, how close
+        // the retail match was, and whether it is safe to put in front of a client.
         if (action === "quote-book") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-            const rows = await wh("quote_book?select=*&limit=500");
-            return res.status(200).json({ rows });
+            const rows = await wh("quote_book?select=*&limit=1000");
+            const by = (c) => rows.filter((r) => r.quote_confidence === c).length;
+            return res.status(200).json({
+                rows,
+                counters: {
+                    total: rows.length,
+                    // Only these two may ever be quoted to a client.
+                    quotable: by("HIGH") + by("MEDIUM"),
+                    high: by("HIGH"),
+                    medium: by("MEDIUM"),
+                    indicative: by("INDICATIVE"),
+                    no_retail: by("NONE"),
+                },
+            });
         }
 
         // ── Ask a dealer if a piece is still available ─────────────────────

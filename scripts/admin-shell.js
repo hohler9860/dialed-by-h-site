@@ -13,18 +13,19 @@
 // #logout-btn so each page keeps its own sign-out wiring.
 
 (function () {
+    // Every section now lives as a tab on the single /admin/ console. These
+    // links exist so the remaining standalone pages (the article editor, and
+    // the legacy journal/leads pages) can get back to it.
     var SECTIONS = [
-        { label: 'Pieces', href: '/admin/pieces/' },
-        { label: 'Journal', href: '/admin/journal/' },
-        { label: 'Leads', href: '/admin/leads/' },
+        { label: 'Pieces', href: '/admin/#pieces' },
+        { label: 'Journal', href: '/admin/#journal' },
+        { label: 'Leads', href: '/admin/#leads' },
     ];
 
     function currentSection() {
         var path = window.location.pathname;
-        for (var i = 0; i < SECTIONS.length; i++) {
-            // /admin/journal/edit.html should still light up "Journal"
-            if (path.indexOf(SECTIONS[i].href) === 0) return SECTIONS[i].href;
-        }
+        if (path.indexOf('/admin/journal') === 0) return '/admin/#journal';
+        if (path.indexOf('/admin/leads') === 0) return '/admin/#leads';
         return null;
     }
 

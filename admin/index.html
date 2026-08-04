@@ -342,6 +342,28 @@ table.bk-tbl th.n, table.bk-tbl td.n { text-align: right; padding-right: 14px; }
 table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-mute { color: var(--l3); }
 
+/* ── brand grid ─────────────────────────────────────────── */
+.brands { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.bcard {
+    display: flex; align-items: center; gap: 12px; text-align: left;
+    border: 1px solid var(--line); background: transparent; padding: 12px;
+    cursor: pointer; transition: border-color .15s, background .15s;
+}
+.bcard:hover { border-color: var(--l1); background: rgba(var(--label-d),.03); }
+.bcard img { width: 44px; height: 44px; object-fit: cover; background: var(--be); flex: none; display: block; }
+.bcard .bn { font-weight: 700; font-size: 14px; letter-spacing: -.01em; line-height: 1.25; }
+.bcard .bc { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); margin-top: 3px; }
+.crumb {
+    font-family: var(--mono); font-size: 12px; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--l2); margin-bottom: 14px;
+}
+.crumb button {
+    font: inherit; color: var(--l2); background: none; border: 0; cursor: pointer; padding: 0;
+}
+.crumb button:hover { color: var(--l1); }
+.crumb .sep { margin: 0 8px; color: var(--l3); }
+.crumb .cur { color: var(--l1); }
+
 /* ── login ──────────────────────────────────────────────── */
 #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 #gate .box { width: 100%; max-width: 400px; }
@@ -826,8 +848,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     function bkDealTable(rows) {
-        var head = ['Ref', 'Piece', 'Reference', 'Bought', 'Sold', 'Held', 'Cost', 'Sell', 'Profit', 'Margin', 'Buyer'];
-        var nums = { 6: 1, 7: 1, 8: 1, 9: 1 };
+        var head = ['Ref', 'Piece', 'Reference', 'Serial', 'Bought', 'Sold', 'Held',
+                    'Cost', 'Sell', 'Profit', 'Margin', 'Buyer'];
+        var nums = { 7: 1, 8: 1, 9: 1, 10: 1 };
         var dash = '<span class="bk-mute">—</span>';
         document.getElementById('bk-deals').innerHTML =
             '<thead><tr>' + head.map(function (h, i) {
@@ -835,9 +858,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }).join('') + '</tr></thead><tbody>' +
             rows.map(function (d) {
                 var p = bkProfit(d);
-                return '<tr><td>' + esc(d.ref) + '</td>' +
+                return '<tr data-id="' + esc(d.id) + '"><td>' + esc(d.ref) + '</td>' +
                     '<td class="nm">' + esc((d.brand ? d.brand + ' ' : '') + (d.model || '')) + '</td>' +
                     '<td class="bk-mute">' + esc(d.reference || '') + '</td>' +
+                    '<td class="bk-mute">' + esc(d.serial || '') + '</td>' +
                     '<td>' + esc(d.date_bought || '') + '</td>' +
                     '<td>' + (d.date_sold ? esc(d.date_sold) : dash) + '</td>' +
                     '<td>' + (d.date_sold ? bkDays(d.date_bought, d.date_sold) + 'd' : dash) + '</td>' +
@@ -857,6 +881,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     var PAGE = 60;
     var shown = PAGE;
     var query = '';
+    var pbrand = null;   // null = the brand grid; a string = drilled into a brand
 
     async function renderPieces(force) {
         var r = await A.adminFetchTo('/api/get-inventory', 'list', { force: !!force });
@@ -865,35 +890,45 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         paintPieces();
     }
 
-    function filtered() {
-        if (!query) return PIECES;
+    function matchQuery(p) {
+        if (!query) return true;
         var q = query.toLowerCase();
+        return (p.name + ' ' + p.brand + ' ' + p.model + ' ' + p.ref + ' ' +
+                (p.nickname || '') + ' ' + (p.collections || []).join(' ')).toLowerCase().indexOf(q) >= 0;
+    }
+
+    function filtered() {
         return PIECES.filter(function (p) {
-            return (p.name + ' ' + p.brand + ' ' + p.model + ' ' + p.ref + ' ' +
-                    (p.nickname || '') + ' ' + (p.collections || []).join(' ')).toLowerCase().indexOf(q) >= 0;
+            if (pbrand && p.brand !== pbrand) return false;
+            return matchQuery(p);
         });
     }
 
-    function paintPieces() {
-        var list = filtered();
-        var slice = list.slice(0, shown);
+    // 1741 pieces as one flat list is unusable, so the default view is brands.
+    // Searching cuts across the whole catalog and shows a flat result list,
+    // because when you are hunting a reference you do not care about grouping.
+    function brandIndex() {
+        var map = {};
+        PIECES.forEach(function (p) {
+            var b = p.brand || 'Unbranded';
+            if (!map[b]) map[b] = { name: b, count: 0, image: '' };
+            map[b].count++;
+            if (!map[b].image && p.image) map[b].image = p.image;
+        });
+        return Object.keys(map).sort(function (a, b) {
+            return map[b].count - map[a].count || a.localeCompare(b);
+        }).map(function (k) { return map[k]; });
+    }
 
-        var html =
-            '<div class="bar">' +
-              '<input id="p-q" class="ctl grow" type="search" placeholder="SEARCH BRAND, MODEL, REF…" value="' + esc(query) + '">' +
+    function piecesBar() {
+        return '<div class="bar">' +
+              '<input id="p-q" class="ctl grow" type="search" placeholder="SEARCH ALL 1741 PIECES — BRAND, MODEL, REF…" value="' + esc(query) + '">' +
               '<button class="btn ghost" id="p-refresh">Refresh</button>' +
               '<button class="btn" id="p-new">New Piece</button>' +
-            '</div>' +
-            '<p class="count">' + list.length + ' piece' + (list.length === 1 ? '' : 's') +
-              (query ? ' matching “' + esc(query) + '”' : '') + '</p>' +
-            slice.map(pieceRow).join('') +
-            (slice.length < list.length
-                ? '<div style="margin-top:20px"><button class="btn ghost" id="p-more">Load ' +
-                  Math.min(PAGE, list.length - slice.length) + ' more</button></div>'
-                : '');
+            '</div>';
+    }
 
-        view.innerHTML = html;
-
+    function wirePiecesBar() {
         var q = document.getElementById('p-q');
         q.addEventListener('input', function () {
             query = this.value; shown = PAGE;
@@ -907,6 +942,52 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             renderPieces(true);
         });
         document.getElementById('p-new').addEventListener('click', function () { editPiece(null); });
+    }
+
+    function paintPieces() {
+        // Brand grid: only when nothing is selected and nothing is being searched.
+        if (!pbrand && !query) {
+            var brands = brandIndex();
+            view.innerHTML = piecesBar() +
+                '<p class="count">' + PIECES.length + ' pieces across ' + brands.length + ' brands</p>' +
+                '<div class="brands">' + brands.map(function (b) {
+                    return '<button class="bcard" data-brand="' + esc(b.name) + '">' +
+                        (b.image ? '<img src="' + esc(b.image) + '" alt="" loading="lazy">' : '<div class="ph"></div>') +
+                        '<div><div class="bn">' + esc(b.name) + '</div>' +
+                        '<div class="bc">' + b.count + ' piece' + (b.count === 1 ? '' : 's') + '</div></div>' +
+                    '</button>';
+                }).join('') + '</div>';
+
+            wirePiecesBar();
+            [].forEach.call(view.querySelectorAll('.bcard'), function (el) {
+                el.addEventListener('click', function () {
+                    pbrand = el.dataset.brand; shown = PAGE; paintPieces();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+            return;
+        }
+
+        var list = filtered();
+        var slice = list.slice(0, shown);
+
+        view.innerHTML = piecesBar() +
+            '<p class="crumb">' +
+                '<button id="p-all">All Brands</button>' +
+                (pbrand ? '<span class="sep">/</span><span class="cur">' + esc(pbrand) + '</span>' : '') +
+                (query ? '<span class="sep">/</span><span class="cur">“' + esc(query) + '”</span>' : '') +
+            '</p>' +
+            '<p class="count">' + list.length + ' piece' + (list.length === 1 ? '' : 's') + '</p>' +
+            (slice.length ? slice.map(pieceRow).join('') : '<p class="note">Nothing matches.</p>') +
+            (slice.length < list.length
+                ? '<div style="margin-top:20px"><button class="btn ghost" id="p-more">Load ' +
+                  Math.min(PAGE, list.length - slice.length) + ' more</button></div>'
+                : '');
+
+        wirePiecesBar();
+        document.getElementById('p-all').addEventListener('click', function () {
+            pbrand = null; query = ''; shown = PAGE; paintPieces();
+        });
         var more = document.getElementById('p-more');
         if (more) more.addEventListener('click', function () { shown += PAGE; paintPieces(); });
 

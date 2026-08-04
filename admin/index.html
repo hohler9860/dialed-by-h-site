@@ -2354,7 +2354,13 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }).join('') + '</div>' +
             '<div class="bar"><input id="mx-q" class="ctl grow" type="search" ' +
               'placeholder="SEARCH CLIENT, BRAND, REFERENCE, DEALER…" value="' + esc(mxq) + '">' +
-              '<button class="btn ghost" id="mx-refresh">Refresh</button></div>';
+              '<button class="btn ghost" id="mx-refresh">Refresh</button></div>' +
+            // Someone can enquire about a piece nobody has posted a want for
+            // yet, so the lookup has to work off a bare reference too.
+            '<div class="bar"><input id="mx-src" class="ctl grow" type="search" ' +
+              'placeholder="SOURCE ANY REFERENCE — e.g. 126610LV">' +
+              '<button class="btn ghost" id="mx-src-go">Find it</button></div>' +
+            '<div class="src-panel" id="mx-src-out"></div>';
 
         if (mxView === 'matched') {
             html += '<p class="count">' + matched.length + ' client' + (matched.length === 1 ? '' : 's') +
@@ -2569,8 +2575,68 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             (cp ? '<a class="btn ghost" href="https://wa.me/' + esc(cp) + '" target="_blank" rel="noopener">Message client</a>' : '') +
             (dp ? '<a class="btn ghost" href="https://wa.me/' + esc(dp) + '" target="_blank" rel="noopener">Open dealer chat</a>' : '') +
             (dp ? '<button class="btn ghost js-ask" data-listing="' + esc(m.listing_id) + '">Ask if available</button>' : '') +
+            ((m.reference || w.reference)
+              ? '<button class="btn ghost js-source" data-ref="' + esc(m.reference || w.reference) + '">Source it</button>'
+              : '') +
           '</div>' +
+          '<div class="src-panel" data-srcfor="' + esc(m.reference || w.reference || '') + '"></div>' +
         '</div>';
+    }
+
+    // Every place this reference can be had right now. Group chats are the real
+    // wholesale channel, but a store holding one in stock is still an option:
+    // he DMs them and asks for a trade price. Their window price is shown as
+    // written, because what they would actually sell it to him for is a
+    // conversation, not a number this can work out.
+    function srcRow(o) {
+        var retail = o.o_channel === 'RETAIL';
+        var where  = retail
+            ? (o.o_url ? '<a href="' + esc(o.o_url) + '" target="_blank" rel="noopener">' + esc(o.o_source) + '</a>'
+                       : esc(o.o_source))
+            : esc(o.o_source);
+        var reach = '';
+        if (!retail) {
+            var ph = String(o.o_contact || '').replace(/\D/g, '');
+            reach = ph ? '<a class="btn ghost" style="padding:3px 8px;font-size:10px" href="https://wa.me/' +
+                         esc(ph) + '" target="_blank" rel="noopener">WhatsApp</a>' : esc(o.o_contact || '');
+        } else if (o.o_contact) {
+            reach = '<a class="btn ghost" style="padding:3px 8px;font-size:10px" href="' +
+                    esc(o.o_contact.indexOf('http') === 0 ? o.o_contact : 'https://instagram.com/' + o.o_contact.replace(/^@/, '')) +
+                    '" target="_blank" rel="noopener">DM store</a>';
+        }
+        var spec = [o.o_year,
+                    o.o_condition && o.o_condition !== 'UNKNOWN' ? o.o_condition.replace(/_/g, ' ') : null,
+                    o.o_set && o.o_set !== 'UNKNOWN' ? o.o_set.replace(/_/g, ' ') : null]
+                   .filter(Boolean).join(' · ');
+        return '<tr>' +
+            '<td><span class="tag ' + (retail ? 'warm' : 'hot') + '">' + (retail ? 'RETAIL' : 'WHOLESALE') + '</span></td>' +
+            '<td>' + where + '</td>' +
+            '<td>' + esc(o.o_title || '—') + (spec ? '<div class="count">' + esc(spec) + '</div>' : '') + '</td>' +
+            '<td style="text-align:right">' + esc(money(o.o_price_usd)) +
+                '<div class="count">' + (retail ? 'window price' : 'dealer ask') + '</div></td>' +
+            '<td>' + reach + '</td>' +
+        '</tr>';
+    }
+
+    function paintSourcing(ref, box) {
+        box.innerHTML = '<p class="count" style="margin-top:10px">Looking…</p>';
+        A.adminFetchTo('/api/leads-admin', 'sourcing', { reference: ref }).then(function (d) {
+            var list = d.options || [];
+            if (!list.length) {
+                box.innerHTML = '<p class="count" style="margin-top:10px">Nothing in the groups or in stock anywhere right now.</p>';
+                return;
+            }
+            box.innerHTML =
+              '<p class="count" style="margin-top:12px">' + d.wholesale_n + ' in the group chats · ' +
+              d.retail_n + ' sitting in stock at a store. Store prices are their window price, ' +
+              'so ask for a trade price before you quote off them.</p>' +
+              '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+                '<th style="width:96px">Channel</th><th style="width:150px">Where</th><th>Piece</th>' +
+                '<th style="width:120px;text-align:right">Asking</th><th style="width:110px">Reach</th>' +
+              '</tr></thead><tbody>' + list.map(srcRow).join('') + '</tbody></table></div>';
+        }).catch(function (e) {
+            box.innerHTML = '<p class="count" style="margin-top:10px">Could not load options: ' + esc(e.message || e) + '</p>';
+        });
     }
 
     function wireMatches() {
@@ -2633,6 +2699,31 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     btn.disabled = false; btn.textContent = 'Ask if available';
                     alert('Could not send: ' + e.message);
                 }
+            });
+        });
+
+        var srcGo = document.getElementById('mx-src-go');
+        var srcIn = document.getElementById('mx-src');
+        var srcOut = document.getElementById('mx-src-out');
+        function runLookup() {
+            var ref = (srcIn.value || '').trim();
+            if (!ref) { srcOut.innerHTML = ''; return; }
+            paintSourcing(ref, srcOut);
+        }
+        if (srcGo) srcGo.addEventListener('click', runLookup);
+        if (srcIn) srcIn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); runLookup(); }
+        });
+
+        [].forEach.call(document.querySelectorAll('.js-source'), function (b) {
+            b.addEventListener('click', function () {
+                var ref = this.dataset.ref;
+                var box = this.closest('.bcard').querySelector('.src-panel');
+                if (!box) return;
+                // second click closes it again
+                if (box.innerHTML) { box.innerHTML = ''; this.textContent = 'Source it'; return; }
+                this.textContent = 'Hide options';
+                paintSourcing(ref, box);
             });
         });
     }

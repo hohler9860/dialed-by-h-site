@@ -690,6 +690,32 @@ module.exports = async (req, res) => {
             return res.status(200).json({ corrected: true, field, was: r.c_was, now: r.c_now });
         }
 
+        // Everywhere Henry could get a given reference right now: dealer group
+        // asks first, then any retail store holding one in stock, which he can
+        // DM for a trade price. Retail asks are shown raw, never discounted
+        // into a guess at what they would actually sell it to him for.
+        if (action === "sourcing") {
+            const { reference, condition, set_completeness } = body;
+            if (!reference) return res.status(400).json({ error: "Missing reference" });
+            const rows = await supabase("rpc/sourcing_options", {
+                method: "POST",
+                headers: { "Content-Profile": "wholesale", "Accept-Profile": "wholesale" },
+                body: JSON.stringify({
+                    p_reference: String(reference),
+                    p_condition: condition || null,
+                    p_set: set_completeness || null,
+                    p_max: 40,
+                }),
+            });
+            const list = Array.isArray(rows) ? rows : [];
+            return res.status(200).json({
+                reference,
+                options: list,
+                wholesale_n: list.filter((o) => o.o_channel === "WHOLESALE").length,
+                retail_n: list.filter((o) => o.o_channel === "RETAIL").length,
+            });
+        }
+
         // What the extractor actually gets wrong, per field and per model.
         if (action === "extraction-errors") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });

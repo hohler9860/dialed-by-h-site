@@ -3075,11 +3075,14 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           '<div class="row" style="gap:26px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px">' +
 
             '<div style="flex:1;min-width:300px">' +
-              '<p class="count">Failure rate by flow, last 24h</p>' +
+              '<p class="count">Failure rate by flow, last hour · a fault fixed earlier today ' +
+              'still sits in the 24h column, so this ranks on what is happening now</p>' +
               svgBars(flows.map(function (f) {
-                  return { k: f.workflow_name, v: Number(f.failure_pct),
-                           t: f.failure_pct + '% of ' + Number(f.runs).toLocaleString(),
-                           c: f.failure_pct >= 50 ? '#b23' : f.failure_pct >= 5 ? '#b98900' : 'var(--l1)' };
+                  var pct = f.failure_pct_1h == null ? 0 : Number(f.failure_pct_1h);
+                  return { k: f.workflow_name, v: pct,
+                           t: (f.runs_1h ? pct + '% of ' + Number(f.runs_1h).toLocaleString() + ' this hour'
+                                         : 'idle this hour'),
+                           c: pct >= 50 ? '#b23' : pct >= 5 ? '#b98900' : 'var(--l1)' };
               }), { max: 100, labW: 160, barW: 200 }) +
             '</div>' +
 
@@ -3112,20 +3115,26 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           // n8n's own numbers, collected every 15 minutes.
           '<p class="count">Flow runs, last 24 hours · collected from n8n every 15 minutes</p>' +
           '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
-            '<th style="width:90px">State</th><th>Flow</th><th style="width:80px">Runs</th>' +
-            '<th style="width:80px">Errors</th><th style="width:90px">Fail rate</th>' +
+            '<th style="width:90px">State</th><th>Flow</th>' +
+            '<th style="width:150px">Last hour</th><th style="width:150px">Last 24h</th>' +
             '<th style="width:110px">Last run</th>' +
           '</tr></thead><tbody>' +
           (AC.flows || []).map(function (f) {
-              var cls = f.status === 'OK' ? 'hot' : f.status === 'IDLE' ? 'warm'
-                      : f.status === 'FLAKY' ? 'warm' : 'spam';
+              // HEALED matters: a flow fixed at lunchtime still carries its
+              // failures in the daily figure and would otherwise read as broken.
+              var cls = (f.status === 'OK' || f.status === 'HEALED') ? 'hot'
+                      : (f.status === 'IDLE' || f.status === 'FLAKY') ? 'warm' : 'spam';
               return '<tr>' +
                 '<td><span class="tag ' + cls + '">' + esc(f.status) + '</span></td>' +
                 '<td>' + esc(f.workflow_name) + (f.active === false
                     ? ' <span class="count">(off)</span>' : '') + '</td>' +
-                '<td>' + Number(f.runs).toLocaleString() + '</td>' +
-                '<td>' + Number(f.errors).toLocaleString() + '</td>' +
-                '<td>' + esc(f.failure_pct) + '%</td>' +
+                '<td>' + (f.runs_1h ? Number(f.runs_1h).toLocaleString() + ' runs' +
+                            '<div class="count">' + Number(f.errors_1h).toLocaleString() +
+                            ' failed · ' + esc(f.failure_pct_1h) + '%</div>'
+                          : '<span class="count">idle</span>') + '</td>' +
+                '<td>' + Number(f.runs).toLocaleString() + ' runs' +
+                    '<div class="count">' + Number(f.errors).toLocaleString() +
+                    ' failed · ' + esc(f.failure_pct) + '%</div></td>' +
                 '<td>' + esc(fmtAgo(f.last_run_at)) + '</td>' +
               '</tr>';
           }).join('') +

@@ -416,6 +416,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="journal" aria-selected="false">Journal</button>
             <button data-tab="leads"   aria-selected="false">Leads</button>
             <button data-tab="wholesale" aria-selected="false">Wholesale</button>
+            <button data-tab="matches" aria-selected="false">Matches</button>
+            <button data-tab="dealers" aria-selected="false">Dealers</button>
         </nav>
 
         <section class="body" id="view"></section>
@@ -469,7 +471,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale };
+    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2162,6 +2164,208 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && !sheet.classList.contains('hidden')) closeSheet();
     });
+
+    // ══════════════════════════════════════════════════════════
+    // MATCHES  — a client asked for it, a dealer has it
+    // ══════════════════════════════════════════════════════════
+    var MX = { wants: [], best: [], alerts: [], counters: {} };
+    var mxView = 'matched';
+    var mxq = '';
+
+    async function renderMatches() {
+        var r = await A.adminFetchTo('/api/leads-admin', 'matches');
+        MX.wants = r.wants || []; MX.best = r.best || [];
+        MX.alerts = r.alerts || []; MX.counters = r.counters || {};
+        paintMatches();
+    }
+
+    function mxRank(q) { return q === 'HOT' ? 1 : q === 'WARM' ? 2 : 3; }
+
+    function paintMatches() {
+        var c = MX.counters;
+        var q = mxq.trim().toLowerCase();
+        var hay = function (o) { return JSON.stringify(o).toLowerCase(); };
+
+        var matched = MX.best.filter(function (m) { return !q || hay(m).indexOf(q) >= 0; });
+        var openIds = {};
+        MX.best.forEach(function (m) { openIds[m.want_id] = 1; });
+        var waiting = MX.wants.filter(function (w) { return !openIds[w.id]; })
+                              .filter(function (w) { return !q || hay(w).indexOf(q) >= 0; });
+        var alerts = MX.alerts.filter(function (a) { return !q || hay(a).indexOf(q) >= 0; });
+
+        var tiles = [
+            { k: 'matched', l: 'Matched',  v: MX.best.length },
+            { k: 'waiting', l: 'Still hunting', v: MX.wants.length - MX.best.length },
+            { k: 'alerts',  l: 'Under market', v: MX.alerts.length },
+        ];
+
+        var html =
+            '<div class="tiles">' + tiles.map(function (t) {
+                return '<button class="tile" data-mx="' + t.k + '" aria-pressed="' + (mxView === t.k) + '">' +
+                  '<span class="tk">' + esc(t.l) + '</span><span class="tv">' + t.v + '</span></button>';
+            }).join('') + '</div>' +
+            '<div class="bar"><input id="mx-q" class="ctl grow" type="search" ' +
+              'placeholder="SEARCH CLIENT, BRAND, REFERENCE, DEALER…" value="' + esc(mxq) + '">' +
+              '<button class="btn ghost" id="mx-refresh">Refresh</button></div>';
+
+        if (mxView === 'matched') {
+            html += '<p class="count">' + matched.length + ' client' + (matched.length === 1 ? '' : 's') +
+                    ' with a piece available now · cheapest match each</p>' +
+                    (matched.length ? matched.map(mxCard).join('')
+                      : '<p class="count">Nothing matched yet. Wants stay open, so this fills as dealers post.</p>');
+        } else if (mxView === 'waiting') {
+            html += '<p class="count">' + waiting.length + ' open want' + (waiting.length === 1 ? '' : 's') +
+                    ' with nothing in the groups yet</p>' +
+                    '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+                      '<th>Client</th><th>Looking for</th><th style="width:90px">Quality</th>' +
+                      '<th style="width:90px">Waiting</th><th style="width:110px">Contact</th>' +
+                    '</tr></thead><tbody>' +
+                    (waiting.length ? waiting.map(function (w) {
+                        return '<tr>' +
+                          '<td><div class="tname">' + esc(w.client_name || '—') + '</div></td>' +
+                          '<td>' + esc([w.brand, w.model, w.reference].filter(Boolean).join(' ') || '—') + '</td>' +
+                          '<td>' + (w.lead_quality ? '<span class="tag ' + w.lead_quality.toLowerCase() + '">' + esc(w.lead_quality) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
+                          '<td><span class="tmono">' + (w.days_open || 0) + 'd</span></td>' +
+                          '<td>' + (w.client_phone ? '<a class="tmono" href="https://wa.me/' + esc(String(w.client_phone).replace(/\D/g,'')) + '" target="_blank" rel="noopener">WhatsApp</a>' : '<span class="tmono">—</span>') + '</td>' +
+                        '</tr>';
+                    }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">Nothing open.</span></td></tr>') +
+                    '</tbody></table></div>';
+        } else {
+            html += '<p class="count">' + alerts.length + ' listing' + (alerts.length === 1 ? '' : 's') +
+                    ' posted under market · no client attached</p>' +
+                    '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+                      '<th>Reference</th><th style="width:100px">Asking</th><th style="width:100px">Market</th>' +
+                      '<th style="width:80px">Under</th><th style="width:110px">You make</th><th style="width:90px">Sellable</th>' +
+                    '</tr></thead><tbody>' +
+                    (alerts.length ? alerts.map(function (a) {
+                        return '<tr>' +
+                          '<td><div class="tname">' + esc(a.reference || '—') + '</div>' +
+                              '<div class="tsub">' + (a.basis === 'VARIANT' ? 'exact variant' : 'same ref') + ' · ' + (a.sample_size || 0) + ' quotes</div></td>' +
+                          '<td><span class="tmono">' + esc(money(a.price_usd)) + '</span></td>' +
+                          '<td><span class="tmono">' + esc(money(a.baseline_usd)) + '</span></td>' +
+                          '<td><span class="tag hot">' + Math.round(a.discount_pct || 0) + '%</span></td>' +
+                          '<td><span class="tmono">' + esc(money(a.profit_at_8)) + '</span></td>' +
+                          '<td>' + (a.sellable === false ? '<span class="tag spam">no room</span>' : '<span class="tmono">ok</span>') + '</td>' +
+                        '</tr>';
+                    }).join('') : '<tr><td colspan="6" style="padding:28px 0"><span class="tmono">No alerts yet.</span></td></tr>') +
+                    '</tbody></table></div>';
+        }
+
+        view.innerHTML = html;
+        wireMatches();
+    }
+
+    // A card, not a row: this is the thing Henry acts on, and it needs both
+    // phone numbers and the money in one glance.
+    function mxCard(m) {
+        var w = m.want || {};
+        var piece = [w.brand, w.model, m.reference || w.reference].filter(Boolean).join(' ') || 'Watch';
+        var days = w.opened_at ? Math.floor((Date.now() - new Date(w.opened_at).getTime()) / 864e5) : 0;
+        var cp = String(w.client_phone || '').replace(/\D/g, '');
+        var dp = String(m.dealer_phone || '').replace(/\D/g, '');
+
+        return '<div class="bcard" style="margin-bottom:10px">' +
+          '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">' +
+            '<div>' +
+              '<div class="tname">' + esc(w.client_name || 'Client') +
+                (w.lead_quality ? ' <span class="tag ' + w.lead_quality.toLowerCase() + '">' + esc(w.lead_quality) + '</span>' : '') +
+                (w.ok_to_text === false ? ' <span class="tag spam">no texts</span>' : '') + '</div>' +
+              '<div class="tsub">' + esc(piece) + ' · asked ' + (days === 0 ? 'today' : days + 'd ago') + '</div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+              '<div class="tname">' + esc(money(m.profit_low)) + ' to ' + esc(money(m.profit_high)) + '</div>' +
+              '<div class="tsub">your margin</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="dgrid" style="margin-top:10px">' +
+            '<div><div class="dk">Dealer asks</div><div class="dv">' + esc(money(m.dealer_price)) + '</div></div>' +
+            '<div><div class="dk">You quote</div><div class="dv">' + esc(money(m.quote_low)) + ' to ' + esc(money(m.quote_high)) + '</div></div>' +
+            '<div><div class="dk">Retail</div><div class="dv">' + (m.retail_median ? esc(money(m.retail_median)) : 'no data') + '</div></div>' +
+            '<div><div class="dk">Dealer</div><div class="dv">' + esc(m.dealer_name || 'unknown') + '</div></div>' +
+          '</div>' +
+          '<div class="row" style="gap:8px;margin-top:10px">' +
+            (cp ? '<a class="btn ghost" href="https://wa.me/' + esc(cp) + '" target="_blank" rel="noopener">Message client</a>' : '') +
+            (dp ? '<a class="btn ghost" href="https://wa.me/' + esc(dp) + '" target="_blank" rel="noopener">Message dealer</a>' : '') +
+          '</div>' +
+        '</div>';
+    }
+
+    function wireMatches() {
+        [].forEach.call(document.querySelectorAll('[data-mx]'), function (b) {
+            b.addEventListener('click', function () { mxView = this.dataset.mx; paintMatches(); });
+        });
+        var q = document.getElementById('mx-q');
+        if (q) q.addEventListener('input', function () {
+            mxq = this.value; var p = this.selectionStart; paintMatches();
+            var n = document.getElementById('mx-q');
+            if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+        });
+        var r = document.getElementById('mx-refresh');
+        if (r) r.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderMatches().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // DEALERS  — who posts what, and their real number
+    // ══════════════════════════════════════════════════════════
+    var DL = { rows: [], counters: {} };
+    var dlq = '';
+
+    async function renderDealers() {
+        var r = await A.adminFetchTo('/api/leads-admin', 'dealers');
+        DL.rows = r.dealers || []; DL.counters = r.counters || {};
+        paintDealers();
+    }
+
+    function paintDealers() {
+        var q = dlq.trim().toLowerCase();
+        var rows = DL.rows.filter(function (d) {
+            if (!q) return true;
+            return [d.wa_name, d.push_name, d.phone].filter(Boolean).join(' ').toLowerCase().indexOf(q) >= 0;
+        });
+        var c = DL.counters;
+
+        view.innerHTML =
+          '<div class="tiles">' +
+            '<div class="tile"><span class="tk">Posting dealers</span><span class="tv">' + (c.total || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">With number</span><span class="tv">' + (c.with_phone || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">Active 7d</span><span class="tv">' + (c.active_7d || 0) + '</span></div>' +
+          '</div>' +
+          '<div class="bar"><input id="dl-q" class="ctl grow" type="search" placeholder="SEARCH NAME OR NUMBER…" value="' + esc(dlq) + '">' +
+            '<button class="btn ghost" id="dl-refresh">Refresh</button></div>' +
+          '<p class="count">' + rows.length + ' of ' + DL.rows.length + ' · ranked by listings posted</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th>Dealer</th><th style="width:130px">Number</th><th style="width:90px">Listings</th>' +
+            '<th style="width:100px">Last post</th><th style="width:110px"></th>' +
+          '</tr></thead><tbody>' +
+          (rows.length ? rows.map(function (d) {
+              var name = d.wa_name || (/^\d+$/.test(String(d.push_name || '')) ? null : d.push_name);
+              var ph = String(d.phone || '').replace(/\D/g, '');
+              return '<tr>' +
+                '<td><div class="tname">' + esc(name || 'unnamed') + '</div>' +
+                    '<div class="tsub">' + ((d.groups || []).length || 1) + ' group' + (((d.groups || []).length || 1) === 1 ? '' : 's') + '</div></td>' +
+                '<td><span class="tmono">' + (ph ? esc('+' + ph) : '—') + '</span></td>' +
+                '<td><span class="tmono">' + (d.listings_count || 0) + '</span></td>' +
+                '<td><span class="tmono">' + esc(fmtDate(d.last_seen)) + '</span></td>' +
+                '<td>' + (ph ? '<a class="btn ghost" href="https://wa.me/' + esc(ph) + '" target="_blank" rel="noopener">Message</a>' : '') + '</td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">No dealers yet.</span></td></tr>') +
+          '</tbody></table></div>';
+
+        var q2 = document.getElementById('dl-q');
+        if (q2) q2.addEventListener('input', function () {
+            dlq = this.value; var p = this.selectionStart; paintDealers();
+            var n = document.getElementById('dl-q');
+            if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+        });
+        var r = document.getElementById('dl-refresh');
+        if (r) r.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderDealers().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+    }
 
     if (A.isAuthed()) boot();
 })();

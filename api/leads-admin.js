@@ -429,6 +429,77 @@ module.exports = async (req, res) => {
             });
         }
 
+        // ── Matches: client demand meeting dealer supply ───────────────────
+        // The wants book is the seam between the site and the dealer groups.
+        // A want stays open until closed, so supply arriving weeks later still
+        // finds the client who asked for it.
+        if (action === "matches") {
+            const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+
+            const [wants, matches, alerts] = await Promise.all([
+                supabase("open_wants_board?select=*&limit=500"),
+                // Best (cheapest) match per want is what matters operationally;
+                // the rest are noise from one client matching every Daytona posted.
+                supabase(
+                    "want_matches?select=*,want:client_wants(client_name,client_phone,ok_to_text,lead_quality,brand,model,reference,opened_at,status)" +
+                    "&order=created_at.desc&limit=400"
+                ),
+                wh("deal_alerts?select=*&order=created_at.desc&limit=100"),
+            ]);
+
+            // Collapse to one row per want: cheapest wins, ties broken by profit.
+            const bestByWant = {};
+            for (const m of matches || []) {
+                if (!m.want || m.want.status !== "OPEN") continue;
+                const cur = bestByWant[m.want_id];
+                if (!cur || Number(m.dealer_price) < Number(cur.dealer_price)) bestByWant[m.want_id] = m;
+            }
+            const best = Object.values(bestByWant).sort((a, b) => {
+                const rank = (q) => (q === "HOT" ? 1 : q === "WARM" ? 2 : 3);
+                const d = rank(a.want?.lead_quality) - rank(b.want?.lead_quality);
+                return d !== 0 ? d : Number(b.profit_high || 0) - Number(a.profit_high || 0);
+            });
+
+            return res.status(200).json({
+                wants, best, alerts,
+                counters: {
+                    open_wants: wants.length,
+                    hot: wants.filter((w) => w.lead_quality === "HOT").length,
+                    matched: best.length,
+                    unmatched: wants.filter((w) => !bestByWant[w.id]).length,
+                    alerts: alerts.length,
+                },
+            });
+        }
+
+        // ── Dealer directory ───────────────────────────────────────────────
+        // Group members are only exposed as an opaque @lid; the phone number
+        // comes from the participant roster, which is why this is worth keeping.
+        if (action === "dealers") {
+            const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+            const dealers = await wh(
+                "dealers?select=lid,phone,wa_name,push_name,listings_count,first_seen,last_seen,groups" +
+                "&listings_count=gt.0&order=listings_count.desc&limit=1000"
+            );
+            return res.status(200).json({
+                dealers,
+                counters: {
+                    total: dealers.length,
+                    with_phone: dealers.filter((d) => d.phone).length,
+                    active_7d: dealers.filter(
+                        (d) => d.last_seen && Date.now() - new Date(d.last_seen).getTime() < 7 * 864e5
+                    ).length,
+                },
+            });
+        }
+
+        // What to charge, per reference, at Henry's 5-8%.
+        if (action === "quote-book") {
+            const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+            const rows = await wh("quote_book?select=*&limit=500");
+            return res.status(200).json({ rows });
+        }
+
         return res.status(400).json({ error: "Unknown action" });
     } catch (err) {
         console.error("[leads-admin] ERROR:", err.message);

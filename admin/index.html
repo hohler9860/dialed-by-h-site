@@ -2465,7 +2465,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                                  || r.quote_confidence === 'MEDIUM';
                         var conf = (r.quote_confidence === 'MANUAL' || r.quote_confidence === 'HIGH') ? 'hot'
                                  : r.quote_confidence === 'MEDIUM' ? 'warm' : 'spam';
-                        var spec = [r.spec_year, r.spec_condition ? r.spec_condition.replace(/_/g,' ') : null,
+                        // Dial colour leads the spec: it is the biggest price
+                        // driver, and the quote is only valid for that dial.
+                        var spec = [r.spec_dial ? r.spec_dial.replace(/_/g,' ').toLowerCase() + ' dial' : null,
+                                    r.spec_year, r.spec_condition ? r.spec_condition.replace(/_/g,' ') : null,
                                     r.spec_set ? r.spec_set.replace(/_/g,' ') : null].filter(Boolean).join(' · ');
                         return '<tr>' +
                           '<td><div class="tname">' + esc(r.reference || '—') + '</div>' +

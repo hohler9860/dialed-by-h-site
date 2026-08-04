@@ -337,7 +337,14 @@ table.bk-tbl th {
     color: var(--l3); text-transform: uppercase; letter-spacing: .06em; font-weight: 400; white-space: nowrap;
 }
 table.bk-tbl td { padding: 12px 14px 12px 0; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
-table.bk-tbl td.nm { font-family: var(--sans); font-size: 13px; white-space: normal; min-width: 170px; }
+table.bk-tbl td.nm { font-family: var(--sans); font-size: 13px; white-space: normal; min-width: 160px; }
+/* The ledger is wider than the console; it scrolls in its own container. Names
+   get an ellipsis rather than being sliced mid-word at the edge — the full
+   value is one click away in the editor. */
+table.bk-tbl td.who {
+    font-family: var(--sans); font-size: 13px; max-width: 150px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 table.bk-tbl th.n, table.bk-tbl td.n { text-align: right; padding-right: 14px; }
 table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-mute { color: var(--l3); }
@@ -564,6 +571,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     return '<button class="bk-seg" data-p="' + p + '" aria-pressed="' +
                         (bkPeriod === p) + '">' + label + '</button>';
                 }).join('') +
+                '<span style="flex:1"></span>' +
+                '<button class="btn ghost" id="bk-csv">Import Bank CSV</button>' +
+                '<button class="btn" id="bk-exp-new">Log Expense</button>' +
             '</div>' +
             '<div class="bk-stats">' + tiles.map(function (t) {
                 return '<div class="bk-stat"><div class="bk-k">' + t[0] + '</div>' +
@@ -592,6 +602,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
             b.addEventListener('click', function () { bkPeriod = b.dataset.p; paintBooks(); });
         });
+        document.getElementById('bk-exp-new').addEventListener('click', function () { editExpense(null); });
+        document.getElementById('bk-csv').addEventListener('click', importBank);
 
         bkCashChart(inRange);
         bkExpChart(inRange);
@@ -713,8 +725,50 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
             var r = rows[i];
             return '<b>' + esc(r[0]) + '</b><br>' + bkMoney(r[1], 2) + ' &middot; ' +
-                bkPct(r[1] / total) + ' of overhead';
+                bkPct(r[1] / total) + ' of overhead<br>click to open';
         }, 190);
+        [].forEach.call(host.querySelectorAll('.bk-hit'), function (h) {
+            h.style.cursor = 'pointer';
+            h.addEventListener('click', function () { openCategory(rows[+h.dataset.i][0], inRange); });
+        });
+    }
+
+    // Drilling into a bar is the only way to reach an existing expense for editing,
+    // so the chart is a navigation surface here, not just a picture.
+    function openCategory(cat, inRange) {
+        var rows = BOOKS.expenses.filter(function (e) {
+            return (e.category || 'Other') === cat && inRange(e.spent_on);
+        }).sort(function (a, b) { return String(b.spent_on).localeCompare(String(a.spent_on)); });
+
+        sheetInner.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+              '<button class="btn ghost" id="s-close">← Back</button>' +
+              '<button class="btn" id="s-new">Log Expense</button>' +
+            '</div>' +
+            '<h2>' + esc(cat) + '</h2>' +
+            '<p class="note">' + rows.length + ' item' + (rows.length === 1 ? '' : 's') + ' &middot; ' +
+                bkMoney(rows.reduce(function (s, e) { return s + bkNum(e.amount); }, 0), 2) +
+                ' &middot; tap one to edit</p>' +
+            '<div class="tbl-wrap" style="margin-top:20px"><table class="bk-tbl"><tbody>' +
+            rows.map(function (e) {
+                return '<tr data-id="' + esc(e.id) + '" style="cursor:pointer">' +
+                    '<td>' + esc(e.spent_on) + '</td>' +
+                    '<td class="nm">' + esc(e.description || e.vendor || '') + '</td>' +
+                    '<td class="bk-mute">' + esc(e.vendor || '') + '</td>' +
+                    '<td class="n">' + bkMoney(bkNum(e.amount), 2) + '</td></tr>';
+            }).join('') + '</tbody></table></div>' +
+            '<p class="err hidden" id="s-err"></p>';
+
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('s-close').addEventListener('click', closeSheet);
+        document.getElementById('s-new').addEventListener('click', function () { editExpense(null); });
+        [].forEach.call(sheetInner.querySelectorAll('tbody tr'), function (tr) {
+            tr.addEventListener('click', function () {
+                var e = BOOKS.expenses.filter(function (x) { return x.id === tr.dataset.id; })[0];
+                if (e) editExpense(e);
+            });
+        });
     }
 
     function bkDealChart(sold) {
@@ -771,17 +825,45 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             rows.map(function (s) {
                 var d = BK_DISP[s.disposition] || BK_DISP.Review;
                 var dead = s.status === 'Cancel';
+                var now = dead ? 'Cancelled' : d[1];
                 return '<div class="bk-sub' + (dead ? ' dead' : '') + '">' +
                     '<span class="nm">' + esc(s.name) + '</span>' +
-                    '<span class="bk-chip" style="color:' + (dead ? 'var(--l3)' : d[0]) + '">' +
-                        '<i style="background:' + (dead ? 'var(--l3)' : d[0]) + '"></i>' +
-                        (dead ? 'Cancelled' : d[1]) + '</span>' +
+                    '<i class="bk-dot" style="width:7px;height:7px;display:block;background:' +
+                        (dead ? 'var(--l3)' : d[0]) + '"></i>' +
+                    '<select class="stat" data-id="' + esc(s.id) + '" style="color:' +
+                        (dead ? 'var(--l3)' : d[0]) + '">' +
+                        ['Keep', 'Review', 'Kill', 'Cancelled'].map(function (o) {
+                            return '<option' + (o === now ? ' selected' : '') + '>' + o + '</option>';
+                        }).join('') +
+                    '</select>' +
                     '<span class="amt">' + bkMoney(bkNum(s.monthly_cost), 2) + '</span></div>';
             }).join('') +
             '<div class="bk-foot"><span>Active / month</span>' +
                 '<span class="bk-burn">' + bkMoney(active, 2) + '</span></div>' +
             (atRisk ? '<div class="bk-foot" style="padding-top:6px"><span>Flagged for review</span>' +
                 '<span style="color:var(--warn)">' + bkMoney(atRisk, 2) + '/mo</span></div>' : '');
+
+        // Cancelling here is what moves a tool out of the active burn total, so
+        // the number at the bottom stays honest without a second place to edit.
+        [].forEach.call(document.querySelectorAll('#bk-subs select'), function (sel) {
+            sel.addEventListener('change', async function () {
+                var v = sel.value;
+                sel.disabled = true;
+                try {
+                    await A.adminFetchTo('/api/leads-admin', 'books-set-sub', {
+                        id: sel.dataset.id,
+                        sub: v === 'Cancelled'
+                            ? { status: 'Cancel', disposition: 'Kill' }
+                            : { status: 'Active', disposition: v }
+                    });
+                    BOOKS = await A.adminFetchTo('/api/leads-admin', 'books');
+                    paintBooks();
+                } catch (e) {
+                    sel.disabled = false;
+                    alert(e.message || 'Could not save');
+                }
+            });
+        });
     }
 
     // ══════════════════════════════════════════════════════════
@@ -824,6 +906,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     return '<button class="bk-seg" data-f="' + f + '" aria-pressed="' +
                         (dealFilter === f) + '">' + label + '</button>';
                 }).join('') +
+                '<button class="btn" id="deal-new">+ New Deal</button>' +
             '</div>' +
             '<p class="count">' + rows.length + ' deal' + (rows.length === 1 ? '' : 's') +
                 ' &middot; ' + sold.length + ' sold ' + bkMoney(rev) +
@@ -843,6 +926,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
             b.addEventListener('click', function () { dealFilter = b.dataset.f; paintDeals(); });
         });
+        document.getElementById('deal-new').addEventListener('click', function () { editDeal(null); });
 
         bkDealTable(rows);
     }
@@ -870,8 +954,264 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<td class="n"' + (p !== null && p < 0 ? ' style="color:var(--bad)"' : '') + '>' +
                         (p !== null ? bkMoney(p, 2) : dash) + '</td>' +
                     '<td class="n">' + (bkMargin(d) !== null ? bkPct(bkMargin(d)) : dash) + '</td>' +
-                    '<td class="nm">' + esc(d.buyer || '') + '</td></tr>';
+                    '<td class="who" title="' + esc(d.buyer || '') + '">' + esc(d.buyer || '') + '</td></tr>';
             }).join('') + '</tbody>';
+
+        [].forEach.call(document.querySelectorAll('#bk-deals tbody tr'), function (tr) {
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', function () {
+                var d = BOOKS.deals.filter(function (x) { return x.id === tr.dataset.id; })[0];
+                if (d) editDeal(d);
+            });
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // BOOKS / DEALS — writes
+    // ══════════════════════════════════════════════════════════
+    // Everything here posts through the same auth'd endpoint and then refetches,
+    // so what you see after a save is what the database actually holds rather
+    // than an optimistic guess at it.
+    function bkToday() { return new Date().toISOString().slice(0, 10); }
+
+    function bkFields(defs, v) {
+        return '<div class="fields">' + defs.map(function (f) {
+            var val = v[f[0]] == null ? '' : v[f[0]];
+            return '<div class="field ' + (f[2] || '') + '">' +
+                '<label for="f-' + f[0] + '">' + esc(f[1]) + '</label>' +
+                (f[3] === 'area'
+                    ? '<textarea id="f-' + f[0] + '" rows="3">' + esc(val) + '</textarea>'
+                    : '<input id="f-' + f[0] + '" value="' + esc(val) + '"' +
+                      (f[3] ? ' placeholder="' + esc(f[3]) + '"' : '') + '>') +
+            '</div>';
+        }).join('') + '</div>';
+    }
+    function bkRead(defs) {
+        var out = {};
+        defs.forEach(function (f) { out[f[0]] = document.getElementById('f-' + f[0]).value; });
+        return out;
+    }
+
+    var DEAL_FORM = [
+        ['ref', 'Ref #'], ['status', 'Status', '', 'In Stock / Sold'],
+        ['brand', 'Brand'], ['model', 'Model'],
+        ['reference', 'Reference'], ['serial', 'Serial'],
+        ['year', 'Year'], ['condition', 'Condition'],
+        ['box', 'Box', '', 'Yes / No'], ['papers', 'Papers', '', 'Yes / No'],
+        ['date_bought', 'Date bought', '', 'YYYY-MM-DD'],
+        ['date_sold', 'Date sold', '', 'YYYY-MM-DD'],
+        ['buy_total', 'Buy total'], ['other_costs', 'Other costs'],
+        ['sell_total', 'Sell total'],
+        ['source_seller', 'Source (seller)', 'wide'], ['buyer', 'Buyer', 'wide'],
+        ['payment_in', 'Payment in', 'wide'], ['payment_out', 'Payment out', 'wide'],
+        ['docs', 'Docs?', '', 'Yes / No'],
+        ['notes', 'Notes', 'wide', 'area']
+    ];
+
+    function editDeal(d) {
+        var isNew = !d;
+        var v = d || { status: 'In Stock', brand: 'Rolex', date_bought: bkToday(), other_costs: 0 };
+        // Booleans come back from Postgres as true/false; the form speaks Yes/No.
+        var form = {};
+        DEAL_FORM.forEach(function (f) {
+            var val = v[f[0]];
+            form[f[0]] = typeof val === 'boolean' ? (val ? 'Yes' : 'No') : val;
+        });
+
+        sheetInner.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+              '<button class="btn ghost" id="s-close">← Back</button>' +
+              '<div style="display:flex;gap:8px">' +
+                (isNew ? '' : '<button class="btn danger" id="s-del">Delete</button>') +
+                (isNew || v.sell_total != null ? '' : '<button class="btn ghost" id="s-sold">Mark sold today</button>') +
+                '<button class="btn" id="s-save">Save</button>' +
+              '</div>' +
+            '</div>' +
+            '<h2>' + (isNew ? 'New Deal' : esc(v.ref)) + '</h2>' +
+            '<p class="note">Profit and margin are worked out from these numbers, not typed in.</p>' +
+            bkFields(DEAL_FORM, form) +
+            '<p class="err hidden" id="s-err"></p>';
+
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('s-close').addEventListener('click', closeSheet);
+        document.getElementById('s-save').addEventListener('click', function () { saveDeal(d); });
+        var del = document.getElementById('s-del');
+        if (del) del.addEventListener('click', function () { deleteBook('deal', d); });
+        var ms = document.getElementById('s-sold');
+        if (ms) ms.addEventListener('click', function () {
+            document.getElementById('f-status').value = 'Sold';
+            if (!document.getElementById('f-date_sold').value) {
+                document.getElementById('f-date_sold').value = bkToday();
+            }
+            document.getElementById('f-sell_total').focus();
+        });
+    }
+
+    async function saveDeal(d) {
+        var btn = document.getElementById('s-save');
+        btn.disabled = true;
+        try {
+            await A.adminFetchTo('/api/leads-admin', 'books-save-deal',
+                { id: d ? d.id : null, deal: bkRead(DEAL_FORM) });
+            await bkRefresh('deals');
+        } catch (e) {
+            sheetErr(e.message || 'Save failed');
+            btn.disabled = false;
+        }
+    }
+
+    var EXPENSE_FORM = [
+        ['spent_on', 'Date', '', 'YYYY-MM-DD'], ['category', 'Category'],
+        ['amount', 'Amount'], ['vendor', 'Vendor'],
+        ['payment_method', 'Payment method'], ['deal_ref', 'Linked deal'],
+        ['deductible', 'Deductible', '', 'Yes / No'], ['trip', 'Trip / market'],
+        ['description', 'Description', 'wide'],
+        ['notes', 'Notes', 'wide', 'area']
+    ];
+
+    function editExpense(x) {
+        var isNew = !x;
+        var v = x || { spent_on: bkToday(), deductible: true };
+        var form = {};
+        EXPENSE_FORM.forEach(function (f) {
+            var val = v[f[0]];
+            form[f[0]] = typeof val === 'boolean' ? (val ? 'Yes' : 'No') : val;
+        });
+
+        sheetInner.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+              '<button class="btn ghost" id="s-close">← Back</button>' +
+              '<div style="display:flex;gap:8px">' +
+                (isNew ? '' : '<button class="btn danger" id="s-del">Delete</button>') +
+                '<button class="btn" id="s-save">Save</button>' +
+              '</div>' +
+            '</div>' +
+            '<h2>' + (isNew ? 'Log Expense' : 'Edit Expense') + '</h2>' +
+            '<p class="note">Categories are free text, but reuse the existing ones or the ' +
+                'overhead chart grows a new bar.</p>' +
+            bkFields(EXPENSE_FORM, form) +
+            '<p class="err hidden" id="s-err"></p>';
+
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('s-close').addEventListener('click', closeSheet);
+        document.getElementById('s-save').addEventListener('click', async function () {
+            this.disabled = true;
+            try {
+                await A.adminFetchTo('/api/leads-admin', 'books-save-expense',
+                    { id: x ? x.id : null, expense: bkRead(EXPENSE_FORM) });
+                await bkRefresh('books');
+            } catch (e) {
+                sheetErr(e.message || 'Save failed');
+                this.disabled = false;
+            }
+        });
+        var del = document.getElementById('s-del');
+        if (del) del.addEventListener('click', function () { deleteBook('expense', x); });
+    }
+
+    async function deleteBook(kind, row) {
+        if (!confirm('Delete this ' + kind + '? This cannot be undone.')) return;
+        try {
+            await A.adminFetchTo('/api/leads-admin', 'books-delete', { kind: kind, id: row.id });
+            await bkRefresh(kind === 'deal' ? 'deals' : 'books');
+        } catch (e) { sheetErr(e.message || 'Delete failed'); }
+    }
+
+    // ── bank CSV paste ──────────────────────────────────────────
+    // Splits on commas outside quotes, which is all a Chase export needs.
+    function bkCsvRows(text) {
+        return text.split(/\r?\n/).filter(function (l) { return l.trim(); }).map(function (line) {
+            var out = [], cur = '', q = false;
+            for (var i = 0; i < line.length; i++) {
+                var c = line[i];
+                if (c === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else { q = !q; } }
+                else if (c === ',' && !q) { out.push(cur); cur = ''; }
+                else cur += c;
+            }
+            out.push(cur);
+            return out.map(function (s) { return s.trim(); });
+        });
+    }
+
+    // Chase columns are Details, Posting Date, Description, Amount, Type, Balance.
+    // Matched by name rather than position so a reordered export still lands.
+    function bkParseBank(text) {
+        var rows = bkCsvRows(text);
+        if (!rows.length) return [];
+        var head = rows[0].map(function (h) { return h.toLowerCase(); });
+        var find = function (want) {
+            for (var i = 0; i < head.length; i++) if (head[i].indexOf(want) !== -1) return i;
+            return -1;
+        };
+        var iDate = find('date'), iDesc = find('description'), iAmt = find('amount'), iType = find('type');
+        if (iDate === -1 || iAmt === -1) return [];
+        return rows.slice(1).map(function (r) {
+            var raw = (r[iDate] || '').trim();
+            var m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            var date = m ? m[3] + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2)
+                         : (/^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null);
+            var amt = Number((r[iAmt] || '').replace(/[$,\s]/g, ''));
+            if (!date || !Number.isFinite(amt) || amt === 0) return null;
+            return {
+                posted_on: date,
+                description: iDesc === -1 ? '' : r[iDesc],
+                money_in: amt > 0 ? amt : 0,
+                money_out: amt < 0 ? -amt : 0,
+                txn_type: iType === -1 ? '' : r[iType]
+            };
+        }).filter(Boolean);
+    }
+
+    function importBank() {
+        sheetInner.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+              '<button class="btn ghost" id="s-close">← Back</button>' +
+              '<button class="btn" id="s-go">Import</button>' +
+            '</div>' +
+            '<h2>Import Bank CSV</h2>' +
+            '<p class="note">Paste the whole Chase export, header row included. Rows already in ' +
+                'the register are skipped, so overlapping exports are safe to paste.</p>' +
+            '<div class="field wide" style="margin-top:24px">' +
+                '<textarea id="f-csv" rows="14" placeholder="Details,Posting Date,Description,Amount,Type,Balance"></textarea>' +
+            '</div>' +
+            '<p class="note" id="s-prev"></p>' +
+            '<p class="err hidden" id="s-err"></p>';
+
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('s-close').addEventListener('click', closeSheet);
+
+        var ta = document.getElementById('f-csv'), prev = document.getElementById('s-prev');
+        ta.addEventListener('input', function () {
+            var n = bkParseBank(ta.value).length;
+            prev.textContent = ta.value.trim()
+                ? (n ? n + ' transaction' + (n === 1 ? '' : 's') + ' readable'
+                     : 'Cannot read that — is the header row included?')
+                : '';
+        });
+
+        document.getElementById('s-go').addEventListener('click', async function () {
+            var rows = bkParseBank(ta.value);
+            if (!rows.length) return sheetErr('Nothing readable to import');
+            this.disabled = true;
+            try {
+                var r = await A.adminFetchTo('/api/leads-admin', 'books-import-bank', { rows: rows });
+                alert(r.imported + ' imported, ' + r.skipped + ' already there' +
+                      (r.ignored ? ', ' + r.ignored + ' ignored' : ''));
+                await bkRefresh('books');
+            } catch (e) {
+                sheetErr(e.message || 'Import failed');
+                this.disabled = false;
+            }
+        });
+    }
+
+    async function bkRefresh(tab) {
+        BOOKS = await A.adminFetchTo('/api/leads-admin', 'books');
+        closeSheet();
+        if (tab === 'deals') paintDeals(); else paintBooks();
     }
 
     // ══════════════════════════════════════════════════════════

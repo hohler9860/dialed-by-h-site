@@ -96,6 +96,69 @@ function buildStats(leads) {
     return s;
 }
 
+// ── Books write helpers ─────────────────────────────────────────────────────
+// Column whitelists. Anything not named here never reaches the database.
+const DEAL_FIELDS = {
+    ref: "text", status: "text", brand: "text", model: "text", reference: "text",
+    serial: "text", year: "text", condition: "text", box: "bool", papers: "bool",
+    date_bought: "date", date_sold: "date", source_seller: "text", buyer: "text",
+    buy_total: "num", other_costs: "num", sell_total: "num",
+    payment_in: "text", payment_out: "text", docs: "bool", notes: "text",
+};
+const EXPENSE_FIELDS = {
+    spent_on: "date", category: "text", description: "text", vendor: "text",
+    amount: "num", payment_method: "text", deal_ref: "text", deductible: "bool",
+    trip: "text", needs_review: "bool", notes: "text",
+};
+const BANK_FIELDS = {
+    posted_on: "date", description: "text", category: "text",
+    money_in: "num", money_out: "num", txn_type: "text",
+};
+
+// Empty string means "clear this column", not "store an empty string" -- the
+// admin's inputs hand back "" for every field the user left alone.
+function coerce(v, kind) {
+    if (v === "" || v === undefined) return null;
+    if (v === null) return null;
+    if (kind === "num") {
+        const n = Number(String(v).replace(/[$,\s]/g, ""));
+        return Number.isFinite(n) ? n : null;
+    }
+    if (kind === "bool") {
+        if (typeof v === "boolean") return v;
+        return ["yes", "y", "true", "1"].includes(String(v).trim().toLowerCase());
+    }
+    if (kind === "date") {
+        const s = String(v).trim();
+        return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
+    }
+    return String(v).trim() || null;
+}
+
+function pick(obj, fields) {
+    const out = {};
+    if (!obj || typeof obj !== "object") return out;
+    const names = Array.isArray(fields) ? fields : Object.keys(fields);
+    for (const k of names) {
+        if (!(k in obj)) continue;
+        out[k] = Array.isArray(fields) ? coerce(obj[k], "text") : coerce(obj[k], fields[k]);
+    }
+    return out;
+}
+
+// One row in, one row back. PATCH when an id is supplied, POST when it is not.
+async function upsert(table, id, row) {
+    const opts = {
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(row),
+    };
+    const saved = id
+        ? await supabase(`${table}?id=eq.${encodeURIComponent(id)}`, { ...opts, method: "PATCH" })
+        : await supabase(table, { ...opts, method: "POST" });
+    if (!saved || !saved.length) throw new Error("Row not saved");
+    return saved[0];
+}
+
 module.exports = async (req, res) => {
     setCors(req, res);
 
@@ -282,6 +345,87 @@ module.exports = async (req, res) => {
             return res.status(200).json({
                 deals, expenses, subscriptions, capital, bank,
                 cash: Math.round(cash * 100) / 100,
+            });
+        }
+
+        // ── Books writes ───────────────────────────────────────────────────
+        // Every writable column is listed explicitly below. A payload key that
+        // is not on its whitelist is dropped rather than rejected, so a stale
+        // client cannot smuggle a column in and a new client field cannot
+        // silently write somewhere it was not meant to.
+        if (action === "books-save-deal") {
+            const row = pick(body.deal, DEAL_FIELDS);
+            if (!row.ref) return res.status(400).json({ error: "Ref is required" });
+            if (row.sell_total != null && !row.date_sold) {
+                return res.status(400).json({ error: "A sold piece needs a sold date" });
+            }
+            return res.status(200).json({
+                deal: await upsert("dbh_deals", body.id, { ...row, updated_at: new Date().toISOString() }),
+            });
+        }
+
+        if (action === "books-save-expense") {
+            const row = pick(body.expense, EXPENSE_FIELDS);
+            if (!row.spent_on) return res.status(400).json({ error: "Date is required" });
+            if (row.amount == null) return res.status(400).json({ error: "Amount is required" });
+            if (!row.category) row.category = "Other";
+            return res.status(200).json({ expense: await upsert("dbh_expenses", body.id, row) });
+        }
+
+        if (action === "books-set-sub") {
+            const row = pick(body.sub, ["disposition", "status"]);
+            if (!body.id) return res.status(400).json({ error: "Missing id" });
+            return res.status(200).json({ sub: await upsert("dbh_subscriptions", body.id, row) });
+        }
+
+        if (action === "books-delete") {
+            const table = { deal: "dbh_deals", expense: "dbh_expenses" }[body.kind];
+            if (!table || !body.id) return res.status(400).json({ error: "Bad delete" });
+            await supabase(`${table}?id=eq.${encodeURIComponent(body.id)}`, { method: "DELETE" });
+            console.log("[leads-admin] books deleted", body.kind, body.id);
+            return res.status(200).json({ ok: true });
+        }
+
+        // Bank CSV import. Chase exports overlap month to month, so the same
+        // rows get pasted twice as a matter of course -- this dedupes on the
+        // natural key instead of trusting the paste to be clean.
+        if (action === "books-import-bank") {
+            const rows = Array.isArray(body.rows) ? body.rows : [];
+            if (!rows.length) return res.status(400).json({ error: "Nothing to import" });
+            if (rows.length > 2000) return res.status(400).json({ error: "Too many rows in one paste" });
+
+            const clean = rows
+                .map((r) => pick(r, BANK_FIELDS))
+                .filter((r) => r.posted_on && (r.money_in || r.money_out));
+
+            const existing = await supabase("dbh_bank_txns?select=posted_on,description,money_in,money_out");
+            const key = (r) =>
+                [r.posted_on, String(r.description || "").trim().toLowerCase(),
+                 Number(r.money_in || 0).toFixed(2), Number(r.money_out || 0).toFixed(2)].join("|");
+            const seen = new Set(existing.map(key));
+
+            const fresh = [];
+            for (const r of clean) {
+                if (seen.has(key(r))) continue;
+                seen.add(key(r));                       // also dedupes within the paste itself
+                fresh.push({ ...r, import_batch: "paste-" + new Date().toISOString().slice(0, 10) });
+            }
+            if (fresh.length) {
+                // return=representation on purpose: a bare insert answers 201 with an
+                // empty body, and the shared supabase() helper parses every non-204
+                // response as JSON, so it would throw after the rows had already
+                // landed -- a 500 on a write that actually succeeded.
+                await supabase("dbh_bank_txns", {
+                    method: "POST",
+                    headers: { Prefer: "return=representation" },
+                    body: JSON.stringify(fresh),
+                });
+            }
+            console.log(`[leads-admin] bank import: ${fresh.length} new, ${clean.length - fresh.length} dupes`);
+            return res.status(200).json({
+                imported: fresh.length,
+                skipped: clean.length - fresh.length,
+                ignored: rows.length - clean.length,
             });
         }
 

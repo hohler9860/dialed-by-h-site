@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · Dialed By H</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/dist/styles.css">
+
+    <style>
+        /* Global styles uppercase the whole body; the console needs real casing. */
+        body { text-transform: none; opacity: 1 !important; transition: none !important; }
+
+        .admin-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        }
+
+        .hub-tile {
+            display: block;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 26px;
+            transition: border-color .15s, background .15s, transform .15s;
+        }
+        .hub-tile:hover {
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-2px);
+        }
+        .hub-kicker {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: #777;
+        }
+        .hub-count { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 30px; line-height: 1; }
+    </style>
+</head>
+<body class="min-h-screen bg-charcoal text-ivory font-inter">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- LOGIN GATE -->
+    <section id="login-gate" class="min-h-screen flex items-center justify-center px-6">
+        <div class="admin-card rounded-2xl p-8 sm:p-10 w-full max-w-md">
+            <div class="flex items-center gap-3 mb-6">
+                <img src="/images/logo.png" alt="Dialed By H" class="h-7 w-auto">
+            </div>
+            <p class="text-[10px] tracking-[0.3em] uppercase text-muted font-space mb-2">Control Room</p>
+            <h1 class="font-space font-bold text-3xl mb-6 tracking-tight">Admin Login</h1>
+            <form id="login-form" class="space-y-4">
+                <input id="password-input" type="password" autocomplete="current-password" placeholder="Admin password"
+                    class="w-full bg-transparent border-b border-ivory/30 py-3 px-2 text-ivory placeholder-muted/60 focus:border-ivory outline-none font-inter">
+                <p id="login-error" class="text-xs text-red-400 hidden">Wrong password.</p>
+                <button type="submit" class="w-full bg-ivory text-charcoal py-3 font-space font-bold text-xs uppercase tracking-[0.25em] hover:bg-white transition-colors">
+                    Sign In
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- HUB -->
+    <section id="dashboard" class="hidden">
+        <nav class="px-5 sm:px-10 py-5 flex justify-between items-center border-b border-ivory/5">
+            <a href="/" class="flex items-center gap-3">
+                <img src="/images/logo.png" alt="Dialed By H" class="h-7 sm:h-8 w-auto">
+            </a>
+            <div class="flex items-center gap-5 text-xs font-space font-medium uppercase tracking-widest">
+                <button id="logout-btn" class="text-muted hover:text-ivory transition-colors">Sign Out</button>
+            </div>
+        </nav>
+
+        <div class="px-5 sm:px-10 py-10 sm:py-14 max-w-5xl mx-auto">
+            <p class="text-[10px] tracking-[0.3em] uppercase text-muted font-space mb-2">Control Room</p>
+            <h1 class="font-space font-bold text-3xl sm:text-4xl tracking-tight mb-10">Admin</h1>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+                <a class="hub-tile" href="/admin/pieces/">
+                    <div class="hub-kicker mb-3">Inventory</div>
+                    <div class="hub-count mb-2" id="count-pieces">—</div>
+                    <div class="font-space font-bold text-lg tracking-tight mb-1">Pieces</div>
+                    <p class="text-xs text-muted leading-relaxed">Add, edit and photograph everything in the sourcing catalog.</p>
+                </a>
+
+                <a class="hub-tile" href="/admin/journal/">
+                    <div class="hub-kicker mb-3">Content</div>
+                    <div class="hub-count mb-2" id="count-journal">—</div>
+                    <div class="font-space font-bold text-lg tracking-tight mb-1">Journal</div>
+                    <p class="text-xs text-muted leading-relaxed">Write articles and send the newsletter broadcast.</p>
+                </a>
+
+                <a class="hub-tile" href="/admin/leads/">
+                    <div class="hub-kicker mb-3">Pipeline</div>
+                    <div class="hub-count mb-2" id="count-leads">—</div>
+                    <div class="font-space font-bold text-lg tracking-tight mb-1">Leads</div>
+                    <p class="text-xs text-muted leading-relaxed">Every inquiry, auto-graded and filterable.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script src="/scripts/admin-auth.js"></script>
+    <script>
+        (function () {
+            var gate = document.getElementById('login-gate');
+            var dash = document.getElementById('dashboard');
+            var form = document.getElementById('login-form');
+            var pw = document.getElementById('password-input');
+            var err = document.getElementById('login-error');
+
+            function show() {
+                gate.classList.add('hidden');
+                dash.classList.remove('hidden');
+                loadCounts();
+            }
+
+            // Counts are a nicety — a failure here must never block the hub.
+            async function loadCounts() {
+                try {
+                    var j = await window.dialedAdmin.adminFetchTo('/api/journal-admin', 'list-all');
+                    var arts = j.articles || j.posts || [];
+                    document.getElementById('count-journal').textContent = arts.length || 0;
+                } catch (e) { /* leave the dash */ }
+
+                try {
+                    var l = await window.dialedAdmin.adminFetchTo('/api/leads-admin', 'list');
+                    var leads = l.leads || l.rows || [];
+                    document.getElementById('count-leads').textContent = leads.length || 0;
+                } catch (e) { /* leave the dash */ }
+
+                try {
+                    var r = await fetch('/api/get-inventory');
+                    var pieces = await r.json();
+                    if (Array.isArray(pieces)) document.getElementById('count-pieces').textContent = pieces.length;
+                } catch (e) { /* leave the dash */ }
+            }
+
+            document.getElementById('logout-btn').addEventListener('click', function () {
+                window.dialedAdmin.clearToken();
+                window.location.reload();
+            });
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                err.classList.add('hidden');
+                var ok = await window.dialedAdmin.tryLoginWith(pw.value, '/api/journal-admin', 'list-all');
+                if (ok) { show(); } else { err.classList.remove('hidden'); }
+            });
+
+            if (window.dialedAdmin.isAuthed()) show();
+        })();
+    </script>
+    <script src="/scripts/admin-shell.js"></script>
+</body>
+</html>

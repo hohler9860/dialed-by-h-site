@@ -944,7 +944,11 @@
             // hot brands weighted first, anything not in Notion drops out on its own.
             buildTickerFromInventory: (pieces) => {
                 const TICKER_EXCLUDE = ['richard-mille-rm-07-01-rm07-01-2be983']; // Henry-vetoed pieces
-                const withImg = pieces.filter(w => w.image && TICKER_EXCLUDE.indexOf(w.slug) < 0);
+                // Only pieces with a real background-removed cutout. The handful
+                // that are still flat photos fall back to a square attention-crop,
+                // which shows a cropped watch in the ticker's circle.
+                const hasCutout = w => /-cutout\.webp$/.test(w.imageCutout || '');
+                const withImg = pieces.filter(w => w.image && hasCutout(w) && TICKER_EXCLUDE.indexOf(w.slug) < 0);
                 const hot = ['Audemars Piguet', 'Patek Philippe', 'F.P. Journe', 'Rolex', 'Richard Mille', 'Vacheron Constantin', 'A. Lange & Söhne', 'Cartier'];
                 const byBrand = {};
                 withImg.forEach(w => { (byBrand[w.brand] = byBrand[w.brand] || []).push(w); });
@@ -960,7 +964,13 @@
                     name: (w.brand + ' ' + (w.nickname || w.model || w.name || '')).trim(),
                     ref: w.ref || w.details || '',
                     price: 'Inquire',
-                    image: w.imageCutout || w.image,
+                    // The 900px standard render, NOT the cutout. The cutout is
+                    // trimmed tight to the watch and is tall, so the ticker's
+                    // rounded-full mask clipped its top and bottom - which read
+                    // as the watch being zoomed in. The standard render centres
+                    // the piece at 66% fill, so the whole watch sits inside the
+                    // circle.
+                    image: w.image,
                     slug: w.slug,
                 }));
             },

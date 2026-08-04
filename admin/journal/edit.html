@@ -234,6 +234,7 @@
                 <a href="/admin/#journal" class="flex items-center gap-3">
                     <img src="/images/logo-dark.png" alt="Dialed By H" class="h-6 w-auto">
                 </a>
+                <a href="/admin/#journal" class="btn-secondary" style="text-decoration:none">&larr; Dashboard</a>
                 <span class="text-muted">/</span>
                 <span class="text-[10px] tracking-[0.22em] uppercase text-muted font-space">Off-Catalog</span>
             </div>
@@ -675,7 +676,12 @@
             await updateSeoCheck();
             if (seoIssues.length) {
                 const go = confirm("SEO check has open items:\n\n\u2717 " + seoIssues.join("\n\u2717 ") + "\n\nPublish anyway?");
-                if (!go) return;
+                if (!go) {
+                    // Silence here was a trap: you hit Publish, dismissed this,
+                    // and nothing told you the article was still a draft.
+                    showToast("Not published \u2014 still a draft", true);
+                    return;
+                }
             }
             save({ status: "published" });
         });

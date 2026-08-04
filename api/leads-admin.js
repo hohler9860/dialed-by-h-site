@@ -529,6 +529,53 @@ module.exports = async (req, res) => {
         // ── Dealer directory ───────────────────────────────────────────────
         // Group members are only exposed as an opaque @lid; the phone number
         // comes from the participant roster, which is why this is worth keeping.
+        // Henry's own benchmark for a reference. He quotes these every week and
+        // knows the condition it applies to, which no scraped listing states, so
+        // a manual entry outranks everything scraped.
+        if (action === "set-benchmark") {
+            const { reference, retail_price, condition, set_completeness, year_from, year_to, note } = body;
+            const ref = String(reference || "").toUpperCase().replace(/[^A-Z0-9/.-]/g, "");
+            const price = Number(String(retail_price || "").replace(/[$,\s]/g, ""));
+            if (!ref) return res.status(400).json({ error: "Missing reference" });
+            if (!Number.isFinite(price) || price <= 0) {
+                return res.status(400).json({ error: "Retail price must be a positive number" });
+            }
+            const row = {
+                reference: ref,
+                retail_price: price,
+                // null means "applies to any", which is the useful default
+                condition: condition || null,
+                set_completeness: set_completeness || null,
+                year_from: Number.isFinite(Number(year_from)) && year_from ? Number(year_from) : null,
+                year_to: Number.isFinite(Number(year_to)) && year_to ? Number(year_to) : null,
+                note: note || null,
+                updated_at: new Date().toISOString(),
+            };
+            const saved = await supabase(
+                "manual_benchmarks?on_conflict=reference,condition,set_completeness",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Profile": "wholesale",
+                        Prefer: "resolution=merge-duplicates,return=representation",
+                    },
+                    body: JSON.stringify([row]),
+                }
+            );
+            console.log("[leads-admin] benchmark set", ref, price);
+            return res.status(200).json({ saved: (saved && saved[0]) || row });
+        }
+
+        if (action === "delete-benchmark") {
+            const { id } = body;
+            if (!id) return res.status(400).json({ error: "Missing id" });
+            await supabase(`manual_benchmarks?id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "Content-Profile": "wholesale", Prefer: "return=minimal" },
+            });
+            return res.status(200).json({ deleted: true });
+        }
+
         // The retail catalogue itself: what the public is being asked to pay.
         // Separate from quote-book, which only covers references we can price.
         if (action === "retail") {
@@ -594,14 +641,20 @@ module.exports = async (req, res) => {
         // the retail match was, and whether it is safe to put in front of a client.
         if (action === "quote-book") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-            const rows = await wh("quote_book?select=*&limit=1000");
+            const [rows, manual] = await Promise.all([
+                wh("quote_book?select=*&limit=1000"),
+                wh("manual_benchmarks?select=*&order=updated_at.desc&limit=500"),
+            ]);
             const by = (c) => rows.filter((r) => r.quote_confidence === c).length;
             return res.status(200).json({
-                rows,
+                rows, manual,
                 counters: {
                     total: rows.length,
-                    // Only these two may ever be quoted to a client.
-                    quotable: by("HIGH") + by("MEDIUM"),
+                    // Only these may ever reach a client. INDICATIVE is deliberately
+                    // excluded: it is a reference-only comparison, useful to Henry,
+                    // not defensible in a quote.
+                    quotable: by("MANUAL") + by("HIGH") + by("MEDIUM"),
+                    manual: by("MANUAL"),
                     high: by("HIGH"),
                     medium: by("MEDIUM"),
                     indicative: by("INDICATIVE"),

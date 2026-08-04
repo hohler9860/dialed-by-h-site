@@ -2300,17 +2300,19 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     (c2.high || 0) + ' high confidence, ' + (c2.medium || 0) + ' medium · ' +
                     (c2.indicative || 0) + ' reference-only, ' + (c2.no_retail || 0) + ' no retail data' +
                     '</p>' +
-                    '<p class="count">A reference is only quotable when retail can be compared like for like: ' +
-                    'same reference, same condition, same contents. Anything else is for your eyes only.</p>' +
+                    '<p class="count">Your own benchmark beats anything scraped, because you know the ' +
+                    'condition it applies to. Set one on any row and it takes over. ' +
+                    'INDICATIVE rows compare on reference only, so they are shown to you but never quoted to a client.</p>' +
                     '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
                       '<th>Reference</th><th style="width:150px">Trades as</th>' +
                       '<th style="width:100px">Wholesale</th><th style="width:100px">Retail</th>' +
                       '<th style="width:120px">You quote</th><th style="width:110px">You make</th>' +
-                      '<th style="width:110px">Confidence</th>' +
+                      '<th style="width:110px">Confidence</th><th style="width:130px">Your price</th>' +
                     '</tr></thead><tbody>' +
                     (qb.length ? qb.map(function (r) {
-                        var ok = r.quote_confidence === 'HIGH' || r.quote_confidence === 'MEDIUM';
-                        var conf = r.quote_confidence === 'HIGH' ? 'hot'
+                        var ok = r.quote_confidence === 'MANUAL' || r.quote_confidence === 'HIGH'
+                                 || r.quote_confidence === 'MEDIUM';
+                        var conf = (r.quote_confidence === 'MANUAL' || r.quote_confidence === 'HIGH') ? 'hot'
                                  : r.quote_confidence === 'MEDIUM' ? 'warm' : 'spam';
                         var spec = [r.spec_year, r.spec_condition ? r.spec_condition.replace(/_/g,' ') : null,
                                     r.spec_set ? r.spec_set.replace(/_/g,' ') : null].filter(Boolean).join(' · ');
@@ -2332,8 +2334,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                               : '<span class="tmono">' + esc(money(r.floor_profit)) + '</span>') + '</td>' +
                           '<td><span class="tag ' + conf + '">' + esc(r.quote_confidence || 'NONE') + '</span>' +
                               '<div class="tsub">' + esc(r.match_tier || '') + '</div></td>' +
+                          // One field, one button. Entering a number here makes it
+                          // the benchmark for this reference and promotes it out of
+                          // INDICATIVE, so it becomes quotable.
+                          '<td><input class="ctl js-bm-in" data-ref="' + esc(r.reference) + '" ' +
+                              'style="width:78px;font-size:11px;padding:5px 6px" ' +
+                              'placeholder="retail $" inputmode="numeric">' +
+                              '<button class="btn ghost js-bm-save" data-ref="' + esc(r.reference) + '" ' +
+                              'data-cond="' + esc(r.spec_condition || '') + '" ' +
+                              'data-set="' + esc(r.spec_set || '') + '" ' +
+                              'style="margin-left:4px;padding:5px 8px">Set</button></td>' +
                         '</tr>';
-                    }).join('') : '<tr><td colspan="7" style="padding:28px 0"><span class="tmono">No references priced yet.</span></td></tr>') +
+                    }).join('') : '<tr><td colspan="8" style="padding:28px 0"><span class="tmono">No references priced yet.</span></td></tr>') +
                     '</tbody></table></div>';
         } else {
             html += '<p class="count">' + alerts.length + ' listing' + (alerts.length === 1 ? '' : 's') +
@@ -2442,6 +2454,34 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (r) r.addEventListener('click', function () {
             view.innerHTML = '<p class="count">Loading…</p>';
             renderMatches().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+
+        // Save a manual benchmark. It is stored against the spec this reference
+        // actually trades in, so it is a like-for-like number rather than a
+        // headline figure.
+        [].forEach.call(document.querySelectorAll('.js-bm-save'), function (b) {
+            b.addEventListener('click', async function () {
+                var ref = this.dataset.ref;
+                var input = document.querySelector('.js-bm-in[data-ref="' + ref + '"]');
+                var val = input && input.value.trim();
+                if (!val) { if (input) input.focus(); return; }
+                var btn = this;
+                btn.disabled = true; btn.textContent = '…';
+                try {
+                    await A.adminFetchTo('/api/leads-admin', 'set-benchmark', {
+                        reference: ref,
+                        retail_price: val,
+                        condition: this.dataset.cond || null,
+                        set_completeness: this.dataset.set || null,
+                    });
+                    btn.textContent = 'Saved';
+                    // Re-read so the row flips out of INDICATIVE immediately.
+                    renderMatches().catch(function () {});
+                } catch (e) {
+                    btn.disabled = false; btn.textContent = 'Set';
+                    alert('Could not save: ' + e.message);
+                }
+            });
         });
 
         // Sends from Henry's own WhatsApp, so confirm first. Deliberately one

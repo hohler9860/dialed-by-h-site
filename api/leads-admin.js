@@ -716,6 +716,22 @@ module.exports = async (req, res) => {
             });
         }
 
+        // Is anything actually flowing. A broken flow shows up here as a step
+        // that has not produced anything in far longer than it should have,
+        // which is the only symptom a dead webhook ever gives off.
+        if (action === "health") {
+            const rows = await supabase("pipeline_health?select=*", {
+                headers: { "Accept-Profile": "wholesale" },
+            });
+            const list = Array.isArray(rows) ? rows : [];
+            return res.status(200).json({
+                steps: list,
+                dead: list.filter((s) => s.status === "DEAD").length,
+                stale: list.filter((s) => s.status === "STALE").length,
+                checked_at: new Date().toISOString(),
+            });
+        }
+
         // What the extractor actually gets wrong, per field and per model.
         if (action === "extraction-errors") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });

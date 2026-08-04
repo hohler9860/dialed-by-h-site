@@ -419,6 +419,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="matches" aria-selected="false">Matches</button>
             <button data-tab="dealers" aria-selected="false">Dealers</button>
             <button data-tab="retail"  aria-selected="false">Retail</button>
+            <button data-tab="health"  aria-selected="false">Health</button>
         </nav>
 
         <section class="body" id="view"></section>
@@ -472,7 +473,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail };
+    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2793,6 +2794,59 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // ══════════════════════════════════════════════════════════
     var rtq = '';
     var rtSource = '';
+
+    // ══════════════════════════════════════════════════════════
+    // HEALTH  — is anything actually flowing
+    // ══════════════════════════════════════════════════════════
+    var hlTimer = null;
+
+    function fmtAge(m) {
+        if (m == null) return 'never';
+        if (m < 60)    return m + 'm ago';
+        if (m < 1440)  return Math.floor(m / 60) + 'h ago';
+        return Math.floor(m / 1440) + 'd ago';
+    }
+
+    async function renderHealth() {
+        var d = await A.adminFetchTo('/api/leads-admin', 'health');
+        var steps = d.steps || [];
+        var bad = d.dead + d.stale;
+
+        view.innerHTML =
+          '<div class="tiles">' +
+            '<div class="tile"><span class="tk">Steps</span><span class="tv">' + steps.length + '</span></div>' +
+            '<div class="tile"><span class="tk">Stale</span><span class="tv">' + d.stale + '</span></div>' +
+            '<div class="tile"><span class="tk">Dead</span><span class="tv">' + d.dead + '</span></div>' +
+          '</div>' +
+          '<p class="count">' + (bad === 0
+            ? 'Everything has produced something recently.'
+            : bad + ' step' + (bad === 1 ? '' : 's') + ' not producing. A flow can be broken for weeks ' +
+              'and the only symptom is silence here.') +
+          ' Checked ' + esc(new Date(d.checked_at).toLocaleTimeString()) + '.</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:90px">State</th><th style="width:190px">Step</th><th>What it does</th>' +
+            '<th style="width:110px">Last</th><th style="width:110px;text-align:right">Recent</th>' +
+          '</tr></thead><tbody>' +
+          steps.map(function (s) {
+              var cls = s.status === 'OK' ? 'hot' : s.status === 'STALE' ? 'warm' : 'spam';
+              return '<tr>' +
+                '<td><span class="tag ' + cls + '">' + esc(s.status) + '</span></td>' +
+                '<td>' + esc(s.step) + '</td>' +
+                '<td class="count">' + esc(s.detail) + '</td>' +
+                '<td>' + esc(fmtAge(s.age_mins)) + '</td>' +
+                '<td style="text-align:right">' + esc(s.volume == null ? '—' : Number(s.volume).toLocaleString()) + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+
+        // Keep it live while he is looking at it, and stop the moment he is not.
+        if (hlTimer) clearInterval(hlTimer);
+        hlTimer = setInterval(function () {
+            var on = document.querySelector('#tabs button[data-tab="health"][aria-selected="true"]');
+            if (!on || document.hidden) { clearInterval(hlTimer); hlTimer = null; return; }
+            renderHealth();
+        }, 60000);
+    }
 
     async function renderRetail() {
         var r = await A.adminFetchTo('/api/leads-admin', 'retail');

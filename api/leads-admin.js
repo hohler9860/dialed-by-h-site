@@ -153,6 +153,52 @@ module.exports = async (req, res) => {
             return res.status(200).json({ lead: updated[0] });
         }
 
+        // ── Wholesale price index ──────────────────────────────────────────
+        // These live here rather than in their own api/wholesale-admin.js on
+        // purpose: the project sits at Vercel's 12-function Hobby ceiling, so a
+        // 13th route would fail the build. Same auth, different data.
+        if (action === "wholesale") {
+            const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+
+            const [listings, stats, alerts, groups] = await Promise.all([
+                q("listings?select=*&order=message_ts.desc&limit=1000"),
+                q("reference_stats?select=*&order=n.desc&limit=1000"),
+                // Join through to the listing so the UI can show what was on offer.
+                q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200"),
+                q("groups?select=jid,name,is_price_baseline,active"),
+            ]);
+
+            const nameByJid = {};
+            for (const g of groups || []) nameByJid[g.jid] = g.name;
+
+            return res.status(200).json({
+                listings, stats, alerts, groups, nameByJid,
+                counters: {
+                    listings: listings.length,
+                    priced: listings.filter((l) => l.price_usd != null).length,
+                    references: stats.length,
+                    // A reference is only quotable once it has enough quotes behind it.
+                    quotable: stats.filter((s) => s.n >= 4).length,
+                    alerts: alerts.length,
+                    mismatches: listings.filter((l) => l.vision_mismatch).length,
+                },
+            });
+        }
+
+        // Live market read for one reference: what the group is actually asking.
+        if (action === "wholesale-reference") {
+            const ref = String(body.reference || "").toUpperCase().replace(/[^A-Z0-9/\-.]/g, "");
+            if (!ref) return res.status(400).json({ error: "Missing reference" });
+            const [stat, quotes] = await Promise.all([
+                supabase(`reference_stats?select=*&reference=eq.${encodeURIComponent(ref)}`,
+                         { headers: { "Accept-Profile": "wholesale" } }),
+                supabase(`listings?select=*&reference=eq.${encodeURIComponent(ref)}` +
+                         `&listing_type=eq.FOR_SALE&order=message_ts.desc&limit=60`,
+                         { headers: { "Accept-Profile": "wholesale" } }),
+            ]);
+            return res.status(200).json({ reference: ref, stat: stat[0] || null, quotes });
+        }
+
         return res.status(400).json({ error: "Unknown action" });
     } catch (err) {
         console.error("[leads-admin] ERROR:", err.message);

@@ -59,6 +59,8 @@ body,.header,.footer,.pt-statement,.pt-editorial,.pt-modal,.search-bar{font-fami
 .header__bar__right:hover ~ .cart-icon{opacity:1}
 .footer a{transition:opacity .3s ease}
 .footer a:hover{opacity:.55}
+.footer__details,.footer__menu{height:auto}
+@media (max-width:767px){.footer__details{margin-bottom:1.25rem}.footer__menu{margin-bottom:1.25rem}}
 
 /* headline reveal: opacity only, no blur */
 .js-reveal,.museum__title{filter:none!important}
@@ -235,7 +237,7 @@ fbq('track', 'PageView');
 <footer class="footer relative pb-5 b768:pt-20 b768:pb-16 bg-beige text-black border border-t border-black border-opacity-10 js-footer"><div class="container"><div class="grid grid-cols-24 b768:gap-5">
 <div class="col-span-24 b768:col-span-12 border">
 <span class="text-10 b768:text-navy py-5 b768:py-0 b768:mb-5 flex relative"><img src="/assets/dbh/logo.png" alt="Dialed By H" width="438" height="58" style="height:22px;width:166px;filter:invert(1)"></span>
-<ul class="footer__details text-14 hidden b768:flex flex-col">
+<ul class="footer__details text-14 flex flex-col">
 <li class="flex"><span class="text-navy">WhatsApp</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener">+1 914 621 1848</a></li>
 <li class="flex"><span class="text-navy">Email</span><a href="mailto:dialedbyh@gmail.com">dialedbyh@gmail.com</a></li>
 <li class="flex"><span class="text-navy">Instagram</span><a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">@dialedbyh</a></li>
@@ -243,7 +245,7 @@ fbq('track', 'PageView');
 </ul></div>
 <div class="col-span-24 b768:col-span-6 border">
 <span class="text-10 b768:text-navy py-5 b768:py-0 b768:mb-5 flex relative">Menu</span>
-<ul class="footer__menu text-14 hidden b768:flex flex-col">
+<ul class="footer__menu text-14 flex flex-col">
 <li class="menu-item"><a href="/buy/">Buy</a></li>
 <li class="menu-item"><a href="#trade" data-modal="trade">Trade</a></li>
 <li class="menu-item"><a href="#sell" data-modal="sell">Sell</a></li>
@@ -251,7 +253,7 @@ fbq('track', 'PageView');
 </ul></div>
 <div class="col-span-24 b768:col-span-6 border text-14">
 <span class="text-10 b768:text-navy py-5 b768:py-0 b768:mb-5 flex relative">Company</span>
-<ul class="footer__menu hidden b768:flex flex-col">
+<ul class="footer__menu flex flex-col">
 <li class="menu-item"><a href="/about/">About</a></li>
 <li class="menu-item"><a href="/process/">Process</a></li>
 <li class="menu-item"><a href="/journal/">Journal</a></li>

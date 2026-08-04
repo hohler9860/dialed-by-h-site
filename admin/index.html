@@ -2662,9 +2662,21 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     o.o_condition && o.o_condition !== 'UNKNOWN' ? o.o_condition.replace(/_/g, ' ') : null,
                     o.o_set && o.o_set !== 'UNKNOWN' ? o.o_set.replace(/_/g, ' ') : null]
                    .filter(Boolean).join(' · ');
+        // How old the row is matters more on the retail side: a store listing is
+        // only refreshed when the catalogue syncs, so a piece that sold weeks ago
+        // can still read as in stock. Say so rather than implying it is live.
+        var ageMs = o.o_seen_at ? (Date.now() - new Date(o.o_seen_at).getTime()) : null;
+        var days  = ageMs == null ? null : Math.floor(ageMs / 864e5);
+        var stale = retail && days != null && days >= 3;
+        var seen  = o.o_seen_at
+            ? '<div class="count"' + (stale ? ' style="color:#b98900"' : '') + '>' +
+              (retail ? 'seen ' : 'posted ') + esc(fmtAgo(o.o_seen_at)) +
+              (stale ? ' · confirm it is still there' : '') + '</div>'
+            : '';
+
         return '<tr>' +
             '<td><span class="tag ' + (retail ? 'warm' : 'hot') + '">' + (retail ? 'RETAIL' : 'WHOLESALE') + '</span></td>' +
-            '<td>' + where + '</td>' +
+            '<td>' + where + seen + '</td>' +
             '<td>' + esc(o.o_title || '—') + (spec ? '<div class="count">' + esc(spec) + '</div>' : '') + '</td>' +
             '<td style="text-align:right">' + esc(money(o.o_price_usd)) +
                 '<div class="count">' + (retail ? 'window price' : 'dealer ask') + '</div></td>' +

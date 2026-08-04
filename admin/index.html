@@ -1607,7 +1607,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // ══════════════════════════════════════════════════════════
     var LEADS = [], STATS = null;
     var lq = '', lsort = 'created_at', ldir = -1, lopen = null;
-    var lfilter = { tile: '', status: '', days: '' };
+    var lfilter = { tile: '', status: '', days: '', type: '' };
 
     var STATUSES = ['new', 'contacted', 'negotiating', 'closed', 'archived'];
 
@@ -1643,10 +1643,25 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         return l.lead_class === 'REAL' && l.lead_quality === k;
     }
 
+    // Leads means people asking us to source a watch. JOIN_LIST is a private-list
+    // signup, not a sourcing request, so it is out of this view by default -
+    // it was padding the counts without ever being something to action.
+    // The Type filter can still surface them when you want the list.
+    var SOURCING_TYPES = ['BUY', 'WATCH_DETAIL', 'SELL', 'TRADE'];
+
+    function isSourcing(l) {
+        var t = l.submission_type;
+        // unknown/blank types are treated as sourcing so nothing goes missing
+        return !t || SOURCING_TYPES.indexOf(t) >= 0;
+    }
+
     function leadsAfter(tile, status, days, q) {
         var cutoff = days ? Date.now() - (+days * 864e5) : 0;
         var needle = (q || '').toLowerCase();
         return LEADS.filter(function (l) {
+            if (lfilter.type === '__list') { if (isSourcing(l)) return false; }
+            else if (lfilter.type) { if (l.submission_type !== lfilter.type) return false; }
+            else if (!isSourcing(l)) return false;
             if (!matchTile(l, tile)) return false;
             if (status && (l.status || 'new') !== status) return false;
             if (cutoff && new Date(l.created_at).getTime() < cutoff) return false;
@@ -1714,6 +1729,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     return '<option value="' + o[0] + '"' + (lfilter.days === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
                 }).join('') +
               '</select>' +
+              '<select id="l-type" class="ctl">' +
+                '<option value=""' + (lfilter.type ? '' : ' selected') + '>SOURCING REQUESTS</option>' +
+                '<option value="BUY"' + (lfilter.type === 'BUY' ? ' selected' : '') + '>BUY ONLY</option>' +
+                '<option value="WATCH_DETAIL"' + (lfilter.type === 'WATCH_DETAIL' ? ' selected' : '') + '>WATCH ENQUIRY ONLY</option>' +
+                '<option value="__list"' + (lfilter.type === '__list' ? ' selected' : '') + '>PRIVATE LIST SIGNUPS</option>' +
+              '</select>' +
               '<select id="l-status" class="ctl">' +
                 '<option value=""' + (lfilter.status ? '' : ' selected') + '>ANY STATUS</option>' +
                 STATUSES.map(function (v) {
@@ -1724,7 +1745,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '<button class="btn ghost" id="l-refresh">Refresh</button>' +
             '</div>' +
 
-            '<p class="count">' + list.length + ' of ' + LEADS.length + ' lead' + (LEADS.length === 1 ? '' : 's') +
+            '<p class="count">' + list.length + ' of ' + LEADS.filter(isSourcing).length + ' lead' + (LEADS.length === 1 ? '' : 's') +
               ' · sorted by ' + esc(COLS.filter(function (c) { return c.k === lsort; })[0].l.toLowerCase()) +
               (ldir < 0 ? ' (newest first)' : ' (oldest first)') + '</p>' +
 
@@ -1830,6 +1851,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         document.getElementById('l-days').addEventListener('change', function () {
             lfilter.days = this.value; paintLeads();
+        });
+        document.getElementById('l-type').addEventListener('change', function () {
+            lfilter.type = this.value; paintLeads();
         });
         document.getElementById('l-status').addEventListener('change', function () {
             lfilter.status = this.value; paintLeads();

@@ -466,10 +466,21 @@
       art.className = 'pt-item pt-reveal';
       var escf = function (x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
-      var imgSrc = w.image ? (/^https?:\/\//i.test(w.image) || w.image.charAt(0) === '/' ? w.image : '/img?src=' + encodeURIComponent(w.image)) : '';
+      var abs = function (u) { return /^https?:\/\//i.test(u) || u.charAt(0) === '/' ? u : '/img?src=' + encodeURIComponent(u); };
+      var imgSrc = w.image ? abs(w.image) : '';
       var eager = i < 8 ? ' fetchpriority="high"' : ' loading="lazy"';
+      // Tiles render around 300px, so serve the 300px variant and let the
+      // browser step up to 600/900 only on wide or retina screens. Previously
+      // every tile downloaded the full 900px file - the bulk of /buy/'s LCP.
+      // width/height are intrinsic (the renders are square) so the grid
+      // reserves space before the image lands and cannot shift.
+      var srcset = (w.imageThumb && w.imageMedium)
+        ? ' srcset="' + escf(abs(w.imageThumb)) + ' 300w, ' + escf(abs(w.imageMedium)) + ' 600w, ' + escf(imgSrc) + ' 900w"' +
+          ' sizes="(max-width: 640px) 45vw, (max-width: 1100px) 30vw, 300px"'
+        : '';
       var img = imgSrc
-        ? '<img src="' + imgSrc + '" alt=""' + eager + '>'
+        ? '<img src="' + escf(w.imageThumb ? abs(w.imageThumb) : imgSrc) + '"' + srcset +
+          ' width="300" height="300" alt=""' + eager + '>'
         : '<span class="ph">DIALED BY H</span>';
       art.innerHTML =
         '<a href="/watch/' + (w.slug || '') + '" aria-label="' + title.replace(/"/g, '') + '">' +

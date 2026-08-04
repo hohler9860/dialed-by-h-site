@@ -11,7 +11,7 @@ const {
     fetchAllPieces, invalidatePieces, pieceSlug, mapRow, PIECES_URL, sbHeaders,
 } = require('./_pieces');
 const { renderWatchPage, renderSitemap, fourOhFour } = require('./_render');
-const { processWatchImage } = require('../lib/watch-image');
+const { processWatchImage, variantPath } = require('../lib/watch-image');
 
 const BUCKET = 'pieces';
 
@@ -139,9 +139,13 @@ async function handleAdmin(req, res) {
                 const stdPath = `${body.id}/${idx}-${stamp}.webp`;
                 const cutPath = `${body.id}/${idx}-${stamp}-cutout.webp`;
 
-                const { standard, cutout } = await processWatchImage(src);
+                const { standard, cutout, thumb, medium } = await processWatchImage(src);
                 await putObject(stdPath, standard);
                 if (cutout) await putObject(cutPath, cutout);
+                // Responsive variants, written now so nothing is ever resized
+                // per request. Their URLs are derived from the standard's path.
+                await putObject(variantPath(stdPath, 'thumb'), thumb);
+                await putObject(variantPath(stdPath, 'medium'), medium);
 
                 const images = piece.images.concat(publicUrl(stdPath));
                 const imagesCutout = piece.imagesCutout.concat(cutout ? publicUrl(cutPath) : publicUrl(stdPath));
@@ -306,8 +310,9 @@ module.exports = async (req, res) => {
         // list payload: the grid/ticker never use tags or secondary images —
         // stripping them cuts ~40% off the JSON the browser has to download.
         // imageCutout (scalar) stays: the homepage ticker needs it.
+        // imageThumb/imageMedium (scalars) stay - the grid and ticker need them.
         const slim = pieces.map(w => {
-            const { tags, images, imagesCutout, ...rest } = w;
+            const { tags, images, imagesCutout, imagesMedium, ...rest } = w;
             return rest;
         });
         return res.status(200).json(slim);

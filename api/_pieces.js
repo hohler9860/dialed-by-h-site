@@ -56,6 +56,13 @@ function mapRow(r) {
     const images = Array.isArray(r.images) ? r.images : [];
     const cutouts = Array.isArray(r.images_cutout) ? r.images_cutout : [];
 
+    // Responsive variants are a naming convention on the standard's path, so
+    // they need no extra columns and no extra query:
+    //   .../0.webp -> .../0-thumb.webp (300px), .../0-medium.webp (600px)
+    // The grid was downloading the full 900px file for a ~300px tile, which was
+    // most of /buy/'s 8.3s mobile LCP.
+    const variant = (url, suffix) => (url ? url.replace(/\.webp$/, `-${suffix}.webp`) : '');
+
     const out = {
         id: r.id,
         brand: r.brand || '',
@@ -65,7 +72,10 @@ function mapRow(r) {
         ref: r.ref || '',
         details: descParts.join(' · '),
         image: images[0] || '',
+        imageThumb: variant(images[0], 'thumb'),
+        imageMedium: variant(images[0], 'medium'),
         images,
+        imagesMedium: images.map(u => variant(u, 'medium')),
         // Transparent 520px variant for the homepage ticker and celeb cards.
         // Falls back to the standard image, which is what the old `?mode=cutout`
         // effectively did for opaque photos that have no meaningful cutout.

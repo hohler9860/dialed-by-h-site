@@ -691,7 +691,9 @@ export function createScene({ host, bannerEl, footerEl }) {
   // animate --------------------------------------------------------------------
   let announcedReady = false
   const clock = new THREE.Clock()
-  renderer.setAnimationLoop(() => {
+  // Named so the caller can stop and restart the loop (see boot below) rather
+  // than rendering forever while the hero is off screen or the tab is hidden.
+  const animate = () => {
     const dt = Math.min(clock.getDelta(), 0.1)
     const time = clock.elapsedTime
     if (!announcedReady && loadTotal.count > 0 && loadTotal.done >= loadTotal.count) {
@@ -705,10 +707,12 @@ export function createScene({ host, bannerEl, footerEl }) {
     updateCamera(dt)
     updateStickers(time, dt)
     renderer.render(scene, camera)
-  })
+  }
+  renderer.setAnimationLoop(animate)
 
   return {
     renderer,
+    animate,
     get dim() {
       return dim
     },
@@ -719,4 +723,51 @@ export function createScene({ host, bannerEl, footerEl }) {
 const host = document.querySelector('.js-dbh-scene')
 const bannerEl = document.querySelector('.dbh-hero')
 const footerEl = document.querySelector('.js-footer')
-if (host && bannerEl && footerEl) createScene({ host, bannerEl, footerEl })
+
+if (host && bannerEl && footerEl) {
+  // The scene is decorative (the host is aria-hidden). Building it costs a big
+  // synchronous chunk of main thread, and doing that during load was worth
+  // 16s of Total Blocking Time. Wait until the browser is idle so the page
+  // paints and becomes interactive first, then build it.
+  const boot = () => {
+    const scene = createScene({ host, bannerEl, footerEl })
+
+    // The render loop used to run forever - through scrolling past the hero and
+    // through the tab being in the background - which is where most of the 33s
+    // of main-thread work came from. Only render while the hero is actually on
+    // screen and the tab is visible.
+    const renderer = scene && scene.renderer
+    const loop = scene && scene.animate
+    if (!renderer || !loop) return
+    let onScreen = true
+    let running = true
+
+    const sync = () => {
+      const should = onScreen && document.visibilityState === 'visible'
+      if (should === running) return
+      running = should
+      renderer.setAnimationLoop(should ? loop : null)
+    }
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => {
+          onScreen = entries.some((e) => e.isIntersecting)
+          sync()
+        },
+        { rootMargin: '120px' }
+      ).observe(bannerEl)
+    }
+    document.addEventListener('visibilitychange', sync)
+  }
+
+  // Reduced motion: skip the animated scene entirely.
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!reduced) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(boot, { timeout: 2500 })
+    } else {
+      setTimeout(boot, 300)
+    }
+  }
+}

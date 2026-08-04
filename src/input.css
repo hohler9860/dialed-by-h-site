@@ -774,14 +774,31 @@ select {
 /* ══════════════════════════════════════
    PAGE TRANSITIONS
    ══════════════════════════════════════ */
-body {
-    opacity: 0;
-    transition: opacity 0.3s ease;
+/*
+ * The page fades in on load. This used to be `body { opacity: 0 }` waiting for
+ * premium-ui.js (loaded at the bottom of the body) to add .page-ready — which
+ * meant the entire page stayed BLANK until a non-critical script downloaded and
+ * ran, behind gsap and lucide. On a slow connection that is seconds of white
+ * screen, and it is why Lighthouse reported NO_LCP: an element at opacity 0 is
+ * not a paint candidate, so the homepage could not be scored at all.
+ *
+ * Same 0.3s fade, but driven by a CSS animation so it starts the moment the
+ * stylesheet parses and completes regardless of whether any JS runs.
+ */
+@keyframes dbh-page-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
+body {
+    animation: dbh-page-in 0.3s ease both;
+}
+/* Kept so premium-ui.js's existing class toggling stays harmless. */
 body.page-ready {
     opacity: 1;
 }
+/* The animation's fill would otherwise outrank this on the way out. */
 body.page-exit {
+    animation: none;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -793,6 +810,6 @@ body.page-exit {
     .animate-ticker { animation: none !important; }
     .split-word { transition: none !important; }
     * { scroll-behavior: auto !important; }
-    body { opacity: 1 !important; transition: none !important; }
+    body { opacity: 1 !important; transition: none !important; animation: none !important; }
     body.page-exit { opacity: 1 !important; }
 }

@@ -222,6 +222,21 @@ table.leads tbody tr:hover { background: rgba(var(--label-d),.04); }
 .tname { font-weight: 700; letter-spacing: -.01em; }
 .tsub { font-family: var(--mono); font-size: 11px; color: var(--l2); margin-top: 2px; }
 .tmono { font-family: var(--mono); font-size: 11px; color: var(--l2); white-space: nowrap; }
+
+/* Wholesale photos. The thumbnail sits inline so the eye can scan the table by
+   watch rather than by text, which is how these listings are actually read. */
+.wcell { display: flex; align-items: center; gap: 10px; }
+.wcell .tname, .wcell .tsub { display: block; }
+.wthumb {
+    width: 44px; height: 44px; flex: 0 0 44px;
+    object-fit: cover; background: var(--be);
+    border: 1px solid var(--line); border-radius: 2px;
+}
+.wthumb--none { background: repeating-linear-gradient(45deg, var(--be), var(--be) 4px, transparent 4px, transparent 8px); }
+.wshot {
+    max-width: 320px; width: 100%; height: auto; display: block;
+    border: 1px solid var(--line); border-radius: 2px; margin-top: 10px;
+}
 .tag {
     display: inline-block; font-family: var(--mono); font-size: 9px; text-transform: uppercase;
     letter-spacing: .06em; border: 1px solid var(--line); padding: 2px 6px; white-space: nowrap;
@@ -238,6 +253,92 @@ select.stat {
     font-family: var(--mono); font-size: 10px; text-transform: uppercase;
     background: transparent; border: 1px solid var(--line); padding: 3px 5px; cursor: pointer; color: var(--l1);
 }
+
+/* ── books ──────────────────────────────────────────────── */
+/*
+ * Every class here is bk- prefixed on purpose: Books landed while other work was
+ * in flight elsewhere in this file, and a shared .card or .stat would have been a
+ * silent collision.
+ *
+ * Chart colours are the only new hues in the console. They were validated
+ * colourblind-safe against this cream ground (#FBFAF4): worst all-pairs CVD
+ * deltaE 9.2, normal-vision 24.0. Do not swap them for something that "matches"
+ * without re-checking, and do not add a third series without doing the same.
+ */
+:root { --s1: #2a78d6; --s2: #eb6834; --ok: #0ca30c; --warn: #ec835a; --bad: #d03b3b; }
+
+.bk-filters {
+    padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+}
+.bk-filters .lab { color: var(--l3); margin-right: 6px; }
+.bk-seg { padding: 7px 13px; cursor: pointer; background: none; border: 0; font: inherit; color: var(--l2); }
+.bk-seg:hover { color: var(--l1); }
+.bk-seg[aria-pressed="true"] { background: #000; color: var(--b1); }
+
+.bk-stats {
+    margin-top: 24px; display: grid; gap: 1px; background: var(--line);
+    border: 1px solid var(--line); grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 760px)  { .bk-stats { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1100px) { .bk-stats { grid-template-columns: repeat(6, 1fr); } }
+.bk-stat { background: var(--b1); padding: 18px 16px 16px; }
+.bk-k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--l3); }
+.bk-v {
+    margin-top: 9px; font-size: 27px; font-weight: 700; line-height: 1;
+    letter-spacing: -.02em; font-variation-settings: 'wdth' 105;
+}
+.bk-v.neg { color: var(--bad); }
+.bk-s { margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
+
+.bk-grid { margin-top: 22px; display: grid; gap: 22px; }
+@media (min-width: 900px) { .bk-grid.two { grid-template-columns: 1.35fr 1fr; } }
+.bk-card { border: 1px solid var(--line); padding: 20px 20px 16px; }
+.bk-card h3 {
+    font-size: 15px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: -.01em; font-variation-settings: 'wdth' 115;
+}
+.bk-card .cap { margin-top: 5px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
+.bk-legend {
+    margin-top: 12px; display: flex; gap: 16px; font-family: var(--mono);
+    font-size: 11px; color: var(--l2); text-transform: uppercase; letter-spacing: .04em;
+}
+.bk-legend i { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: -1px; }
+.bk-plot { margin-top: 12px; position: relative; }
+.bk-plot svg { display: block; width: 100%; overflow: visible; }
+.bk-tick { font-family: var(--mono); font-size: 10.5px; fill: rgba(54,54,48,.5); letter-spacing: .03em; }
+.bk-dlab { font-family: var(--mono); font-size: 11px; fill: var(--l1); }
+.bk-dsub { font-family: var(--mono); font-size: 10.5px; fill: rgba(54,54,48,.5); }
+.bk-gl { stroke: rgba(54,54,48,.08); stroke-width: 1; }
+.bk-base { stroke: rgba(54,54,48,.28); stroke-width: 1; }
+.bk-hit { fill: transparent; cursor: crosshair; }
+.bk-tip {
+    position: absolute; pointer-events: none; opacity: 0; transition: opacity .12s;
+    background: #000; color: var(--b1); padding: 8px 10px; font-family: var(--mono);
+    font-size: 11px; line-height: 1.55; white-space: nowrap; z-index: 5;
+}
+.bk-empty { font-family: var(--mono); font-size: 12px; color: var(--l3); padding: 26px 0; text-align: center; }
+
+.bk-sub { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.bk-sub .nm { font-size: 13px; flex: 1; }
+.bk-sub .amt { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.bk-sub.dead .nm { text-decoration: line-through; opacity: .45; }
+.bk-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+.bk-chip i { width: 7px; height: 7px; display: block; }
+.bk-foot { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--l3); }
+.bk-burn { font-family: var(--sans); font-size: 21px; font-weight: 700; letter-spacing: -.02em; color: var(--l1); }
+
+table.bk-tbl { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+table.bk-tbl th {
+    text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--line);
+    color: var(--l3); text-transform: uppercase; letter-spacing: .06em; font-weight: 400; white-space: nowrap;
+}
+table.bk-tbl td { padding: 12px 14px 12px 0; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.bk-tbl td.nm { font-family: var(--sans); font-size: 13px; white-space: normal; min-width: 170px; }
+table.bk-tbl th.n, table.bk-tbl td.n { text-align: right; padding-right: 14px; }
+table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
+.bk-mute { color: var(--l3); }
 
 /* ── login ──────────────────────────────────────────────── */
 #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -1105,8 +1206,13 @@ select.stat {
 
         var main = '<tr data-wid="' + esc(l.id) + '">' +
             '<td><span class="tmono">' + esc(fmtDate(l.message_ts)) + '</span></td>' +
-            '<td><div class="tname">' + esc([l.brand, l.model].filter(Boolean).join(' ') || '—') + '</div>' +
-                '<div class="tsub">' + esc(l.reference || 'no ref') + '</div></td>' +
+            '<td><div class="wcell">' +
+                (l.image_url
+                    ? '<img class="wthumb" src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">'
+                    : '<span class="wthumb wthumb--none"></span>') +
+                '<span><span class="tname">' + esc([l.brand, l.model].filter(Boolean).join(' ') || '—') + '</span>' +
+                '<span class="tsub">' + esc(l.reference || 'no ref') + '</span></span>' +
+            '</div></td>' +
             '<td>' + (specOf(l) ? esc(specOf(l)) : '<span class="tmono">—</span>') + '</td>' +
             '<td><span class="tmono">' + esc(money(l.price_usd)) + '</span></td>' +
             '<td>' + deltaCell + '</td>' +
@@ -1144,6 +1250,7 @@ select.stat {
                   return '<div><div class="dk">' + esc(r[0]) + '</div><div class="dv">' + esc(String(r[1])) + '</div></div>';
               }).join('') +
             '</div>' +
+            (l.image_url ? '<img class="wshot" src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">' : '') +
             (l.vision_mismatch ? '<p class="note">The photo does not match the reference in the caption. Worth a look before quoting.</p>' : '') +
             '</td></tr>';
     }

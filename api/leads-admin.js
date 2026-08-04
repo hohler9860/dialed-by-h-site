@@ -161,7 +161,8 @@ module.exports = async (req, res) => {
             const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
 
             const [listings, stats, variants, alerts, groups] = await Promise.all([
-                q("listings?select=*&order=message_ts.desc&limit=1000"),
+                // The view carries the stored photo path alongside the listing.
+                q("listings_with_image?select=*&order=message_ts.desc&limit=1000"),
                 q("reference_stats?select=*&order=n.desc&limit=1000"),
                 q("variant_stats?select=*&order=n.desc&limit=1000"),
                 // Join through to the listing so the UI can show what was on offer.
@@ -192,6 +193,37 @@ module.exports = async (req, res) => {
                     : null;
             }
 
+            // The bucket is private, so hand the browser short-lived signed URLs
+            // rather than making dealer photos world-readable. One batch call.
+            const paths = [...new Set(listings.map((l) => l.image_path).filter(Boolean))];
+            if (paths.length) {
+                try {
+                    const signed = await fetch(
+                        `${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                apikey: SUPABASE_KEY,
+                                Authorization: `Bearer ${SUPABASE_KEY}`,
+                            },
+                            body: JSON.stringify({ expiresIn: 3600, paths }),
+                        }
+                    ).then((r) => (r.ok ? r.json() : []));
+
+                    const urlByPath = {};
+                    for (const s of signed || []) {
+                        if (s.signedURL) urlByPath[s.path] = `${SUPABASE_URL}/storage/v1${s.signedURL}`;
+                    }
+                    for (const l of listings) {
+                        l.image_url = l.image_path ? urlByPath[l.image_path] || null : null;
+                    }
+                } catch (err) {
+                    // Photos are a nicety; never fail the whole view over them.
+                    console.error("[leads-admin] signing image URLs failed:", err.message);
+                }
+            }
+
             return res.status(200).json({
                 listings, stats, variants, alerts, groups, nameByJid,
                 counters: {
@@ -219,6 +251,38 @@ module.exports = async (req, res) => {
                          { headers: { "Accept-Profile": "wholesale" } }),
             ]);
             return res.status(200).json({ reference: ref, stat: stat[0] || null, quotes });
+        }
+
+        // ── Books ──────────────────────────────────────────────────────────
+        // The business tracker, moved off the Google Sheet. Same reason as
+        // wholesale for living in this file: the project is at Vercel's
+        // 12-function Hobby ceiling, so a 13th route would fail the build.
+        //
+        // This is the most sensitive payload the admin serves -- buy prices,
+        // client names, bank rows -- so it is deliberately NOT reachable from
+        // /admin/index.html source. It only ever crosses the wire behind the
+        // Bearer check above. The dbh_* tables have RLS on with zero policies,
+        // so the service-role key is the only way to read them.
+        if (action === "books") {
+            const [deals, expenses, subscriptions, capital, bank] = await Promise.all([
+                supabase("dbh_deals?select=*&order=date_bought.asc&limit=2000"),
+                supabase("dbh_expenses?select=*&order=spent_on.asc&limit=5000"),
+                supabase("dbh_subscriptions?select=*&order=monthly_cost.desc&limit=200"),
+                supabase("dbh_capital?select=*&order=moved_on.asc&limit=500"),
+                supabase("dbh_bank_txns?select=*&order=posted_on.asc&limit=5000"),
+            ]);
+
+            // Cash is a whole-account fact, not a period one: it is every row the
+            // register has ever seen, so it is summed here rather than client-side
+            // where the period filter would quietly slice it.
+            const cash = bank.reduce(
+                (s, t) => s + Number(t.money_in || 0) - Number(t.money_out || 0), 0
+            );
+
+            return res.status(200).json({
+                deals, expenses, subscriptions, capital, bank,
+                cash: Math.round(cash * 100) / 100,
+            });
         }
 
         return res.status(400).json({ error: "Unknown action" });

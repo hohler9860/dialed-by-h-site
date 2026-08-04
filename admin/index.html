@@ -379,7 +379,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         <h1 class="title">Admin</h1>
 
         <nav class="tabs" id="tabs">
-            <button data-tab="pieces"  aria-selected="true">Pieces</button>
+            <button data-tab="books"   aria-selected="true">Books</button>
+            <button data-tab="pieces"  aria-selected="false">Pieces</button>
             <button data-tab="journal" aria-selected="false">Journal</button>
             <button data-tab="leads"   aria-selected="false">Leads</button>
             <button data-tab="wholesale" aria-selected="false">Wholesale</button>
@@ -417,7 +418,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // Honour a deep link like /admin/#journal (the standalone article
         // editor links back this way).
         var want = (location.hash || '').replace('#', '');
-        show(TABS[want] ? want : 'pieces');
+        show(TABS[want] ? want : 'books');
     }
 
     document.getElementById('gate-form').addEventListener('submit', async function (e) {
@@ -436,7 +437,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale };
+    var TABS = { books: renderBooks, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -452,6 +453,335 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         TABS[tab]().catch(function (err) {
             view.innerHTML = '<p class="err">' + esc(err.message || 'Failed to load') + '</p>';
         });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // BOOKS  — the landing tab
+    // ══════════════════════════════════════════════════════════
+    // The business tracker that used to live in a Google Sheet. Everything here
+    // is derived at paint time from the raw rows; nothing computed is stored, so
+    // the numbers cannot drift out of sync with the deals and expenses behind
+    // them. Fetched once per tab visit, then re-derived locally on filter change.
+    var BOOKS = null;
+    var bkPeriod = 'all';
+
+    function bkMoney(n, d) {
+        d = d || 0;
+        return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('en-US',
+            { minimumFractionDigits: d, maximumFractionDigits: d });
+    }
+    function bkCompact(n) {
+        var a = Math.abs(n);
+        return (n < 0 ? '-' : '') + '$' + (a >= 1000 ? (a / 1000).toFixed(a >= 10000 ? 0 : 1) + 'K' : a.toFixed(0));
+    }
+    function bkPct(n) { return (n * 100).toFixed(Math.abs(n) < 0.1 ? 2 : 1) + '%'; }
+    function bkDays(a, b) { return Math.round((new Date(b) - new Date(a)) / 864e5); }
+    function bkNum(v) { return v == null ? 0 : Number(v); }
+    function bkProfit(d) {
+        return d.sell_total == null ? null : bkNum(d.sell_total) - bkNum(d.buy_total) - bkNum(d.other_costs);
+    }
+    function bkMargin(d) {
+        return d.sell_total ? bkProfit(d) / bkNum(d.sell_total) : null;
+    }
+    var BK_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    // The period filter scopes dated things only. Cash on hand is deliberately
+    // exempt: it is a balance, not a flow, so slicing it by date would be a lie.
+    function bkCutoff() {
+        var now = new Date();
+        if (bkPeriod === 'mtd') {
+            return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-01';
+        }
+        if (bkPeriod === '90') {
+            var d = new Date(now.getTime() - 90 * 864e5);
+            return d.toISOString().slice(0, 10);
+        }
+        return '0000-00-00';
+    }
+
+    async function renderBooks() {
+        if (!BOOKS) BOOKS = await A.adminFetchTo('/api/leads-admin', 'books');
+        paintBooks();
+    }
+
+    function paintBooks() {
+        var cut = bkCutoff();
+        var inRange = function (d) { return d && d >= cut; };
+
+        var sold = BOOKS.deals.filter(function (d) { return d.sell_total != null && inRange(d.date_sold); });
+        var held = BOOKS.deals.filter(function (d) { return d.sell_total == null; });
+        var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
+        var gp = sold.reduce(function (s, d) { return s + bkProfit(d); }, 0);
+        var opex = BOOKS.expenses.filter(function (e) { return inRange(e.spent_on); })
+            .reduce(function (s, e) { return s + bkNum(e.amount); }, 0);
+        var net = gp - opex;
+        var avgDays = sold.length
+            ? Math.round(sold.reduce(function (s, d) { return s + bkDays(d.date_bought, d.date_sold); }, 0) / sold.length)
+            : null;
+        var stock = held.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+
+        var tiles = [
+            ['Revenue', bkMoney(rev), sold.length + ' piece' + (sold.length === 1 ? '' : 's') + ' sold', false],
+            ['Gross profit', bkMoney(gp), rev ? bkPct(gp / rev) + ' blended margin' : '—', false],
+            ['Overhead', bkMoney(opex), 'non-watch spend', false],
+            ['Net profit', bkMoney(net), net < 0 ? 'overhead ahead of margin' : 'after overhead', net < 0],
+            ['Cash on hand', bkMoney(BOOKS.cash), 'all time, not filtered', false],
+            ['In stock', held.length ? bkMoney(stock) : '—',
+                held.length ? held.length + ' piece' + (held.length === 1 ? '' : 's') + ' at cost'
+                            : (avgDays === null ? 'nothing held' : 'avg ' + avgDays + 'd to sell'), false]
+        ];
+
+        view.innerHTML =
+            '<div class="bk-filters" role="group" aria-label="Period">' +
+                '<span class="lab">Period</span>' +
+                ['all', '90', 'mtd'].map(function (p) {
+                    var label = p === 'all' ? 'All time' : p === '90' ? 'Last 90 days' : 'This month';
+                    return '<button class="bk-seg" data-p="' + p + '" aria-pressed="' +
+                        (bkPeriod === p) + '">' + label + '</button>';
+                }).join('') +
+            '</div>' +
+            '<div class="bk-stats">' + tiles.map(function (t) {
+                return '<div class="bk-stat"><div class="bk-k">' + t[0] + '</div>' +
+                    '<div class="bk-v' + (t[3] ? ' neg' : '') + '">' + t[1] + '</div>' +
+                    '<div class="bk-s">' + t[2] + '</div></div>';
+            }).join('') + '</div>' +
+            '<div class="bk-grid two">' +
+                '<div class="bk-card"><h3>Cash in / cash out</h3>' +
+                    '<p class="cap">Chase &middot;1791 by month. Capital included, not just deals.</p>' +
+                    '<div class="bk-legend"><span><i style="background:var(--s1)"></i>Cash in</span>' +
+                    '<span><i style="background:var(--s2)"></i>Cash out</span></div>' +
+                    '<div class="bk-plot" id="bk-cash"><div class="bk-tip" id="bk-cash-t"></div></div></div>' +
+                '<div class="bk-card"><h3>Overhead</h3>' +
+                    '<p class="cap">Expenses by category, biggest first.</p>' +
+                    '<div class="bk-plot" id="bk-exp"><div class="bk-tip" id="bk-exp-t"></div></div></div>' +
+            '</div>' +
+            '<div class="bk-grid two">' +
+                '<div class="bk-card"><h3>Profit per deal</h3>' +
+                    '<p class="cap">Sold pieces only. Label is margin on sale price.</p>' +
+                    '<div class="bk-plot" id="bk-deal"><div class="bk-tip" id="bk-deal-t"></div></div></div>' +
+                '<div class="bk-card"><h3>Monthly burn</h3>' +
+                    '<p class="cap">Recurring tools. Not scoped by the period filter.</p>' +
+                    '<div id="bk-subs"></div></div>' +
+            '</div>' +
+            '<div class="bk-card" style="margin-top:22px"><h3>Deals</h3>' +
+                '<p class="cap">Every piece bought or sold, and the table view for the charts above.</p>' +
+                '<div class="tbl-wrap" style="border-top:0;margin-top:12px"><table class="bk-tbl" id="bk-deals"></table></div></div>';
+
+        [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
+            b.addEventListener('click', function () { bkPeriod = b.dataset.p; paintBooks(); });
+        });
+
+        bkCashChart(inRange);
+        bkExpChart(inRange);
+        bkDealChart(sold);
+        bkSubs();
+        bkDealTable(inRange);
+    }
+
+    // Hover is an enhancement only — every value here is also readable from the
+    // deals table below, so nothing is gated behind a tooltip.
+    function bkTip(host, tip, nodes, html, w) {
+        [].forEach.call(nodes, function (h) {
+            h.addEventListener('mousemove', function (e) {
+                var b = host.getBoundingClientRect();
+                tip.innerHTML = html(+h.dataset.i);
+                tip.style.opacity = 1;
+                tip.style.left = Math.min(e.clientX - b.left + 14, Math.max(b.width - w, 0)) + 'px';
+                tip.style.top = (e.clientY - b.top - 10) + 'px';
+            });
+            h.addEventListener('mouseleave', function () { tip.style.opacity = 0; });
+        });
+    }
+
+    // A bar is a rounded data-end anchored to the baseline, not a rounded box.
+    function bkBar(x, y, w, h, r) {
+        if (h <= 0.5) return '';
+        r = Math.min(r, w / 2, h);
+        return 'M' + x + ' ' + (y + h) + ' V' + (y + r) + ' a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + (-r) +
+               ' h' + (w - 2 * r) + ' a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r + ' V' + (y + h) + ' Z';
+    }
+
+    function bkCashChart(inRange) {
+        var host = document.getElementById('bk-cash'), tip = document.getElementById('bk-cash-t');
+        var by = {};
+        BOOKS.bank.forEach(function (t) {
+            if (!inRange(t.posted_on)) return;
+            var m = t.posted_on.slice(0, 7);
+            if (!by[m]) by[m] = [0, 0];
+            by[m][0] += bkNum(t.money_in);
+            by[m][1] += bkNum(t.money_out);
+        });
+        var rows = Object.keys(by).sort().map(function (m) { return [m, by[m][0], by[m][1]]; });
+        if (!rows.length) {
+            host.innerHTML = '<p class="bk-empty">No movement in this period</p>';
+            host.appendChild(tip); return;
+        }
+        var W = 560, H = 210, padL = 46, padB = 26, padT = 8;
+        var max = Math.max.apply(null, rows.map(function (r) { return Math.max(r[1], r[2]); })) || 1;
+        var nice = Math.ceil(max / 10000) * 10000 || max;
+        var pw = W - padL, ph = H - padB - padT;
+        var step = pw / rows.length, bw = Math.min(20, (step - 14) / 2);
+        var y = function (v) { return padT + ph - (v / nice) * ph; };
+
+        var g = '';
+        for (var i = 0; i <= 4; i++) {
+            var v = nice * i / 4;
+            g += '<line class="bk-gl" x1="' + padL + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+                 '<text class="bk-tick" x="' + (padL - 9) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' +
+                 (i ? bkCompact(v) : '$0') + '</text>';
+        }
+        var bars = '', hits = '';
+        rows.forEach(function (r, i) {
+            var cx = padL + step * i + step / 2;
+            bars += '<path d="' + bkBar(cx - bw - 1, y(r[1]), bw, padT + ph - y(r[1]), 4) + '" fill="var(--s1)"/>' +
+                    '<path d="' + bkBar(cx + 1, y(r[2]), bw, padT + ph - y(r[2]), 4) + '" fill="var(--s2)"/>' +
+                    '<text class="bk-tick" x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' +
+                    BK_MON[+r[0].slice(5, 7) - 1] + '</text>';
+            hits += '<rect class="bk-hit" x="' + (padL + step * i) + '" y="' + padT + '" width="' + step +
+                    '" height="' + ph + '" data-i="' + i + '"/>';
+        });
+        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="Cash in and cash out by month">' + g +
+            '<line class="bk-base" x1="' + padL + '" x2="' + W + '" y1="' + (padT + ph) + '" y2="' + (padT + ph) + '"/>' +
+            bars + hits + '</svg>';
+        host.appendChild(tip);
+        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
+            var r = rows[i];
+            return '<b>' + BK_MON[+r[0].slice(5, 7) - 1] + ' ' + r[0].slice(0, 4) + '</b><br>' +
+                'In &nbsp;' + bkMoney(r[1], 2) + '<br>Out ' + bkMoney(r[2], 2) +
+                '<br>Net ' + bkMoney(r[1] - r[2], 2);
+        }, 150);
+    }
+
+    function bkExpChart(inRange) {
+        var host = document.getElementById('bk-exp'), tip = document.getElementById('bk-exp-t');
+        var agg = {};
+        BOOKS.expenses.forEach(function (e) {
+            if (!inRange(e.spent_on)) return;
+            var c = e.category || 'Other';
+            agg[c] = (agg[c] || 0) + bkNum(e.amount);
+        });
+        var rows = Object.keys(agg).map(function (k) { return [k, agg[k]]; })
+            .sort(function (a, b) { return b[1] - a[1]; });
+        if (!rows.length) {
+            host.innerHTML = '<p class="bk-empty">No overhead in this period</p>';
+            host.appendChild(tip); return;
+        }
+        var total = rows.reduce(function (s, r) { return s + r[1]; }, 0);
+        // One hue for every bar: these categories have no natural order, so
+        // shading them by size would double-encode length as colour.
+        var W = 420, rh = 27, H = rows.length * rh + 6, labW = 150, barW = W - labW - 66;
+        var max = rows[0][1];
+        var out = '', hits = '';
+        rows.forEach(function (r, i) {
+            var w = Math.max((r[1] / max) * barW, 2), y0 = i * rh + 4;
+            out += '<text class="bk-dlab" x="0" y="' + (y0 + 13) + '">' +
+                        esc(r[0].length > 19 ? r[0].slice(0, 18) + '…' : r[0]) + '</text>' +
+                   '<rect x="' + labW + '" y="' + (y0 + 3) + '" width="' + w + '" height="13" rx="4" fill="var(--s1)"/>' +
+                   '<text class="bk-dsub" x="' + (labW + w + 9) + '" y="' + (y0 + 13.5) + '">' + bkMoney(r[1]) + '</text>';
+            hits += '<rect class="bk-hit" x="0" y="' + y0 + '" width="' + W + '" height="' + rh + '" data-i="' + i + '"/>';
+        });
+        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Expenses by category">' +
+            out + hits + '</svg>';
+        host.appendChild(tip);
+        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
+            var r = rows[i];
+            return '<b>' + esc(r[0]) + '</b><br>' + bkMoney(r[1], 2) + ' &middot; ' +
+                bkPct(r[1] / total) + ' of overhead';
+        }, 190);
+    }
+
+    function bkDealChart(sold) {
+        var host = document.getElementById('bk-deal'), tip = document.getElementById('bk-deal-t');
+        var rows = sold.slice().sort(function (a, b) { return bkProfit(b) - bkProfit(a); });
+        if (!rows.length) {
+            host.innerHTML = '<p class="bk-empty">No sales in this period</p>';
+            host.appendChild(tip); return;
+        }
+        var W = 520, rh = 44, H = rows.length * rh + 4, labW = 190, barW = W - labW - 84;
+        var max = Math.max.apply(null, rows.map(function (d) { return Math.abs(bkProfit(d)); })) || 1;
+        var out = '', hits = '';
+        rows.forEach(function (d, i) {
+            var p = bkProfit(d), w = Math.max((Math.abs(p) / max) * barW, 2), y0 = i * rh + 6;
+            var model = (d.brand ? d.brand + ' ' : '') + (d.model || d.ref);
+            out += '<text class="bk-dlab" x="0" y="' + (y0 + 13) + '">' +
+                        esc(model.length > 25 ? model.slice(0, 24) + '…' : model) + '</text>' +
+                   '<text class="bk-dsub" x="0" y="' + (y0 + 27) + '">' + esc(d.reference || '') +
+                        ' &middot; ' + bkDays(d.date_bought, d.date_sold) + 'd held</text>' +
+                   '<rect x="' + labW + '" y="' + (y0 + 7) + '" width="' + w + '" height="14" rx="4" fill="' +
+                        (p < 0 ? 'var(--bad)' : 'var(--s1)') + '"/>' +
+                   '<text class="bk-dlab" x="' + (labW + w + 10) + '" y="' + (y0 + 18) + '">' + bkMoney(p, 2) + '</text>' +
+                   '<text class="bk-dsub" x="' + (labW + w + 10) + '" y="' + (y0 + 31) + '">' +
+                        bkPct(bkMargin(d)) + ' margin</text>';
+            hits += '<rect class="bk-hit" x="0" y="' + (i * rh) + '" width="' + W + '" height="' + rh + '" data-i="' + i + '"/>';
+        });
+        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Profit per deal">' +
+            out + hits + '</svg>';
+        host.appendChild(tip);
+        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
+            var d = rows[i];
+            return '<b>' + esc(d.ref) + '</b><br>' +
+                'Bought ' + bkMoney(bkNum(d.buy_total), 2) +
+                    (bkNum(d.other_costs) ? ' &middot; costs ' + bkMoney(bkNum(d.other_costs), 2) : '') + '<br>' +
+                'Sold &nbsp;&nbsp;' + bkMoney(bkNum(d.sell_total), 2) +
+                    (d.buyer ? ' to ' + esc(d.buyer) : '') + '<br>' +
+                'Profit ' + bkMoney(bkProfit(d), 2) + ' (' + bkPct(bkMargin(d)) + ')';
+        }, 240);
+    }
+
+    var BK_DISP = {
+        Keep: ['var(--ok)', 'Keep'],
+        Review: ['var(--warn)', 'Review'],
+        Kill: ['var(--bad)', 'Kill']
+    };
+    function bkSubs() {
+        var rows = BOOKS.subscriptions.slice()
+            .sort(function (a, b) { return bkNum(b.monthly_cost) - bkNum(a.monthly_cost); });
+        var live = rows.filter(function (s) { return s.status !== 'Cancel'; });
+        var active = live.reduce(function (s, r) { return s + bkNum(r.monthly_cost); }, 0);
+        var atRisk = live.filter(function (s) { return s.disposition === 'Review'; })
+            .reduce(function (s, r) { return s + bkNum(r.monthly_cost); }, 0);
+        document.getElementById('bk-subs').innerHTML =
+            rows.map(function (s) {
+                var d = BK_DISP[s.disposition] || BK_DISP.Review;
+                var dead = s.status === 'Cancel';
+                return '<div class="bk-sub' + (dead ? ' dead' : '') + '">' +
+                    '<span class="nm">' + esc(s.name) + '</span>' +
+                    '<span class="bk-chip" style="color:' + (dead ? 'var(--l3)' : d[0]) + '">' +
+                        '<i style="background:' + (dead ? 'var(--l3)' : d[0]) + '"></i>' +
+                        (dead ? 'Cancelled' : d[1]) + '</span>' +
+                    '<span class="amt">' + bkMoney(bkNum(s.monthly_cost), 2) + '</span></div>';
+            }).join('') +
+            '<div class="bk-foot"><span>Active / month</span>' +
+                '<span class="bk-burn">' + bkMoney(active, 2) + '</span></div>' +
+            (atRisk ? '<div class="bk-foot" style="padding-top:6px"><span>Flagged for review</span>' +
+                '<span style="color:var(--warn)">' + bkMoney(atRisk, 2) + '/mo</span></div>' : '');
+    }
+
+    function bkDealTable(inRange) {
+        var rows = BOOKS.deals.filter(function (d) { return d.sell_total == null || inRange(d.date_sold); });
+        var head = ['Ref', 'Piece', 'Reference', 'Bought', 'Sold', 'Held', 'Cost', 'Sell', 'Profit', 'Margin', 'Buyer'];
+        var nums = { 6: 1, 7: 1, 8: 1, 9: 1 };
+        var dash = '<span class="bk-mute">—</span>';
+        document.getElementById('bk-deals').innerHTML =
+            '<thead><tr>' + head.map(function (h, i) {
+                return '<th class="' + (nums[i] ? 'n' : '') + '">' + h + '</th>';
+            }).join('') + '</tr></thead><tbody>' +
+            rows.map(function (d) {
+                var p = bkProfit(d);
+                return '<tr><td>' + esc(d.ref) + '</td>' +
+                    '<td class="nm">' + esc((d.brand ? d.brand + ' ' : '') + (d.model || '')) + '</td>' +
+                    '<td class="bk-mute">' + esc(d.reference || '') + '</td>' +
+                    '<td>' + esc(d.date_bought || '') + '</td>' +
+                    '<td>' + (d.date_sold ? esc(d.date_sold) : dash) + '</td>' +
+                    '<td>' + (d.date_sold ? bkDays(d.date_bought, d.date_sold) + 'd' : dash) + '</td>' +
+                    '<td class="n">' + bkMoney(bkNum(d.buy_total) + bkNum(d.other_costs), 2) + '</td>' +
+                    '<td class="n">' + (d.sell_total != null ? bkMoney(bkNum(d.sell_total), 2) : dash) + '</td>' +
+                    '<td class="n"' + (p !== null && p < 0 ? ' style="color:var(--bad)"' : '') + '>' +
+                        (p !== null ? bkMoney(p, 2) : dash) + '</td>' +
+                    '<td class="n">' + (bkMargin(d) !== null ? bkPct(bkMargin(d)) : dash) + '</td>' +
+                    '<td class="nm">' + esc(d.buyer || '') + '</td></tr>';
+            }).join('') + '</tbody>';
     }
 
     // ══════════════════════════════════════════════════════════

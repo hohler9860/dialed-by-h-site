@@ -53,6 +53,14 @@
     this.fontsReady = false;
     this.inView = false;
 
+    // Read the colour BEFORE touching the element. This used to happen lazily on
+    // the first animation frame, which meant a getComputedStyle immediately after
+    // the DOM had been mutated — a forced synchronous reflow, once per element,
+    // in the middle of a frame. Lighthouse flagged it as the top forced-reflow
+    // call site on the homepage. Nothing here changes colour after load, so
+    // reading it once up front is equivalent and free.
+    this.pal = palette(el);
+
     el.style.opacity = '0';
     el.textContent = '';
 

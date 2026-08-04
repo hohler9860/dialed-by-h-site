@@ -292,7 +292,9 @@ select.stat {
 .bk-v.neg { color: var(--bad); }
 .bk-s { margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
 
-.bk-grid { margin-top: 22px; display: grid; gap: 22px; }
+/* align-items:start so a short card does not stretch to match a tall neighbour
+   and leave a dead field of cream under its chart. */
+.bk-grid { margin-top: 22px; display: grid; gap: 22px; align-items: start; }
 @media (min-width: 900px) { .bk-grid.two { grid-template-columns: 1.35fr 1fr; } }
 .bk-card { border: 1px solid var(--line); padding: 20px 20px 16px; }
 .bk-card h3 {
@@ -380,6 +382,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         <nav class="tabs" id="tabs">
             <button data-tab="books"   aria-selected="true">Books</button>
+            <button data-tab="deals"   aria-selected="false">Deals</button>
             <button data-tab="pieces"  aria-selected="false">Pieces</button>
             <button data-tab="journal" aria-selected="false">Journal</button>
             <button data-tab="leads"   aria-selected="false">Leads</button>
@@ -437,7 +440,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale };
+    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -562,10 +565,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<div class="bk-card"><h3>Monthly burn</h3>' +
                     '<p class="cap">Recurring tools. Not scoped by the period filter.</p>' +
                     '<div id="bk-subs"></div></div>' +
-            '</div>' +
-            '<div class="bk-card" style="margin-top:22px"><h3>Deals</h3>' +
-                '<p class="cap">Every piece bought or sold, and the table view for the charts above.</p>' +
-                '<div class="tbl-wrap" style="border-top:0;margin-top:12px"><table class="bk-tbl" id="bk-deals"></table></div></div>';
+            '</div>';
 
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
             b.addEventListener('click', function () { bkPeriod = b.dataset.p; paintBooks(); });
@@ -575,7 +575,6 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         bkExpChart(inRange);
         bkDealChart(sold);
         bkSubs();
-        bkDealTable(inRange);
     }
 
     // Hover is an enhancement only — every value here is also readable from the
@@ -618,7 +617,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         }
         var W = 560, H = 210, padL = 46, padB = 26, padT = 8;
         var max = Math.max.apply(null, rows.map(function (r) { return Math.max(r[1], r[2]); })) || 1;
-        var nice = Math.ceil(max / 10000) * 10000 || max;
+        // Round the axis to a step a human would pick, so the ticks read
+        // $15K/$30K/$45K rather than $13K/$25K/$38K.
+        var raw = max / 4;
+        var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+        var mult = [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10].filter(function (m) { return m * mag >= raw; })[0];
+        var nice = mult * mag * 4;
         var pw = W - padL, ph = H - padB - padT;
         var step = pw / rows.length, bw = Math.min(20, (step - 14) / 2);
         var y = function (v) { return padT + ph - (v / nice) * ph; };
@@ -758,8 +762,70 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<span style="color:var(--warn)">' + bkMoney(atRisk, 2) + '/mo</span></div>' : '');
     }
 
-    function bkDealTable(inRange) {
-        var rows = BOOKS.deals.filter(function (d) { return d.sell_total == null || inRange(d.date_sold); });
+    // ══════════════════════════════════════════════════════════
+    // DEALS
+    // ══════════════════════════════════════════════════════════
+    // The ledger itself, split out of Books so the dashboard stays a dashboard.
+    // Shares the same fetched payload — switching tabs does not re-hit the API.
+    var dealFilter = 'all';
+    var dealQuery = '';
+
+    async function renderDeals() {
+        if (!BOOKS) BOOKS = await A.adminFetchTo('/api/leads-admin', 'books');
+        paintDeals();
+    }
+
+    function paintDeals() {
+        var q = dealQuery.trim().toLowerCase();
+        var rows = BOOKS.deals.filter(function (d) {
+            if (dealFilter === 'stock' && d.sell_total != null) return false;
+            if (dealFilter === 'sold' && d.sell_total == null) return false;
+            if (!q) return true;
+            return [d.ref, d.brand, d.model, d.reference, d.serial, d.buyer, d.source_seller, d.notes]
+                .join(' ').toLowerCase().indexOf(q) !== -1;
+        }).sort(function (a, b) {
+            return String(b.date_bought || '').localeCompare(String(a.date_bought || ''));
+        });
+
+        var sold = rows.filter(function (d) { return d.sell_total != null; });
+        var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
+        var gp = sold.reduce(function (s, d) { return s + bkProfit(d); }, 0);
+        var tied = rows.filter(function (d) { return d.sell_total == null; })
+            .reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+
+        view.innerHTML =
+            '<div class="bar">' +
+                '<input class="ctl grow" id="deal-q" placeholder="SEARCH REF, MODEL, SERIAL, BUYER" value="' +
+                    esc(dealQuery) + '">' +
+                ['all', 'stock', 'sold'].map(function (f) {
+                    var label = f === 'all' ? 'All' : f === 'stock' ? 'In stock' : 'Sold';
+                    return '<button class="bk-seg" data-f="' + f + '" aria-pressed="' +
+                        (dealFilter === f) + '">' + label + '</button>';
+                }).join('') +
+            '</div>' +
+            '<p class="count">' + rows.length + ' deal' + (rows.length === 1 ? '' : 's') +
+                ' &middot; ' + sold.length + ' sold ' + bkMoney(rev) +
+                ' &middot; profit ' + bkMoney(gp, 2) +
+                (tied ? ' &middot; ' + bkMoney(tied) + ' tied up in stock' : '') + '</p>' +
+            '<div class="tbl-wrap"><table class="bk-tbl" id="bk-deals"></table></div>';
+
+        var input = document.getElementById('deal-q');
+        input.addEventListener('input', function () {
+            dealQuery = input.value;
+            var pos = input.selectionStart;
+            paintDeals();
+            var next = document.getElementById('deal-q');
+            next.focus();
+            try { next.setSelectionRange(pos, pos); } catch (e) {}
+        });
+        [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
+            b.addEventListener('click', function () { dealFilter = b.dataset.f; paintDeals(); });
+        });
+
+        bkDealTable(rows);
+    }
+
+    function bkDealTable(rows) {
         var head = ['Ref', 'Piece', 'Reference', 'Bought', 'Sold', 'Held', 'Cost', 'Sell', 'Profit', 'Margin', 'Buyer'];
         var nums = { 6: 1, 7: 1, 8: 1, 9: 1 };
         var dash = '<span class="bk-mute">—</span>';

@@ -667,6 +667,39 @@ module.exports = async (req, res) => {
         // Deliberately NOT an n8n flow. Messaging dealers is case by case, and an
         // automated blast from Henry's own number to people he trades with is the
         // fastest way to get it flagged. This only fires when he clicks.
+        // Henry corrects what the extractor got wrong. The corrected value lands
+        // on the listing itself, so variant_key, matching and quotes all pick it
+        // up at once, and the original is kept so the model can be measured.
+        if (action === "correct-listing") {
+            const { listing_id, field, value } = body;
+            if (!listing_id || !field) return res.status(400).json({ error: "Missing listing_id or field" });
+            const out = await supabase("rpc/correct_listing", {
+                method: "POST",
+                headers: { "Content-Profile": "wholesale", "Accept-Profile": "wholesale" },
+                body: JSON.stringify({
+                    p_listing_id: Number(listing_id),
+                    p_field: String(field),
+                    p_value: value == null ? "" : String(value),
+                }),
+            });
+            const r = Array.isArray(out) ? out[0] : out;
+            if (!r || r.c_ok === false) {
+                return res.status(400).json({ error: `Field not correctable: ${field}` });
+            }
+            console.log("[leads-admin] corrected", listing_id, field, r.c_was, "->", r.c_now);
+            return res.status(200).json({ corrected: true, field, was: r.c_was, now: r.c_now });
+        }
+
+        // What the extractor actually gets wrong, per field and per model.
+        if (action === "extraction-errors") {
+            const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
+            const [errors, scorecard] = await Promise.all([
+                wh("extraction_errors?select=*"),
+                wh("model_scorecard?select=*"),
+            ]);
+            return res.status(200).json({ errors, scorecard });
+        }
+
         if (action === "ask-dealer") {
             const { listing_id, text: override } = body;
             if (!listing_id) return res.status(400).json({ error: "Missing listing_id" });

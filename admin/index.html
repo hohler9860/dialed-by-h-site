@@ -2145,12 +2145,46 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             rows.push(['Photo says', [l.vision_brand, l.vision_model, l.vision_reference].filter(Boolean).join(' ') || '—']);
         }
 
+        // The fields the model most often gets wrong, made editable in place.
+        // A correction writes straight to the listing, so variant matching and
+        // quotes pick it up immediately, and the original is kept so the
+        // extractor can be measured against it.
+        var EDIT = [
+            ['dial_color',       'Dial colour',  l.dial_color,       null],
+            ['dial_material',    'Dial material',l.dial_material,    ['', 'STANDARD','MOP','METEORITE','STONE','LACQUER','ENAMEL']],
+            ['condition',        'Condition',    l.condition,        ['', 'NEW','UNWORN','PRE_OWNED','UNKNOWN']],
+            ['set_completeness', 'Contents',     l.set_completeness, ['', 'FULL_SET','WATCH_AND_CARD','WATCH_ONLY','UNKNOWN']],
+            ['case_material',    'Case metal',   l.case_material,    ['', 'STEEL','YELLOW_GOLD','WHITE_GOLD','ROSE_GOLD','TWO_TONE','PLATINUM','TITANIUM','CERAMIC']],
+            ['bracelet',         'Bracelet',     l.bracelet,         ['', 'OYSTER','JUBILEE','OYSTERFLEX','PRESIDENT','LEATHER','RUBBER','INTEGRATED']],
+            ['reference',        'Reference',    l.reference,        null],
+            ['price_usd',        'Price',        l.price_usd,        null],
+        ];
+        var corrected = l.corrected_fields || [];
+
+        var editHtml =
+          '<p class="count" style="margin-top:14px">Fix anything the model got wrong. ' +
+          'Corrections apply everywhere immediately and are kept as training data.</p>' +
+          '<div class="dgrid">' + EDIT.map(function (e) {
+              var was = corrected.indexOf(e[0]) >= 0;
+              var input = e[3]
+                ? '<select class="ctl js-fix" data-id="' + esc(l.id) + '" data-field="' + e[0] + '" style="font-size:11px;padding:5px 6px">' +
+                    e[3].map(function (o) {
+                        return '<option value="' + esc(o) + '"' + (String(e[2] || '') === o ? ' selected' : '') + '>' +
+                               esc(o || '—') + '</option>';
+                    }).join('') + '</select>'
+                : '<input class="ctl js-fix" data-id="' + esc(l.id) + '" data-field="' + e[0] + '" ' +
+                  'value="' + esc(e[2] == null ? '' : e[2]) + '" style="font-size:11px;padding:5px 6px;width:120px">';
+              return '<div><div class="dk">' + esc(e[1]) +
+                     (was ? ' <span class="tag warm">fixed</span>' : '') + '</div>' +
+                     '<div class="dv">' + input + '</div></div>';
+          }).join('') + '</div>';
+
         return main +
             '<tr class="detail"><td colspan="6"><div class="dgrid">' +
               rows.map(function (r) {
                   return '<div><div class="dk">' + esc(r[0]) + '</div><div class="dv">' + esc(String(r[1])) + '</div></div>';
               }).join('') +
-            '</div>' +
+            '</div>' + editHtml +
             (l.image_url ? '<img class="wshot" src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">' : '') +
             (l.vision_mismatch ? '<p class="note">The photo does not match the reference in the caption. Worth a look before quoting.</p>' : '') +
             '</td></tr>';
@@ -2160,6 +2194,31 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var q = document.getElementById('w-q');
         if (q) q.addEventListener('input', function () { wq = this.value; var p = this.selectionStart; paintWholesale();
             var n = document.getElementById('w-q'); if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} } });
+
+        // Corrections save on blur (text) or change (select) so a fix is one
+        // action, not type-then-click. Clicks inside must not collapse the row.
+        [].forEach.call(document.querySelectorAll('.js-fix'), function (el) {
+            el.addEventListener('click', function (e) { e.stopPropagation(); });
+            var evt = el.tagName === 'SELECT' ? 'change' : 'blur';
+            el.addEventListener(evt, async function (e) {
+                e.stopPropagation();
+                var id = Number(this.dataset.id), field = this.dataset.field, val = this.value;
+                var live = (WS.listings.filter(function (x) { return x.id === id; })[0] || {})[field];
+                if (String(live == null ? '' : live) === String(val)) return;   // nothing changed
+                var node = this;
+                node.style.opacity = '0.5';
+                try {
+                    var r = await A.adminFetchTo('/api/leads-admin', 'correct-listing',
+                                                 { listing_id: id, field: field, value: val });
+                    // keep the in-memory row in step so a repaint does not revert it
+                    WS.listings.forEach(function (x) { if (x.id === id) x[field] = r.now; });
+                    node.style.opacity = '1';
+                } catch (err) {
+                    node.style.opacity = '1';
+                    alert('Could not save: ' + err.message);
+                }
+            });
+        });
 
         [['w-brand', 'brand'], ['w-group', 'group'], ['w-days', 'days']].forEach(function (pair) {
             var el = document.getElementById(pair[0]);

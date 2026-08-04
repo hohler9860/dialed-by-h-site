@@ -29,6 +29,12 @@ const ALLOWED_STATUSES = ["new", "contacted", "negotiating", "closed", "archived
 // filtering server-side rather than to raise the number.
 const MAX_ROWS = 5000;
 
+// Vercel hard-fails a response over 4.5MB. Listings are the bulk of the
+// wholesale payload, so they are capped and the true total is reported next
+// to them. Raising this without measuring the response size will break the
+// tab outright rather than degrade it.
+const LISTING_CAP = 2200;
+
 const ALLOWED_ORIGINS = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
 
 function setCors(req, res) {
@@ -247,11 +253,26 @@ module.exports = async (req, res) => {
         // 13th route would fail the build. Same auth, different data.
         if (action === "wholesale") {
             const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-            const qAll = (path) => supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } });
+            const qAll = (path, _o, cap) =>
+                supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } }, cap);
 
             const [listings, stats, variants, alerts, groups] = await Promise.all([
                 // The view carries the stored photo path alongside the listing.
-                qAll("listings_with_image?select=*&order=message_ts.desc"),
+                // Vercel refuses to return a response over 4.5MB, and select=*
+                // on every listing had reached 4.53MB, which fails outright
+                // rather than truncating. Ask only for the columns the console
+                // actually renders, and cap the rows with the true total sent
+                // alongside so the tab can say what it is not showing.
+                qAll(
+                    "listings_with_image?select=id,message_pk,group_jid,listing_type,brand,model," +
+                    "reference,price_usd,condition,set_completeness,year,seller_name,dial_color," +
+                    "dial_material,bracelet,bezel,case_material,case_size_mm,complications," +
+                    "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
+                    "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
+                    "vision_mismatch,confidence,message_ts,image_path" +
+                    "&order=message_ts.desc",
+                    {}, LISTING_CAP
+                ),
                 qAll("reference_stats?select=*&order=n.desc"),
                 qAll("variant_stats?select=*&order=n.desc"),
                 // Join through to the listing so the UI can show what was on offer.
@@ -333,6 +354,8 @@ module.exports = async (req, res) => {
 
             return res.status(200).json({
                 listings, stats, variants, alerts, groups, nameByJid,
+                listings_shown: listings.length,
+                listings_capped: listings.length >= LISTING_CAP,
                 counters: {
                     listings: listings.length,
                     priced: listings.filter((l) => l.price_usd != null).length,

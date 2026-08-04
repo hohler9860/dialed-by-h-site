@@ -2677,7 +2677,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var days  = ageMs == null ? null : Math.floor(ageMs / 864e5);
         var stale = retail && days != null && days >= 3;
         var seen  = o.o_seen_at
-            ? '<div class="count"' + (stale ? ' style="color:#b98900"' : '') + '>' +
+            ? '<div class="count"' + (stale ? ' style="color:' + WARN_AMBER + '"' : '') + '>' +
               (retail ? 'seen ' : 'posted ') + esc(fmtAgo(o.o_seen_at)) +
               (stale ? ' · confirm it is still there' : '') + '</div>'
             : '';
@@ -2998,6 +2998,16 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     // Small inline SVG charts. No library, no external request, and they read
     // the same numbers as the tables underneath so the two cannot disagree.
+    // Traffic light, used by every chart and status tag so the same colour
+    // always means the same thing: green fine, amber worth a look, red bad.
+    var OK_GREEN = '#1a7f37', WARN_AMBER = '#d97706', BAD_RED = '#c02626';
+    function pctColor(p) {
+        return p >= 85 ? OK_GREEN : p >= 60 ? WARN_AMBER : BAD_RED;
+    }
+    function failColor(p) {
+        return p >= 50 ? BAD_RED : p >= 5 ? WARN_AMBER : OK_GREEN;
+    }
+
     function svgBars(rows, opts) {
         opts = opts || {};
         if (!rows.length) return '<p class="count">no data</p>';
@@ -3010,7 +3020,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               return '<text x="0" y="' + (y + 12) + '" font-size="11" fill="var(--l2)">' +
                        esc(r.k.length > 22 ? r.k.slice(0, 21) + '…' : r.k) + '</text>' +
                      '<rect x="' + labW + '" y="' + y + '" width="' + w + '" height="14" rx="3" fill="' +
-                       (r.c || 'var(--l1)') + '"></rect>' +
+                       (r.c || OK_GREEN) + '"></rect>' +
                      '<text x="' + (labW + w + 6) + '" y="' + (y + 11) + '" font-size="11" fill="var(--l3)">' +
                        esc(r.t != null ? r.t : r.v) + '</text>';
           }).join('') + '</svg>';
@@ -3020,7 +3030,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     function svgHistogram(samples) {
         var B = [[0, 49], [50, 69], [70, 84], [85, 99], [100, 100]];
         var LBL = ['0-49', '50-69', '70-84', '85-99', '100'];
-        var COL = ['#b23', '#b23', '#b98900', 'var(--l1)', 'var(--l1)'];
+        var COL = [BAD_RED, BAD_RED, WARN_AMBER, OK_GREEN, OK_GREEN];
         var counts = B.map(function (b) {
             return samples.filter(function (s) {
                 return s.trust_score != null && s.trust_score >= b[0] && s.trust_score <= b[1];
@@ -3087,7 +3097,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         // Charts first, tables underneath. Same numbers, two ways of reading.
         var flows = (AC.flows || []).filter(function (f) { return f.runs > 0; });
-        var cov = (AC.coverage || []).filter(function (c) { return c.listings > 20; })
+        // One row per field, pooled across models. Listing it per model put a
+        // second copy of every field at 0% next to the real number.
+        var cov = (AC.coverage || []).filter(function (c) { return c.run_model === 'ALL'; })
                     .sort(function (a, b) { return a.pct - b.pct; });
         var sc = AC.scorecard || [];
 
@@ -3102,7 +3114,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                   return { k: f.workflow_name, v: pct,
                            t: (f.runs_1h ? pct + '% of ' + Number(f.runs_1h).toLocaleString() + ' this hour'
                                          : 'idle this hour'),
-                           c: pct >= 50 ? '#b23' : pct >= 5 ? '#b98900' : 'var(--l1)' };
+                           c: failColor(pct) };
               }), { max: 100, labW: 160, barW: 200 }) +
             '</div>' +
 
@@ -3110,7 +3122,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '<p class="count">Field coverage, worst first · what to fix in the prompt</p>' +
               svgBars(cov.slice(0, 12).map(function (c) {
                   return { k: c.field, v: Number(c.pct), t: c.pct + '%',
-                           c: c.pct >= 90 ? 'var(--l1)' : c.pct >= 70 ? '#b98900' : '#b23' };
+                           c: pctColor(Number(c.pct)) };
               }), { max: 100, labW: 130, barW: 200 }) +
             '</div>' +
 
@@ -3126,7 +3138,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               svgBars(sc.map(function (m) {
                   return { k: String(m.model).split('/').pop(), v: Number(m.pct_solid),
                            t: m.pct_solid + '% solid of ' + Number(m.listings).toLocaleString(),
-                           c: m.pct_solid >= 80 ? 'var(--l1)' : m.pct_solid >= 60 ? '#b98900' : '#b23' };
+                           c: pctColor(Number(m.pct_solid)) };
               }), { max: 100, labW: 140, barW: 190 }) +
             '</div>' : '') +
 
@@ -3189,17 +3201,17 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           // tells you what to change in the prompt.
           '<p class="count">Field coverage · how often each field comes back filled, worst first</p>' +
           '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
-            '<th style="width:180px">Field</th><th style="width:180px">Model</th>' +
-            '<th style="width:110px">Filled</th><th>Rate</th>' +
+            '<th style="width:200px">Field</th>' +
+            '<th style="width:140px">Filled</th><th>Rate</th>' +
           '</tr></thead><tbody>' +
-          (AC.coverage || []).filter(function (c) { return c.listings > 20; }).map(function (c) {
+          cov.map(function (c) {
               var w = Math.max(0, Math.min(100, Number(c.pct)));
               return '<tr>' +
-                '<td>' + esc(c.field) + '</td><td class="count">' + esc(c.run_model) + '</td>' +
+                '<td>' + esc(c.field) + '</td>' +
                 '<td>' + c.filled + ' / ' + c.listings + '</td>' +
                 '<td><div style="background:var(--line);height:8px;border-radius:4px;overflow:hidden">' +
                   '<div style="width:' + w + '%;height:8px;background:' +
-                  (w >= 90 ? 'var(--l1)' : w >= 70 ? '#b98900' : '#b23') + '"></div></div>' +
+                  pctColor(w) + '"></div></div>' +
                   '<div class="count">' + esc(c.pct) + '%</div></td>' +
               '</tr>';
           }).join('') +

@@ -480,7 +480,10 @@ module.exports = async (req, res) => {
                 try {
                     const shots = await wh(
                         "listings_with_image?select=id,image_path,year,condition,set_completeness," +
-                        "dial_material,case_material,bracelet,has_diamonds,nickname" +
+                        "dial_material,case_material,bracelet,has_diamonds,nickname," +
+                        "brand,model,reference,price_usd,dial_color,bezel,case_size_mm," +
+                        "complications,diamonds_factory,seller_name,group_jid,message_ts," +
+                        "trust_score,trust_why,listing_type" +
                         `&id=in.(${listingIds.join(",")})`
                     );
                     const byId = {};
@@ -509,11 +512,9 @@ module.exports = async (req, res) => {
                         const l = byId[m.listing_id];
                         if (!l) continue;
                         m.image_url = l.image_path ? urlByPath[l.image_path] || null : null;
-                        m.listing = {
-                            year: l.year, condition: l.condition, set_completeness: l.set_completeness,
-                            dial_material: l.dial_material, case_material: l.case_material,
-                            bracelet: l.bracelet, has_diamonds: l.has_diamonds, nickname: l.nickname,
-                        };
+                        // The whole listing, so the match card can open into the
+                        // actual piece rather than a summary of it.
+                        m.listing = l;
                     }
                 } catch (err) {
                     // Photos are a nicety; never take the whole view down for them.

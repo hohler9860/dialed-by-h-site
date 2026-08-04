@@ -2581,8 +2581,55 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             ((m.reference || w.reference)
               ? '<button class="btn ghost js-source" data-ref="' + esc(m.reference || w.reference) + '">Source it</button>'
               : '') +
+            (m.listing ? '<button class="btn ghost js-piece" data-piece="' + esc(m.listing_id) + '">View the piece</button>' : '') +
           '</div>' +
+          '<div class="piece-panel" data-piecefor="' + esc(m.listing_id || '') + '"></div>' +
           '<div class="src-panel" data-srcfor="' + esc(m.reference || w.reference || '') + '"></div>' +
+        '</div>';
+    }
+
+    // The dealer's own photo, full size, next to every attribute that was read
+    // off the post. Condition on a used watch is judged by eye, so the picture
+    // is the point, not a decoration.
+    function piecePanel(m) {
+        var l = m.listing || {};
+        var rows = [
+            ['Reference',     l.reference],
+            ['Asking',        l.price_usd ? money(l.price_usd) : null],
+            ['Year',          l.year],
+            ['Condition',     l.condition && l.condition !== 'UNKNOWN' ? l.condition.replace(/_/g, ' ') : null],
+            ['Contents',      l.set_completeness && l.set_completeness !== 'UNKNOWN' ? l.set_completeness.replace(/_/g, ' ') : null],
+            ['Dial',          [l.dial_color, l.dial_material && l.dial_material !== 'STANDARD' ? l.dial_material : null].filter(Boolean).join(' ')],
+            ['Case',          [l.case_material, l.case_size_mm ? l.case_size_mm + 'mm' : null].filter(Boolean).join(' ').replace(/_/g, ' ')],
+            ['Bezel',         l.bezel],
+            ['Bracelet',      l.bracelet],
+            ['Complications', (l.complications || []).join(', ').replace(/_/g, ' ')],
+            ['Diamonds',      l.has_diamonds ? (l.diamonds_factory === true ? 'factory' : l.diamonds_factory === false ? 'aftermarket' : 'yes, source unstated') : null],
+            ['Nickname',      l.nickname],
+            ['Dealer',        l.seller_name || m.dealer_name],
+            ['Posted',        l.message_ts ? fmtAgo(l.message_ts) : null],
+        ].filter(function (r) { return r[1]; })
+         .map(function (r) { return '<div><div class="dk">' + r[0] + '</div><div class="dv">' + esc(r[1]) + '</div></div>'; })
+         .join('');
+
+        var tcls = l.trust_score >= 85 ? 'hot' : l.trust_score >= 70 ? 'warm' : 'spam';
+
+        return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">' +
+          '<div class="row" style="gap:16px;align-items:flex-start;flex-wrap:wrap">' +
+            (m.image_url
+              ? '<a href="' + esc(m.image_url) + '" target="_blank" rel="noopener">' +
+                '<img src="' + esc(m.image_url) + '" alt="" loading="lazy" decoding="async" ' +
+                'style="width:280px;max-width:100%;border-radius:6px;display:block"></a>'
+              : '<div class="wthumb wthumb--none" style="width:280px;height:200px"></div>') +
+            '<div style="flex:1;min-width:240px">' +
+              '<div class="dgrid">' + rows + '</div>' +
+              '<p class="count" style="margin-top:10px">Read with ' +
+                '<span class="tag ' + tcls + '">' + esc(l.trust_score == null ? '—' : l.trust_score) + '</span> confidence' +
+                (l.trust_why && l.trust_why.length ? ' · ' + esc(l.trust_why.join(', ')) : ' · nothing against it') +
+              '</p>' +
+            '</div>' +
+          '</div>' +
+          (m.image_url ? '<p class="count" style="margin-top:8px">Click the photo to open it full size</p>' : '') +
         '</div>';
     }
 
@@ -2716,6 +2763,19 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (srcGo) srcGo.addEventListener('click', runLookup);
         if (srcIn) srcIn.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') { e.preventDefault(); runLookup(); }
+        });
+
+        [].forEach.call(document.querySelectorAll('.js-piece'), function (b) {
+            b.addEventListener('click', function () {
+                var box = this.closest('.bcard').querySelector('.piece-panel');
+                if (!box) return;
+                if (box.innerHTML) { box.innerHTML = ''; this.textContent = 'View the piece'; return; }
+                var id = String(this.dataset.piece);
+                var m = (MX.best || []).filter(function (r) { return String(r.listing_id) === id; })[0];
+                if (!m) return;
+                box.innerHTML = piecePanel(m);
+                this.textContent = 'Hide the piece';
+            });
         });
 
         [].forEach.call(document.querySelectorAll('.js-source'), function (b) {
@@ -2907,6 +2967,50 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         paintAccuracy();
     }
 
+    // Small inline SVG charts. No library, no external request, and they read
+    // the same numbers as the tables underneath so the two cannot disagree.
+    function svgBars(rows, opts) {
+        opts = opts || {};
+        if (!rows.length) return '<p class="count">no data</p>';
+        var labW = opts.labW || 150, barW = opts.barW || 300, rh = 24;
+        var H = rows.length * rh + 8, max = opts.max || Math.max.apply(null, rows.map(function (r) { return r.v; })) || 1;
+        return '<svg viewBox="0 0 ' + (labW + barW + 70) + ' ' + H + '" width="100%" ' +
+               'style="max-width:' + (labW + barW + 70) + 'px;overflow:visible" role="img">' +
+          rows.map(function (r, i) {
+              var y = i * rh + 4, w = Math.max(1, (r.v / max) * barW);
+              return '<text x="0" y="' + (y + 12) + '" font-size="11" fill="var(--l2)">' +
+                       esc(r.k.length > 22 ? r.k.slice(0, 21) + '…' : r.k) + '</text>' +
+                     '<rect x="' + labW + '" y="' + y + '" width="' + w + '" height="14" rx="3" fill="' +
+                       (r.c || 'var(--l1)') + '"></rect>' +
+                     '<text x="' + (labW + w + 6) + '" y="' + (y + 11) + '" font-size="11" fill="var(--l3)">' +
+                       esc(r.t != null ? r.t : r.v) + '</text>';
+          }).join('') + '</svg>';
+    }
+
+    // Trust spread across buckets: the shape of how good the reads are.
+    function svgHistogram(samples) {
+        var B = [[0, 49], [50, 69], [70, 84], [85, 99], [100, 100]];
+        var LBL = ['0-49', '50-69', '70-84', '85-99', '100'];
+        var COL = ['#b23', '#b23', '#b98900', 'var(--l1)', 'var(--l1)'];
+        var counts = B.map(function (b) {
+            return samples.filter(function (s) {
+                return s.trust_score != null && s.trust_score >= b[0] && s.trust_score <= b[1];
+            }).length;
+        });
+        var max = Math.max.apply(null, counts) || 1;
+        var W = 440, H = 130, bw = W / B.length;
+        return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="max-width:' + W + 'px" role="img">' +
+          counts.map(function (n, i) {
+              var h = Math.round((n / max) * (H - 34)), x = i * bw + 10, y = H - 22 - h;
+              return '<rect x="' + x + '" y="' + y + '" width="' + (bw - 20) + '" height="' + Math.max(h, 1) +
+                     '" rx="3" fill="' + COL[i] + '"></rect>' +
+                     '<text x="' + (x + (bw - 20) / 2) + '" y="' + (y - 4) + '" font-size="11" ' +
+                       'text-anchor="middle" fill="var(--l2)">' + n + '</text>' +
+                     '<text x="' + (x + (bw - 20) / 2) + '" y="' + (H - 6) + '" font-size="10" ' +
+                       'text-anchor="middle" fill="var(--l3)">' + LBL[i] + '</text>';
+          }).join('') + '</svg>';
+    }
+
     function acSample(s) {
         var out = [
             ['Reference', s.reference], ['Price', s.price_usd ? money(s.price_usd) : null],
@@ -2952,7 +3056,50 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             { k: 'corrected', l: 'You corrected' },
         ];
 
+        // Charts first, tables underneath. Same numbers, two ways of reading.
+        var flows = (AC.flows || []).filter(function (f) { return f.runs > 0; });
+        var cov = (AC.coverage || []).filter(function (c) { return c.listings > 20; })
+                    .sort(function (a, b) { return a.pct - b.pct; });
+        var sc = AC.scorecard || [];
+
         view.innerHTML =
+          '<div class="row" style="gap:26px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px">' +
+
+            '<div style="flex:1;min-width:300px">' +
+              '<p class="count">Failure rate by flow, last 24h</p>' +
+              svgBars(flows.map(function (f) {
+                  return { k: f.workflow_name, v: Number(f.failure_pct),
+                           t: f.failure_pct + '% of ' + Number(f.runs).toLocaleString(),
+                           c: f.failure_pct >= 50 ? '#b23' : f.failure_pct >= 5 ? '#b98900' : 'var(--l1)' };
+              }), { max: 100, labW: 160, barW: 200 }) +
+            '</div>' +
+
+            '<div style="flex:1;min-width:300px">' +
+              '<p class="count">Field coverage, worst first · what to fix in the prompt</p>' +
+              svgBars(cov.slice(0, 12).map(function (c) {
+                  return { k: c.field, v: Number(c.pct), t: c.pct + '%',
+                           c: c.pct >= 90 ? 'var(--l1)' : c.pct >= 70 ? '#b98900' : '#b23' };
+              }), { max: 100, labW: 130, barW: 200 }) +
+            '</div>' +
+
+            '<div style="flex:1;min-width:280px">' +
+              '<p class="count">Trust spread across the reads shown below</p>' +
+              svgHistogram(AC.samples || []) +
+              '<p class="count">A healthy shape leans right. Anything left of 70 could not be ' +
+              'backed up against the dealer\'s own message.</p>' +
+            '</div>' +
+
+            (sc.length ? '<div style="flex:1;min-width:300px">' +
+              '<p class="count">Model comparison · share of reads that came out solid</p>' +
+              svgBars(sc.map(function (m) {
+                  return { k: String(m.model).split('/').pop(), v: Number(m.pct_solid),
+                           t: m.pct_solid + '% solid of ' + Number(m.listings).toLocaleString(),
+                           c: m.pct_solid >= 80 ? 'var(--l1)' : m.pct_solid >= 60 ? '#b98900' : '#b23' };
+              }), { max: 100, labW: 140, barW: 190 }) +
+            '</div>' : '') +
+
+          '</div>' +
+
           // n8n's own numbers, collected every 15 minutes.
           '<p class="count">Flow runs, last 24 hours · collected from n8n every 15 minutes</p>' +
           '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +

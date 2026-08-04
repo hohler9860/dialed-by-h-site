@@ -759,12 +759,17 @@ module.exports = async (req, res) => {
         // that has not produced anything in far longer than it should have,
         // which is the only symptom a dead webhook ever gives off.
         if (action === "health") {
-            const rows = await supabase("pipeline_health?select=*", {
-                headers: { "Accept-Profile": "wholesale" },
-            });
+            const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
+            const [rows, scorecard, errors] = await Promise.all([
+                wh("pipeline_health?select=*"),
+                wh("model_scorecard?select=*"),
+                wh("extraction_errors?select=*&limit=20").catch(() => []),
+            ]);
             const list = Array.isArray(rows) ? rows : [];
             return res.status(200).json({
                 steps: list,
+                scorecard: Array.isArray(scorecard) ? scorecard : [],
+                errors: Array.isArray(errors) ? errors : [],
                 dead: list.filter((s) => s.status === "DEAD").length,
                 stale: list.filter((s) => s.status === "STALE").length,
                 checked_at: new Date().toISOString(),

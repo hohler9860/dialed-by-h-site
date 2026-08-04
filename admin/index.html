@@ -2937,7 +2937,38 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<td style="text-align:right">' + esc(s.volume == null ? '—' : Number(s.volume).toLocaleString()) + '</td>' +
               '</tr>';
           }).join('') +
-          '</tbody></table></div>';
+          '</tbody></table></div>' +
+
+          // How good the extractor actually is. Not its own confidence, which
+          // sat at 94 and never moved, but the score computed against the
+          // original message plus how often a human had to step in.
+          '<p class="count" style="margin-top:22px">Extraction accuracy · graded against the ' +
+          'original WhatsApp message, not the model\'s opinion of itself</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:180px">Model</th><th style="width:80px">Read</th>' +
+            '<th style="width:80px">Trust</th><th style="width:90px">Solid</th>' +
+            '<th style="width:90px">Weak</th><th style="width:80px">Ref</th>' +
+            '<th style="width:80px">Price</th><th style="width:90px">Corrected</th>' +
+            '<th style="width:80px">Speed</th>' +
+          '</tr></thead><tbody>' +
+          (d.scorecard || []).map(function (m) {
+              var tcls = m.avg_trust >= 90 ? 'hot' : m.avg_trust >= 80 ? 'warm' : 'spam';
+              return '<tr>' +
+                '<td>' + esc(m.model) + (m.fixed_fields
+                    ? '<div class="count">fixed: ' + esc(m.fixed_fields) + '</div>' : '') + '</td>' +
+                '<td>' + Number(m.listings).toLocaleString() + '</td>' +
+                '<td><span class="tag ' + tcls + '">' + esc(m.avg_trust) + '</span></td>' +
+                '<td>' + esc(m.pct_solid) + '%</td>' +
+                '<td>' + esc(m.pct_weak) + '%</td>' +
+                '<td>' + esc(m.pct_reference) + '%</td>' +
+                '<td>' + esc(m.pct_price) + '%</td>' +
+                '<td>' + esc(m.pct_corrected) + '%</td>' +
+                '<td>' + (m.avg_ms ? Math.round(m.avg_ms / 1000) + 's' : '—') + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>' +
+          '<p class="count">Solid is 85+, weak is under 70. Corrected is the only real ground ' +
+          'truth there is, so the more you fix in Wholesale the sharper this gets.</p>';
 
         // Keep it live while he is looking at it, and stop the moment he is not.
         if (hlTimer) clearInterval(hlTimer);

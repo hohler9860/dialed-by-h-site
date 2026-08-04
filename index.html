@@ -472,7 +472,7 @@
                     </button>
                 </div>
             </header>
-            <div id="hero-bg" class="absolute inset-0 pointer-events-none" style="opacity:.2"></div>
+            <div id="hero-bg" class="absolute inset-0 pointer-events-none" style="opacity:.3"></div>
 
             <div class="relative z-10 text-center max-w-5xl mx-auto">
                 <h1 id="hero-title" class="pt-reveal dbh-display font-space font-bold text-4xl sm:text-5xl md:text-8xl lg:text-9xl leading-[0.9] tracking-tighter uppercase mb-6 sm:mb-8">
@@ -950,15 +950,27 @@
                 // 2026-08-03. Anything without one only has a square attention-crop,
                 // which would show a cropped watch in the ticker's circle.
                 const hasCutout = w => /-cutout\.webp$/.test(w.imageCutout || '');
-                const withImg = pieces.filter(w => w.image && hasCutout(w) && TICKER_EXCLUDE.indexOf(w.slug) < 0);
+                // ?ticker=1 hands back a list the server already filtered, vetoed
+                // and round-robined. Re-running that here would only reshuffle it,
+                // so a short list is taken as-is. The full-catalog path stays for
+                // any caller that still passes one.
+                const preSelected = pieces.length <= 60;
+                const withImg = preSelected
+                    ? pieces.filter(hasCutout)
+                    : pieces.filter(w => w.image && hasCutout(w) && TICKER_EXCLUDE.indexOf(w.slug) < 0);
                 const hot = ['Audemars Piguet', 'Patek Philippe', 'F.P. Journe', 'Rolex', 'Richard Mille', 'Vacheron Constantin', 'A. Lange & Söhne', 'Cartier'];
                 const byBrand = {};
                 withImg.forEach(w => { (byBrand[w.brand] = byBrand[w.brand] || []).push(w); });
                 Object.values(byBrand).forEach(a => a.sort(() => Math.random() - 0.5));
-                const picked = [];
-                const rounds = 6; // round-robin across hot brands for variety
-                for (let i = 0; i < rounds; i++) {
-                    hot.forEach(b => { const a = byBrand[b]; if (a && a.length) picked.push(a.shift()); });
+                let picked;
+                if (preSelected) {
+                    picked = withImg;
+                } else {
+                    picked = [];
+                    const rounds = 6; // round-robin across hot brands for variety
+                    for (let i = 0; i < rounds; i++) {
+                        hot.forEach(b => { const a = byBrand[b]; if (a && a.length) picked.push(a.shift()); });
+                    }
                 }
                 if (!picked.length) return; // API hiccup: keep the static fallback list
                 // Catalog names run long ("Vacheron Constantin Overseas Perpetual
@@ -1005,7 +1017,10 @@
                 // photos of a watch on an arm -- which is the one thing this strip
                 // must never show. It stays as a last-resort fallback if the API is
                 // down, but rendering it first meant it flashed on every load.
-                fetch('/api/get-inventory')
+                // ?ticker=1 returns the ~44 pieces this strip paints, already
+                // picked and stripped to the fields it uses. The default list is
+                // the whole catalog -- 1.95MB of JSON for 44 rows.
+                fetch('/api/get-inventory?ticker=1')
                     .then(r => r.json())
                     .then(data => {
                         const pieces = Array.isArray(data) ? data : (data.pieces || []);

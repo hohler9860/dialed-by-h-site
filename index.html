@@ -1421,6 +1421,10 @@
                     watchDetails: watchDetailsStr || null,
                     watchName: brand && model ? brand + ' ' + model : extraData.watchName || null,
                     watchRef: ref || extraData.watchRef || null,
+                    // These were only ever folded into the details text, so the
+                    // console could not lead with the channel someone asked for.
+                    preferred: preferred || null,
+                    okToText: formData.has('phone') ? !!formData.get('textok') : null,
                     website: formData.get('website') || '',
                 };
                 // Merge extraData but don't let it override form fields

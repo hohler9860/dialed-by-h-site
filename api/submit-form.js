@@ -249,7 +249,7 @@ module.exports = async (req, res) => {
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);
 
   try {
-    const { type, fullName, email, phone, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor } = req.body;
+    const { type, fullName, email, phone, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor, preferred, okToText } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -309,6 +309,15 @@ module.exports = async (req, res) => {
       watch_ref: watchRef?.trim() || null,
       phone: phoneClean || null,
       budget: budget?.trim() || null,
+      // How they asked to be reached. Ten leads asked for iMessage and the
+      // console had no idea, because this only ever existed inside the details
+      // text. Whitelisted so a tampered form cannot write anything it likes.
+      preferred_channel: (() => {
+        const p = String(preferred || "").trim();
+        const OK = ["WhatsApp", "iMessage", "Text message", "Email", "Instagram DM", "Phone call"];
+        return OK.find((o) => o.toLowerCase() === p.toLowerCase()) || null;
+      })(),
+      ok_to_text: typeof okToText === "boolean" ? okToText : null,
       status: "new",
     };
 

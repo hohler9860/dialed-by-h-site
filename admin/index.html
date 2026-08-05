@@ -357,6 +357,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     cursor: pointer; transition: border-color .15s, background .15s;
 }
 .bcard:hover { border-color: var(--l1); background: rgba(var(--label-d),.03); }
+/* A card whose content stacks. .bcard centres its children in a flex row, so
+   anything with more than one block in it comes out as narrow columns. */
+.scard {
+    display: block; text-align: left;
+    border: 1px solid var(--line); background: transparent; padding: 14px;
+}
+.scard + .scard { margin-top: 10px; }
+.scard .row { padding: 0; border-bottom: 0; cursor: default; }
+.scard pre { margin: 6px 0 0; }
 .bcard img { width: 44px; height: 44px; object-fit: cover; background: var(--be); flex: none; display: block; }
 .bcard .bn { font-weight: 700; font-size: 14px; letter-spacing: -.01em; line-height: 1.25; }
 .bcard .bc { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); margin-top: 3px; }
@@ -1883,7 +1892,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             ? '<p class="count" style="margin-top:14px">Drafted reply, nothing is sent until you send it</p>' +
               drafts.map(function (d) {
                   var sent = !!d.sent_at;
-                  return '<div class="bcard" style="margin-top:8px">' +
+                  return '<div class="scard" style="margin-top:8px">' +
                     '<div class="count">' +
                       (d.kind && d.kind !== 'FIRST' ? 'FOLLOW-UP · ' : '') + esc(d.channel) +
                       (d.quoted_price ? ' · quoting ' + esc(money(d.quoted_price)) : '') +
@@ -2735,7 +2744,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             m.listing && m.listing.nickname ? '"' + m.listing.nickname + '"' : null,
         ].filter(Boolean).join(' · ');
 
-        return '<div class="bcard" style="margin-bottom:10px">' +
+        return '<div class="scard" style="margin-bottom:10px">' +
           '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">' +
             // The dealer's own photo: how condition actually gets judged.
             (m.image_url

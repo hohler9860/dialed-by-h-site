@@ -214,13 +214,18 @@ module.exports = async (req, res) => {
 
     try {
         if (action === "list") {
-            const [leads, drafts] = await Promise.all([
+            const [leads, drafts, stages] = await Promise.all([
                 supabase(`${TABLE}?select=*&order=created_at.desc&limit=${MAX_ROWS}`),
                 // The written reply belongs next to the lead: without it the
                 // console tells you someone asked, but not what to say back.
                 supabaseAll("lead_drafts?select=id,submission_id,channel,body,quoted_price," +
                             "reference,status,kind,sent_at&order=created_at.desc").catch(() => []),
+                // Where each lead actually stands, worked out in one place so
+                // the console and the follow-up flow cannot disagree.
+                supabaseAll("lead_stage?select=*").catch(() => []),
             ]);
+            const stageById = {};
+            for (const st of stages || []) stageById[st.id] = st;
             if (leads.length === MAX_ROWS) {
                 console.warn(`[leads-admin] Hit MAX_ROWS (${MAX_ROWS}); list is truncated`);
             }
@@ -252,6 +257,13 @@ module.exports = async (req, res) => {
                     l.source_label = "Site enquiry form";
                 }
                 l.drafts = draftsBySub[l.id] || [];
+                const st = stageById[l.id];
+                if (st) {
+                    l.stage = st.stage;
+                    l.last_sent = st.last_sent;
+                    l.client_replied_at = st.client_replied_at;
+                    l.followups_sent = st.followups_sent;
+                }
             }
 
             return res.status(200).json({

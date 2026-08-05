@@ -1773,6 +1773,16 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         wireLeads();
     }
 
+    // Red means someone is waiting on Henry. Amber means it is his move soon.
+    // Green means the client came back, which is the only good kind of waiting.
+    function stageColor(stage) {
+        if (stage === 'NEEDS FOLLOW UP') return BAD_RED;
+        if (stage === 'NOT CONTACTED')   return BAD_RED;
+        if (stage === 'THEY REPLIED')    return OK_GREEN;
+        if (stage === 'IN PROGRESS')     return OK_GREEN;
+        return WARN_AMBER;                              // WAITING
+    }
+
     function leadRow(l) {
         var q = l.lead_quality || '';
         var c = l.lead_class || '';
@@ -1788,7 +1798,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 (l.preferred_channel ? '<div class="count">prefers ' + esc(String(l.preferred_channel).trim()) + '</div>' : '') + '</td>' +
             '<td>' + (watch ? esc(watch.length > 60 ? watch.slice(0, 60) + '…' : watch) : '<span class="tmono">—</span>') + '</td>' +
             '<td>' + (q ? '<span class="tag ' + q.toLowerCase() + '">' + esc(q) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
-            '<td>' + (c ? '<span class="tag ' + c.toLowerCase() + '">' + esc(c) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
+            '<td>' + (c ? '<span class="tag ' + c.toLowerCase() + '">' + esc(c) + '</span>' : '<span class="tmono">—</span>') +
+                (l.stage ? '<div style="margin-top:4px"><span class="tag" style="background:' +
+                    stageColor(l.stage) + ';color:#fff;border-color:transparent">' +
+                    esc(l.stage) + '</span></div>' : '') + '</td>' +
             '<td><select class="stat" data-status-for="' + esc(l.id) + '">' +
                 STATUSES.map(function (v) {
                     return '<option value="' + v + '"' + ((l.status || 'new') === v ? ' selected' : '') + '>' + v.toUpperCase() + '</option>';
@@ -1799,6 +1812,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (!open) return main;
 
         var D = [
+            ['Stage', l.stage],
+            ['Last reached out', l.last_sent ? fmtAgo(l.last_sent) : 'never'],
+            ['They replied', l.client_replied_at ? fmtAgo(l.client_replied_at) : 'not yet'],
             ['Came in via', l.source_label], ['Email', l.email], ['Phone', l.phone],
             ['Budget', l.budget], ['Type', l.submission_type], ['Watch', watch],
             ['Confidence', l.lead_confidence], ['Reason', l.lead_reason],
@@ -1827,6 +1843,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             (l.source === 'WHATSAPP' ? 'Open the WhatsApp thread' : 'WhatsApp') + '</a>');
         if (ph) act('IMESSAGE', '<a class="btn ghost" href="sms:' + esc(ph) +
             (sms ? '&body=' + encodeURIComponent(sms.body) : '') + '">iMessage / text</a>');
+        // Straight to the real thread in Gmail, so "have I already replied" is
+        // one click rather than a hunt.
+        if (l.email) acts.push({ key: 'GMAIL',
+            html: '<a class="btn ghost" href="https://mail.google.com/mail/u/0/#search/' +
+                  encodeURIComponent(l.email) + '" target="_blank" rel="noopener">Find in Gmail</a>' });
         if (l.email) act('EMAIL', '<a class="btn ghost" href="mailto:' + esc(l.email) +
             '?subject=' + encodeURIComponent(subj) +
             (email ? '&body=' + encodeURIComponent(email.body) : '') + '">Email</a>');

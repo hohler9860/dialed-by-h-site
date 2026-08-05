@@ -2108,7 +2108,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     function wsAfter(tile, brand, group, days, q) {
-        var cutoff = days ? Date.now() - (+days * 864e5) : 0;
+        // A search runs against every listing held, so re-applying the window
+        // here would throw away exactly the older matches the search went
+        // looking for. That is why searching appeared to return nothing.
+        var cutoff = (days && !WS.searched) ? Date.now() - (+days * 864e5) : 0;
         var needle = (q || '').toLowerCase();
         return WS.listings.filter(function (l) {
             if (!matchWTile(l, tile)) return false;

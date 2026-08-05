@@ -408,34 +408,46 @@ module.exports = async (req, res) => {
             }
 
             // The bucket is private, so hand the browser short-lived signed URLs
-            // rather than making dealer photos world-readable. One batch call.
+            // rather than making dealer photos world-readable.
+            //
+            // Asking for two thousand at once silently returned nothing, and
+            // because the failure was swallowed the whole grid simply lost its
+            // photos with no error anywhere. Sign in chunks, and let one bad
+            // chunk cost its own photos rather than all of them.
             const paths = [...new Set(listings.map((l) => l.image_path).filter(Boolean))];
             if (paths.length) {
-                try {
-                    const signed = await fetch(
-                        `${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                apikey: SUPABASE_KEY,
-                                Authorization: `Bearer ${SUPABASE_KEY}`,
-                            },
-                            body: JSON.stringify({ expiresIn: 3600, paths }),
-                        }
-                    ).then((r) => (r.ok ? r.json() : []));
+                const CHUNK = 250;
+                const urlByPath = {};
+                const chunks = [];
+                for (let i = 0; i < paths.length; i += CHUNK) chunks.push(paths.slice(i, i + CHUNK));
 
-                    const urlByPath = {};
-                    for (const s of signed || []) {
-                        if (s.signedURL) urlByPath[s.path] = `${SUPABASE_URL}/storage/v1${s.signedURL}`;
+                const results = await Promise.all(chunks.map((batch) =>
+                    fetch(`${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            apikey: SUPABASE_KEY,
+                            Authorization: `Bearer ${SUPABASE_KEY}`,
+                        },
+                        body: JSON.stringify({ expiresIn: 3600, paths: batch }),
+                    })
+                        .then((r) => (r.ok ? r.json() : []))
+                        .catch((err) => {
+                            console.error("[leads-admin] signing chunk failed:", err.message);
+                            return [];
+                        })
+                ));
+
+                for (const signed of results) {
+                    for (const sg of signed || []) {
+                        if (sg.signedURL) urlByPath[sg.path] = `${SUPABASE_URL}/storage/v1${sg.signedURL}`;
                     }
-                    for (const l of listings) {
-                        l.image_url = l.image_path ? urlByPath[l.image_path] || null : null;
-                    }
-                } catch (err) {
-                    // Photos are a nicety; never fail the whole view over them.
-                    console.error("[leads-admin] signing image URLs failed:", err.message);
                 }
+                for (const l of listings) {
+                    l.image_url = l.image_path ? urlByPath[l.image_path] || null : null;
+                }
+                const missing = listings.filter((l) => l.image_path && !l.image_url).length;
+                if (missing) console.warn(`[leads-admin] ${missing} photos could not be signed`);
             }
 
             return res.status(200).json({

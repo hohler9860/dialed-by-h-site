@@ -750,10 +750,56 @@ module.exports = async (req, res) => {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
             const [rows, sources] = await Promise.all([
                 supabaseAll("retail_listings?select=id,source_slug,title,brand,reference,price_usd,available," +
-                   "year,condition,set_completeness,url,image_url,last_seen" +
+                   "year,condition,set_completeness,url,image_url,last_seen,dial_color" +
                    "&order=last_seen.desc", { headers: { "Accept-Profile": "wholesale" } }),
                 wh("retail_sources?select=slug,name,feed_type,last_sync,last_count"),
             ]);
+
+            // What the same watch trades at wholesale, matched on reference AND
+            // dial where both sides state it. Without the dial this compares a
+            // turquoise to a black and calls it the same piece.
+            const [wByRefDial, wByRef] = await Promise.all([
+                supabaseAll("wholesale_by_ref_dial?select=*", { headers: { "Accept-Profile": "wholesale" } }).catch(() => []),
+                supabaseAll("wholesale_by_ref?select=*", { headers: { "Accept-Profile": "wholesale" } }).catch(() => []),
+            ]);
+            const refCore = (r) => String(r || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+            const dialMap = {}, refMap = {};
+            for (const w of wByRefDial) dialMap[`${refCore(w.ref_core)}|${w.dial}`] = w;
+            for (const w of wByRef) refMap[refCore(w.ref_core)] = w;
+
+            for (const r of rows) {
+                if (!r.reference) continue;
+                const key = refCore(r.reference);
+                const exact = r.dial_color ? dialMap[`${key}|${r.dial_color}`] : null;
+                const loose = refMap[key];
+                const w = exact || loose;
+                if (!w || !w.median_usd) continue;
+                const median = Number(w.median_usd);
+                const price = Number(r.price_usd || 0);
+                const ratio = median > 0 && price > 0 ? price / median : null;
+
+                r.wholesale_median = median;
+                r.wholesale_quotes = w.quotes;
+                r.wholesale_basis = exact ? "SAME DIAL"
+                    : (loose && loose.coherent === false ? "REFERENCE, MIXED" : "REFERENCE");
+
+                // A reference number is not a product. 116509 covers a $45k
+                // steel Daytona and a $1.8M gem-set one, which read as a 3,886%
+                // margin. Anything outside a believable band is not a margin,
+                // it is two different watches wearing the same number.
+                const believable = ratio !== null && ratio >= 0.55 && ratio <= 2.2;
+                const trustworthy = exact || (w.coherent !== false && (w.quotes || 0) >= 3);
+
+                if (believable && trustworthy) {
+                    r.margin_usd = Math.round(price - median);
+                    r.margin_pct = Math.round(((price - median) / median) * 1000) / 10;
+                } else {
+                    r.comparable = false;
+                    r.not_comparable_why = !believable
+                        ? "prices too far apart to be the same watch"
+                        : "this reference covers more than one watch";
+                }
+            }
 
             const nameBySlug = {};
             for (const s of sources || []) nameBySlug[s.slug] = s.name;

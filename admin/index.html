@@ -1828,12 +1828,21 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var draftHtml = drafts.length
             ? '<p class="count" style="margin-top:14px">Drafted reply, nothing is sent until you send it</p>' +
               drafts.map(function (d) {
+                  var sent = !!d.sent_at;
                   return '<div class="bcard" style="margin-top:8px">' +
-                    '<div class="count">' + esc(d.channel) +
+                    '<div class="count">' +
+                      (d.kind && d.kind !== 'FIRST' ? 'FOLLOW-UP · ' : '') + esc(d.channel) +
                       (d.quoted_price ? ' · quoting ' + esc(money(d.quoted_price)) : '') +
-                      (d.reference ? ' · ' + esc(d.reference) : '') + '</div>' +
+                      (d.reference ? ' · ' + esc(d.reference) : '') +
+                      (sent ? ' · sent ' + esc(fmtAgo(d.sent_at)) : '') + '</div>' +
                     '<pre style="white-space:pre-wrap;font-size:12px;margin:6px 0 0">' +
-                      esc(d.body || '') + '</pre></div>';
+                      esc(d.body || '') + '</pre>' +
+                    // Marking it sent is what starts the follow-up clock, so it
+                    // has to be one click at the moment of sending.
+                    (sent ? ''
+                          : '<button class="btn ghost js-sent" data-draft="' + esc(d.id) +
+                            '" style="margin-top:8px">I sent this</button>') +
+                  '</div>';
               }).join('')
             : '<p class="count" style="margin-top:14px">No reply drafted yet.</p>';
 
@@ -1869,6 +1878,24 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 paintLeads();
             });
         });
+        [].forEach.call(view.querySelectorAll('.js-sent'), function (b) {
+            b.addEventListener('click', async function (e) {
+                e.stopPropagation();                       // not a row toggle
+                var btn = this;
+                btn.disabled = true; btn.textContent = 'Saving…';
+                try {
+                    await A.adminFetchTo('/api/leads-admin', 'mark-draft-sent',
+                        { draft_id: Number(btn.dataset.draft) });
+                    renderLeads().catch(function (err) {
+                        view.innerHTML = '<p class="err">' + esc(err.message || err) + '</p>';
+                    });
+                } catch (err) {
+                    btn.disabled = false; btn.textContent = 'I sent this';
+                    alert('Could not save: ' + err.message);
+                }
+            });
+        });
+
         [].forEach.call(view.querySelectorAll('[data-status-for]'), function (sel) {
             sel.addEventListener('change', async function () {
                 var id = sel.dataset.statusFor, val = sel.value;

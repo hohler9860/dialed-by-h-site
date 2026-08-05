@@ -107,7 +107,7 @@ async function supabaseAll(path, options = {}, cap = 20000) {
 function buildStats(leads) {
     const s = {
         total: leads.length,
-        real: 0, test: 0, spam: 0, unclassified: 0,
+        real: 0, test: 0, spam: 0, personal: 0, unclassified: 0,
         hot: 0, warm: 0, cold: 0,
         newStatus: 0,
     };
@@ -115,6 +115,9 @@ function buildStats(leads) {
         if (l.lead_class === "REAL") s.real += 1;
         else if (l.lead_class === "TEST") s.test += 1;
         else if (l.lead_class === "SPAM") s.spam += 1;
+        // Someone Henry actually knows, messaging socially. Not a lead, and
+        // not a failure of the classifier either, so counted on its own.
+        else if (l.lead_class === "PERSONAL") s.personal += 1;
         else s.unclassified += 1;
 
         if (l.lead_class === "REAL") {
@@ -215,8 +218,8 @@ module.exports = async (req, res) => {
                 supabase(`${TABLE}?select=*&order=created_at.desc&limit=${MAX_ROWS}`),
                 // The written reply belongs next to the lead: without it the
                 // console tells you someone asked, but not what to say back.
-                supabaseAll("lead_drafts?select=submission_id,channel,body,quoted_price," +
-                            "reference,status&order=created_at.desc").catch(() => []),
+                supabaseAll("lead_drafts?select=id,submission_id,channel,body,quoted_price," +
+                            "reference,status,kind,sent_at&order=created_at.desc").catch(() => []),
             ]);
             if (leads.length === MAX_ROWS) {
                 console.warn(`[leads-admin] Hit MAX_ROWS (${MAX_ROWS}); list is truncated`);
@@ -790,6 +793,24 @@ module.exports = async (req, res) => {
             }
             console.log("[leads-admin] corrected", listing_id, field, r.c_was, "->", r.c_now);
             return res.status(200).json({ corrected: true, field, was: r.c_was, now: r.c_now });
+        }
+
+        // Sending is what starts the follow-up clock. Nothing here sends the
+        // message: Henry sends it from WhatsApp, Messages or his mail client
+        // and marks it here, which also moves the lead to contacted.
+        if (action === "mark-draft-sent") {
+            const { draft_id, sent_body } = body;
+            if (!draft_id) return res.status(400).json({ error: "Missing draft_id" });
+            const out = await supabase("rpc/mark_draft_sent", {
+                method: "POST",
+                body: JSON.stringify({
+                    p_draft_id: Number(draft_id),
+                    p_sent_body: sent_body == null ? null : String(sent_body),
+                }),
+            });
+            const r = Array.isArray(out) ? out[0] : out;
+            if (!r || r.m_ok === false) return res.status(404).json({ error: "Draft not found" });
+            return res.status(200).json({ sent: true, submission_id: r.m_submission });
         }
 
         // Everywhere Henry could get a given reference right now: dealer group

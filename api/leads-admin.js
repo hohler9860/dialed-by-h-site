@@ -211,12 +211,46 @@ module.exports = async (req, res) => {
 
     try {
         if (action === "list") {
-            const leads = await supabase(
-                `${TABLE}?select=*&order=created_at.desc&limit=${MAX_ROWS}`
-            );
+            const [leads, drafts] = await Promise.all([
+                supabase(`${TABLE}?select=*&order=created_at.desc&limit=${MAX_ROWS}`),
+                // The written reply belongs next to the lead: without it the
+                // console tells you someone asked, but not what to say back.
+                supabaseAll("lead_drafts?select=submission_id,channel,body,quoted_price," +
+                            "reference,status&order=created_at.desc").catch(() => []),
+            ]);
             if (leads.length === MAX_ROWS) {
                 console.warn(`[leads-admin] Hit MAX_ROWS (${MAX_ROWS}); list is truncated`);
             }
+
+            const draftsBySub = {};
+            for (const d of drafts || []) {
+                (draftsBySub[d.submission_id] ||= []).push(d);
+            }
+
+            for (const l of leads) {
+                // Where it actually came in. A WhatsApp lead is stored with a
+                // synthetic wa-<number>@whatsapp.local address, which is the
+                // only thing distinguishing it from a form fill.
+                const wa = /^wa-(\d+)@whatsapp\.local$/i.exec(l.email || "");
+                if (wa) {
+                    l.source = "WHATSAPP";
+                    l.source_label = "WhatsApp DM";
+                    l.email = null;                       // not a real address
+                    l.phone = l.phone || wa[1];
+                } else if (l.submission_type === "WATCH_DETAIL") {
+                    l.source = "WATCH_PAGE";
+                    l.source_label = l.watch_name
+                        ? `Watch page: ${l.watch_name}` : "A watch page";
+                } else if (l.submission_type === "JOIN_LIST") {
+                    l.source = "NEWSLETTER";
+                    l.source_label = "Newsletter signup";
+                } else {
+                    l.source = "SITE_FORM";
+                    l.source_label = "Site enquiry form";
+                }
+                l.drafts = draftsBySub[l.id] || [];
+            }
+
             return res.status(200).json({
                 leads,
                 stats: buildStats(leads),

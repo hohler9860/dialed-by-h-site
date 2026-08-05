@@ -1783,7 +1783,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<td><span class="tmono">' + esc(fmtDate(l.created_at)) + '</span></td>' +
             '<td><div class="tname">' + esc(l.full_name || '—') + '</div>' +
                 '<div class="tsub">' + esc(l.email || l.phone || '') + '</div></td>' +
-            '<td><span class="tmono">' + esc(l.submission_type || '—') + '</span></td>' +
+            '<td><span class="tmono">' + esc(l.submission_type || '—') + '</span>' +
+                (l.source_label ? '<div class="count">' + esc(l.source_label) + '</div>' : '') + '</td>' +
             '<td>' + (watch ? esc(watch.length > 60 ? watch.slice(0, 60) + '…' : watch) : '<span class="tmono">—</span>') + '</td>' +
             '<td>' + (q ? '<span class="tag ' + q.toLowerCase() + '">' + esc(q) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
             '<td>' + (c ? '<span class="tag ' + c.toLowerCase() + '">' + esc(c) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
@@ -1797,18 +1798,53 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (!open) return main;
 
         var D = [
-            ['Email', l.email], ['Phone', l.phone], ['Budget', l.budget],
-            ['Type', l.submission_type], ['Watch', watch],
+            ['Came in via', l.source_label], ['Email', l.email], ['Phone', l.phone],
+            ['Budget', l.budget], ['Type', l.submission_type], ['Watch', watch],
             ['Confidence', l.lead_confidence], ['Reason', l.lead_reason],
             ['Message', l.message || l.notes],
             ['Submitted', l.created_at ? new Date(l.created_at).toLocaleString() : ''],
         ].filter(function (d) { return d[1]; });
 
+        // Reply from here rather than hunting for the conversation. WhatsApp
+        // leads open the actual thread; the rest open a prefilled message.
+        var ph = String(l.phone || '').replace(/\D/g, '');
+        var drafts = l.drafts || [];
+        var sms   = drafts.filter(function (d) { return d.channel === 'SMS'; })[0];
+        var email = drafts.filter(function (d) { return d.channel === 'EMAIL'; })[0];
+        var subj  = 'Re: your ' + (l.watch_name || 'watch') + ' enquiry';
+
+        var acts = [];
+        if (ph) acts.push('<a class="btn ghost" href="https://wa.me/' + esc(ph) +
+            (sms ? '?text=' + encodeURIComponent(sms.body) : '') +
+            '" target="_blank" rel="noopener">' +
+            (l.source === 'WHATSAPP' ? 'Open the WhatsApp thread' : 'WhatsApp them') + '</a>');
+        if (ph) acts.push('<a class="btn ghost" href="sms:' + esc(ph) +
+            (sms ? '&body=' + encodeURIComponent(sms.body) : '') + '">Text</a>');
+        if (l.email) acts.push('<a class="btn ghost" href="mailto:' + esc(l.email) +
+            '?subject=' + encodeURIComponent(subj) +
+            (email ? '&body=' + encodeURIComponent(email.body) : '') + '">Email</a>');
+
+        // The written reply, ready to read before sending. Nothing auto-sends.
+        var draftHtml = drafts.length
+            ? '<p class="count" style="margin-top:14px">Drafted reply, nothing is sent until you send it</p>' +
+              drafts.map(function (d) {
+                  return '<div class="bcard" style="margin-top:8px">' +
+                    '<div class="count">' + esc(d.channel) +
+                      (d.quoted_price ? ' · quoting ' + esc(money(d.quoted_price)) : '') +
+                      (d.reference ? ' · ' + esc(d.reference) : '') + '</div>' +
+                    '<pre style="white-space:pre-wrap;font-size:12px;margin:6px 0 0">' +
+                      esc(d.body || '') + '</pre></div>';
+              }).join('')
+            : '<p class="count" style="margin-top:14px">No reply drafted yet.</p>';
+
         return main + '<tr class="detail"><td colspan="7"><div class="dgrid">' +
             D.map(function (d) {
                 return '<div><div class="dk">' + esc(d[0]) + '</div><div class="dv">' + esc(d[1]) + '</div></div>';
             }).join('') +
-        '</div></td></tr>';
+        '</div>' +
+        (acts.length ? '<div class="row" style="gap:8px;margin-top:12px">' + acts.join('') + '</div>' : '') +
+        draftHtml +
+        '</td></tr>';
     }
 
     function wireLeads() {

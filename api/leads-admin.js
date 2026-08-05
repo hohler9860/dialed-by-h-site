@@ -795,6 +795,29 @@ module.exports = async (req, res) => {
             return res.status(200).json({ corrected: true, field, was: r.c_was, now: r.c_now });
         }
 
+        // Henry answers plenty of people straight from his phone. Logging that
+        // here is what stops them looking untouched and starts the follow-up
+        // clock from roughly when he actually messaged them.
+        if (action === "log-outreach") {
+            const { submission_id, channel, hours_ago, note } = body;
+            if (!submission_id) return res.status(400).json({ error: "Missing submission_id" });
+            const CHANNELS = ["IMESSAGE", "SMS", "WHATSAPP", "EMAIL", "CALL", "INSTAGRAM"];
+            const ch = CHANNELS.includes(String(channel || "").toUpperCase())
+                ? String(channel).toUpperCase() : "IMESSAGE";
+            const out = await supabase("rpc/log_outreach", {
+                method: "POST",
+                body: JSON.stringify({
+                    p_submission_id: String(submission_id),
+                    p_channel: ch,
+                    p_hours_ago: Number(hours_ago) >= 0 ? Number(hours_ago) : 0,
+                    p_note: note == null ? null : String(note),
+                }),
+            });
+            const r = Array.isArray(out) ? out[0] : out;
+            if (!r || r.o_ok === false) return res.status(404).json({ error: "Lead not found" });
+            return res.status(200).json({ logged: true, sent_at: r.o_sent_at });
+        }
+
         // Sending is what starts the follow-up clock. Nothing here sends the
         // message: Henry sends it from WhatsApp, Messages or his mail client
         // and marks it here, which also moves the lead to contacted.

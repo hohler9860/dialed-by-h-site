@@ -1784,7 +1784,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<td><div class="tname">' + esc(l.full_name || '—') + '</div>' +
                 '<div class="tsub">' + esc(l.email || l.phone || '') + '</div></td>' +
             '<td><span class="tmono">' + esc(l.submission_type || '—') + '</span>' +
-                (l.source_label ? '<div class="count">' + esc(l.source_label) + '</div>' : '') + '</td>' +
+                (l.source_label ? '<div class="count">' + esc(l.source_label) + '</div>' : '') +
+                (l.preferred_channel ? '<div class="count">prefers ' + esc(String(l.preferred_channel).trim()) + '</div>' : '') + '</td>' +
             '<td>' + (watch ? esc(watch.length > 60 ? watch.slice(0, 60) + '…' : watch) : '<span class="tmono">—</span>') + '</td>' +
             '<td>' + (q ? '<span class="tag ' + q.toLowerCase() + '">' + esc(q) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
             '<td>' + (c ? '<span class="tag ' + c.toLowerCase() + '">' + esc(c) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
@@ -1813,16 +1814,48 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var email = drafts.filter(function (d) { return d.channel === 'EMAIL'; })[0];
         var subj  = 'Re: your ' + (l.watch_name || 'watch') + ' enquiry';
 
+        // Reach them the way they asked to be reached. Ten of these leads asked
+        // for iMessage, which is a different app from WhatsApp, so leading with
+        // the wrong one is how a lead gets answered late or not at all.
+        var pref = String(l.preferred_channel || '').trim().toUpperCase();
         var acts = [];
-        if (ph) acts.push('<a class="btn ghost" href="https://wa.me/' + esc(ph) +
+        function act(key, html) { acts.push({ key: key, html: html }); }
+
+        if (ph) act('WHATSAPP', '<a class="btn ghost" href="https://wa.me/' + esc(ph) +
             (sms ? '?text=' + encodeURIComponent(sms.body) : '') +
             '" target="_blank" rel="noopener">' +
-            (l.source === 'WHATSAPP' ? 'Open the WhatsApp thread' : 'WhatsApp them') + '</a>');
-        if (ph) acts.push('<a class="btn ghost" href="sms:' + esc(ph) +
-            (sms ? '&body=' + encodeURIComponent(sms.body) : '') + '">Text</a>');
-        if (l.email) acts.push('<a class="btn ghost" href="mailto:' + esc(l.email) +
+            (l.source === 'WHATSAPP' ? 'Open the WhatsApp thread' : 'WhatsApp') + '</a>');
+        if (ph) act('IMESSAGE', '<a class="btn ghost" href="sms:' + esc(ph) +
+            (sms ? '&body=' + encodeURIComponent(sms.body) : '') + '">iMessage / text</a>');
+        if (l.email) act('EMAIL', '<a class="btn ghost" href="mailto:' + esc(l.email) +
             '?subject=' + encodeURIComponent(subj) +
             (email ? '&body=' + encodeURIComponent(email.body) : '') + '">Email</a>');
+
+        // Their stated preference first.
+        acts.sort(function (a, b) {
+            return (b.key === pref ? 1 : 0) - (a.key === pref ? 1 : 0);
+        });
+        acts = acts.map(function (a) {
+            return a.key === pref
+                ? a.html.replace('btn ghost', 'btn') + '<span class="count"> asked for this</span>'
+                : a.html;
+        });
+
+        // Logging outreach that happened on his phone, so the lead stops looking
+        // untouched and the follow-up clock starts from roughly the right time.
+        var already = '<div class="row" style="gap:6px;margin-top:10px;align-items:center">' +
+          '<span class="count">Already messaged them?</span>' +
+          '<select class="ctl js-log-ch" style="font-size:11px;padding:4px 6px">' +
+            ['IMESSAGE','WHATSAPP','EMAIL','CALL','INSTAGRAM'].map(function (c) {
+                return '<option value="' + c + '"' + (c === (pref || 'IMESSAGE') ? ' selected' : '') + '>' +
+                       (c === 'IMESSAGE' ? 'iMessage' : c.charAt(0) + c.slice(1).toLowerCase()) + '</option>';
+            }).join('') + '</select>' +
+          '<select class="ctl js-log-when" style="font-size:11px;padding:4px 6px">' +
+            '<option value="0">just now</option><option value="6">earlier today</option>' +
+            '<option value="24">yesterday</option><option value="48">2 days ago</option>' +
+            '<option value="96">4+ days ago</option></select>' +
+          '<button class="btn ghost js-log" data-lead="' + esc(l.id) + '">Log it</button>' +
+        '</div>';
 
         // The written reply, ready to read before sending. Nothing auto-sends.
         var draftHtml = drafts.length
@@ -1852,6 +1885,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }).join('') +
         '</div>' +
         (acts.length ? '<div class="row" style="gap:8px;margin-top:12px">' + acts.join('') + '</div>' : '') +
+        already +
         draftHtml +
         '</td></tr>';
     }
@@ -1878,6 +1912,28 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 paintLeads();
             });
         });
+        [].forEach.call(view.querySelectorAll('.js-log'), function (b) {
+            b.addEventListener('click', async function (e) {
+                e.stopPropagation();
+                var btn = this;
+                var row = btn.closest('.row');
+                var ch = row.querySelector('.js-log-ch').value;
+                var hrs = row.querySelector('.js-log-when').value;
+                btn.disabled = true; btn.textContent = 'Saving…';
+                try {
+                    await A.adminFetchTo('/api/leads-admin', 'log-outreach', {
+                        submission_id: btn.dataset.lead, channel: ch, hours_ago: Number(hrs),
+                    });
+                    renderLeads().catch(function (err) {
+                        view.innerHTML = '<p class="err">' + esc(err.message || err) + '</p>';
+                    });
+                } catch (err) {
+                    btn.disabled = false; btn.textContent = 'Log it';
+                    alert('Could not save: ' + err.message);
+                }
+            });
+        });
+
         [].forEach.call(view.querySelectorAll('.js-sent'), function (b) {
             b.addEventListener('click', async function (e) {
                 e.stopPropagation();                       // not a row toggle

@@ -2043,13 +2043,21 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     var wsTimer = null;
 
     async function renderWholesale() {
-        var r = await A.adminFetchTo('/api/leads-admin', 'wholesale');
+        // The window and the search now happen in the database, because the feed
+        // outgrew what one response can carry: over 6,000 listings and climbing
+        // by about 5,000 a day.
+        var r = await A.adminFetchTo('/api/leads-admin', 'wholesale',
+            { days: wfilter.days || 1, q: wq || '' });
         WS.listings = r.listings || [];
         WS.stats    = r.stats || [];
         WS.variants = r.variants || [];
         WS.alerts   = r.alerts || [];
         WS.names    = r.nameByJid || {};
         WS.counters = r.counters || {};
+        WS.held     = r.listings_held;
+        WS.windowDays = r.window_days;
+        WS.searched = r.searched;
+        WS.capped   = r.listings_capped;
         WS.loadedAt = new Date().toISOString();
         paintWholesale();
         startWholesaleAuto();
@@ -2222,8 +2230,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     return '<option value="' + esc(j) + '"' + (wfilter.group === j ? ' selected' : '') + '>' + esc((WS.names[j] || '').toUpperCase()) + '</option>';
                 }).join('') + '</select>' +
               '<select id="w-days" class="ctl">' +
-                [['', 'ALL TIME'], ['1', 'LAST 24H'], ['7', 'LAST 7 DAYS'], ['30', 'LAST 30 DAYS']].map(function (o) {
-                    return '<option value="' + o[0] + '"' + (wfilter.days === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+                [['1', 'LAST 24H'], ['3', 'LAST 3 DAYS'], ['7', 'LAST 7 DAYS'],
+                 ['30', 'LAST 30 DAYS'], ['365', 'EVERYTHING']].map(function (o) {
+                    return '<option value="' + o[0] + '"' + (String(wfilter.days || '1') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
                 }).join('') + '</select>' +
               '<button class="btn ghost" id="w-csv">Export</button>' +
               '<button class="btn ghost" id="w-refresh">Refresh</button>' +
@@ -2232,6 +2241,13 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             // Newest listing age is the real health signal: the ingest runs every
             // minute, so anything older than a few minutes means it has stalled.
             '<p class="count">' +
+              (WS.searched
+                ? 'Searching all ' + (WS.held || 0).toLocaleString() + ' listings for "' + esc(WS.searched) + '" · ' +
+                  WS.listings.length + ' found' + (WS.capped ? ', showing the first batch' : '') + ' · press Enter to search again. '
+                : 'Showing the last ' + (WS.windowDays || 1) + ' day' + ((WS.windowDays || 1) === 1 ? '' : 's') +
+                  ' · ' + WS.listings.length.toLocaleString() + ' of ' + (WS.held || 0).toLocaleString() +
+                  ' held' + (WS.capped ? ' (window is full, narrow it or search)' : '') +
+                  ' · press Enter in search to look across all of them. ') +
               (WS.listings.length
                 ? 'Newest ' + esc(fmtAgo(WS.listings.reduce(function (a, b) {
                       return new Date(a.message_ts) > new Date(b.message_ts) ? a : b;
@@ -2361,8 +2377,24 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     function wireWholesale() {
         var q = document.getElementById('w-q');
-        if (q) q.addEventListener('input', function () { wq = this.value; var p = this.selectionStart; paintWholesale();
-            var n = document.getElementById('w-q'); if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} } });
+        if (q) {
+            q.addEventListener('input', function () {
+                wq = this.value; var p = this.selectionStart; paintWholesale();
+                var n = document.getElementById('w-q');
+                if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+            });
+            // Typing filters the window that is loaded. Enter goes to the
+            // database and searches every listing held, whatever its age.
+            q.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                wq = this.value;
+                view.innerHTML = '<p class="count">Searching every listing…</p>';
+                renderWholesale().catch(function (err) {
+                    view.innerHTML = '<p class="err">Search failed: ' + esc(err.message || err) + '</p>';
+                });
+            });
+        }
 
         // Corrections save on blur (text) or change (select) so a fix is one
         // action, not type-then-click. Clicks inside must not collapse the row.
@@ -2389,9 +2421,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             });
         });
 
-        [['w-brand', 'brand'], ['w-group', 'group'], ['w-days', 'days']].forEach(function (pair) {
+        [['w-brand', 'brand'], ['w-group', 'group']].forEach(function (pair) {
             var el = document.getElementById(pair[0]);
             if (el) el.addEventListener('change', function () { wfilter[pair[1]] = this.value; paintWholesale(); });
+        });
+        // The window is applied by the database now, so changing it refetches.
+        var wd = document.getElementById('w-days');
+        if (wd) wd.addEventListener('change', function () {
+            wfilter.days = this.value;
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderWholesale().catch(function (e) {
+                view.innerHTML = '<p class="err">Could not load: ' + esc(e.message || e) + '</p>';
+            });
         });
 
         var rf = document.getElementById('w-refresh');

@@ -33,7 +33,7 @@ const MAX_ROWS = 5000;
 // wholesale payload, so they are capped and the true total is reported next
 // to them. Raising this without measuring the response size will break the
 // tab outright rather than degrade it.
-const LISTING_CAP = 2200;
+const LISTING_CAP = 2000;
 
 const ALLOWED_ORIGINS = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
 
@@ -301,6 +301,29 @@ module.exports = async (req, res) => {
         // purpose: the project sits at Vercel's 12-function Hobby ceiling, so a
         // 13th route would fail the build. Same auth, different data.
         if (action === "wholesale") {
+            // The feed runs at roughly 5,000 messages a day, so shipping every
+            // listing to the browser stopped being possible: Vercel refuses a
+            // response over 4.5MB and the whole tab fails rather than degrades.
+            // Narrow it here instead, where the database can do the work.
+            // The groups produce roughly 5,000 listings a day, so even a single day
+            // overflows one response. Default to the most recent window and let
+            // search reach everything else.
+            const days = Number(body.days) > 0 ? Math.min(Number(body.days), 365) : 1;
+            const term = String(body.q || "").trim().slice(0, 60);
+            const since = new Date(Date.now() - days * 86400000).toISOString();
+
+            let listingFilter = `&message_ts=gte.${since}`;
+            if (term) {
+                // Searching means searching everything, not just the window.
+                const safe = term.replace(/[(),*]/g, " ").trim();
+                if (safe) {
+                    const like = `*${safe}*`;
+                    listingFilter =
+                        `&or=(brand.ilike.${like},model.ilike.${like},reference.ilike.${like},` +
+                        `nickname.ilike.${like},seller_name.ilike.${like})`;
+                }
+            }
+
             const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
             const qAll = (path, _o, cap) =>
                 supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } }, cap);
@@ -319,7 +342,7 @@ module.exports = async (req, res) => {
                     "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
                     "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
                     "vision_mismatch,confidence,message_ts,image_path" +
-                    "&order=message_ts.desc",
+                    listingFilter + "&order=message_ts.desc",
                     {}, LISTING_CAP
                 ),
                 qAll("reference_stats?select=*&order=n.desc"),
@@ -328,6 +351,20 @@ module.exports = async (req, res) => {
                 q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200"),
                 q("groups?select=jid,name,is_price_baseline,active"),
             ]);
+
+            // The real number held, so the tab never implies it is showing all.
+            let totalHeld = null;
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=id&limit=1`, {
+                    headers: {
+                        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+                        "Accept-Profile": "wholesale", Prefer: "count=exact",
+                        Range: "0-0", "Range-Unit": "items",
+                    },
+                });
+                const cr = res.headers.get("content-range");
+                if (cr && cr.includes("/")) totalHeld = Number(cr.split("/")[1]) || null;
+            } catch { /* a missing count must not break the view */ }
 
             const nameByJid = {};
             for (const g of groups || []) nameByJid[g.jid] = g.name;
@@ -405,6 +442,9 @@ module.exports = async (req, res) => {
                 listings, stats, variants, alerts, groups, nameByJid,
                 listings_shown: listings.length,
                 listings_capped: listings.length >= LISTING_CAP,
+                window_days: term ? null : days,
+                searched: term || null,
+                listings_held: totalHeld,
                 counters: {
                     listings: listings.length,
                     priced: listings.filter((l) => l.price_usd != null).length,

@@ -3410,6 +3410,54 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') +
           '</tbody></table></div>' +
 
+          // Whether a dealer's message actually became an identified watch.
+          // A listing with no family cannot be matched to anyone, and a
+          // reference the chats argue about sends the wrong piece.
+          (function () {
+              var h = AC.identity;
+              if (!h) return '';
+              var famPct = Number(h.family_pct || 0);
+              var cards = [
+                  { l: 'Listings for sale', v: h.for_sale, c: '' },
+                  { l: 'With a reference', v: h.with_reference, c: '' },
+                  { l: 'Identified to a model', v: famPct + '%', c: pctColor(famPct) },
+                  { l: 'Reference stuck in model field', v: h.ref_in_model,
+                    c: Number(h.ref_in_model) > 0 ? WARN_AMBER : OK_GREEN },
+                  { l: 'Model families known', v: h.families_known, c: '' },
+                  { l: 'Pinned down by hand', v: h.families_curated, c: '' },
+                  { l: 'References in dispute', v: h.contested,
+                    c: Number(h.contested) > 0 ? WARN_AMBER : OK_GREEN },
+              ];
+              return '<p class="count" style="margin-top:22px">Identifying the watch · ' +
+                  'a listing with no model line cannot be matched to any client</p>' +
+                '<div class="scard" style="margin-bottom:14px">' +
+                cards.map(function (c) {
+                    return '<div style="display:flex;justify-content:space-between;gap:16px;padding:6px 0">' +
+                      '<span class="count">' + esc(c.l) + '</span>' +
+                      '<b' + (c.c ? ' style="color:' + c.c + '"' : '') + '>' + esc(c.v) + '</b></div>';
+                }).join('') +
+                '</div>' +
+                ((AC.contested || []).length
+                  ? '<p class="count">References the chats disagree on · the majority answer is ' +
+                      'being used, so a wrong one here sends the wrong watch</p>' +
+                    '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
+                      '<th style="width:150px">Brand</th><th style="width:110px">Reference</th>' +
+                      '<th style="width:150px">Currently reads as</th><th style="width:110px">Agreement</th>' +
+                      '<th>Listings</th></tr></thead><tbody>' +
+                    AC.contested.map(function (r) {
+                        var a = Number(r.agreement_pct || 0);
+                        return '<tr>' +
+                          '<td>' + esc(r.brand) + '</td>' +
+                          '<td>' + esc(r.ref_key) + '</td>' +
+                          '<td>' + esc(r.current_answer) + '</td>' +
+                          '<td><span class="tag ' + (a >= 75 ? 'warm' : 'spam') + '">' + a + '%</span></td>' +
+                          '<td class="count">' + esc(r.listings) + '</td>' +
+                        '</tr>';
+                    }).join('') +
+                    '</tbody></table></div>'
+                  : '');
+          })() +
+
           // Cheap vision models, same photos, same prompt. With no ground truth
           // the signal is agreement: what they all read the same way is probably
           // right, what they split on is where a photo alone is not enough.

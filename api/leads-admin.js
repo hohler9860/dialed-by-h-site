@@ -986,7 +986,8 @@ module.exports = async (req, res) => {
             if (only === "noref")     filter = "&reference=is.null";
             if (only === "noprice")   filter = "&price_usd=is.null";
 
-            const [flows, scorecard, coverage, samples, benchModels, benchFields] = await Promise.all([
+            const [flows, scorecard, coverage, samples, benchModels, benchFields,
+                   identity, contested] = await Promise.all([
                 wh("flow_health?select=*&order=errors.desc"),
                 wh("model_scorecard?select=*"),
                 wh("field_coverage?select=*&order=pct.asc"),
@@ -995,11 +996,17 @@ module.exports = async (req, res) => {
                 // attributes no cheap model reads reliably.
                 wh("bench_models?select=*&order=answer_rate.desc").catch(() => []),
                 wh("bench_fields?select=*&order=pct_agree.asc").catch(() => []),
+                // How well the chats are being turned into an actual watch.
+                supabase("rpc/identity_health", { method: "POST", body: "{}" }).catch(() => null),
+                // References the chats cannot agree on: these are the ones worth
+                // pinning down by hand, because a wrong one sends the wrong watch.
+                wh("contested_refs?select=*&order=listings.desc&limit=60").catch(() => []),
             ]);
             return res.status(200).json({
                 flows: flows || [], scorecard: scorecard || [],
                 coverage: coverage || [], samples: samples || [],
                 benchModels: benchModels || [], benchFields: benchFields || [],
+                identity: identity || null, contested: contested || [],
             });
         }
 

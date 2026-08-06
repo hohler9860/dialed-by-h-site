@@ -17,14 +17,13 @@
 const React = require("react");
 const { render } = require("@react-email/render");
 const { BroadcastEmail } = require("../lib/emails/broadcast.js");
-const { WelcomeEmail } = require("../lib/emails/welcome.js");
 const { InquiryEmail } = require("../lib/emails/inquiry.js");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
 const examples = {
   arrival: {
-    previewText: "A Patek Philippe Nautilus just landed. Private list gets first access.",
+    previewText: "A Patek Philippe Nautilus just landed. You get first access.",
     tag: "NEW ARRIVAL",
     headline: "Patek Philippe Nautilus 5711/1A",
     body: "A pristine example of one of the most coveted references in modern watchmaking just became available through my network. Full set, 2022 papers, unworn condition.",
@@ -71,10 +70,7 @@ async function main() {
 
   if (args.includes("--template")) {
     const tmpl = args[args.indexOf("--template") + 1];
-    if (tmpl === "welcome") {
-      element = React.createElement(WelcomeEmail, { firstName: "Henry" });
-      label = "welcome";
-    } else if (tmpl === "inquiry") {
+    if (tmpl === "inquiry") {
       element = React.createElement(InquiryEmail, {
         firstName: "Alex",
         watchName: "Royal Oak 15500ST",

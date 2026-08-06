@@ -493,9 +493,6 @@
                     <button id="hero-btn" onclick="app.openModal('BUY')" class="dbh-btn dbh-btn--solid w-[260px] sm:w-[300px]">Request a Piece</button>
                     <a href="/buy/" class="dbh-btn w-[260px] sm:w-[300px]">Browse Pieces</a>
                 </div>
-                <button onclick="app.openModal('JOIN_LIST')" class="pt-reveal mt-6 sm:mt-8 text-[11px] sm:text-xs font-space font-medium tracking-widest text-muted/70 hover:text-ivory transition-colors duration-300 uppercase">
-                    Not ready? Join the private list &rarr;
-                </button>
             </div>
 
             <div class="absolute bottom-12 opacity-50">
@@ -947,7 +944,6 @@
             mobileMenuOpen: false,
             testimonialIndex: 0,
             tickerTween: null,
-            footerTickerTween: null,
 
             // Ticker is inventory-driven: same processed images as the buy grid,
             // hot brands weighted first, anything not in Notion drops out on its own.
@@ -1113,28 +1109,14 @@
                         force3D: true
                     });
                 }
-                if (app.footerTickerTween) { app.footerTickerTween.kill(); app.footerTickerTween = null; }
-                // Footer "Private List" ticker (slow & subtle)
-                const footerTicker = document.getElementById('footer-ticker');
-                if (footerTicker) {
-                    app.footerTickerTween = gsap.to(footerTicker, {
-                        xPercent: -50,
-                        duration: 120,
-                        ease: "none",
-                        repeat: -1,
-                        force3D: true
-                    });
-                }
             },
 
             pauseTickers: () => {
                 if (app.tickerTween) app.tickerTween.pause();
-                if (app.footerTickerTween) app.footerTickerTween.pause();
             },
 
             resumeTickers: () => {
                 if (app.tickerTween) app.tickerTween.resume();
-                if (app.footerTickerTween) app.footerTickerTween.resume();
             },
 
             initAnimations: () => {
@@ -1220,7 +1202,7 @@
                         </div>
                     `;
                 } else {
-                    const title = type === 'JOIN_LIST' ? 'Join the Private List' : `Request to ${type}`;
+                    const title = `Request to ${type}`;
                     html = `
                         <div id="form-view" class="p-5 sm:p-6">
                             <h2 class="dbh-display text-2xl font-space font-bold tracking-tight mb-2">${title}</h2>
@@ -1235,7 +1217,6 @@
                                     <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Email</label>
                                     <input required type="email" name="email" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors">
                                 </div>
-                                ${type !== 'JOIN_LIST' ? `
                                 <div>
                                     <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Phone (Mobile)</label>
                                     <input required type="tel" name="phone" placeholder="+1 ..." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors placeholder-muted/40">
@@ -1294,7 +1275,6 @@
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Additional Details</label>
                                         <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, budget, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
                                     </div>
-                                ` : ''}
                                 <button type="submit" class="dbh-btn dbh-btn--solid w-full">Send It</button>
                             </form>
                         </div>
@@ -1468,58 +1448,6 @@
                 }
             },
 
-            handleFooterSubmit: async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const btn = form.querySelector('button[type="submit"]');
-                const btnLabel = btn.querySelector('span') || btn;
-                const emailInput = form.querySelector('input[name="email"]');
-                const nameInput = form.querySelector('input[name="fullName"]');
-                const intentSelect = form.querySelector('select[name="intent"]');
-                const budgetSelect = form.querySelector('select[name="budget"]');
-                const lookingForInput = form.querySelector('input[name="lookingFor"]');
-                const originalText = btnLabel.textContent;
-
-                btnLabel.textContent = 'JOINING...';
-                btn.disabled = true;
-
-                const showJoined = () => {
-                    btnLabel.textContent = 'JOINED ✓';
-                    emailInput.value = '';
-                    if (nameInput) nameInput.value = '';
-                    if (intentSelect) intentSelect.selectedIndex = 0;
-                    if (budgetSelect) budgetSelect.selectedIndex = 0;
-                    if (lookingForInput) lookingForInput.value = '';
-                    setTimeout(() => { btnLabel.textContent = originalText; btn.disabled = false; }, 3000);
-                };
-
-                try {
-                    const payload = { type: 'JOIN_LIST', email: emailInput.value };
-                    if (nameInput && nameInput.value.trim()) payload.fullName = nameInput.value.trim();
-                    if (intentSelect && intentSelect.value) payload.intent = intentSelect.value;
-                    if (budgetSelect && budgetSelect.value) payload.budget = budgetSelect.value;
-                    if (lookingForInput && lookingForInput.value.trim()) payload.lookingFor = lookingForInput.value.trim();
-                    const res = await fetch('/api/submit-form', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!res.ok) throw new Error('Failed');
-                    showJoined();
-                    // Meta Pixel: Lead on successful email signup
-                    if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'JOIN_LIST' });
-                } catch (error) {
-                    console.error('Footer submit error:', error);
-                    // Local dev fallback
-                    if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && error.message.includes('Failed to fetch'))) {
-                        showJoined();
-                        return;
-                    }
-                    btnLabel.textContent = 'ERROR - TRY AGAIN';
-                    setTimeout(() => { btnLabel.textContent = originalText; btn.disabled = false; }, 3000);
-                }
-            }
         };
 
         window.addEventListener('DOMContentLoaded', app.init);

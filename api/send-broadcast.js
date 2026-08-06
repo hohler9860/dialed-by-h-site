@@ -117,12 +117,27 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Production: fetch all subscribers from Supabase
+    // Production: fetch the audience from Supabase.
+    //
+    // This used to read submission_type = 'JOIN_LIST' off the legacy
+    // `submissions` table: 18 distinct addresses from the retired private-list
+    // form, and none of the real enquiries. The private list is gone, so the
+    // audience is now everyone who actually came in through the site, minus
+    // the rows the classifier flagged as junk and the WhatsApp placeholders,
+    // which are synthesised local addresses and not deliverable.
     console.log("[broadcast] Fetching subscriber list...");
     const { data: subscribers, error: dbError } = await getSupabase()
-      .from("submissions")
+      // REAL only, stated positively rather than as "not TEST and not SPAM":
+      // an unclassified row has lead_class NULL, and NOT IN against NULL is
+      // NULL, so a negative filter would drop those rows silently while
+      // looking like it kept them. Nobody gets a blast until the classifier
+      // has actually said they are a real person.
+      .from("dialed_submissions")
       .select("email, full_name")
-      .eq("submission_type", "JOIN_LIST")
+      .eq("lead_class", "REAL")
+      .not("email", "is", null)
+      .neq("email", "")
+      .not("email", "like", "%@whatsapp.local")
       .order("created_at", { ascending: true });
 
     if (dbError) {

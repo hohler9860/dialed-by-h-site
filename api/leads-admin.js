@@ -249,9 +249,6 @@ module.exports = async (req, res) => {
                     l.source = "WATCH_PAGE";
                     l.source_label = l.watch_name
                         ? `Watch page: ${l.watch_name}` : "A watch page";
-                } else if (l.submission_type === "JOIN_LIST") {
-                    l.source = "NEWSLETTER";
-                    l.source_label = "Newsletter signup";
                 } else {
                     l.source = "SITE_FORM";
                     l.source_label = "Site enquiry form";

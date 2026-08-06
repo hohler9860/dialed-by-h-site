@@ -1,7 +1,6 @@
 const { Resend } = require("resend");
 const { render } = require("@react-email/render");
 const React = require("react");
-const { WelcomeEmail } = require("../lib/emails/welcome.js");
 const { InquiryEmail } = require("../lib/emails/inquiry.js");
 const { guard } = require("../lib/ratelimit.js");
 
@@ -133,17 +132,6 @@ function buildEmail(type, data) {
   const details = data.watch_details || null;
 
   const templates = {
-    JOIN_LIST: {
-      subject: cleanSubject(`\u{1F7E2} New Signup: ${name}`),
-      body: wrapNotification(`
-        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 20px; color: #1a1a1a;">New Private List Signup</h2>
-        ${fieldTable([
-          { label: "Name", value: name },
-          { label: "Email", value: email },
-          { label: "Details", value: details },
-        ])}
-      `),
-    },
     BUY: {
       subject: cleanSubject(`\u{1F535} Sourcing: ${watch || "New Request"}`),
       body: wrapNotification(`
@@ -259,7 +247,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const validTypes = ["JOIN_LIST", "BUY", "SELL", "TRADE", "WATCH_DETAIL"];
+    const validTypes = ["BUY", "SELL", "TRADE", "WATCH_DETAIL"];
     if (!validTypes.includes(type)) {
       console.error("[submit-form] VALIDATION FAIL -invalid type:", type);
       return res.status(400).json({ error: "Invalid submission type" });
@@ -270,34 +258,22 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Invalid email" });
     }
 
-    // Phone is required on every real lead form. JOIN_LIST is the footer newsletter
-    // capture — it has no phone field and asking for one there would gut signups.
-    // The `required` attribute on the inputs is only a hint; this is the real gate,
-    // since anyone can POST straight to this endpoint.
+    // Phone is required on every lead form. The `required` attribute on the
+    // inputs is only a hint; this is the real gate, since anyone can POST
+    // straight to this endpoint.
     const phoneClean = (phone || "").trim();
-    if (type !== "JOIN_LIST") {
-      const digits = phoneClean.replace(/\D/g, "");
-      if (!digits) {
-        console.error("[submit-form] VALIDATION FAIL -missing phone for type:", type);
-        return res.status(400).json({ error: "Phone number is required" });
-      }
-      // 7 is the shortest plausible national number; 15 is the E.164 maximum.
-      if (digits.length < 7 || digits.length > 15) {
-        console.error("[submit-form] VALIDATION FAIL -implausible phone length:", digits.length);
-        return res.status(400).json({ error: "Please enter a valid phone number" });
-      }
+    const digits = phoneClean.replace(/\D/g, "");
+    if (!digits) {
+      console.error("[submit-form] VALIDATION FAIL -missing phone for type:", type);
+      return res.status(400).json({ error: "Phone number is required" });
+    }
+    // 7 is the shortest plausible national number; 15 is the E.164 maximum.
+    if (digits.length < 7 || digits.length > 15) {
+      console.error("[submit-form] VALIDATION FAIL -implausible phone length:", digits.length);
+      return res.status(400).json({ error: "Please enter a valid phone number" });
     }
 
-    // For JOIN_LIST from footer form, pack intent/budget/lookingFor into watch_details
-    // so Henry actually sees the qualifying info in his inbox + Supabase
     let detailsForRow = watchDetails?.trim() || null;
-    if (type === "JOIN_LIST") {
-      const parts = [];
-      if (intent) parts.push(`Intent: ${intent}`);
-      if (budget) parts.push(`Budget: ${budget}`);
-      if (lookingFor && String(lookingFor).trim()) parts.push(`Looking for: ${String(lookingFor).trim()}`);
-      if (parts.length) detailsForRow = parts.join(" | ");
-    }
 
     // Insert into Supabase
     const row = {
@@ -331,7 +307,6 @@ module.exports = async (req, res) => {
 
     // ── EMAIL SENDING (non-critical — never fails the request) ──
     let emailSent = false;
-    let welcomeSent = false;
     let inquirySent = false;
     let emailDebug = null;
 
@@ -358,32 +333,6 @@ module.exports = async (req, res) => {
             console.error("[submit-form] NOTIFICATION EMAIL THREW:", err.message);
             emailDebug = err.message;
           })
-        );
-      }
-
-      // 2. Welcome email to subscriber (JOIN_LIST only)
-      if (type === "JOIN_LIST") {
-        const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
-        console.log("[submit-form] Queuing welcome email to:", data.email);
-
-        emailPromises.push(
-          render(React.createElement(WelcomeEmail, { firstName }))
-            .then(welcomeHtml =>
-              getResend().emails.send({
-                from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
-                to: data.email,
-                subject: "Welcome to the Private List",
-                html: welcomeHtml,
-              })
-            )
-            .then(result => {
-              if (result.error) console.error("[submit-form] WELCOME EMAIL ERROR:", JSON.stringify(result.error));
-              else { console.log("[submit-form] Welcome email sent -ID:", result.data?.id); welcomeSent = true; }
-              return result;
-            })
-            .catch(err => {
-              console.error("[submit-form] WELCOME EMAIL THREW:", err.message);
-            })
         );
       }
 
@@ -432,7 +381,6 @@ module.exports = async (req, res) => {
       success: true,
       id: data.id,
       emailSent,
-      welcomeSent,
       inquirySent,
       _debug: emailDebug || null,
     });

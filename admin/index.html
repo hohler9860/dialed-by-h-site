@@ -1660,10 +1660,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         return l.lead_class === 'REAL' && l.lead_quality === k;
     }
 
-    // Leads means people asking us to source a watch. JOIN_LIST is a private-list
-    // signup, not a sourcing request, so it is out of this view by default -
-    // it was padding the counts without ever being something to action.
-    // The Type filter can still surface them when you want the list.
+    // Leads means people asking us to source a watch.
     var SOURCING_TYPES = ['BUY', 'WATCH_DETAIL', 'SELL', 'TRADE'];
 
     function isSourcing(l) {
@@ -1676,8 +1673,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var cutoff = days ? Date.now() - (+days * 864e5) : 0;
         var needle = (q || '').toLowerCase();
         return LEADS.filter(function (l) {
-            if (lfilter.type === '__list') { if (isSourcing(l)) return false; }
-            else if (lfilter.type) { if (l.submission_type !== lfilter.type) return false; }
+            if (lfilter.type) { if (l.submission_type !== lfilter.type) return false; }
             else if (!isSourcing(l)) return false;
             if (!matchTile(l, tile)) return false;
             if (status && (l.status || 'new') !== status) return false;
@@ -1750,7 +1746,6 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<option value=""' + (lfilter.type ? '' : ' selected') + '>SOURCING REQUESTS</option>' +
                 '<option value="BUY"' + (lfilter.type === 'BUY' ? ' selected' : '') + '>BUY ONLY</option>' +
                 '<option value="WATCH_DETAIL"' + (lfilter.type === 'WATCH_DETAIL' ? ' selected' : '') + '>WATCH ENQUIRY ONLY</option>' +
-                '<option value="__list"' + (lfilter.type === '__list' ? ' selected' : '') + '>PRIVATE LIST SIGNUPS</option>' +
               '</select>' +
               '<select id="l-status" class="ctl">' +
                 '<option value=""' + (lfilter.status ? '' : ' selected') + '>ANY STATUS</option>' +

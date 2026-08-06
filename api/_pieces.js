@@ -97,6 +97,9 @@ function mapRow(r) {
         collections: Array.isArray(r.collections) ? r.collections : [],
         tags: r.tags || '',
         celebs: Array.isArray(r.celebs) ? r.celebs : [],
+        // When the piece landed in the catalog. The homepage ticker leads with
+        // new stock, which it cannot do from array position alone.
+        addedAt: r.created_at || '',
     };
     out.slug = pieceSlug(out);
     return out;

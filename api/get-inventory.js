@@ -328,35 +328,118 @@ module.exports = async (req, res) => {
         // server already holds the whole catalog warm in memory, so the browser
         // downloads the 44 it will actually paint.
         if (q.ticker) {
-            const HOT = ['Audemars Piguet', 'Patek Philippe', 'F.P. Journe', 'Rolex',
-                         'Richard Mille', 'Vacheron Constantin', 'A. Lange & Söhne', 'Cartier'];
             const VETO = ['richard-mille-rm-07-01-rm07-01-2be983'];
             // ?ticker=1 is the flag form and means "the usual strip", not "one
             // piece". Only a value above 1 is read as a count.
             const asked = Number(q.ticker);
             const want = Math.min(asked > 1 ? asked : 44, 60);
 
-            const byBrand = {};
-            for (const w of pieces) {
-                if (!/-cutout\.webp$/.test(w.imageCutout || '')) continue;
-                if (VETO.includes(w.slug)) continue;
-                (byBrand[w.brand] = byBrand[w.brand] || []).push(w);
-            }
-            // Rotate by the day so the strip is not frozen on one set forever,
-            // but stays identical within a day — the CDN caches this for 15
-            // minutes and a per-request shuffle would make that pointless.
+            // Brands were bucketed on the raw string, so "F.P.Journe" and
+            // "F.P. Journe" counted as different makers and the 71 pieces
+            // spelled without the space could never reach the homepage. Squash
+            // the key so a spelling slip cannot hide stock.
+            const brandKey = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            const eligible = pieces.filter(w =>
+                /-cutout\.webp$/.test(w.imageCutout || '') && !VETO.includes(w.slug));
+            if (!eligible.length) return res.status(200).json([]);
+
+            // Selection used to be a modular jump per brand across eight
+            // favoured names only. That stranded every other brand outright and,
+            // because
+            // the jump could land on the same slot repeatedly, reached about 72%
+            // of the catalog over two months. Two blocks instead:
+            //
+            //   1. the newest pieces, so stock added today is on the homepage
+            //      today rather than waiting for its brand's turn
+            //   2. a window over everything else that advances by its own width
+            //      each day, so consecutive days carry on where yesterday
+            //      stopped and every piece is reached in about 52 days
+            //
+            // Both stay fixed within a day: the CDN caches this for 15 minutes,
+            // so a per-request shuffle would only defeat the cache.
+            const newest = (a, b) => String(b.addedAt || '').localeCompare(String(a.addedAt || ''));
+            const byNew = eligible.slice().sort(newest);
+
             const day = Math.floor(Date.now() / 864e5);
-            const out = [];
-            for (let round = 0; out.length < want; round++) {
-                let added = 0;
-                for (const b of HOT) {
-                    const list = byBrand[b];
-                    if (!list || !list.length) continue;
-                    out.push(list[(day * 7 + round * 13) % list.length]);
-                    added++;
-                    if (out.length >= want) break;
+            const freshCount = Math.min(Math.ceil(want / 4), byNew.length);
+            const picked = byNew.slice(0, freshCount);
+
+            const rest = byNew.slice(freshCount);
+            const span = Math.max(1, want - freshCount);
+            if (rest.length) {
+                // Split the remaining slots between brands in proportion to how
+                // much of that brand is in stock, and let each brand sweep its
+                // own pool by exactly its share each day. Big pools get more
+                // slots, so every brand finishes its lap in the same ~52 days
+                // instead of Royal Oaks taking half a year while Tudor repeats
+                // nightly. A contiguous window over the whole catalog reached
+                // everything too, but the catalog is grouped by brand, so a day
+                // only ever showed four or five makers.
+                const pools = new Map();
+                for (const w of rest) {
+                    const k = brandKey(w.brand);
+                    if (!pools.has(k)) pools.set(k, []);
+                    pools.get(k).push(w);
                 }
-                if (!added) break;
+                // Largest first, so rounding leftovers land on the deepest pools.
+                const keys = [...pools.keys()].sort((a, b) => pools.get(b).length - pools.get(a).length);
+                const share = new Map();
+                let handed = 0;
+                for (const k of keys) {
+                    const n = Math.max(1, Math.round(span * pools.get(k).length / rest.length));
+                    share.set(k, n);
+                    handed += n;
+                }
+                // Proportional shares rarely sum to the target; settle the
+                // difference against the biggest pools, never below one slot.
+                for (let i = 0; handed > span && i < keys.length; i = (i + 1) % keys.length) {
+                    const k = keys[i];
+                    if (share.get(k) > 1) { share.set(k, share.get(k) - 1); handed--; }
+                    else if (keys.every(x => share.get(x) <= 1)) break;
+                }
+                for (let i = 0; handed < span; i = (i + 1) % keys.length) {
+                    share.set(keys[i], share.get(keys[i]) + 1); handed++;
+                }
+                for (const k of keys) {
+                    const list = pools.get(k);
+                    const n = Math.min(share.get(k), list.length);
+                    const start = (day * share.get(k)) % list.length;
+                    for (let i = 0; i < n && picked.length < want; i++) {
+                        picked.push(list[(start + i) % list.length]);
+                    }
+                }
+            }
+
+            // The catalog is grouped by brand, so a straight window can be a
+            // dozen Royal Oaks in a row. Deal the picks out round-robin by brand
+            // so the strip reads as a range. Order only, nothing added or lost.
+            const queues = new Map();
+            for (const w of picked) {
+                const k = brandKey(w.brand);
+                if (!queues.has(k)) queues.set(k, []);
+                queues.get(k).push(w);
+            }
+            // Always deal from whichever brand has the most left, rather than
+            // cycling in a fixed order. Plain round-robin drains the one-piece
+            // brands early and leaves the deep ones stacked at the end, which
+            // showed as eleven Royal Oaks in a row.
+            const out = [];
+            const lists = [...queues.values()];
+            while (out.length < picked.length) {
+                const lastKey = out.length ? brandKey(out[out.length - 1].brand) : null;
+                let pick = null, fallback = null;
+                for (const q of lists) {
+                    if (!q.length) continue;
+                    if (!fallback || q.length > fallback.length) fallback = q;
+                    if (brandKey(q[0].brand) === lastKey) continue;
+                    if (!pick || q.length > pick.length) pick = q;
+                }
+                // Prefer the deepest queue of a different brand; only repeat a
+                // brand when it is the sole one with anything left.
+                const from = pick || fallback;
+                if (!from) break;
+                out.push(from.shift());
             }
             return res.status(200).json(out.map(w => ({
                 id: w.id, slug: w.slug, brand: w.brand, model: w.model,

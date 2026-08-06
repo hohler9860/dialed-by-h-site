@@ -986,15 +986,20 @@ module.exports = async (req, res) => {
             if (only === "noref")     filter = "&reference=is.null";
             if (only === "noprice")   filter = "&price_usd=is.null";
 
-            const [flows, scorecard, coverage, samples] = await Promise.all([
+            const [flows, scorecard, coverage, samples, benchModels, benchFields] = await Promise.all([
                 wh("flow_health?select=*&order=errors.desc"),
                 wh("model_scorecard?select=*"),
                 wh("field_coverage?select=*&order=pct.asc"),
                 wh(`extraction_samples?select=*${filter}&order=${sort}&limit=300`),
+                // The head to head: which cheap model to trust, and which
+                // attributes no cheap model reads reliably.
+                wh("bench_models?select=*&order=answer_rate.desc").catch(() => []),
+                wh("bench_fields?select=*&order=pct_agree.asc").catch(() => []),
             ]);
             return res.status(200).json({
                 flows: flows || [], scorecard: scorecard || [],
                 coverage: coverage || [], samples: samples || [],
+                benchModels: benchModels || [], benchFields: benchFields || [],
             });
         }
 

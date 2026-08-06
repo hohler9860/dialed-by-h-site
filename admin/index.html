@@ -3410,6 +3410,41 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') +
           '</tbody></table></div>' +
 
+          // Cheap vision models, same photos, same prompt. With no ground truth
+          // the signal is agreement: what they all read the same way is probably
+          // right, what they split on is where a photo alone is not enough.
+          ((AC.benchModels || []).length
+            ? '<p class="count" style="margin-top:22px">Cheap vision models head to head · ' +
+                'same photos, same prompt, no ground truth so this measures agreement</p>' +
+              '<div class="tbl-wrap" style="margin-bottom:14px"><table class="leads"><thead><tr>' +
+                '<th style="width:210px">Model</th><th style="width:90px">Answered</th>' +
+                '<th style="width:110px">With majority</th><th style="width:90px">Said null</th>' +
+                '<th style="width:110px">Tokens</th><th>Notes</th>' +
+              '</tr></thead><tbody>' +
+              AC.benchModels.map(function (m) {
+                  var rate = Number(m.answer_rate);
+                  var cls = rate >= 95 ? 'hot' : rate >= 50 ? 'warm' : 'spam';
+                  return '<tr>' +
+                    '<td>' + esc(m.model) + '</td>' +
+                    '<td><span class="tag ' + cls + '">' + esc(m.answer_rate) + '%</span></td>' +
+                    '<td>' + (m.pct_with_majority == null ? '—' : esc(m.pct_with_majority) + '%') + '</td>' +
+                    '<td>' + (m.pct_said_null == null ? '—' : esc(m.pct_said_null) + '%') + '</td>' +
+                    '<td class="count">' + (m.avg_tokens_in ? esc(m.avg_tokens_in) + ' / ' + esc(m.avg_tokens_out) : '—') + '</td>' +
+                    '<td class="count">' + esc(m.errors || '') + '</td>' +
+                  '</tr>';
+              }).join('') +
+              '</tbody></table></div>' +
+              '<p class="count">What the models agree on · anything low here is a ' +
+                'weak spot in the pipeline whichever model reads the photo</p>' +
+              '<div class="tbl-wrap" style="margin-bottom:20px">' +
+              svgBars((AC.benchFields || []).map(function (f) {
+                  return { k: f.field, v: Number(f.pct_agree || 0),
+                           t: f.pct_agree + '% agree · split on ' + f.split_on + ' of ' + f.photos,
+                           c: pctColor(Number(f.pct_agree || 0)) };
+              }), { max: 100, labW: 140, barW: 260 }) +
+              '</div>'
+            : '') +
+
           '<div class="bar">' +
             FILTERS.map(function (f) {
                 return '<button class="btn ghost" data-ac="' + f.k + '" ' +

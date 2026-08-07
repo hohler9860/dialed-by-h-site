@@ -3405,6 +3405,33 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') +
           '</tbody></table></div>' +
 
+          // Held back from matching: both photo models independently read the
+          // metal or the diamonds as something other than the caption claims.
+          // These are the ones that would otherwise quote a steel watch as gold.
+          ((AC.disputes || []).length
+            ? '<p class="count" style="margin-top:22px">Held back from matching · ' +
+                'both photo models disagree with the dealer on metal or diamonds, ' +
+                'which is the difference between steel and platinum</p>' +
+              '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
+                '<th style="width:190px">Piece</th><th style="width:110px">Price</th>' +
+                '<th style="width:150px">Dealer says</th><th style="width:150px">Photo shows</th>' +
+                '<th>Why it is held</th></tr></thead><tbody>' +
+              AC.disputes.map(function (d) {
+                  var why = (d.photo_conflicts || []).filter(function (c) {
+                      return /^(metal|diamonds)/.test(c);
+                  });
+                  return '<tr>' +
+                    '<td>' + esc([d.brand, d.model, d.reference].filter(Boolean).join(' ')) + '</td>' +
+                    '<td>' + (d.price_usd ? '$' + Number(d.price_usd).toLocaleString('en-US') : '—') + '</td>' +
+                    '<td>' + esc(d.caption_metal || (d.caption_diamonds ? 'diamonds' : '—')) + '</td>' +
+                    '<td style="color:' + BAD_RED + '">' +
+                      esc(d.photo_metal || d.photo_diamonds || '—') + '</td>' +
+                    '<td class="count">' + esc(why.join(' · ')) + '</td>' +
+                  '</tr>';
+              }).join('') +
+              '</tbody></table></div>'
+            : '') +
+
           // Whether a dealer's message actually became an identified watch.
           // A listing with no family cannot be matched to anyone, and a
           // reference the chats argue about sends the wrong piece.

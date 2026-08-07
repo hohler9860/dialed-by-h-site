@@ -984,7 +984,7 @@ module.exports = async (req, res) => {
             if (only === "noprice")   filter = "&price_usd=is.null";
 
             const [flows, scorecard, coverage, samples, benchModels, benchFields,
-                   identity, contested] = await Promise.all([
+                   identity, disputes, contested] = await Promise.all([
                 wh("flow_health?select=*&order=errors.desc"),
                 wh("model_scorecard?select=*"),
                 wh("field_coverage?select=*&order=pct.asc"),
@@ -995,6 +995,11 @@ module.exports = async (req, res) => {
                 wh("bench_fields?select=*&order=pct_agree.asc").catch(() => []),
                 // How well the chats are being turned into an actual watch.
                 supabase("rpc/identity_health", { method: "POST", body: "{}" }).catch(() => null),
+                // Pieces held back from matching: both photo models read the
+                // metal or the diamonds as something other than the caption
+                // claims, which is the difference between steel and platinum.
+                wh("photo_disputes?select=*&blocks_matching=is.true&reviewed=is.false" +
+                   "&order=price_usd.desc&limit=120").catch(() => []),
                 // References the chats cannot agree on: these are the ones worth
                 // pinning down by hand, because a wrong one sends the wrong watch.
                 wh("contested_refs?select=*&order=listings.desc&limit=60").catch(() => []),
@@ -1004,6 +1009,7 @@ module.exports = async (req, res) => {
                 coverage: coverage || [], samples: samples || [],
                 benchModels: benchModels || [], benchFields: benchFields || [],
                 identity: identity || null, contested: contested || [],
+                disputes: disputes || [],
             });
         }
 

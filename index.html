@@ -741,8 +741,13 @@
                     </div>
                 </div>
 
+                <!-- Most enquiries that state a preference ask for iMessage, not
+                     WhatsApp, so text gets equal billing rather than being missing. -->
                 <div class="text-center mt-10 sm:mt-12">
-                    <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="dbh-btn dbh-btn--solid px-10">Text me on WhatsApp</a>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                        <a href="sms:+19146211848" class="dbh-btn dbh-btn--solid px-10">Text me</a>
+                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="dbh-btn px-10">WhatsApp</a>
+                    </div>
                     <p class="text-[10px] tracking-widest text-muted mt-8 font-inter">Tell me what you're looking for</p>
                 </div>
 
@@ -780,7 +785,8 @@
                     </div>
                     <div class="dbh-faq__cta pt-reveal">
                         <p>Still have a question?</p>
-                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="dbh-btn">Message me on WhatsApp</a>
+                        <a href="sms:+19146211848" class="dbh-btn">Text me</a>
+                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="dbh-btn">WhatsApp</a>
                     </div>
                 </div>
             </div>
@@ -792,6 +798,7 @@
                 <div>
                     <img class="dbh-footer__logo" src="/images/logo.png" alt="Dialed By H">
                     <ul>
+                        <li><span>Text</span><a href="sms:+19146211848">+1 914 621 1848</a></li>
                         <li><span>WhatsApp</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener">+1 914 621 1848</a></li>
                         <li><span>Email</span><a href="mailto:dialedbyh@gmail.com">dialedbyh@gmail.com</a></li>
                         <li><span>Instagram</span><a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">@dialedbyh</a></li>
@@ -835,6 +842,38 @@
                 </svg>
             </button>
             <div id="modal-body" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- EXIT INTENT (desktop only, armed from script below) -->
+    <div id="dbh-exit" class="modal-hidden fixed inset-0 z-50 flex opacity-0"
+         style="background:rgba(0,0,0,0.82)" role="dialog" aria-modal="true"
+         aria-labelledby="dbh-exit-h">
+        <div class="w-full max-w-md glass-strong relative shadow-2xl rounded-2xl"
+             style="margin:auto;padding:34px 30px">
+            <button onclick="closeExitIntent()" aria-label="Close"
+                    class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <h2 id="dbh-exit-h" class="dbh-display text-2xl font-space font-bold tracking-tight mb-3">
+                Looking for something specific?
+            </h2>
+            <p class="text-xs text-muted mb-7 tracking-wide leading-relaxed">
+                Most of what I move never reaches the site. Tell me the reference
+                and I'll tell you what it costs.
+            </p>
+            <div class="flex flex-col gap-3">
+                <button onclick="closeExitIntent(); app.openModal('BUY');"
+                        class="dbh-btn dbh-btn--solid w-full">Request a piece</button>
+                <a href="sms:+19146211848" onclick="closeExitIntent()"
+                   class="dbh-btn w-full text-center">Text me</a>
+            </div>
+            <button onclick="closeExitIntent()"
+                    class="mt-6 text-[10px] font-space tracking-widest text-muted/70 hover:text-ivory transition-colors duration-300 uppercase w-full">
+                No thanks
+            </button>
         </div>
     </div>
 
@@ -1448,6 +1487,76 @@
                 }
             },
 
+        };
+
+        // Exit intent: one last route to a conversation for someone about to
+        // leave. Desktop only and never an interstitial on phones, because
+        // Google demotes those in search and the SEO is worth more than the
+        // capture. It offers contact rather than an email box: the private list
+        // proved a form nobody fills in is worse than no form at all.
+        (function exitIntent() {
+            var KEY = 'dbh_exit_seen';
+            var COOLDOWN = 30 * 864e5;   // don't nag a returning visitor for a month
+            var armed = false;
+
+            // Coarse pointer or a narrow window means a phone or tablet, where
+            // "moving the cursor out of the viewport" is not a real signal.
+            if (window.matchMedia('(pointer: coarse)').matches) return;
+            if (window.innerWidth < 1024) return;
+
+            try {
+                var last = Number(localStorage.getItem(KEY) || 0);
+                if (last && Date.now() - last < COOLDOWN) return;
+            } catch (e) { /* private mode: just show it once this session */ }
+
+            // Give the page a chance to be read first. Someone who leaves in the
+            // first few seconds was never going to convert off a popup.
+            setTimeout(function () { armed = true; }, 12000);
+
+            function show() {
+                if (!armed) return;
+                armed = false;
+                try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+                document.removeEventListener('mouseout', onOut);
+
+                var el = document.getElementById('dbh-exit');
+                if (!el) return;
+                el.classList.remove('modal-hidden');
+                el.classList.add('modal-visible');
+                if (window.gsap) {
+                    gsap.to(el, { opacity: 1, duration: 0.3, ease: 'power2.out' });
+                    gsap.fromTo(el.firstElementChild,
+                        { y: 20, opacity: 0, scale: 0.98 },
+                        { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: 'power3.out' });
+                } else { el.style.opacity = 1; }
+                var f = el.querySelector('a, button');
+                if (f) f.focus();
+            }
+
+            function onOut(e) {
+                // Only a genuine exit: leaving through the top of the window,
+                // not drifting over an iframe or another element.
+                if (e.relatedTarget || e.toElement) return;
+                if (e.clientY > 8) return;
+                show();
+            }
+
+            document.addEventListener('mouseout', onOut);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') window.closeExitIntent();
+            });
+        })();
+
+        window.closeExitIntent = function () {
+            var el = document.getElementById('dbh-exit');
+            if (!el || el.classList.contains('modal-hidden')) return;
+            if (window.gsap) {
+                gsap.to(el, { opacity: 0, duration: 0.25, onComplete: function () {
+                    el.classList.remove('modal-visible'); el.classList.add('modal-hidden');
+                } });
+            } else {
+                el.classList.remove('modal-visible'); el.classList.add('modal-hidden');
+            }
         };
 
         window.addEventListener('DOMContentLoaded', app.init);

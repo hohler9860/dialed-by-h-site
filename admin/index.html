@@ -1893,13 +1893,25 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                       (d.quoted_price ? ' · quoting ' + esc(money(d.quoted_price)) : '') +
                       (d.reference ? ' · ' + esc(d.reference) : '') +
                       (sent ? ' · sent ' + esc(fmtAgo(d.sent_at)) : '') + '</div>' +
-                    '<pre style="white-space:pre-wrap;font-size:12px;margin:6px 0 0">' +
-                      esc(d.body || '') + '</pre>' +
+                    // Editable before sending. The wording Henry actually uses is
+                    // the only reliable guide to his voice, and it was being
+                    // thrown away: every draft was recorded as sent verbatim, so
+                    // the style examples fed back the model's own text forever.
+                    (sent
+                      ? '<pre style="white-space:pre-wrap;font-size:12px;margin:6px 0 0">' +
+                          esc(d.sent_body || d.body || '') + '</pre>'
+                      : '<textarea class="js-draft-body" data-draft="' + esc(d.id) + '" ' +
+                          'style="width:100%;min-height:132px;margin:6px 0 0;font:inherit;' +
+                          'font-size:12px;line-height:1.5;padding:8px;background:transparent;' +
+                          'color:inherit;border:1px solid var(--line);border-radius:6px;' +
+                          'white-space:pre-wrap;resize:vertical">' + esc(d.body || '') + '</textarea>') +
                     // Marking it sent is what starts the follow-up clock, so it
                     // has to be one click at the moment of sending.
                     (sent ? ''
                           : '<button class="btn ghost js-sent" data-draft="' + esc(d.id) +
-                            '" style="margin-top:8px">I sent this</button>') +
+                            '" style="margin-top:8px">I sent this</button>' +
+                            '<span class="count js-edited" data-draft="' + esc(d.id) + '" ' +
+                            'style="margin-left:10px"></span>') +
                   '</div>';
               }).join('')
             : '<p class="count" style="margin-top:14px">No reply drafted yet.</p>';
@@ -1965,8 +1977,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 var btn = this;
                 btn.disabled = true; btn.textContent = 'Saving…';
                 try {
+                    // Send whatever is in the box, which may be Henry's rewrite.
+                    var box = view.querySelector('.js-draft-body[data-draft="' + btn.dataset.draft + '"]');
                     await A.adminFetchTo('/api/leads-admin', 'mark-draft-sent',
-                        { draft_id: Number(btn.dataset.draft) });
+                        { draft_id: Number(btn.dataset.draft),
+                          sent_body: box ? box.value : undefined });
                     renderLeads().catch(function (err) {
                         view.innerHTML = '<p class="err">' + esc(err.message || err) + '</p>';
                     });

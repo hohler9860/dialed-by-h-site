@@ -289,7 +289,7 @@
                             <li><a href="/process/"><span data-scramble data-delay="360">Process</span></a></li>
                             <li><a href="/journal/"><span data-scramble data-delay="420">Journal</span></a></li>
                         </ul>
-                        <a href="#" onclick="event.preventDefault(); app.openModal('BUY')"><span data-scramble data-delay="480">Request to Source</span></a>
+                        <a href="#source" data-modal="source"><span data-scramble data-delay="480">Request to Source</span></a>
                     </div>
                     <button id="mobile-menu-btn" onclick="app.toggleMobileMenu()" class="dbh-header__burger" aria-label="Menu">
                         <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
@@ -304,7 +304,7 @@
                     <h1 class="dbh-display pt-reveal text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-8">Boston&#39;s Luxury Watch Dealer &amp; Concierge</h1>
                     <p class="pt-reveal font-inter text-sm sm:text-base text-ivory/70 leading-relaxed max-w-2xl mb-10">Dialed By H is an independent watch dealer serving Boston collectors who want more than the local authorized dealer can offer. Whether you are buying your first Rolex, selling a Patek Philippe, or trading into a grail reference, every transaction is personally sourced, independently authenticated, and competitively priced.</p>
                     <div class="pt-reveal flex flex-col sm:flex-row gap-3 sm:gap-4">
-                        <button onclick="app.openModal(&#39;BUY&#39;)" class="dbh-btn dbh-btn--solid">Request a piece</button>
+                        <button data-modal="source" class="dbh-btn dbh-btn--solid">Request a piece</button>
                         <a href="/buy/" class="dbh-btn">Browse pieces</a>
                     </div>
                 </div>
@@ -424,7 +424,7 @@
                     <h2 class="dbh-display pt-reveal text-2xl sm:text-3xl lg:text-4xl mb-4">Start your search</h2>
                     <p class="pt-reveal font-inter text-sm text-ivory/60 leading-relaxed max-w-xl mx-auto mb-10">Looking to buy, sell, or trade a luxury watch in Boston? Tell me what you have in mind.</p>
                     <div class="pt-reveal flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                        <button onclick="app.openModal(&#39;BUY&#39;)" class="dbh-btn dbh-btn--solid">Request a piece</button>
+                        <button data-modal="source" class="dbh-btn dbh-btn--solid">Request a piece</button>
                         <a href="sms:+19146211848" class="dbh-btn">Text me</a>
                     </div>
                 </div>
@@ -449,7 +449,7 @@
                         <li><a href="/buy/">Buy</a></li>
                         <li><a href="#trade" data-modal="trade">Trade</a></li>
                         <li><a href="#sell" data-modal="sell">Sell</a></li>
-                        <li><a href="#" onclick="event.preventDefault(); app.openModal('BUY')">Request to Source</a></li>
+                        <li><a href="#source" data-modal="source">Request to Source</a></li>
                     </ul>
                 </div>
                 <div>
@@ -470,22 +470,81 @@
         </footer>
     </div>
 
-<div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex opacity-0" style="background:rgba(0,0,0,0.82);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">
-        <div class="w-full max-w-lg glass-strong relative shadow-2xl rounded-2xl" style="margin:auto;padding:0;overflow-x:hidden">
-            <button onclick="app.closeModal()"
-                    class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-            </button>
-            <div id="modal-body" class="space-y-4"></div>
-        </div>
-    </div>
 
     <script src="/assets/vendor/gsap.min.js"></script>
     <script src="/scripts/lucide.min.js"></script>
     <script src="/scripts/premium-ui.js"></script>
     <script src="/assets/scramble.js"></script>
     <script src="/assets/modals.js"></script>
+
+    <div class="pt-modal-backdrop js-pt-backdrop"></div>
+    <div id="pt-modal-root"></div>
+
+    <script>
+    /* Reveal on scroll. Every block on this page carries .pt-reveal, which is
+       opacity:0 until this runs. The homepage does it from its own inline
+       script, which is not copied here, so without this the page renders
+       completely blank. Same observer /about uses. */
+    (function(){
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(!e.isIntersecting) return;
+          var el=e.target, sibs=[].slice.call(document.querySelectorAll('.pt-reveal'));
+          setTimeout(function(){el.classList.add('is-in')}, 70*(sibs.indexOf(el)%5));
+          io.unobserve(el);
+        });
+      },{threshold:.12});
+      document.querySelectorAll('.pt-reveal').forEach(function(el){io.observe(el)});
+      // Anything already on screen at load, in case the observer is late.
+      setTimeout(function(){
+        document.querySelectorAll('.pt-reveal').forEach(function(el){
+          var r=el.getBoundingClientRect();
+          if(r.top < innerHeight && r.bottom > 0) el.classList.add('is-in');
+        });
+      }, 1200);
+    })();
+
+    /* FAQ accordion, one open at a time. Same behaviour as the homepage. */
+    (function(){
+      var items=document.querySelectorAll('.dbh-faq__item');
+      items.forEach(function(it){
+        var btn=it.querySelector('.dbh-faq__q'); if(!btn) return;
+        btn.addEventListener('click',function(){
+          var wasOpen=it.classList.contains('is-open');
+          items.forEach(function(o){
+            o.classList.remove('is-open');
+            var b=o.querySelector('.dbh-faq__q'); if(b) b.setAttribute('aria-expanded','false');
+          });
+          if(!wasOpen){ it.classList.add('is-open'); btn.setAttribute('aria-expanded','true'); }
+        });
+      });
+    })();
+
+    /* The copied header calls app.*, which lives in the homepage's inline
+       script. modals.js owns the enquiry form on this page. */
+    window.app = {
+      openModal: function(kind){
+        var map={BUY:'source',SELL:'sell',TRADE:'trade'};
+        var el=document.querySelector('[data-modal="'+(map[kind]||'source')+'"]');
+        if(el) el.click();
+      },
+      closeModal: function(){},
+      toggleMobileMenu: function(){
+        var m=document.querySelector('.js-dbh-mnav'); if(!m) return;
+        m.classList.toggle('is-open');
+      }
+    };
+    </script>
+
+    <div class="dbh-mnav js-dbh-mnav" aria-hidden="true">
+      <button class="x" type="button" onclick="app.toggleMobileMenu()" aria-label="Close menu">&#10005;</button>
+      <a href="/buy/">Buy</a>
+      <button type="button" data-modal="trade">Trade</button>
+      <button type="button" data-modal="sell">Sell</button>
+      <a href="/about/">About</a>
+      <a href="/process/">Process</a>
+      <a href="/journal/">Journal</a>
+      <button type="button" data-modal="source">Request to Source</button>
+    </div>
 </body>
 </html>

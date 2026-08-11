@@ -176,12 +176,14 @@ a.pt-cta{text-decoration:none;display:inline-block}
    here, so the field borrows .pt-fbtn's type exactly (mono, 11px, uppercase,
    .16em) and sits on a single hairline that darkens on focus. No icon and no
    box, because nothing else on the page has either. */
-.pt-search{display:flex;align-items:center;padding:4px 2px 22px}
-.pt-search input{width:min(360px,100%);border:none;border-bottom:1px solid rgba(0,0,0,.14);background:none;outline:none;color:#000;font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:8px 0;transition:border-color .25s ease}
-.pt-search input::placeholder{color:rgba(0,0,0,.35);letter-spacing:.16em;text-transform:uppercase}
-.pt-search input:focus{border-bottom-color:#000}
-.pt-search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
-.pt-search button{display:none;background:none;border:none;cursor:pointer;color:rgba(0,0,0,.35);font-family:var(--pt-mono);font-size:15px;line-height:1;padding:0 0 0 12px}
+.pt-search{display:flex;align-items:center;padding:10px 2px 30px}
+/* appearance:none is what actually removes Safari's search-field focus ring;
+   outline:none on its own leaves the blue box. */
+.pt-search input{-webkit-appearance:none;appearance:none;width:min(420px,100%);border:none;border-bottom:1px solid rgba(0,0,0,.16);background:none;outline:none;box-shadow:none;color:#000;font-family:var(--pt-mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:16px 2px;transition:border-color .25s ease}
+.pt-search input::placeholder{color:rgba(0,0,0,.32);letter-spacing:.24em;text-transform:uppercase}
+.pt-search input:focus,.pt-search input:focus-visible{outline:none;box-shadow:none;border-bottom-color:#000}
+.pt-search input::-webkit-search-cancel-button,.pt-search input::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
+.pt-search button{display:none;background:none;border:none;cursor:pointer;color:rgba(0,0,0,.32);font-family:var(--pt-mono);font-size:16px;line-height:1;padding:0 0 0 18px;transition:color .2s ease}
 .pt-search button:hover{color:#000}
 .pt-search.has-q button{display:inline-block}
 

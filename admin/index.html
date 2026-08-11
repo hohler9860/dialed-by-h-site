@@ -591,6 +591,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             (b.serious ? '<span class="count" style="color:' + seriousColour + '">' +
                          esc(b.serious) + ' buyer</span>' : '') +
             '<span class="count">' + esc(r.days_quiet) + 'd quiet</span>' +
+            (r.draft_kind === 'NEXT'
+              ? '<span class="count" style="color:' + OK_GREEN + '">next message ready</span>' : '') +
             '<span class="count" style="margin-left:auto">' + esc(job) + '</span>' +
           '</div>' +
 
@@ -674,7 +676,29 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '</tr></thead><tbody>' + rows.map(huntRow).join('') + '</tbody></table></div>';
         }
 
+        // The day in a sentence, before the counters. Computed in SQL from the
+        // same rows shown below, so it cannot drift from them.
+        var sm = d.summary || {};
+        var summaryLine = '';
+        if (sm.ball_with_you != null) {
+            var bits = [];
+            if (sm.ball_with_you) bits.push('<b>' + sm.ball_with_you + '</b> replied and are waiting on you' +
+                (sm.top_name ? ', longest is <b>' + esc(sm.top_name) + '</b> at ' + sm.top_days + ' days' : ''));
+            if (sm.never_answered) bits.push('<b>' + sm.never_answered + '</b> have never been answered');
+            if (sm.strong_buyers) bits.push('<b>' + sm.strong_buyers + '</b> look like serious buyers' +
+                ((sm.strong_names || []).length ? ' (' + (sm.strong_names || []).map(esc).join(', ') + ')' : ''));
+            if (sm.ready_to_show) bits.push('<b>' + sm.ready_to_show + '</b> have stock you could show them today');
+            if (sm.too_vague) bits.push('<b>' + sm.too_vague + '</b> are still too vague to search, so the next move there is to ask, not to hunt');
+            summaryLine =
+              '<p style="font-size:15px;line-height:1.65;margin:0 0 18px;max-width:78ch">' +
+                bits.join('. ') + '.' +
+                (sm.drafts_ready ? ' <span class="count">' + sm.drafts_ready +
+                  ' messages are written and ready to send.</span>' : '') +
+              '</p>';
+        }
+
         view.innerHTML =
+          summaryLine +
           '<div class="scard">' +
             '<div style="display:flex;gap:24px;flex-wrap:wrap">' +
               '<div><div class="count">Waiting on your reply</div><b style="font-size:26px;color:' +

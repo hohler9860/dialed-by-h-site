@@ -1023,12 +1023,26 @@ module.exports = async (req, res) => {
         // waiting to be sent, and what is still being hunted. Three questions
         // Henry was answering by eye across three different tabs.
         if (action === "today") {
-            const [queue, hunting] = await Promise.all([
+            const [queue, hunting, briefs, thread] = await Promise.all([
                 supabase("waiting_on_henry?select=*&limit=60"),
                 supabase("hunting_board?select=*&limit=200"),
+                // Where each conversation stands, read by two models.
+                supabase("lead_brief?select=*").catch(() => []),
+                // The last messages, so Henry can see the conversation rather
+                // than guess at it from a timestamp.
+                supabase("lead_thread?select=submission_id,from_me,body,sent_at" +
+                         "&order=sent_at.desc&limit=400").catch(() => []),
             ]);
             const q = Array.isArray(queue) ? queue : [];
             const h = Array.isArray(hunting) ? hunting : [];
+            const byId = {};
+            for (const b of (Array.isArray(briefs) ? briefs : [])) byId[b.submission_id] = b;
+            const msgs = {};
+            for (const m of (Array.isArray(thread) ? thread : [])) {
+                (msgs[m.submission_id] ||= []).length < 4 && msgs[m.submission_id].push(m);
+            }
+            for (const r of q) { r.brief = byId[r.submission_id] || null;
+                                 r.recent = (msgs[r.submission_id] || []).slice().reverse(); }
             return res.status(200).json({
                 needsReply: q,
                 hunting: h,

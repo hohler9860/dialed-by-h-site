@@ -14,8 +14,10 @@
  *   - Only REAL leads are considered. PERSONAL contacts (Henry's friends,
  *     Shamik and the like) are excluded by lead_class, so a friend who also
  *     enquired is not swept in.
- *   - The `text` column is never selected. Direction and timestamp only. No
- *     message content is read, stored or sent anywhere.
+ *   - Message bodies ARE read and stored now, but only for numbers that match
+ *     a REAL lead, so the query never touches a personal conversation. Henry
+ *     asked for this: he cannot tell where a conversation stands from
+ *     timestamps alone. Earlier versions read direction and timestamp only.
  *   - chat.db is opened read-only (mode=ro) and never written to.
  *
  * Usage:  node scripts/imessage-reconcile.js [--dry-run]
@@ -50,7 +52,9 @@ const sb = async (p, init = {}) => {
                Authorization: `Bearer ${SB_KEY}`, ...(init.headers || {}) },
   });
   if (!r.ok) throw new Error(`Supabase ${r.status}: ${await r.text()}`);
-  return r.status === 204 ? null : r.json();
+  // return=minimal answers 201 with an empty body, which JSON.parse chokes on.
+  const body = await r.text();
+  return body ? JSON.parse(body) : null;
 };
 
 // Last 10 digits: enough to match +1 917..., 917..., (917) ... as the same person.
@@ -150,10 +154,64 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
       (u.patch.client_replied_at ? 'they replied '  + u.patch.client_replied_at.slice(0, 10) : ''));
   }
 
+  // Recent messages for the leads that actually have a thread, so the admin can
+  // show where the conversation stands. Same boundary as everything above: the
+  // IN list is the lead phone numbers and nothing else.
+  const matched = [...new Set(rows.map(r => r.k))].filter(k => byPhone.has(k));
+  let threadRows = [];
+  if (matched.length) {
+    // Plain concatenation rather than a nested template literal: the SQL
+    // already contains backticks-free but brace-heavy expressions and nesting
+    // them silently produced a literal "${digits}" in the query.
+    const tIn = matched.map(k => "'" + k + "'").join(',');
+    const tSql =
+      "SELECT substr(" + digits + ", -10) AS k, m.is_from_me AS mine, " +
+      "       m.date AS d, m.text AS body " +
+      "  FROM message m " +
+      "  JOIN chat_message_join cmj ON cmj.message_id = m.ROWID " +
+      "  JOIN chat_handle_join  chj ON chj.chat_id    = cmj.chat_id " +
+      "  JOIN handle h              ON h.ROWID        = chj.handle_id " +
+      " WHERE substr(" + digits + ", -10) IN (" + tIn + ") " +
+      "   AND (SELECT COUNT(*) FROM chat_handle_join x WHERE x.chat_id = cmj.chat_id) = 1 " +
+      "   AND m.text IS NOT NULL AND m.text <> '' " +
+      " ORDER BY m.date DESC LIMIT 800;";
+    try {
+      const o = execFileSync('sqlite3', ['-json', '-readonly', CHAT_DB, tSql],
+        { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+      threadRows = o.trim() ? JSON.parse(o) : [];
+    } catch (e) { console.error('thread read failed: ' + String(e.stderr || e.message)); }
+  }
+
+  // Last 12 each per lead: enough to see where things stand without hoarding
+  // the whole history.
+  const perLead = new Map();
+  for (const r of threadRows) {
+    const lead = byPhone.get(r.k);
+    if (!lead || !r.body) continue;
+    const arr = perLead.get(lead.id) || [];
+    if (arr.length >= 12) continue;
+    arr.push({ submission_id: lead.id, channel: 'IMESSAGE',
+               from_me: r.mine === 1, body: String(r.body).slice(0, 1200),
+               sent_at: when(r.d).toISOString() });
+    perLead.set(lead.id, arr);
+  }
+  const toStore = [...perLead.values()].flat();
+  console.log(`${toStore.length} messages to store across ${perLead.size} threads`);
+
   if (DRY) { console.log('\n--dry-run, nothing written'); return; }
   for (const u of updates) {
     await sb(`dialed_submissions?id=eq.${u.lead.id}`,
       { method: 'PATCH', body: JSON.stringify(u.patch) });
   }
-  console.log(`\nUpdated ${updates.length} leads.`);
+  if (toStore.length) {
+    // Upsert on the natural key so re-running does not duplicate the thread.
+    for (let i = 0; i < toStore.length; i += 200) {
+      await sb('lead_thread?on_conflict=submission_id,channel,sent_at,from_me', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(toStore.slice(i, i + 200)),
+      });
+    }
+  }
+  console.log(`\nUpdated ${updates.length} leads, stored ${toStore.length} messages.`);
 })().catch(e => { console.error(e.message); process.exit(1); });

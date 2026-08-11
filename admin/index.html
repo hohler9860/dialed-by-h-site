@@ -576,14 +576,56 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var job = r.needs_details ? 'ask what exactly'
                 : (r.matches_ready > 0 ? r.matches_ready + ' to show them' : 'nothing found yet');
 
+        var b = r.brief || {};
+        var spec = b.spec || {};
+        var specBits = ['brand','model','reference','dial','size','bracelet','bezel','year','set','budget']
+            .filter(function (k) { return spec[k]; })
+            .map(function (k) { return k + ': ' + spec[k]; });
+        var seriousColour = b.serious === 'STRONG' ? OK_GREEN
+                          : b.serious === 'WEAK'   ? WARN_AMBER : '';
+
         return '<div class="scard" style="margin-top:8px">' +
           '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">' +
             '<b>' + esc(r.full_name || '(no name)') + '</b>' +
             (r.lead_quality === 'HOT' ? tdTag('HOT', BAD_RED) : '') +
+            (b.serious ? '<span class="count" style="color:' + seriousColour + '">' +
+                         esc(b.serious) + ' buyer</span>' : '') +
             '<span class="count">' + esc(r.days_quiet) + 'd quiet</span>' +
-            '<span class="count">' + esc(r.wants || 'not stated yet') + '</span>' +
             '<span class="count" style="margin-left:auto">' + esc(job) + '</span>' +
           '</div>' +
+
+          // Where this stands, read by two models. Written above the draft
+          // because it is what decides whether the draft is the right reply.
+          (b.status_line
+            ? '<p class="count" style="margin:6px 0 0;color:inherit">' + esc(b.status_line) + '</p>'
+            : '') +
+          (specBits.length
+            ? '<p class="count" style="margin:6px 0 0">Hunting · <b>' +
+                esc(specBits.join('  ·  ')) + '</b></p>'
+            : '') +
+          ((b.missing || []).length
+            ? '<p class="count" style="margin:4px 0 0;color:' + WARN_AMBER + '">Still need: ' +
+                esc((b.missing || []).join(', ')) + '</p>'
+            : '') +
+          (b.next_move
+            ? '<p class="count" style="margin:4px 0 0">Next · ' + esc(b.next_move) + '</p>'
+            : '') +
+          (b.agreed === false
+            ? '<p class="count" style="margin:4px 0 0;color:' + WARN_AMBER +
+              '">the two reads disagreed on part of this, worth checking</p>' : '') +
+
+          // The actual conversation, newest last, so the reply is written with
+          // the thread in view rather than from memory.
+          ((r.recent || []).length
+            ? '<div style="margin-top:10px;border-left:2px solid var(--line);padding-left:10px">' +
+              r.recent.map(function (m) {
+                  return '<p class="count" style="margin:3px 0">' +
+                    '<b>' + (m.from_me ? 'You' : 'Them') + '</b> ' +
+                    '<span style="opacity:.6">' + esc(fmtAgo(m.sent_at)) + '</span> · ' +
+                    esc(String(m.body || '').slice(0, 220)) + '</p>';
+              }).join('') +
+              '</div>'
+            : '') +
           (r.draft_sms
             ? '<textarea class="js-td-draft" data-draft="' + esc(r.draft_id) + '" ' +
               'style="width:100%;min-height:104px;margin:8px 0 0;font:inherit;font-size:12px;' +

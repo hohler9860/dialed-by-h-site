@@ -247,6 +247,9 @@
     clear.addEventListener('click', function () {
       selected = {};
       currentCeleb = null;
+      searchQ = '';
+      var qb = document.getElementById('pt-q');
+      if (qb) { qb.value = ''; qb.parentNode.classList.remove('has-q'); }
       if (location.hash) history.replaceState(null, '', location.pathname + location.search);
       panels.querySelectorAll('input').forEach(function (c) { c.checked = false; });
       refreshModelPanel();
@@ -387,9 +390,32 @@
     return FACETS.filter(function (f) { return (selected[f.id] || []).length > 0; });
   }
 
+  // Free text search. The whole catalogue is already in memory, so this is a
+  // plain scan rather than a round trip. Every word has to match somewhere,
+  // which lets "rolex daytona steel" narrow instead of widen.
+  var searchQ = '';
+  function haystack(w) {
+    if (w.__hay) return w.__hay;
+    w.__hay = [w.brand, w.model, w.nickname, w.name, w.ref, w.details,
+               w.year, w.caseMaterial, w.dialColor, w.condition,
+               (w.collections || []).join(' '), (w.celebs || []).join(' ')]
+      .filter(Boolean).join(' ').toLowerCase();
+    return w.__hay;
+  }
+  function matchesSearch(w) {
+    if (!searchQ) return true;
+    var hay = haystack(w);
+    // A reference typed with punctuation ("126610 LN") should still hit.
+    return searchQ.split(/\s+/).every(function (t) {
+      return hay.indexOf(t) >= 0 ||
+             hay.replace(/[^a-z0-9]/g, '').indexOf(t.replace(/[^a-z0-9]/g, '')) >= 0;
+    });
+  }
+
   function filtered() {
     var act = activeFilters();
     return INV.filter(function (w) {
+      if (!matchesSearch(w)) return false;
       return act.every(function (f) { return f.match(w, selected[f.id]); });
     });
   }
@@ -451,8 +477,10 @@
     appendChunk();
 
     var act = activeFilters();
-    count.textContent = renderList.length + ' of ' + INV.length + ' pieces' + (act.length ? ' — filtered' : '');
-    document.getElementById('pt-clear').classList.toggle('is-visible', act.length > 0);
+    count.textContent = renderList.length + ' of ' + INV.length + ' pieces'
+      + (searchQ ? ' \u00b7 "' + searchQ + '"' : '')
+      + (act.length ? ' \u2014 filtered' : '');
+    document.getElementById('pt-clear').classList.toggle('is-visible', act.length > 0 || !!searchQ);
     fbar.querySelectorAll('.pt-fbtn').forEach(function (b) {
       var nEl = b.querySelector('.n');
       if (!nEl) return;
@@ -526,6 +554,32 @@
     items.forEach(function (el) { el.classList.add('is-observed'); io.observe(el); });
   }
 
+
+  // Search box. Debounced so typing does not rebuild the grid on every key.
+  (function () {
+    var box = document.getElementById('pt-q');
+    if (!box) return;
+    var wrap = box.parentNode, x = document.getElementById('pt-qx'), t;
+    function apply() {
+      searchQ = box.value.trim().toLowerCase();
+      wrap.classList.toggle('has-q', !!searchQ);
+      // Celebrity mode swaps the grid for celeb cards, so a search typed while
+      // it is on would return matches nobody can see. Drop out of it.
+      if (searchQ && (celebsMode() || currentCeleb)) {
+        currentCeleb = null;
+        var cb = panels.querySelector('input[value="Celebrities"]');
+        if (cb && cb.checked) { cb.checked = false; selected.collection = (selected.collection || []).filter(function (v) { return v !== 'Celebrities'; }); }
+        if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+      }
+      render();
+    }
+    box.addEventListener('input', function () { clearTimeout(t); t = setTimeout(apply, 180); });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); clearTimeout(t); apply(); }
+      if (e.key === 'Escape') { box.value = ''; clearTimeout(t); apply(); }
+    });
+    if (x) x.addEventListener('click', function () { box.value = ''; apply(); box.focus(); });
+  })();
 
   count.textContent = 'Loading inventory\u2026';
   fetch('/api/get-inventory')

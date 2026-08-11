@@ -237,7 +237,7 @@ module.exports = async (req, res) => {
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);
 
   try {
-    const { type, fullName, email, phone, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor, preferred, okToText } = req.body;
+    const { type, fullName, email, phone, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor, preferred, okToText, location } = req.body;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -256,6 +256,23 @@ module.exports = async (req, res) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       console.error("[submit-form] VALIDATION FAIL -invalid email:", email);
       return res.status(400).json({ error: "Invalid email" });
+    }
+
+    // Where they are, on every form. Decides whether a piece can be handed
+    // over in person and what shipping costs, and it is the cheapest question
+    // to ask up front.
+    const locationClean = String(location || "").trim();
+    if (!locationClean) {
+      console.error("[submit-form] VALIDATION FAIL -missing location");
+      return res.status(400).json({ error: "Please tell me where you are based" });
+    }
+
+    // Budget on everything except a watch-page enquiry, where the piece and
+    // its price are already on screen. Without it nothing can be sourced to a
+    // sensible range, which is the single most common reason a lead stalls.
+    if (type !== "WATCH_DETAIL" && !String(budget || "").trim()) {
+      console.error("[submit-form] VALIDATION FAIL -missing budget for type:", type);
+      return res.status(400).json({ error: "Please choose a range" });
     }
 
     // Phone is required on every lead form. The `required` attribute on the
@@ -281,6 +298,7 @@ module.exports = async (req, res) => {
       email: email.toLowerCase().trim(),
       full_name: fullName?.trim() || null,
       watch_details: detailsForRow,
+      location: locationClean || null,
       watch_name: watchName?.trim() || null,
       watch_ref: watchRef?.trim() || null,
       phone: phoneClean || null,

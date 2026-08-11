@@ -1236,6 +1236,10 @@
                                         <label class="flex items-center gap-3 text-[10px] font-bold tracking-widest text-muted cursor-pointer pt-1">
                                             <input type="checkbox" name="textok" class="dbh-check"> OK to text me about this request
                                         </label>
+                                        <div>
+                                            <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Where are you based?</label>
+                                            <input required type="text" name="location" placeholder="City, or city and state" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors">
+                                        </div>
                                         <button type="submit" class="dbh-btn dbh-btn--solid w-full">Send It</button>
                                     </form>
                                 </div>
@@ -1273,6 +1277,10 @@
                                 <label class="flex items-center gap-3 text-[10px] font-bold tracking-widest text-muted cursor-pointer pt-1">
                                     <input type="checkbox" name="textok" class="dbh-check"> OK to text me about this request
                                 </label>
+                                        <div>
+                                            <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Where are you based?</label>
+                                            <input required type="text" name="location" placeholder="City, or city and state" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors">
+                                        </div>
                                     <div>
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Brand</label>
                                         <select name="watchBrand" required onchange="app.updateModels(this.value)"
@@ -1292,11 +1300,11 @@
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reference Number (if known)</label>
                                         <input type="text" name="watchRef" placeholder="e.g. 126500LN" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
                                     </div>
-                                    ${type === 'BUY' ? `
+                                    ${type !== 'WATCH_DETAIL' ? `
                                     <div>
-                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Budget</label>
+                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">${type === 'SELL' ? 'What you are hoping to get' : type === 'TRADE' ? 'Budget on top of your trade' : 'Budget'}</label>
                                         <select name="budget" required class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
-                                            <option value="" class="bg-charcoal">Select Budget</option>
+                                            <option value="" class="bg-charcoal">${type === 'SELL' ? 'Select a range' : 'Select Budget'}</option>
                                             <option value="Under $10k" class="bg-charcoal">Under $10k</option>
                                             <option value="$10k - $25k" class="bg-charcoal">$10k - $25k</option>
                                             <option value="$25k - $50k" class="bg-charcoal">$25k - $50k</option>
@@ -1411,6 +1419,7 @@
                 const budget = formData.get('budget') || '';
                 const phone = formData.get('phone') || '';
                 const preferred = formData.get('preferred') || '';
+                const location = formData.get('location') || '';
 
                 // Build watchDetails string from brand/model/ref + reason + freeform
                 let watchDetailsStr = details;
@@ -1423,6 +1432,9 @@
                 }
                 if (budget) {
                     watchDetailsStr = (watchDetailsStr ? watchDetailsStr + ' | ' : '') + 'Budget: ' + budget;
+                }
+                if (location) {
+                    watchDetailsStr = (watchDetailsStr ? watchDetailsStr + ' | ' : '') + 'Based in: ' + location;
                 }
                 if (formData.has('phone')) {
                     const contactParts = [
@@ -1439,6 +1451,7 @@
                     email: formData.get('email'),
                     phone: phone || null,
                     budget: budget || null,
+                    location: location || null,
                     watchDetails: watchDetailsStr || null,
                     watchName: brand && model ? brand + ' ' + model : extraData.watchName || null,
                     watchRef: ref || extraData.watchRef || null,

@@ -480,6 +480,7 @@
         : '';
       var img = imgSrc
         ? '<img src="' + escf(w.imageThumb ? abs(w.imageThumb) : imgSrc) + '"' + srcset +
+          ' data-full="' + escf(imgSrc) + '"' +
           ' width="300" height="300" alt=""' + eager + '>'
         : '<span class="ph">DIALED BY H</span>';
       art.innerHTML =
@@ -492,6 +493,26 @@
   }
 
   // staggered scroll reveal (haoqi work-grid pattern), applied to not-yet-revealed cards
+  // A tile that fails to load stayed broken: there was no onerror, so a
+  // transient failure on one of the 1,700 thumbnails left the browser's broken
+  // image icon for the rest of the session. Every URL checked resolves, so the
+  // failures are transient rather than missing files. Retry once at full size,
+  // then fall back to the wordmark placeholder.
+  grid.addEventListener('error', function (e) {
+    var el = e.target;
+    if (!el || el.tagName !== 'IMG' || el.dataset.retried) return;
+    el.dataset.retried = '1';
+    el.removeAttribute('srcset');
+    if (el.dataset.full && el.src !== el.dataset.full) {
+      el.src = el.dataset.full;
+    } else {
+      var ph = document.createElement('span');
+      ph.className = 'ph';
+      ph.textContent = 'DIALED BY H';
+      if (el.parentNode) el.parentNode.replaceChild(ph, el);
+    }
+  }, true);
+
   function revealCards() {
     var items = [].slice.call(grid.querySelectorAll('.pt-reveal:not(.is-observed)'));
     var io = new IntersectionObserver(function (es) {

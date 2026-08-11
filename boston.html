@@ -267,6 +267,45 @@
         ]
     }
     </script>
+<style id="boston-css">
+/* This page cannot rely on Tailwind utilities: the homepage ships a purged
+   build containing only the classes it happens to use, and 35 of the ones this
+   layout needed were absent, so the hero had no top offset and collided with
+   the fixed header. Plain CSS, scoped to the page, no build step. */
+.bos{--ink:#0a0a0a;--soft:rgba(10,10,10,.62);--faint:rgba(10,10,10,.45);--rule:rgba(10,10,10,.14)}
+.bos section{padding:80px 24px;position:relative}
+.bos .wrap{max-width:1040px;margin:0 auto}
+/* clears the fixed header, which is out of flow */
+.bos .hero{padding-top:150px;padding-bottom:64px}
+.bos .eyebrow{font-family:var(--pt-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin:0 0 22px}
+.bos h1{font-size:clamp(34px,6vw,62px);line-height:1.04;margin:0 0 26px;max-width:16ch}
+.bos h2{font-size:clamp(24px,3.4vw,38px);line-height:1.1;margin:0 0 16px}
+.bos h3{font-size:16px;margin:0 0 8px}
+.bos p{font-family:var(--pt-mono);font-size:13px;line-height:1.75;color:var(--soft);margin:0 0 14px;max-width:62ch}
+.bos .lead{font-size:14px;max-width:58ch;margin-bottom:34px}
+.bos .actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px}
+.bos .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:34px}
+.bos .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:30px 34px;margin-top:34px}
+.bos .card{border:1px solid var(--rule);padding:26px 24px}
+.bos .card p{margin:0}
+.bos .brand{border-top:1px solid var(--rule);padding-top:18px}
+.bos .brand p{margin:0}
+.bos .areas{list-style:none;margin:0 0 26px;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.bos .areas li{border:1px solid var(--rule);padding:12px 8px;text-align:center;font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+.bos .mid{text-align:center}
+.bos .mid p{margin-left:auto;margin-right:auto}
+.bos .mid .actions{justify-content:center}
+@media(max-width:900px){
+  .bos section{padding:60px 20px}
+  .bos .hero{padding-top:130px}
+  .bos .grid3{grid-template-columns:repeat(2,1fr)}
+  .bos .areas{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .bos .grid2,.bos .grid3{grid-template-columns:1fr}
+  .bos .actions .dbh-btn{width:100%}
+}
+</style>
 </head>
 <body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
 
@@ -297,96 +336,96 @@
                 </div>
             </header>
 
-        <main>
-            <section class="relative overflow-hidden pt-28 sm:pt-32 lg:pt-40 pb-16 sm:pb-20 px-6 sm:px-10 md:px-16">
-                <div class="max-w-5xl mx-auto">
-                    <p class="pt-reveal font-space text-[11px] tracking-[.18em] uppercase text-ivory/50 mb-6">Boston, Massachusetts</p>
-                    <h1 class="dbh-display pt-reveal text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-8">Boston&#39;s Luxury Watch Dealer &amp; Concierge</h1>
-                    <p class="pt-reveal font-inter text-sm sm:text-base text-ivory/70 leading-relaxed max-w-2xl mb-10">Dialed By H is an independent watch dealer serving Boston collectors who want more than the local authorized dealer can offer. Whether you are buying your first Rolex, selling a Patek Philippe, or trading into a grail reference, every transaction is personally sourced, independently authenticated, and competitively priced.</p>
-                    <div class="pt-reveal flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <main class="bos">
+            <section class="hero">
+                <div class="wrap">
+                    <p class="eyebrow pt-reveal">Boston, Massachusetts</p>
+                    <h1 class="dbh-display pt-reveal">Boston&#39;s Luxury Watch Dealer &amp; Concierge</h1>
+                    <p class="lead pt-reveal">Dialed By H is an independent watch dealer serving Boston collectors who want more than the local authorized dealer can offer. Whether you are buying your first Rolex, selling a Patek Philippe, or trading into a grail reference, every transaction is personally sourced, independently authenticated, and competitively priced.</p>
+                    <div class="actions pt-reveal">
                         <button data-modal="source" class="dbh-btn dbh-btn--solid">Request a piece</button>
                         <a href="/buy/" class="dbh-btn">Browse pieces</a>
                     </div>
                 </div>
             </section>
 
-            <section class="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-6 sm:px-10 md:px-16">
-                <div class="max-w-5xl mx-auto">
-                    <h2 class="dbh-display pt-reveal text-2xl sm:text-3xl lg:text-4xl mb-4">An independent dealer, run like a concierge</h2>
-                    <p class="pt-reveal font-inter text-sm text-ivory/60 leading-relaxed max-w-2xl mb-10">Boston has authorized dealers and grey market shops. Dialed By H works differently: concierge sourcing instead of a fixed showroom. Here is what sets it apart from the standard Boston watch buying experience.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                    <div class="pt-reveal border border-ivory/15 p-7 sm:p-8">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-3">Beyond the waitlist</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Boston ADs carry multi-year waits on popular Rolex and Patek references. I source globally and skip the queue entirely.</p>
+            <section >
+                <div class="wrap">
+                    <h2 class="dbh-display pt-reveal">An independent dealer, run like a concierge</h2>
+                    <p class="lead pt-reveal">Boston has authorized dealers and grey market shops. Dialed By H works differently: concierge sourcing instead of a fixed showroom. Here is what sets it apart from the standard Boston watch buying experience.</p>
+                    <div class="grid2">
+                    <div class="card pt-reveal">
+                        <h3 class="dbh-display">Beyond the waitlist</h3>
+                        <p >Boston ADs carry multi-year waits on popular Rolex and Patek references. I source globally and skip the queue entirely.</p>
                     </div>
-                    <div class="pt-reveal border border-ivory/15 p-7 sm:p-8">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-3">Global sourcing</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Local dealers are limited to their own inventory. My network spans trusted partners, collectors, and private sellers worldwide.</p>
+                    <div class="card pt-reveal">
+                        <h3 class="dbh-display">Global sourcing</h3>
+                        <p >Local dealers are limited to their own inventory. My network spans trusted partners, collectors, and private sellers worldwide.</p>
                     </div>
-                    <div class="pt-reveal border border-ivory/15 p-7 sm:p-8">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-3">Independent authentication</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Every piece is independently authenticated before it reaches you. Dial, movement, case, and bracelet are verified by trusted specialists.</p>
+                    <div class="card pt-reveal">
+                        <h3 class="dbh-display">Independent authentication</h3>
+                        <p >Every piece is independently authenticated before it reaches you. Dial, movement, case, and bracelet are verified by trusted specialists.</p>
                     </div>
-                    <div class="pt-reveal border border-ivory/15 p-7 sm:p-8">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-3">No retail markup</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Competitive market-based pricing without the overhead of a Newbury Street storefront. You pay for the watch, not the showroom.</p>
-                    </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-6 sm:px-10 md:px-16">
-                <div class="max-w-5xl mx-auto">
-                    <h2 class="dbh-display pt-reveal text-2xl sm:text-3xl lg:text-4xl mb-4">Brands I source</h2>
-                    <p class="pt-reveal font-inter text-sm text-ivory/60 leading-relaxed max-w-2xl mb-10">From the most sought-after sport references to complicated dress pieces, I source the full spectrum of luxury watches for Boston collectors.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
-                    <div class="pt-reveal border-t border-ivory/15 pt-6">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-2">Rolex</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Submariners, Daytonas, GMTs, Day-Dates. The references Boston collectors want most, sourced without the AD waitlist.</p>
-                    </div>
-                    <div class="pt-reveal border-t border-ivory/15 pt-6">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-2">Patek Philippe</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Nautilus, Aquanaut, Calatrava, and grand complications. Selling or buying Patek in Boston starts with a conversation.</p>
-                    </div>
-                    <div class="pt-reveal border-t border-ivory/15 pt-6">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-2">Audemars Piguet</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Royal Oak, Royal Oak Offshore, Code 11.59. Hard-to-find references sourced through a global AP network.</p>
-                    </div>
-                    <div class="pt-reveal border-t border-ivory/15 pt-6">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-2">Richard Mille</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">RM 011, RM 035, RM 055, and limited editions. Authenticated and vetted for provenance before every transaction.</p>
-                    </div>
-                    <div class="pt-reveal border-t border-ivory/15 pt-6">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-2">Omega</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Speedmaster, Seamaster, and vintage references. Strong entry points and collectible pieces for every budget.</p>
-                    </div>
-                    <div class="pt-reveal border-t border-ivory/15 pt-6">
-                        <h3 class="dbh-display text-lg sm:text-xl mb-2">And more</h3>
-                        <p class="font-inter text-sm text-ivory/60 leading-relaxed">Vacheron Constantin, A. Lange, Cartier, Tudor, IWC, Breitling, and beyond. If it exists, I can source it.</p>
+                    <div class="card pt-reveal">
+                        <h3 class="dbh-display">No retail markup</h3>
+                        <p >Competitive market-based pricing without the overhead of a Newbury Street storefront. You pay for the watch, not the showroom.</p>
                     </div>
                     </div>
                 </div>
             </section>
 
-            <section class="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-6 sm:px-10 md:px-16">
-                <div class="max-w-5xl mx-auto">
-                    <h2 class="dbh-display pt-reveal text-2xl sm:text-3xl lg:text-4xl mb-4">Serving Boston and beyond</h2>
-                    <p class="pt-reveal font-inter text-sm text-ivory/60 leading-relaxed max-w-2xl mb-10">Rooted in the Boston metro area, working with collectors across the region. Whether you are in the city or the suburbs, the experience is the same: personal, authenticated, and discreet.</p>
-                    <ul class="pt-reveal grid grid-cols-2 sm:grid-cols-4 gap-3 font-space text-[11px] tracking-[.14em] uppercase text-ivory/70 mb-8">
-                        <li class="border border-ivory/15 px-4 py-3 text-center">Back Bay</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">Beacon Hill</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">Cambridge</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">Brookline</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">Newton</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">North Shore</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">South Shore</li>
-                        <li class="border border-ivory/15 px-4 py-3 text-center">Greater Boston</li>
+            <section >
+                <div class="wrap">
+                    <h2 class="dbh-display pt-reveal">Brands I source</h2>
+                    <p class="lead pt-reveal">From the most sought-after sport references to complicated dress pieces, I source the full spectrum of luxury watches for Boston collectors.</p>
+                    <div class="grid3">
+                    <div class="brand pt-reveal">
+                        <h3 class="dbh-display">Rolex</h3>
+                        <p >Submariners, Daytonas, GMTs, Day-Dates. The references Boston collectors want most, sourced without the AD waitlist.</p>
+                    </div>
+                    <div class="brand pt-reveal">
+                        <h3 class="dbh-display">Patek Philippe</h3>
+                        <p >Nautilus, Aquanaut, Calatrava, and grand complications. Selling or buying Patek in Boston starts with a conversation.</p>
+                    </div>
+                    <div class="brand pt-reveal">
+                        <h3 class="dbh-display">Audemars Piguet</h3>
+                        <p >Royal Oak, Royal Oak Offshore, Code 11.59. Hard-to-find references sourced through a global AP network.</p>
+                    </div>
+                    <div class="brand pt-reveal">
+                        <h3 class="dbh-display">Richard Mille</h3>
+                        <p >RM 011, RM 035, RM 055, and limited editions. Authenticated and vetted for provenance before every transaction.</p>
+                    </div>
+                    <div class="brand pt-reveal">
+                        <h3 class="dbh-display">Omega</h3>
+                        <p >Speedmaster, Seamaster, and vintage references. Strong entry points and collectible pieces for every budget.</p>
+                    </div>
+                    <div class="brand pt-reveal">
+                        <h3 class="dbh-display">And more</h3>
+                        <p >Vacheron Constantin, A. Lange, Cartier, Tudor, IWC, Breitling, and beyond. If it exists, I can source it.</p>
+                    </div>
+                    </div>
+                </div>
+            </section>
+
+            <section >
+                <div class="wrap">
+                    <h2 class="dbh-display pt-reveal">Serving Boston and beyond</h2>
+                    <p class="lead pt-reveal">Rooted in the Boston metro area, working with collectors across the region. Whether you are in the city or the suburbs, the experience is the same: personal, authenticated, and discreet.</p>
+                    <ul class="areas pt-reveal">
+                        <li class="px-4 py-3 text-center">Back Bay</li>
+                        <li class="px-4 py-3 text-center">Beacon Hill</li>
+                        <li class="px-4 py-3 text-center">Cambridge</li>
+                        <li class="px-4 py-3 text-center">Brookline</li>
+                        <li class="px-4 py-3 text-center">Newton</li>
+                        <li class="px-4 py-3 text-center">North Shore</li>
+                        <li class="px-4 py-3 text-center">South Shore</li>
+                        <li class="px-4 py-3 text-center">Greater Boston</li>
                     </ul>
-                    <p class="pt-reveal font-inter text-sm text-ivory/60 leading-relaxed max-w-2xl">I also serve collectors across Massachusetts and nationwide through insured, secure shipping with full documentation and tracking.</p>
+                    <p class="pt-reveal">I also serve collectors across Massachusetts and nationwide through insured, secure shipping with full documentation and tracking.</p>
                 </div>
             </section>
 
-            <section id="faq" class="relative overflow-hidden py-20 sm:py-24 lg:py-28 px-6 sm:px-10 md:px-16">
+            <section id="faq" >
                 <div class="dbh-faq">
                     <h2 class="dbh-faq__tag pt-reveal">FAQ</h2>
                     <div class="dbh-faq__list">
@@ -419,11 +458,11 @@
                 </div>
             </section>
 
-            <section class="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-6 sm:px-10 md:px-16">
-                <div class="max-w-5xl mx-auto text-center">
-                    <h2 class="dbh-display pt-reveal text-2xl sm:text-3xl lg:text-4xl mb-4">Start your search</h2>
-                    <p class="pt-reveal font-inter text-sm text-ivory/60 leading-relaxed max-w-xl mx-auto mb-10">Looking to buy, sell, or trade a luxury watch in Boston? Tell me what you have in mind.</p>
-                    <div class="pt-reveal flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <section >
+                <div class="wrap mid">
+                    <h2 class="dbh-display pt-reveal">Start your search</h2>
+                    <p class="lead pt-reveal">Looking to buy, sell, or trade a luxury watch in Boston? Tell me what you have in mind.</p>
+                    <div class="actions pt-reveal">
                         <button data-modal="source" class="dbh-btn dbh-btn--solid">Request a piece</button>
                         <a href="sms:+19146211848" class="dbh-btn">Text me</a>
                     </div>

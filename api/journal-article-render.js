@@ -4,7 +4,7 @@
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-const SITE_URL = process.env.SITE_URL || "https://dialedbyhenry.com";
+const SITE_URL = process.env.SITE_URL || "https://www.dialedbyhenry.com";
 
 function escHtml(s) {
     return String(s == null ? "" : s)
@@ -61,7 +61,7 @@ function renderArticleHtml(a) {
     const subtitle    = a.subtitle || "";
     const seoTitle    = a.seo_title || `${title} | Off-Catalog by Dialed By H`;
     const description = a.seo_description || a.excerpt || subtitle || "Read the latest from Off-Catalog, the journal by Dialed By H.";
-    const heroUrl     = a.hero_image_url || "https://dialedbyhenry.com/images/og-share-v2.png";
+    const heroUrl     = a.hero_image_url || "https://www.dialedbyhenry.com/images/og-share-v2.png";
     const canonical   = `${SITE_URL}/journal/${a.slug}`;
     const pubDate     = a.published_at;
     const pubDateText = formatPubDate(pubDate);

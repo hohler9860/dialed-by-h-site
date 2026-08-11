@@ -3,7 +3,7 @@
 // adding new functions (Hobby plan caps at 12).
 // Watch pages render in the rebuild design: white, mono, Archivo display,
 // shared site header/footer, fullscreen source modal for inquiries.
-const SITE_URL = process.env.SITE_URL || 'https://dialedbyhenry.com';
+const SITE_URL = process.env.SITE_URL || 'https://www.dialedbyhenry.com';
 const WA_NUMBER = '19146211848';
 
 function escHtml(s) {

@@ -11,7 +11,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.s
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const ALLOWED_ORIGINS = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
-const SITE_URL = process.env.SITE_URL || "https://dialedbyhenry.com";
+const SITE_URL = process.env.SITE_URL || "https://www.dialedbyhenry.com";
 
 let resend;
 function getResend() {

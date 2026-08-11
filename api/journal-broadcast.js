@@ -14,7 +14,7 @@ const crypto = require("crypto");
 const { BroadcastEmail } = require("../lib/emails/broadcast.js");
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const SITE_URL = process.env.SITE_URL || "https://dialedbyhenry.com";
+const SITE_URL = process.env.SITE_URL || "https://www.dialedbyhenry.com";
 
 let supabase;
 let resend;

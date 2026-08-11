@@ -85,20 +85,32 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
 
   // Only the handle, the direction and the timestamp. The `text` column is
   // deliberately never selected, so no message content is read.
+  //
+  // Joined through the chat rather than message.handle_id, because 4,706 of
+  // Henry's own sent messages have handle_id = 0. Keying on that field found
+  // inbound fine and missed most outbound, so people he had held whole
+  // conversations with still read as never answered.
+  //
+  // Restricted to chats with exactly one participant: a group thread would
+  // otherwise credit every member with the conversation, and it keeps group
+  // chats out of this entirely.
   const digits = "replace(replace(replace(replace(replace(h.id,'+',''),'-',''),' ',''),'(',''),')','')";
   const sql = `
     SELECT substr(${digits}, -10) AS k,
            m.is_from_me           AS mine,
            MAX(m.date)            AS d
       FROM message m
-      JOIN handle h ON h.ROWID = m.handle_id
+      JOIN chat_message_join cmj ON cmj.message_id = m.ROWID
+      JOIN chat_handle_join  chj ON chj.chat_id    = cmj.chat_id
+      JOIN handle h              ON h.ROWID        = chj.handle_id
      WHERE substr(${digits}, -10) IN (${inList})
+       AND (SELECT COUNT(*) FROM chat_handle_join x WHERE x.chat_id = cmj.chat_id) = 1
      GROUP BY k, m.is_from_me;`;
 
   let rows;
   try {
     const out = execFileSync('sqlite3', ['-json', '-readonly', CHAT_DB, sql],
-      { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+      { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
     rows = out.trim() ? JSON.parse(out) : [];
   } catch (e) {
     const msg = String(e.stderr || e.message);
@@ -123,8 +135,10 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
     const out = rows.find(r => r.k === k && r.mine === 1);
     const inb = rows.find(r => r.k === k && r.mine === 0);
     const patch = {};
-    if (out && !lead.last_outreach_at)  patch.last_outreach_at  = when(out.d).toISOString();
-    if (inb && !lead.client_replied_at) patch.client_replied_at = when(inb.d).toISOString();
+    const oNew = out ? when(out.d).toISOString() : null;
+    if (oNew && oNew !== lead.last_outreach_at)  patch.last_outreach_at  = oNew;
+    const iNew = inb ? when(inb.d).toISOString() : null;
+    if (iNew && iNew !== lead.client_replied_at) patch.client_replied_at = iNew;
     if (Object.keys(patch).length) updates.push({ lead, patch });
   }
 

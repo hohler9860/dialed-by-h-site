@@ -3561,6 +3561,26 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') +
           '</tbody></table></div>' +
 
+          // Where the two lead classifiers disagreed. This decides whether a
+          // person gets answered at all, so a split is worth a look.
+          ((AC.leadDisputes || []).length
+            ? '<p class="count" style="margin-top:22px">Leads the two classifiers read ' +
+                'differently · the safer reading was kept, but these are worth an eye</p>' +
+              '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
+                '<th style="width:170px">Name</th><th style="width:110px">First read</th>' +
+                '<th style="width:110px">Second read</th><th>What they wrote</th>' +
+              '</tr></thead><tbody>' +
+              AC.leadDisputes.map(function (r) {
+                  return '<tr>' +
+                    '<td>' + esc(r.full_name || '') + '</td>' +
+                    '<td>' + esc(r.model_a || '') + '</td>' +
+                    '<td style="color:' + WARN_AMBER + '">' + esc(r.model_b || '') + '</td>' +
+                    '<td class="count">' + esc(r.said || '') + '</td>' +
+                  '</tr>';
+              }).join('') +
+              '</tbody></table></div>'
+            : '') +
+
           // Held back from matching: both photo models independently read the
           // metal or the diamonds as something other than the caption claims.
           // These are the ones that would otherwise quote a steel watch as gold.

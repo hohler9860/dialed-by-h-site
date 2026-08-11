@@ -1016,6 +1016,29 @@ module.exports = async (req, res) => {
         // Who in the groups is hunting what, paired with whether Henry can
         // actually get hold of one. Buyers post "Please DM" and almost never a
         // price, so nothing here guesses what they would pay.
+        // The day's work in one call: who is owed a reply, who has options
+        // waiting to be sent, and what is still being hunted. Three questions
+        // Henry was answering by eye across three different tabs.
+        if (action === "today") {
+            const [queue, hunting] = await Promise.all([
+                supabase("waiting_on_henry?select=*&limit=60"),
+                supabase("hunting_board?select=*&limit=200"),
+            ]);
+            const q = Array.isArray(queue) ? queue : [];
+            const h = Array.isArray(hunting) ? hunting : [];
+            return res.status(200).json({
+                needsReply: q,
+                hunting: h,
+                counters: {
+                    ballWithYou:  q.filter(r => r.ball === "BALL_WITH_YOU").length,
+                    neverAnswered: q.filter(r => r.ball === "NEVER_ANSWERED").length,
+                    found:      h.filter(r => r.state === "FOUND").length,
+                    hunting:    h.filter(r => r.state === "HUNTING").length,
+                    tooVague:   h.filter(r => r.state === "TOO_VAGUE").length,
+                },
+            });
+        }
+
         if (action === "buyers") {
             const rows = await supabaseAll("buyers_board?select=*&order=last_want_at.desc", {
                 headers: { "Accept-Profile": "wholesale" },

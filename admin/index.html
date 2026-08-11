@@ -419,7 +419,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         <h1 class="title">Admin</h1>
 
         <nav class="tabs" id="tabs">
-            <button data-tab="books"   aria-selected="true">Books</button>
+            <button data-tab="today"   aria-selected="true">Today</button>
+            <button data-tab="books"   aria-selected="false">Books</button>
             <button data-tab="deals"   aria-selected="false">Deals</button>
             <button data-tab="pieces"  aria-selected="false">Pieces</button>
             <button data-tab="journal" aria-selected="false">Journal</button>
@@ -465,7 +466,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // Honour a deep link like /admin/#journal (the standalone article
         // editor links back this way).
         var want = (location.hash || '').replace('#', '');
-        show(TABS[want] ? want : 'books');
+        // Today is the landing tab: who is owed a reply comes before the books.
+        show(TABS[want] ? want : 'today');
     }
 
     document.getElementById('gate-form').addEventListener('submit', async function (e) {
@@ -484,7 +486,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
+    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -544,6 +546,145 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             return d.toISOString().slice(0, 10);
         }
         return '0000-00-00';
+    }
+
+    // ── Today ───────────────────────────────────────────────
+    // The three questions Henry was answering by eye across three tabs:
+    // who is owed a reply, who has options sitting ready, and what is still
+    // being hunted. Ordered so the top of the page is the next thing to do.
+    var TD = { data: null };
+
+    async function renderToday() {
+        TD.data = await A.adminFetchTo('/api/leads-admin', 'today');
+        paintToday();
+    }
+
+    function tdTag(txt, colour) {
+        return '<span class="tag" style="background:' + colour + ';color:#fff">' + esc(txt) + '</span>';
+    }
+
+    function tdPerson(r) {
+        // Preferred channel first: most of these people asked for iMessage.
+        var ph = String(r.phone || '').replace(/[^0-9+]/g, '');
+        var links = [];
+        if (ph) links.push('<a class="btn ghost" href="sms:' + esc(ph) +
+            (r.draft_sms ? '&body=' + encodeURIComponent(r.draft_sms) : '') + '">Text</a>');
+        if (ph) links.push('<a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/' +
+            esc(ph.replace(/\D/g, '')) + '">WhatsApp</a>');
+        if (r.email) links.push('<a class="btn ghost" href="mailto:' + esc(r.email) + '">Email</a>');
+
+        var job = r.needs_details ? 'ask what exactly'
+                : (r.matches_ready > 0 ? r.matches_ready + ' to show them' : 'nothing found yet');
+
+        return '<div class="scard" style="margin-top:8px">' +
+          '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">' +
+            '<b>' + esc(r.full_name || '(no name)') + '</b>' +
+            (r.lead_quality === 'HOT' ? tdTag('HOT', BAD_RED) : '') +
+            '<span class="count">' + esc(r.days_quiet) + 'd quiet</span>' +
+            '<span class="count">' + esc(r.wants || 'not stated yet') + '</span>' +
+            '<span class="count" style="margin-left:auto">' + esc(job) + '</span>' +
+          '</div>' +
+          (r.draft_sms
+            ? '<textarea class="js-td-draft" data-draft="' + esc(r.draft_id) + '" ' +
+              'style="width:100%;min-height:104px;margin:8px 0 0;font:inherit;font-size:12px;' +
+              'line-height:1.5;padding:8px;background:transparent;color:inherit;' +
+              'border:1px solid var(--line);border-radius:6px;resize:vertical">' +
+              esc(r.draft_sms) + '</textarea>'
+            : '<p class="count" style="margin:8px 0 0">No text draft. Reply in your own words.</p>') +
+          '<div class="bar" style="margin-top:8px">' + links.join('') +
+            (r.draft_id ? '<button class="btn ghost js-td-sent" data-draft="' + esc(r.draft_id) +
+                          '">I sent this</button>' : '') +
+          '</div>' +
+        '</div>';
+    }
+
+    function paintToday() {
+        var d = TD.data || {}, c = d.counters || {};
+        var q = d.needsReply || [], h = d.hunting || [];
+        var ball = q.filter(function (r) { return r.ball === 'BALL_WITH_YOU'; });
+        var cold = q.filter(function (r) { return r.ball !== 'BALL_WITH_YOU'; });
+
+        var found = h.filter(function (r) { return r.state === 'FOUND'; });
+        var hunt  = h.filter(function (r) { return r.state === 'HUNTING'; });
+        var vague = h.filter(function (r) { return r.state === 'TOO_VAGUE'; });
+
+        function huntRow(r) {
+            return '<tr>' +
+              '<td>' + esc(r.client_name || '') +
+                (r.lead_quality === 'HOT' ? ' 🔥' : '') + '</td>' +
+              '<td>' + esc(r.piece || '(not stated)') +
+                (r.reference ? ' <span class="count">' + esc(r.reference) + '</span>' : '') + '</td>' +
+              '<td class="count">' + esc(r.days_open) + 'd</td>' +
+              '<td>' + (r.options > 0
+                  ? '<b>' + esc(r.options) + '</b> <span class="count">from ' +
+                    esc(money(r.from_price)) + '</span>'
+                  : (r.retail_available > 0
+                      ? '<span class="count">' + esc(r.retail_available) + ' at retail</span>'
+                      : '<span class="count">—</span>')) + '</td>' +
+            '</tr>';
+        }
+        function huntTable(rows, note) {
+            if (!rows.length) return '<p class="count">Nothing here.</p>';
+            return (note ? '<p class="count">' + note + '</p>' : '') +
+              '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+              '<th style="width:190px">Client</th><th>Piece</th>' +
+              '<th style="width:70px">Open</th><th style="width:190px">Options</th>' +
+              '</tr></thead><tbody>' + rows.map(huntRow).join('') + '</tbody></table></div>';
+        }
+
+        view.innerHTML =
+          '<div class="scard">' +
+            '<div style="display:flex;gap:24px;flex-wrap:wrap">' +
+              '<div><div class="count">Waiting on your reply</div><b style="font-size:26px;color:' +
+                (c.ballWithYou ? BAD_RED : OK_GREEN) + '">' + esc(c.ballWithYou || 0) + '</b></div>' +
+              '<div><div class="count">Never answered</div><b style="font-size:26px;color:' +
+                (c.neverAnswered ? WARN_AMBER : OK_GREEN) + '">' + esc(c.neverAnswered || 0) + '</b></div>' +
+              '<div><div class="count">Have options ready</div><b style="font-size:26px">' +
+                esc(c.found || 0) + '</b></div>' +
+              '<div><div class="count">Still hunting</div><b style="font-size:26px">' +
+                esc(c.hunting || 0) + '</b></div>' +
+              '<div><div class="count">Too vague to search</div><b style="font-size:26px;color:' +
+                (c.tooVague ? WARN_AMBER : OK_GREEN) + '">' + esc(c.tooVague || 0) + '</b></div>' +
+            '</div>' +
+          '</div>' +
+
+          '<p class="count" style="margin-top:22px">They replied and are waiting on you · ' +
+            'this is the group that costs deals</p>' +
+          (ball.length ? ball.map(tdPerson).join('') : '<p class="count">Nobody. Good.</p>') +
+
+          '<p class="count" style="margin-top:26px">Never answered · oldest first</p>' +
+          (cold.length ? cold.map(tdPerson).join('') : '<p class="count">Nobody waiting.</p>') +
+
+          '<p class="count" style="margin-top:26px">Pieces you are hunting</p>' +
+          '<div class="scard" style="margin-top:8px">' +
+            '<p class="count">Found · stock is in the index, send them options</p>' +
+            huntTable(found) +
+            '<p class="count" style="margin-top:18px">Still hunting · specific enough to search, ' +
+              'nothing yet</p>' +
+            huntTable(hunt) +
+            '<p class="count" style="margin-top:18px">Too vague to search · the next move is to ' +
+              'ask them what exactly, not to keep looking</p>' +
+            huntTable(vague) +
+          '</div>';
+
+        // Marking sent starts the follow-up clock, and stores whatever wording
+        // Henry actually used so the drafts learn from him.
+        [].forEach.call(view.querySelectorAll('.js-td-sent'), function (b) {
+            b.addEventListener('click', async function () {
+                var btn = this;
+                btn.disabled = true; btn.textContent = 'Saving…';
+                try {
+                    var box = view.querySelector('.js-td-draft[data-draft="' + btn.dataset.draft + '"]');
+                    await A.adminFetchTo('/api/leads-admin', 'mark-draft-sent',
+                        { draft_id: Number(btn.dataset.draft),
+                          sent_body: box ? box.value : undefined });
+                    renderToday();
+                } catch (err) {
+                    btn.disabled = false; btn.textContent = 'I sent this';
+                    alert('Could not save: ' + err.message);
+                }
+            });
+        });
     }
 
     async function renderBooks() {

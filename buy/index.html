@@ -172,14 +172,18 @@ a.pt-cta{text-decoration:none;display:inline-block}
 .pt-fbtn .n{color:rgba(0,0,0,.35)}
 .pt-clear{margin-left:auto;background:none;border:none;font-family:var(--pt-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.4);cursor:pointer;display:none}
 .pt-clear.is-visible{display:block}
-.pt-search{display:flex;align-items:center;gap:12px;border-top:1px solid rgba(0,0,0,.14);padding:14px 2px}
-.pt-search svg{width:16px;height:16px;color:rgba(0,0,0,.4);flex:none}
-.pt-search input{flex:1;min-width:0;border:none;background:none;outline:none;color:#000;font-family:var(--pt-mono);font-size:13px;letter-spacing:.04em;padding:4px 0}
-.pt-search input::placeholder{color:rgba(0,0,0,.35);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+/* Native to this page rather than bolted on: the filter bar sets the language
+   here, so the field borrows .pt-fbtn's type exactly (mono, 11px, uppercase,
+   .16em) and sits on a single hairline that darkens on focus. No icon and no
+   box, because nothing else on the page has either. */
+.pt-search{display:flex;align-items:center;padding:4px 2px 22px}
+.pt-search input{width:min(360px,100%);border:none;border-bottom:1px solid rgba(0,0,0,.14);background:none;outline:none;color:#000;font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:8px 0;transition:border-color .25s ease}
+.pt-search input::placeholder{color:rgba(0,0,0,.35);letter-spacing:.16em;text-transform:uppercase}
+.pt-search input:focus{border-bottom-color:#000}
 .pt-search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
-.pt-search button{display:none;background:none;border:none;cursor:pointer;color:rgba(0,0,0,.4);font-size:13px;line-height:1;padding:4px}
+.pt-search button{display:none;background:none;border:none;cursor:pointer;color:rgba(0,0,0,.35);font-family:var(--pt-mono);font-size:15px;line-height:1;padding:0 0 0 12px}
 .pt-search button:hover{color:#000}
-.pt-search.has-q button{display:block}
+.pt-search.has-q button{display:inline-block}
 
 .pt-panel{display:none;border-bottom:1px solid rgba(0,0,0,.14);padding:20px 2px 24px;margin-bottom:0}
 .pt-panel.is-open{display:flex;flex-wrap:wrap;gap:10px 24px}
@@ -263,9 +267,8 @@ fbq('track', 'PageView');
 <h1 data-hsst>Available for sourcing</h1>
 <p class="pt-dmline">See something you like? Fastest way is a DM &mdash; <a href="https://wa.me/19146211848" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the piece you're hunting isn't here, I can find it. That's the job.</p>
 <div class="pt-search">
-<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.364 3a7.364 7.364 0 100 14.727 7.364 7.364 0 000-14.727v0z" stroke="currentColor" stroke-width="1.6" stroke-miterlimit="10"/><path d="M15.857 15.857L21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-<input id="pt-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search brand, model or reference" aria-label="Search pieces">
-<button type="button" id="pt-qx" aria-label="Clear search">&#10005;</button>
+<input id="pt-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search" aria-label="Search pieces">
+<button type="button" id="pt-qx" aria-label="Clear search">&times;</button>
 </div>
 <div class="pt-fbar" id="pt-fbar"></div>
 <div id="pt-panels"></div>

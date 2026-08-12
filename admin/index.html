@@ -593,6 +593,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<span class="count">' + esc(r.days_quiet) + 'd quiet</span>' +
             (r.draft_kind === 'NEXT'
               ? '<span class="count" style="color:' + OK_GREEN + '">next message ready</span>' : '') +
+            // An email draft reads oddly if you paste it into a text, so say so.
+            (r.draft_channel === 'EMAIL'
+              ? '<span class="count" style="color:' + WARN_AMBER + '">email draft</span>' : '') +
+            (r.location ? '<span class="count">' + esc(r.location) + '</span>' : '') +
             '<span class="count" style="margin-left:auto">' + esc(job) + '</span>' +
           '</div>' +
 

@@ -875,6 +875,56 @@ module.exports = async (req, res) => {
             });
         }
 
+        // ── NTQ board ──────────────────────────────────────────────────────
+        // Copy-paste dealer NTQ lines built from client requests scraped out of
+        // iMessage, WhatsApp, email and site submissions. The scrape itself runs
+        // locally on Henry's Mac (scripts/ntq/) because Vercel can't see the
+        // message databases; this endpoint only reads and updates the results.
+        if (action === "ntq") {
+            const rows = await supabaseAll("dbh_ntq?select=*&order=requested_at.desc.nullslast");
+            const by = (s) => rows.filter((r) => r.status === s).length;
+            return res.status(200).json({
+                rows,
+                counters: {
+                    total: rows.length,
+                    open: by("open"),
+                    quoted: by("quoted"),
+                    sourced: by("sourced"),
+                    dead: by("dead"),
+                    needs_detail: rows.filter((r) => r.confidence === "needs-detail" && r.status === "open").length,
+                },
+            });
+        }
+
+        if (action === "ntq-set-status") {
+            const { id, status } = body;
+            const NTQ_STATUSES = ["open", "quoted", "sourced", "dead"];
+            if (!id || !NTQ_STATUSES.includes(status)) {
+                return res.status(400).json({ error: "Missing id or bad status" });
+            }
+            await supabase(`dbh_ntq?id=eq.${encodeURIComponent(id)}`, {
+                method: "PATCH",
+                body: JSON.stringify({ status, updated_at: new Date().toISOString() }),
+            });
+            return res.status(200).json({ updated: true });
+        }
+
+        if (action === "ntq-save-text") {
+            const { id, ntq_text } = body;
+            if (!id || !ntq_text || typeof ntq_text !== "string") {
+                return res.status(400).json({ error: "Missing id or ntq_text" });
+            }
+            await supabase(`dbh_ntq?id=eq.${encodeURIComponent(id)}`, {
+                method: "PATCH",
+                body: JSON.stringify({
+                    ntq_text: ntq_text.slice(0, 500),
+                    confidence: "exact",
+                    updated_at: new Date().toISOString(),
+                }),
+            });
+            return res.status(200).json({ updated: true });
+        }
+
         // ── Ask a dealer if a piece is still available ─────────────────────
         // Deliberately NOT an n8n flow. Messaging dealers is case by case, and an
         // automated blast from Henry's own number to people he trades with is the

@@ -425,6 +425,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="pieces"  aria-selected="false">Pieces</button>
             <button data-tab="journal" aria-selected="false">Journal</button>
             <button data-tab="leads"   aria-selected="false">Leads</button>
+            <button data-tab="ntq"     aria-selected="false">NTQ</button>
             <button data-tab="wholesale" aria-selected="false">Wholesale</button>
             <button data-tab="matches" aria-selected="false">Matches</button>
             <button data-tab="dealers" aria-selected="false">Dealers</button>
@@ -486,7 +487,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
+    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, ntq: renderNTQ, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -3286,6 +3287,134 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (r) r.addEventListener('click', function () {
             view.innerHTML = '<p class="count">Loading…</p>';
             renderDealers().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // NTQ  — dealer copy-paste lines built from client requests
+    // ══════════════════════════════════════════════════════════
+    // Rows come from the local scrape (scripts/ntq/) of iMessage, WhatsApp,
+    // email and site submissions. The point of this tab is one gesture:
+    // read the line, hit Copy, paste it into the dealer group.
+    var NQ = { rows: [], counters: {} };
+    var nqq = '', nqFilter = 'open';
+
+    async function renderNTQ() {
+        var d = await A.adminFetchTo('/api/leads-admin', 'ntq');
+        NQ.rows = d.rows || []; NQ.counters = d.counters || {};
+        paintNTQ();
+    }
+
+    function nqRows() {
+        var needle = nqq.trim().toLowerCase();
+        return NQ.rows.filter(function (r) {
+            if (nqFilter !== 'all' && r.status !== nqFilter) return false;
+            if (needle) {
+                var hay = [r.ntq_text, r.contact, r.brand, r.model, r.reference, r.contact_handle]
+                    .filter(Boolean).join(' ').toLowerCase();
+                if (hay.indexOf(needle) < 0) return false;
+            }
+            return true;
+        });
+    }
+
+    function paintNTQ() {
+        var c = NQ.counters;
+        var rows = nqRows();
+        var FILTERS = ['open', 'quoted', 'sourced', 'dead', 'all'];
+
+        view.innerHTML =
+          '<div class="tiles">' +
+            '<div class="tile"><span class="tk">Open</span><span class="tv">' + (c.open || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">Needs a detail</span><span class="tv">' + (c.needs_detail || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">Quoted</span><span class="tv">' + (c.quoted || 0) + '</span></div>' +
+            '<div class="tile"><span class="tk">Sourced</span><span class="tv">' + (c.sourced || 0) + '</span></div>' +
+          '</div>' +
+          '<div class="bar">' +
+            FILTERS.map(function (f) {
+                return '<button class="btn ' + (nqFilter === f ? '' : 'ghost') + '" data-nqf="' + f + '">' +
+                    f.charAt(0).toUpperCase() + f.slice(1) + '</button>';
+            }).join('') +
+            '<input id="nq-q" class="ctl grow" type="search" placeholder="SEARCH REF, CLIENT, TEXT…" value="' + esc(nqq) + '">' +
+            '<button class="btn ghost" id="nq-refresh">Refresh</button>' +
+          '</div>' +
+          '<p class="count">' + rows.length + ' shown · scrape runs locally, re-run it in Claude Code to pull new requests</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th>NTQ</th><th style="width:170px">Client</th><th style="width:90px">Source</th>' +
+            '<th style="width:95px">Asked</th><th style="width:230px"></th>' +
+          '</tr></thead><tbody>' +
+          (rows.length ? rows.map(function (r, i) {
+              var flag = r.confidence === 'needs-detail'
+                  ? ' <span class="tag" style="background:#8a6d1a;color:#fff">needs detail</span>' : '';
+              return '<tr>' +
+                '<td><div class="tmono" style="white-space:pre-wrap" id="nq-t-' + i + '">' + esc(r.ntq_text) + '</div>' +
+                    '<div class="tsub">' + esc(r.details || '') + flag + '</div></td>' +
+                '<td><div class="tname">' + esc(r.contact || '—') + '</div>' +
+                    '<div class="tsub tmono">' + esc(r.contact_handle || '') + '</div></td>' +
+                '<td><span class="tmono">' + esc(r.source) + '</span></td>' +
+                '<td><span class="tmono">' + esc(fmtDate(r.requested_at)) + '</span></td>' +
+                '<td>' +
+                    '<button class="btn" data-nq-copy="' + i + '">Copy</button> ' +
+                    '<button class="btn ghost" data-nq-edit="' + i + '">Edit</button> ' +
+                    (r.status === 'open'
+                        ? '<button class="btn ghost" data-nq-status="quoted" data-nq-i="' + i + '">Quoted</button>'
+                        : '<button class="btn ghost" data-nq-status="open" data-nq-i="' + i + '">Reopen</button>') + ' ' +
+                    '<button class="btn ghost" data-nq-status="dead" data-nq-i="' + i + '">Dead</button>' +
+                '</td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">Nothing here. Re-run the scrape.</span></td></tr>') +
+          '</tbody></table></div>';
+
+        [].forEach.call(view.querySelectorAll('[data-nqf]'), function (b) {
+            b.addEventListener('click', function () { nqFilter = this.dataset.nqf; paintNTQ(); });
+        });
+        var q2 = document.getElementById('nq-q');
+        if (q2) q2.addEventListener('input', function () {
+            nqq = this.value; var p = this.selectionStart; paintNTQ();
+            var n = document.getElementById('nq-q');
+            if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+        });
+        var rf = document.getElementById('nq-refresh');
+        if (rf) rf.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderNTQ().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+        [].forEach.call(view.querySelectorAll('[data-nq-copy]'), function (b) {
+            b.addEventListener('click', function () {
+                var r = rows[Number(this.dataset.nqCopy)];
+                var self = this;
+                navigator.clipboard.writeText(r.ntq_text).then(function () {
+                    self.textContent = 'Copied';
+                    setTimeout(function () { self.textContent = 'Copy'; }, 1200);
+                });
+            });
+        });
+        [].forEach.call(view.querySelectorAll('[data-nq-edit]'), function (b) {
+            b.addEventListener('click', function () {
+                var r = rows[Number(this.dataset.nqEdit)];
+                var next = prompt('NTQ text', r.ntq_text);
+                if (next == null || !next.trim() || next === r.ntq_text) return;
+                A.adminFetchTo('/api/leads-admin', 'ntq-save-text', { id: r.id, ntq_text: next.trim() })
+                    .then(function () { r.ntq_text = next.trim(); r.confidence = 'exact'; paintNTQ(); })
+                    .catch(function (e) { alert(e.message); });
+            });
+        });
+        [].forEach.call(view.querySelectorAll('[data-nq-status]'), function (b) {
+            b.addEventListener('click', function () {
+                var r = rows[Number(this.dataset.nqI)];
+                var status = this.dataset.nqStatus;
+                A.adminFetchTo('/api/leads-admin', 'ntq-set-status', { id: r.id, status: status })
+                    .then(function () {
+                        r.status = status;
+                        NQ.counters = null;
+                        // Recount locally rather than refetching 5000 rows for a tap.
+                        var by = function (s) { return NQ.rows.filter(function (x) { return x.status === s; }).length; };
+                        NQ.counters = { open: by('open'), quoted: by('quoted'), sourced: by('sourced'), dead: by('dead'),
+                            needs_detail: NQ.rows.filter(function (x) { return x.confidence === 'needs-detail' && x.status === 'open'; }).length };
+                        paintNTQ();
+                    })
+                    .catch(function (e) { alert(e.message); });
+            });
         });
     }
 

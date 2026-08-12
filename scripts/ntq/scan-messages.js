@@ -108,7 +108,21 @@ console.log(`
 Next step (for Claude Code):
   1. For each contact above, decide if it is a real client want.
   2. Pull thread context where the request references an earlier photo.
-  3. Compose the NTQ line (style: "NTQ 278274 silver stick jubilee. 2020±. VG/unworn, B&P.").
+  3. Compose the NTQ line in real dealer WTB dialect (learned from the
+     "ONLY WTB & NTQ" and "RWB WTB" groups — study them again if unsure):
+       - NEVER include a price, budget, or client detail.
+       - Openers: "NTQ" / "wtb" / "Need" / "Looking for".
+       - Completeness: "complete" / "full set" / "naked" (watch only) /
+         "slider" — not "box and papers" or "B&P".
+       - Condition: new / BNIB / mint / preowned. Year floors as "2018+".
+       - A budget constraint is expressed ONLY as "for price point"
+         (meaning an older year is fine to hit a number).
+       - Compressed descriptors: "silver stick jubilee", "choc Roman",
+         "green ombre oyster", nicknames (pepsi, bruce, hulk).
+       - Real examples: "Ntq new complete set 126334 green ombre oyster",
+         "Need mint complete 228235 choc Roman",
+         "wtb 5712r mint like new complete 2022+",
+         "NTQ 116618ln 2010 ONLY".
   4. Insert into dbh_ntq via Supabase REST using SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
      from .env.local — skip contacts that already have an open row.
   5. Email + site requests arrive via inquiries@mail.dialedbyhenry.com and are

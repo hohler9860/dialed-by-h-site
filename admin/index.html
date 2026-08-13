@@ -241,8 +241,9 @@ table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line)
 .wcard:hover .wc-name { text-decoration: underline; text-underline-offset: 4px; }
 .wcard .wc-ref { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
     color: var(--l3); margin-top: 4px; }
-.wcard .wc-detail { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line);
+.wcard .wc-detail { display: none; margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line);
     font-family: var(--mono); font-size: 10.5px; color: var(--l2); line-height: 1.7; }
+.wcard.open .wc-detail { display: block; }
 
 /* Pipeline diagram */
 .pipe-wrap { padding-top: 8px; }
@@ -469,6 +470,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="leads"   aria-selected="false">Leads</button>
             <button data-tab="ntq"     aria-selected="false">NTQ</button>
             <button data-tab="wholesale" aria-selected="false">Wholesale</button>
+            <button data-tab="parts"   aria-selected="false">Parts</button>
             <button data-tab="pipeline" aria-selected="false">Pipeline</button>
             <button data-tab="matches" aria-selected="false">Matches</button>
             <button data-tab="dealers" aria-selected="false">Dealers</button>
@@ -530,7 +532,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, ntq: renderNTQ, wholesale: renderWholesale, pipeline: renderPipeline, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
+    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, ntq: renderNTQ, wholesale: renderWholesale, parts: renderParts, pipeline: renderPipeline, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2352,6 +2354,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var onTab = document.querySelector('#tabs button[data-tab="wholesale"][aria-selected="true"]');
             if (!onTab) { clearInterval(wsTimer); wsTimer = null; return; }
             if (document.hidden) return;              // don't poll a background tab
+            // Card mode: a repaint reloads every image and closes whatever the
+            // user flipped open, so the auto-poll stands down there. Refresh is
+            // one click away and switching back to table resumes it.
+            if (wView === 'cards') return;
             A.adminFetchTo('/api/leads-admin', 'wholesale').then(function (r) {
                 WS.listings = r.listings || [];
                 WS.stats    = r.stats || [];
@@ -2366,7 +2372,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     var WTILES = [
-        { k: '',         l: 'All' },
+        { k: '',         l: 'For sale' },
         { k: 'deals',    l: 'Under market' },
         { k: 'priced',   l: 'Priced' },
         { k: 'wtb',      l: 'Wanted' },
@@ -2376,11 +2382,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     ];
 
     function matchWTile(l, k) {
-        if (!k) return true;
-        if (k === 'deals')    return l.delta_pct != null && l.delta_pct >= 10;
-        if (k === 'priced')   return l.price_usd != null;
-        if (k === 'wtb')      return l.listing_type === 'WTB' || l.listing_type === 'NTQ';
-        if (k === 'diamonds') return !!l.has_diamonds;
+        // The buy feed shows supply. Demand (WTB/NTQ/ISO) and parts live behind
+        // their own tile / tab and never mix into the default wall.
+        var isDemand = l.listing_type === 'WTB' || l.listing_type === 'NTQ' || l.listing_type === 'ISO';
+        var isParts = l.listing_type === 'PARTS';
+        if (!k) return !isDemand && !isParts;
+        if (k === 'deals')    return l.delta_pct != null && l.delta_pct >= 10 && !isDemand && !isParts;
+        if (k === 'priced')   return l.price_usd != null && !isDemand && !isParts;
+        if (k === 'wtb')      return isDemand;
+        if (k === 'diamonds') return !!l.has_diamonds && !isDemand && !isParts;
         if (k === 'mismatch') return !!l.vision_mismatch;
         // Anything the extractor could not back up against the original message.
         if (k === 'weak')     return l.trust_score != null && l.trust_score < 70;
@@ -2570,12 +2580,14 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var shown = list.slice(0, WCARD_CAP);
         if (!shown.length) return '<p class="count" style="padding:28px 0">Nothing matches those filters.</p>';
         return '<div class="wcards">' + shown.map(function (l) {
-            var open = wopen === l.id;
             var name = [l.brand, l.model].filter(Boolean).join(' ') || 'Unidentified';
             var meta = [l.year, (l.condition || '').replace(/_/g, ' '),
                         (l.set_completeness || '').replace(/_/g, ' ')]
                        .filter(function (x) { return x && x !== 'UNKNOWN'; }).join(' · ');
-            var detail = !open ? '' :
+            // Rendered hidden in every card so a click only flips a class.
+            // Repainting the grid made every image re-request and the whole
+            // page flash; this touches nothing but the one card.
+            var detail =
                 '<div class="wc-detail">' +
                     esc([l.dial_color, l.dial_material].filter(Boolean).join(' ') || '') +
                     (l.bracelet ? '<br>' + esc(l.bracelet) : '') +
@@ -2810,9 +2822,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         [].forEach.call(document.querySelectorAll('[data-wcard]'), function (card) {
             card.addEventListener('click', function () {
-                var id = Number(this.dataset.wcard);
-                wopen = (wopen === id) ? null : id;
-                paintWholesale();
+                this.classList.toggle('open');
             });
         });
 
@@ -4087,6 +4097,71 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (m < 60)    return m + 'm ago';
         if (m < 1440)  return Math.floor(m / 60) + 'h ago';
         return Math.floor(m / 1440) + 'd ago';
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // PARTS  — boxes, links, bezels, straps
+    // ══════════════════════════════════════════════════════════
+    // The parts group plus anything typed PARTS elsewhere. These are text
+    // posts more than specs, so the original message is the main column.
+    var PT = { rows: [] };
+    var ptq = '';
+
+    async function renderParts() {
+        var d = await A.adminFetchTo('/api/leads-admin', 'parts');
+        PT.rows = d.rows || [];
+        paintParts();
+    }
+
+    function paintParts() {
+        var needle = ptq.trim().toLowerCase();
+        var rows = PT.rows.filter(function (r) {
+            if (!needle) return true;
+            return [r.body, r.brand, r.model, r.reference, r.seller_name]
+                .filter(Boolean).join(' ').toLowerCase().indexOf(needle) >= 0;
+        });
+
+        view.innerHTML =
+          '<div class="tiles">' +
+            '<div class="tile"><span class="tk">Parts posts</span><span class="tv">' + PT.rows.length + '</span></div>' +
+            '<div class="tile"><span class="tk">With photo</span><span class="tv">' +
+                PT.rows.filter(function (r) { return r.image_url; }).length + '</span></div>' +
+            '<div class="tile"><span class="tk">Priced</span><span class="tv">' +
+                PT.rows.filter(function (r) { return r.price_usd != null; }).length + '</span></div>' +
+          '</div>' +
+          '<div class="bar"><input id="pt-q" class="ctl grow" type="search" placeholder="SEARCH PARTS, BOXES, LINKS…" value="' + esc(ptq) + '">' +
+            '<button class="btn ghost" id="pt-refresh">Refresh</button></div>' +
+          '<p class="count">' + rows.length + ' of ' + PT.rows.length + ' · newest first · last 500 held</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:100px">Seen</th><th style="width:64px"></th><th>Post</th>' +
+            '<th style="width:110px">Price</th><th style="width:150px">Seller</th>' +
+          '</tr></thead><tbody>' +
+          (rows.length ? rows.map(function (r) {
+              var spec = [r.brand, r.model, r.reference].filter(Boolean).join(' ');
+              return '<tr>' +
+                '<td><span class="tmono">' + esc(fmtAgo(r.message_ts)) + '</span></td>' +
+                '<td>' + (r.image_url
+                    ? '<img class="wthumb" src="' + esc(r.image_url) + '" alt="" loading="lazy" decoding="async">'
+                    : '<span class="wthumb wthumb--none"></span>') + '</td>' +
+                '<td>' + (spec ? '<div class="tname">' + esc(spec) + '</div>' : '') +
+                    '<div class="tsub" style="white-space:pre-wrap">' + esc((r.body || '').slice(0, 400)) + '</div></td>' +
+                '<td><span class="tmono">' + esc(money(r.price_usd)) + '</span></td>' +
+                '<td><span class="tsub">' + esc(r.seller_name || '—') + '</span></td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="padding:28px 0"><span class="tmono">No parts posts yet.</span></td></tr>') +
+          '</tbody></table></div>';
+
+        var q2 = document.getElementById('pt-q');
+        if (q2) q2.addEventListener('input', function () {
+            ptq = this.value; var p = this.selectionStart; paintParts();
+            var n = document.getElementById('pt-q');
+            if (n) { n.focus(); try { n.setSelectionRange(p, p); } catch (e) {} }
+        });
+        var rf2 = document.getElementById('pt-refresh');
+        if (rf2) rf2.addEventListener('click', function () {
+            view.innerHTML = '<p class="count">Loading…</p>';
+            renderParts().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
     }
 
     // ══════════════════════════════════════════════════════════

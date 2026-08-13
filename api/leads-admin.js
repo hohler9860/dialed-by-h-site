@@ -20,6 +20,10 @@ const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE || "dialedbyh";
 
 const TABLE = "dialed_submissions";
 
+// RWB Parts/Accessories group: everything posted there is parts, and parts
+// posted anywhere else are caught by listing_type PARTS from the classifier.
+const PARTS_GROUP_JID = "120363427123129179@g.us";
+
 // Statuses the console is allowed to set. Anything else is rejected, so a tampered
 // client can't write arbitrary strings into the column.
 const ALLOWED_STATUSES = ["new", "contacted", "negotiating", "closed", "archived"];
@@ -321,6 +325,10 @@ module.exports = async (req, res) => {
             // ever building a response Vercel would refuse.
             const offset = Number(body.offset) > 0 ? Math.min(Number(body.offset), 200000) : 0;
 
+            // Parts have their own tab and their own action; the buy feed never
+            // carries them, whichever group they were posted in.
+            const PARTS_EXCLUDE = `&group_jid=neq.${PARTS_GROUP_JID}&listing_type=neq.PARTS`;
+
             let listingFilter = `&message_ts=gte.${since}`;
             if (term) {
                 // Searching means searching everything, not just the window.
@@ -351,7 +359,7 @@ module.exports = async (req, res) => {
                     "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
                     "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
                     "vision_mismatch,confidence,message_ts,image_path" +
-                    listingFilter + "&order=message_ts.desc",
+                    listingFilter + PARTS_EXCLUDE + "&order=message_ts.desc",
                     {}, LISTING_CAP, offset
                 ),
                 // Both stats tables grew past what one response can carry once
@@ -1160,6 +1168,48 @@ module.exports = async (req, res) => {
                 stale: list.filter((s) => s.status === "STALE").length,
                 checked_at: new Date().toISOString(),
             });
+        }
+
+        // ── Parts feed ─────────────────────────────────────────────────────
+        // Everything from the RWB parts group plus anything the classifier
+        // typed as PARTS elsewhere. Parts posts are usually a sentence, not a
+        // spec, so the original message text rides along with each row.
+        if (action === "parts") {
+            const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
+            const rows = await supabaseAll(
+                "listings_with_image?select=id,message_pk,group_jid,listing_type,brand,model," +
+                "reference,price_usd,condition,seller_name,message_ts,image_path" +
+                `&or=(group_jid.eq.${PARTS_GROUP_JID},listing_type.eq.PARTS)` +
+                "&order=message_ts.desc",
+                { headers: { "Accept-Profile": "wholesale" } }, 500
+            );
+            const pks = [...new Set(rows.map((r) => r.message_pk).filter(Boolean))];
+            const bodyByPk = {};
+            for (let i = 0; i < pks.length; i += 200) {
+                const msgs = await wh(`messages?select=id,body&id=in.(${pks.slice(i, i + 200).join(",")})`);
+                for (const m of msgs || []) bodyByPk[m.id] = m.body;
+            }
+            const paths = [...new Set(rows.map((r) => r.image_path).filter(Boolean))].slice(0, 250);
+            const urlByPath = {};
+            if (paths.length) {
+                const r2 = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`,
+                    },
+                    body: JSON.stringify({ expiresIn: 3600, paths }),
+                }).then((r) => (r.ok ? r.json() : [])).catch(() => []);
+                for (const sg of r2 || []) {
+                    if (sg.signedURL) urlByPath[sg.path] = `${SUPABASE_URL}/storage/v1${sg.signedURL}`;
+                }
+            }
+            for (const r of rows) {
+                r.body = r.message_pk ? (bodyByPk[r.message_pk] || null) : null;
+                r.image_url = r.image_path ? urlByPath[r.image_path] || null : null;
+            }
+            return res.status(200).json({ rows, counters: { total: rows.length } });
         }
 
         // ── Jobs board ─────────────────────────────────────────────────────

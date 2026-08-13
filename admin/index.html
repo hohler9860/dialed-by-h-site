@@ -4204,14 +4204,14 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
             // Photos take the high road: fetched from WhatsApp, shrunk, stored
             // on the CDN, and rejoin the flow at the classify stage.
-            plNode(330, 20, 150, 'media', 'PHOTO UPLOAD', 'to CDN / hour', true) +
+            plNode(330, 20, 150, 'media', 'PHOTO UPLOAD', 'to CDN/hr', true) +
 
             plNode(10, 150, 130, 'groups', 'GROUPS', 'watch chats') +
-            plNode(180, 150, 130, 'msgs', 'MESSAGES', 'in / hour') +
+            plNode(180, 150, 130, 'msgs', 'MESSAGES', 'in/hr') +
             plNode(350, 150, 130, 'intake', 'INTAKE', 'waiting') +
-            plNode(520, 150, 150, 'classify', 'CLASSIFY', 'reads / hour', true) +
+            plNode(520, 150, 150, 'classify', 'CLASSIFY', 'reads/hr', true) +
             plNode(710, 150, 130, 'verify_q', 'VERIFY QUEUE', 'waiting') +
-            plNode(880, 150, 150, 'verify', 'TWO-MODEL VERIFY', 'agreed / hour', true) +
+            plNode(880, 150, 150, 'verify', 'TWO-MODEL VERIFY', 'agreed/hr', true) +
             plNode(1020, 20, 130, 'done', 'CLASSIFIED', 'today') +
 
             plNode(520, 290, 150, 'noise', 'CHATTER', 'filtered out / hour') +
@@ -4330,13 +4330,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         catch (e) { return; }
         if (!document.getElementById('pl-msgs')) return;
 
+        // Sub captions must fit their boxes: the box is ~130px and the mono
+        // face runs ~5px a character, so keep these under about 22 characters.
         plSet('groups', d.groups_active);
-        plSet('msgs', d.msgs_1h, 'in / hour · newest ' + fmtAgo(d.last_message_at));
-        plSet('media', d.media_1h, 'to CDN / hour · ' + (d.media_pending || 0) + ' pending');
-        plSet('intake', d.intake, (d.running || 0) > 0 ? d.running + ' being read now' : 'waiting');
-        plSet('classify', d.classify_1h, 'reads / hour · last ' + fmtAgo(d.last_classify_at));
+        plSet('msgs', d.msgs_1h, 'in/hr · ' + fmtAgo(d.last_message_at));
+        plSet('media', d.media_1h, 'to CDN/hr · ' + (d.media_pending || 0) + ' queued');
+        plSet('intake', d.intake, (d.running || 0) > 0 ? d.running + ' being read' : 'waiting');
+        plSet('classify', d.classify_1h, 'reads/hr · ' + fmtAgo(d.last_classify_at));
         plSet('verify_q', d.awaiting_verify);
-        plSet('verify', d.verify_1h, 'agreed / hour · last ' + fmtAgo(d.last_verify_at));
+        plSet('verify', d.verify_1h, 'agreed/hr · ' + fmtAgo(d.last_verify_at));
         plSet('done', d.classified_today);
         plSet('noise', d.noise_1h);
         plSet('failed', d.failed, d.failed > 0 ? 'click to view + requeue' : 'nothing stuck');

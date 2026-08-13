@@ -64,10 +64,13 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
   // 1. WHO WE ARE ALLOWED TO LOOK AT. Everything downstream is bounded by this.
   const leads = await sb('dialed_submissions?select=id,full_name,phone,lead_class,'
     + 'last_outreach_at,client_replied_at&lead_class=eq.REAL&phone=not.is.null');
+  // A phone number can map to SEVERAL lead rows (the form and the WhatsApp
+  // pipeline both create submissions), so the map holds arrays: every copy of
+  // a duplicated lead gets its timestamps advanced, not just the last one in.
   const byPhone = new Map();
   for (const l of leads) {
     const k = key(l.phone);
-    if (k.length === 10) byPhone.set(k, l);
+    if (k.length === 10) (byPhone.get(k) || byPhone.set(k, []).get(k)).push(l);
   }
   console.log(`${leads.length} real leads, ${byPhone.size} with a usable phone number`);
   if (!byPhone.size) return;
@@ -134,18 +137,18 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
 
   const updates = [];
   for (const k of new Set(rows.map(r => r.k))) {
-    const lead = byPhone.get(k);
-    if (!lead) continue;                       // belt and braces
     const out = rows.find(r => r.k === k && r.mine === 1);
     const inb = rows.find(r => r.k === k && r.mine === 0);
-    const patch = {};
-    // Advance-only: another channel (WhatsApp, email) may hold a fresher
-    // timestamp, and an older iMessage one must never roll it back.
-    const oNew = out ? when(out.d).toISOString() : null;
-    if (oNew && (!lead.last_outreach_at || oNew > lead.last_outreach_at))   patch.last_outreach_at  = oNew;
-    const iNew = inb ? when(inb.d).toISOString() : null;
-    if (iNew && (!lead.client_replied_at || iNew > lead.client_replied_at)) patch.client_replied_at = iNew;
-    if (Object.keys(patch).length) updates.push({ lead, patch });
+    for (const lead of (byPhone.get(k) || [])) {
+      const patch = {};
+      // Advance-only: another channel (WhatsApp, email) may hold a fresher
+      // timestamp, and an older iMessage one must never roll it back.
+      const oNew = out ? when(out.d).toISOString() : null;
+      if (oNew && (!lead.last_outreach_at || oNew > lead.last_outreach_at))   patch.last_outreach_at  = oNew;
+      const iNew = inb ? when(inb.d).toISOString() : null;
+      if (iNew && (!lead.client_replied_at || iNew > lead.client_replied_at)) patch.client_replied_at = iNew;
+      if (Object.keys(patch).length) updates.push({ lead, patch });
+    }
   }
 
   console.log(`\n${rows.length ? new Set(rows.map(r => r.k)).size : 0} of those numbers appear in Messages`);
@@ -188,14 +191,15 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
   // the whole history.
   const perLead = new Map();
   for (const r of threadRows) {
-    const lead = byPhone.get(r.k);
-    if (!lead || !r.body) continue;
-    const arr = perLead.get(lead.id) || [];
-    if (arr.length >= 12) continue;
-    arr.push({ submission_id: lead.id, channel: 'IMESSAGE',
-               from_me: r.mine === 1, body: String(r.body).slice(0, 1200),
-               sent_at: when(r.d).toISOString() });
-    perLead.set(lead.id, arr);
+    if (!r.body) continue;
+    for (const lead of (byPhone.get(r.k) || [])) {
+      const arr = perLead.get(lead.id) || [];
+      if (arr.length >= 12) continue;
+      arr.push({ submission_id: lead.id, channel: 'IMESSAGE',
+                 from_me: r.mine === 1, body: String(r.body).slice(0, 1200),
+                 sent_at: when(r.d).toISOString() });
+      perLead.set(lead.id, arr);
+    }
   }
   const toStore = [...perLead.values()].flat();
   console.log(`${toStore.length} messages to store across ${perLead.size} threads`);

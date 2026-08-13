@@ -60,10 +60,13 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
   // 1. WHO WE ARE ALLOWED TO LOOK AT.
   const leads = await sb('dialed_submissions?select=id,full_name,phone,lead_class,'
     + 'last_outreach_at,client_replied_at&lead_class=eq.REAL&phone=not.is.null');
+  // A phone number can map to SEVERAL lead rows (the form and the WhatsApp
+  // pipeline both create submissions), so the map holds arrays: every copy of
+  // a duplicated lead gets its timestamps advanced, not just the last one in.
   const byPhone = new Map();
   for (const l of leads) {
     const k = key(l.phone);
-    if (k.length === 10) byPhone.set(k, l);
+    if (k.length === 10) (byPhone.get(k) || byPhone.set(k, []).get(k)).push(l);
   }
   console.log(`${leads.length} real leads, ${byPhone.size} with a usable phone number`);
   if (!byPhone.size) return;
@@ -86,10 +89,10 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
         { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
       let lids = 0;
       for (const p of (o.trim() ? JSON.parse(o) : [])) {
-        const lead = byPhone.get(key(p.phone));
-        if (!lead) continue;                       // not a lead: discard immediately
+        const leadArr = byPhone.get(key(p.phone));
+        if (!leadArr) continue;                    // not a lead: discard immediately
         const lk = key(p.lid);
-        if (lk.length === 10 && !byPhone.has(lk)) { byPhone.set(lk, lead); lids++; }
+        if (lk.length === 10 && !byPhone.has(lk)) { byPhone.set(lk, leadArr); lids++; }
       }
       if (lids) console.log(`${lids} lead number${lids === 1 ? '' : 's'} resolved behind @lid identifiers`);
     } catch (e) { /* contacts db unreadable: lid chats simply stay unmatched */ }
@@ -108,10 +111,10 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
       { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
     let named = 0;
     for (const s of (o.trim() ? JSON.parse(o) : [])) {
-      const lead = byPhone.get(key(s.name));
-      if (!lead) continue;                         // display name is not a lead number
+      const leadArr = byPhone.get(key(s.name));
+      if (!leadArr) continue;                      // display name is not a lead number
       const lk = key(s.jid.split('@')[0]);
-      if (lk.length === 10 && !byPhone.has(lk)) { byPhone.set(lk, lead); named++; }
+      if (lk.length === 10 && !byPhone.has(lk)) { byPhone.set(lk, leadArr); named++; }
     }
     if (named) console.log(`${named} lead number${named === 1 ? '' : 's'} matched by chat display name`);
   } catch (e) { /* session list unreadable: those chats stay unmatched */ }
@@ -153,16 +156,16 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
   // 2. Timestamp advances only.
   const updates = [];
   for (const k of new Set(rows.map(r => r.k))) {
-    const lead = byPhone.get(k);
-    if (!lead) continue;
     const out = rows.find(r => r.k === k && r.mine === 1);
     const inb = rows.find(r => r.k === k && r.mine === 0);
-    const patch = {};
-    const oNew = out ? when(out.d).toISOString() : null;
-    if (oNew && (!lead.last_outreach_at || oNew > lead.last_outreach_at)) patch.last_outreach_at = oNew;
-    const iNew = inb ? when(inb.d).toISOString() : null;
-    if (iNew && (!lead.client_replied_at || iNew > lead.client_replied_at)) patch.client_replied_at = iNew;
-    if (Object.keys(patch).length) updates.push({ lead, patch });
+    for (const lead of (byPhone.get(k) || [])) {
+      const patch = {};
+      const oNew = out ? when(out.d).toISOString() : null;
+      if (oNew && (!lead.last_outreach_at || oNew > lead.last_outreach_at)) patch.last_outreach_at = oNew;
+      const iNew = inb ? when(inb.d).toISOString() : null;
+      if (iNew && (!lead.client_replied_at || iNew > lead.client_replied_at)) patch.client_replied_at = iNew;
+      if (Object.keys(patch).length) updates.push({ lead, patch });
+    }
   }
   const matched = [...new Set(rows.map(r => r.k))].filter(k => byPhone.has(k));
   console.log(`\n${matched.length} of those numbers appear in WhatsApp`);
@@ -195,14 +198,15 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
 
   const perLead = new Map();
   for (const r of threadRows) {
-    const lead = byPhone.get(r.k);
-    if (!lead || !r.body) continue;
-    const arr = perLead.get(lead.id) || [];
-    if (arr.length >= 12) continue;
-    arr.push({ submission_id: lead.id, channel: 'WHATSAPP',
-               from_me: r.mine === 1, body: String(r.body).slice(0, 1200),
-               sent_at: when(r.d).toISOString() });
-    perLead.set(lead.id, arr);
+    if (!r.body) continue;
+    for (const lead of (byPhone.get(r.k) || [])) {
+      const arr = perLead.get(lead.id) || [];
+      if (arr.length >= 12) continue;
+      arr.push({ submission_id: lead.id, channel: 'WHATSAPP',
+                 from_me: r.mine === 1, body: String(r.body).slice(0, 1200),
+                 sent_at: when(r.d).toISOString() });
+      perLead.set(lead.id, arr);
+    }
   }
   const toStore = [...perLead.values()].flat();
   console.log(`${toStore.length} messages to store across ${perLead.size} threads`);

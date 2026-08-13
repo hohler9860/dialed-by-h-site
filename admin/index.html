@@ -223,19 +223,25 @@ table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line)
 .tbl-wrap.dense table.leads th { padding: 6px 8px 6px 0; }
 .tbl-wrap.dense .tsub, .tbl-wrap.dense .tmono { font-size: 10px; margin-top: 0; }
 
-/* Card view for the wholesale feed: image-forward, like the public buy grid. */
-.wcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; padding-top: 16px; }
-.wcard { border: 1px solid var(--line); cursor: pointer; background: var(--b1); transition: border-color .15s ease; }
-.wcard:hover { border-color: var(--l2); }
-.wcard .wc-img { aspect-ratio: 1; background: #101010; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.wcard .wc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.wcard .wc-img .wc-noimg { font-family: var(--mono); font-size: 10px; color: var(--l3); letter-spacing: .12em; }
-.wcard .wc-body { padding: 10px 12px 12px; }
-.wcard .wc-name { font-weight: 700; letter-spacing: -.01em; font-size: 13px; line-height: 1.25; }
-.wcard .wc-ref { font-family: var(--mono); font-size: 10.5px; color: var(--l2); margin-top: 2px; }
-.wcard .wc-price { font-family: var(--mono); font-size: 16px; margin-top: 7px; color: var(--l1); }
-.wcard .wc-meta { font-family: var(--mono); font-size: 10px; color: var(--l2); margin-top: 4px; }
-.wcard .wc-detail { border-top: 1px solid var(--line); margin-top: 9px; padding-top: 8px;
+/* Card view for the wholesale feed: same tile recipe as the live buy page —
+   borderless, square photo on a near-black canvas, then one letterspaced
+   uppercase row with the name left and the price right. */
+.wcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 34px 18px; padding-top: 20px; }
+.wcard { cursor: pointer; min-width: 0; }
+.wcard .wc-img { position: relative; width: 100%; aspect-ratio: 1; background: #0d0d0d; overflow: hidden; }
+.wcard .wc-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.wcard .wc-img .wc-noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 9px; letter-spacing: .3em; color: rgba(255,255,255,.25); }
+.wcard .wc-tag { position: absolute; top: 0; right: 0; z-index: 2; background: var(--l1); color: var(--b1);
+    font-family: var(--mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; padding: 4px 8px; }
+.wcard .wc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 12px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; min-width: 0; }
+.wcard .wc-row .wc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--l1); }
+.wcard .wc-row .wc-price { color: var(--l2); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+.wcard:hover .wc-name { text-decoration: underline; text-underline-offset: 4px; }
+.wcard .wc-ref { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--l3); margin-top: 4px; }
+.wcard .wc-detail { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line);
     font-family: var(--mono); font-size: 10.5px; color: var(--l2); line-height: 1.7; }
 
 /* Pipeline diagram */
@@ -2579,20 +2585,23 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<br>' + esc(WS.names[l.group_jid] || '') +
                     '<br>' + esc(fmtAgo(l.message_ts)) + ' · ' + esc(l.listing_type || '') +
                 '</div>';
+            var tag = l.listing_type === 'WTB' || l.listing_type === 'NTQ' ? l.listing_type
+                    : (l.delta_pct != null && l.delta_pct >= 10 ? 'DEAL' : '');
             return '<div class="wcard" data-wcard="' + esc(l.id) + '">' +
                 '<div class="wc-img">' +
+                    (tag ? '<span class="wc-tag">' + esc(tag) + '</span>' : '') +
                     (l.image_url
                         ? '<img src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">'
                         : '<span class="wc-noimg">NO PHOTO</span>') +
                 '</div>' +
-                '<div class="wc-body">' +
-                    '<div class="wc-name">' + esc(name) + '</div>' +
-                    '<div class="wc-ref">' + esc(l.reference || 'no ref') +
-                        (l.nickname ? ' · ' + esc(l.nickname) : '') + '</div>' +
-                    '<div class="wc-price">' + esc(money(l.price_usd)) + '</div>' +
-                    (meta ? '<div class="wc-meta">' + esc(meta) + '</div>' : '') +
-                    detail +
+                '<div class="wc-row">' +
+                    '<span class="wc-name">' + esc(name) + '</span>' +
+                    '<span class="wc-price">' + esc(money(l.price_usd)) + '</span>' +
                 '</div>' +
+                '<div class="wc-ref">' + esc(l.reference || 'no ref') +
+                    (l.nickname ? ' · ' + esc(l.nickname) : '') +
+                    (meta ? ' · ' + esc(meta) : '') + '</div>' +
+                detail +
             '</div>';
         }).join('') + '</div>' +
         (list.length > WCARD_CAP

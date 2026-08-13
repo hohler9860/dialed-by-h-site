@@ -90,10 +90,13 @@ async function supabase(path, options = {}) {
 // PostgREST refuses to return more than 1000 rows no matter what limit you ask
 // for, so a plain "limit=2000" silently hands back 1000 and everything past it
 // vanishes without an error. Walk the range in pages instead.
-async function supabaseAll(path, options = {}, cap = 20000) {
+// `start` shifts the whole walk, which is how paging works: PostgREST refuses
+// a query-string offset combined with Range headers, so the offset must live
+// in the Range itself.
+async function supabaseAll(path, options = {}, cap = 20000, start = 0) {
     const PAGE = 1000;
     const out = [];
-    for (let from = 0; from < cap; from += PAGE) {
+    for (let from = start; from < start + cap; from += PAGE) {
         const to = from + PAGE - 1;
         const page = await supabase(path, {
             ...options,
@@ -102,6 +105,7 @@ async function supabaseAll(path, options = {}, cap = 20000) {
         if (!Array.isArray(page) || page.length === 0) break;
         out.push(...page);
         if (page.length < PAGE) break;
+        if (out.length >= cap) { out.length = cap; break; }
     }
     return out;
 }
@@ -330,8 +334,8 @@ module.exports = async (req, res) => {
             }
 
             const q = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-            const qAll = (path, _o, cap) =>
-                supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } }, cap);
+            const qAll = (path, _o, cap, start) =>
+                supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } }, cap, start);
 
             const [listings, stats, variants, alerts, groups] = await Promise.all([
                 // The view carries the stored photo path alongside the listing.
@@ -347,8 +351,8 @@ module.exports = async (req, res) => {
                     "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
                     "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
                     "vision_mismatch,confidence,message_ts,image_path" +
-                    listingFilter + "&order=message_ts.desc" + (offset ? `&offset=${offset}` : ""),
-                    {}, LISTING_CAP
+                    listingFilter + "&order=message_ts.desc",
+                    {}, LISTING_CAP, offset
                 ),
                 // Both stats tables grew past what one response can carry once
                 // the RWB groups joined (4.4k variants and climbing). The tab

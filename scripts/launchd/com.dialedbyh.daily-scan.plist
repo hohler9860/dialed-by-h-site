@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dialedbyh.daily-scan</string>
+
+    <!-- Invoke node directly so Full Disk Access can be granted to this exact
+         binary (System Settings → Privacy & Security → Full Disk Access →
+         /usr/local/bin/node). Same pattern as com.dialedbyh.quotes-sync. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/node</string>
+        <string>/Users/henryohler/IdeaProjects/dialed-by-h-site/scripts/daily-scan.js</string>
+    </array>
+
+    <!-- 8:00 every morning, machine local time (Boston = ET). If the Mac is
+         asleep at 8, launchd runs it on wake. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/henryohler/IdeaProjects/dialed-by-h-site/logs/daily-scan.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/henryohler/IdeaProjects/dialed-by-h-site/logs/daily-scan.err.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/henryohler/IdeaProjects/dialed-by-h-site</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+    </dict>
+</dict>
+</plist>

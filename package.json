@@ -21,6 +21,8 @@
   "devDependencies": {
     "@react-email/preview-server": "^5.2.8",
     "@tailwindcss/cli": "^4.1.18",
+    "imapflow": "^1.7.0",
+    "mailparser": "^3.9.15",
     "react-email": "^5.2.8",
     "tailwindcss": "^4.1.18"
   }

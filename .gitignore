@@ -19,3 +19,4 @@ broadcast-*.html
 inquiry-preview.html
 .vercel
 .env*
+logs/

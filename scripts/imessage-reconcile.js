@@ -139,10 +139,12 @@ const key = (s) => String(s || '').replace(/\D/g, '').slice(-10);
     const out = rows.find(r => r.k === k && r.mine === 1);
     const inb = rows.find(r => r.k === k && r.mine === 0);
     const patch = {};
+    // Advance-only: another channel (WhatsApp, email) may hold a fresher
+    // timestamp, and an older iMessage one must never roll it back.
     const oNew = out ? when(out.d).toISOString() : null;
-    if (oNew && oNew !== lead.last_outreach_at)  patch.last_outreach_at  = oNew;
+    if (oNew && (!lead.last_outreach_at || oNew > lead.last_outreach_at))   patch.last_outreach_at  = oNew;
     const iNew = inb ? when(inb.d).toISOString() : null;
-    if (iNew && iNew !== lead.client_replied_at) patch.client_replied_at = iNew;
+    if (iNew && (!lead.client_replied_at || iNew > lead.client_replied_at)) patch.client_replied_at = iNew;
     if (Object.keys(patch).length) updates.push({ lead, patch });
   }
 

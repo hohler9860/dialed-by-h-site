@@ -222,6 +222,37 @@ table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line)
 .tbl-wrap.dense table.leads td { padding: 4px 8px 4px 0; }
 .tbl-wrap.dense table.leads th { padding: 6px 8px 6px 0; }
 .tbl-wrap.dense .tsub, .tbl-wrap.dense .tmono { font-size: 10px; margin-top: 0; }
+
+/* Card view for the wholesale feed: image-forward, like the public buy grid. */
+.wcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; padding-top: 16px; }
+.wcard { border: 1px solid var(--line); cursor: pointer; background: var(--b1); transition: border-color .15s ease; }
+.wcard:hover { border-color: var(--l2); }
+.wcard .wc-img { aspect-ratio: 1; background: #101010; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.wcard .wc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wcard .wc-img .wc-noimg { font-family: var(--mono); font-size: 10px; color: var(--l3); letter-spacing: .12em; }
+.wcard .wc-body { padding: 10px 12px 12px; }
+.wcard .wc-name { font-weight: 700; letter-spacing: -.01em; font-size: 13px; line-height: 1.25; }
+.wcard .wc-ref { font-family: var(--mono); font-size: 10.5px; color: var(--l2); margin-top: 2px; }
+.wcard .wc-price { font-family: var(--mono); font-size: 16px; margin-top: 7px; color: var(--l1); }
+.wcard .wc-meta { font-family: var(--mono); font-size: 10px; color: var(--l2); margin-top: 4px; }
+.wcard .wc-detail { border-top: 1px solid var(--line); margin-top: 9px; padding-top: 8px;
+    font-family: var(--mono); font-size: 10.5px; color: var(--l2); line-height: 1.7; }
+
+/* Pipeline diagram */
+.pipe-wrap { padding-top: 8px; }
+.pipe-svg { width: 100%; height: auto; display: block; }
+.pipe-svg .pnode { fill: var(--b1); stroke: var(--line); stroke-width: 1; }
+.pipe-svg .pnode--work { stroke: var(--l2); }
+.pipe-svg .plabel { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; fill: var(--l2); }
+.pipe-svg .pnum { font-family: var(--mono); font-size: 22px; fill: var(--l1); }
+.pipe-svg .psub { font-family: var(--mono); font-size: 8.5px; fill: var(--l3); }
+.pipe-svg .pedge { fill: none; stroke: var(--line); stroke-width: 1.4; }
+.pipe-svg .pedge--flow { stroke-dasharray: 3 6; animation: pipeflow 1.2s linear infinite; stroke: var(--l2); }
+.pipe-svg .pdot { fill: var(--l1); }
+@keyframes pipeflow { to { stroke-dashoffset: -9; } }
+.pipe-recent { margin-top: 18px; }
+.pnum.bump { animation: pbump .5s ease; }
+@keyframes pbump { 0% { fill: #7fd97f; } 100% { fill: var(--l1); } }
 table.leads tbody tr { cursor: pointer; }
 table.leads tbody tr:hover { background: rgba(var(--label-d),.04); }
 .tname { font-weight: 700; letter-spacing: -.01em; }
@@ -432,6 +463,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="leads"   aria-selected="false">Leads</button>
             <button data-tab="ntq"     aria-selected="false">NTQ</button>
             <button data-tab="wholesale" aria-selected="false">Wholesale</button>
+            <button data-tab="pipeline" aria-selected="false">Pipeline</button>
             <button data-tab="matches" aria-selected="false">Matches</button>
             <button data-tab="dealers" aria-selected="false">Dealers</button>
             <button data-tab="retail"  aria-selected="false">Retail</button>
@@ -492,7 +524,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, ntq: renderNTQ, wholesale: renderWholesale, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
+    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, ntq: renderNTQ, wholesale: renderWholesale, pipeline: renderPipeline, matches: renderMatches, dealers: renderDealers, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth };
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -2270,9 +2302,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // WHOLESALE  — the price index scraped out of the dealer groups
     // ══════════════════════════════════════════════════════════
     var WS = { listings: [], stats: [], variants: [], alerts: [], names: {}, counters: {}, loadedAt: null };
-    // Density is a stable preference, not a per-visit choice.
-    var wDense = false;
-    try { wDense = !!localStorage.getItem('w-dense'); } catch (e) {}
+    // Density and view are stable preferences, not per-visit choices.
+    var wDense = false, wView = 'table';
+    try {
+        wDense = !!localStorage.getItem('w-dense');
+        wView = localStorage.getItem('w-view') === 'cards' ? 'cards' : 'table';
+    } catch (e) {}
     var wq = '';
     var wfilter = { tile: '', brand: '', group: '', days: '' };
     var wsort = 'message_ts';
@@ -2479,6 +2514,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '<button class="btn ghost" id="w-csv">Export</button>' +
               '<button class="btn ghost" id="w-refresh">Refresh</button>' +
               '<button class="btn ghost" id="w-dense">' + (wDense ? 'Comfortable' : 'Compact') + '</button>' +
+              '<button class="btn ghost" id="w-view">' + (wView === 'cards' ? 'Table' : 'Cards') + '</button>' +
             '</div>' +
 
             // Newest listing age is the real health signal: the ingest runs every
@@ -2502,20 +2538,67 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               ' · ' + (c.variants || 0) + ' variants tracked' +
               ((c.alerts || 0) ? ' · ' + c.alerts + ' alert' + (c.alerts === 1 ? '' : 's') + ' fired' : '') + '</p>' +
 
-            '<div class="tbl-wrap' + (wDense ? ' dense' : '') + '"><table class="leads"><thead><tr>' +
-              WCOLS.map(function (col) {
-                  var on = wsort === col.k;
-                  return '<th class="s' + (on ? ' on' : '') + '" data-wsort="' + col.k + '"' +
-                      (col.w ? ' style="width:' + col.w + '"' : '') + '>' + esc(col.l) +
-                      '<span class="ar">' + (on ? (wdir < 0 ? '↓' : '↑') : '↕') + '</span></th>';
-              }).join('') +
-            '</tr></thead><tbody>' +
-              (list.length ? list.map(wsRow).join('')
-                           : '<tr><td colspan="6" style="padding:28px 0"><span class="tmono">Nothing matches those filters.</span></td></tr>') +
-            '</tbody></table></div>';
+            (wView === 'cards'
+              ? wsCards(list)
+              : '<div class="tbl-wrap' + (wDense ? ' dense' : '') + '"><table class="leads"><thead><tr>' +
+                WCOLS.map(function (col) {
+                    var on = wsort === col.k;
+                    return '<th class="s' + (on ? ' on' : '') + '" data-wsort="' + col.k + '"' +
+                        (col.w ? ' style="width:' + col.w + '"' : '') + '>' + esc(col.l) +
+                        '<span class="ar">' + (on ? (wdir < 0 ? '↓' : '↑') : '↕') + '</span></th>';
+                }).join('') +
+              '</tr></thead><tbody>' +
+                (list.length ? list.map(wsRow).join('')
+                             : '<tr><td colspan="6" style="padding:28px 0"><span class="tmono">Nothing matches those filters.</span></td></tr>') +
+              '</tbody></table></div>');
 
         view.innerHTML = html;
         wireWholesale();
+    }
+
+    // Image-forward browse view, same shape as the public buy grid: big photo,
+    // name, price. Corrections stay in the table view; a card click just flips
+    // open the detail block.
+    var WCARD_CAP = 400;
+    function wsCards(list) {
+        var shown = list.slice(0, WCARD_CAP);
+        if (!shown.length) return '<p class="count" style="padding:28px 0">Nothing matches those filters.</p>';
+        return '<div class="wcards">' + shown.map(function (l) {
+            var open = wopen === l.id;
+            var name = [l.brand, l.model].filter(Boolean).join(' ') || 'Unidentified';
+            var meta = [l.year, (l.condition || '').replace(/_/g, ' '),
+                        (l.set_completeness || '').replace(/_/g, ' ')]
+                       .filter(function (x) { return x && x !== 'UNKNOWN'; }).join(' · ');
+            var detail = !open ? '' :
+                '<div class="wc-detail">' +
+                    esc([l.dial_color, l.dial_material].filter(Boolean).join(' ') || '') +
+                    (l.bracelet ? '<br>' + esc(l.bracelet) : '') +
+                    (l.case_material ? '<br>' + esc(String(l.case_material).replace(/_/g, ' ')) +
+                        (l.case_size_mm ? ' ' + esc(l.case_size_mm) + 'mm' : '') : '') +
+                    '<br>' + esc(l.seller_name || 'unknown seller') +
+                    '<br>' + esc(WS.names[l.group_jid] || '') +
+                    '<br>' + esc(fmtAgo(l.message_ts)) + ' · ' + esc(l.listing_type || '') +
+                '</div>';
+            return '<div class="wcard" data-wcard="' + esc(l.id) + '">' +
+                '<div class="wc-img">' +
+                    (l.image_url
+                        ? '<img src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">'
+                        : '<span class="wc-noimg">NO PHOTO</span>') +
+                '</div>' +
+                '<div class="wc-body">' +
+                    '<div class="wc-name">' + esc(name) + '</div>' +
+                    '<div class="wc-ref">' + esc(l.reference || 'no ref') +
+                        (l.nickname ? ' · ' + esc(l.nickname) : '') + '</div>' +
+                    '<div class="wc-price">' + esc(money(l.price_usd)) + '</div>' +
+                    (meta ? '<div class="wc-meta">' + esc(meta) + '</div>' : '') +
+                    detail +
+                '</div>' +
+            '</div>';
+        }).join('') + '</div>' +
+        (list.length > WCARD_CAP
+            ? '<p class="count" style="margin-top:12px">Showing the first ' + WCARD_CAP +
+              ' of ' + list.length + ' — narrow the filters or use the table view for the rest.</p>'
+            : '');
     }
 
     function wsRow(l) {
@@ -2707,6 +2790,21 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             wDense = !wDense;
             try { localStorage.setItem('w-dense', wDense ? '1' : ''); } catch (e) {}
             paintWholesale();
+        });
+
+        var vw = document.getElementById('w-view');
+        if (vw) vw.addEventListener('click', function () {
+            wView = wView === 'cards' ? 'table' : 'cards';
+            try { localStorage.setItem('w-view', wView); } catch (e) {}
+            paintWholesale();
+        });
+
+        [].forEach.call(document.querySelectorAll('[data-wcard]'), function (card) {
+            card.addEventListener('click', function () {
+                var id = Number(this.dataset.wcard);
+                wopen = (wopen === id) ? null : id;
+                paintWholesale();
+            });
         });
 
         var csv = document.getElementById('w-csv');
@@ -3980,6 +4078,154 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (m < 60)    return m + 'm ago';
         if (m < 1440)  return Math.floor(m / 60) + 'h ago';
         return Math.floor(m / 1440) + 'd ago';
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // PIPELINE  — the machine, drawn live
+    // ══════════════════════════════════════════════════════════
+    // The diagram is built once; a 4s poll only updates numbers and animation
+    // speeds, so the motion never stutters from re-rendering. Every box is a
+    // real stage in the jobs pipeline and every moving edge means work is
+    // actually flowing through that link right now.
+    var plTimer = null, plLast = {};
+
+    function plNode(x, y, w, id, label, sub, work) {
+        return '<g transform="translate(' + x + ',' + y + ')">' +
+            '<rect class="pnode' + (work ? ' pnode--work' : '') + '" width="' + w + '" height="76" rx="2"/>' +
+            '<text class="plabel" x="12" y="20">' + label + '</text>' +
+            '<text class="pnum" id="pl-' + id + '" x="12" y="48">—</text>' +
+            '<text class="psub" id="pl-' + id + '-sub" x="12" y="66">' + sub + '</text>' +
+        '</g>';
+    }
+
+    function plEdge(id, d) {
+        return '<path class="pedge" d="' + d + '"/>' +
+               '<path class="pedge pedge--flow" id="ple-' + id + '" d="' + d + '" style="display:none"/>' +
+               '<circle class="pdot" id="pld-' + id + '" r="2.6" style="display:none">' +
+                 '<animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#ple-' + id + '"/></animateMotion>' +
+               '</circle>';
+    }
+
+    async function renderPipeline() {
+        view.innerHTML =
+          '<p class="count">The classification machine, live. Boxes are stages, moving lines are work ' +
+          'flowing right now. Workers poll every 30 seconds and claim one listing at a time; ' +
+          'failures drop to the bin below and wait in Health for a requeue.</p>' +
+          '<div class="pipe-wrap"><svg class="pipe-svg" viewBox="0 0 1160 400">' +
+
+            // Photos take the high road: fetched from WhatsApp, shrunk, stored
+            // on the CDN, and rejoin the flow at the classify stage.
+            plNode(330, 20, 150, 'media', 'PHOTO UPLOAD', 'to CDN / hour', true) +
+
+            plNode(10, 150, 130, 'groups', 'GROUPS', 'watch chats') +
+            plNode(180, 150, 130, 'msgs', 'MESSAGES', 'in / hour') +
+            plNode(350, 150, 130, 'intake', 'INTAKE', 'waiting') +
+            plNode(520, 150, 150, 'classify', 'CLASSIFY', 'reads / hour', true) +
+            plNode(710, 150, 130, 'verify_q', 'VERIFY QUEUE', 'waiting') +
+            plNode(880, 150, 150, 'verify', 'TWO-MODEL VERIFY', 'agreed / hour', true) +
+            plNode(1020, 20, 130, 'done', 'CLASSIFIED', 'today') +
+
+            plNode(520, 290, 150, 'noise', 'CHATTER', 'filtered out / hour') +
+            plNode(880, 290, 150, 'failed', 'FAILED JOBS', 'waiting for requeue') +
+
+            plEdge('g_m', 'M140,188 L180,188') +
+            plEdge('m_i', 'M310,188 L350,188') +
+            plEdge('i_c', 'M480,188 L520,188') +
+            plEdge('c_q', 'M670,188 L710,188') +
+            plEdge('q_v', 'M840,188 L880,188') +
+            plEdge('v_d', 'M1030,150 C1030,110 1050,100 1060,96') +
+            plEdge('m_media', 'M245,150 C245,60 300,58 330,58') +
+            plEdge('media_c', 'M480,58 C560,58 595,100 595,150') +
+            plEdge('c_n', 'M595,226 L595,290') +
+            plEdge('v_f', 'M955,226 L955,290') +
+          '</svg></div>' +
+          '<div class="pipe-recent"><p class="count" id="pl-tickline">Latest reads…</p>' +
+          '<div class="tbl-wrap"><table class="leads"><tbody id="pl-recent"></tbody></table></div></div>';
+
+        plLast = {};
+        await pollPipeline();
+        if (plTimer) clearInterval(plTimer);
+        plTimer = setInterval(function () {
+            var on = document.querySelector('#tabs button[data-tab="pipeline"][aria-selected="true"]');
+            if (!on) { clearInterval(plTimer); plTimer = null; return; }
+            if (document.hidden) return;
+            pollPipeline();
+        }, 4000);
+    }
+
+    function plSet(id, val, sub) {
+        var el = document.getElementById('pl-' + id);
+        if (!el) return;
+        var txt = val == null ? '—' : Number(val).toLocaleString();
+        if (el.textContent !== txt) {
+            el.textContent = txt;
+            // A brief green pulse marks a number that just moved.
+            if (plLast[id] != null) {
+                el.classList.remove('bump'); void el.getBBox; el.classList.add('bump');
+            }
+        }
+        plLast[id] = val;
+        if (sub != null) {
+            var s = document.getElementById('pl-' + id + '-sub');
+            if (s) s.textContent = sub;
+        }
+    }
+
+    // rate is per hour; the edge animates when there is flow, and the dash
+    // speed scales with how fast that link is actually moving.
+    function plFlow(id, rate) {
+        var flow = document.getElementById('ple-' + id);
+        var dot = document.getElementById('pld-' + id);
+        if (!flow) return;
+        var on = rate > 0;
+        flow.style.display = on ? '' : 'none';
+        if (dot) dot.style.display = on ? '' : 'none';
+        if (on) {
+            var dur = Math.max(0.35, Math.min(2.5, 120 / rate));
+            flow.style.animationDuration = dur + 's';
+        }
+    }
+
+    async function pollPipeline() {
+        var d;
+        try { d = await A.adminFetchTo('/api/leads-admin', 'pipeline'); }
+        catch (e) { return; }
+        if (!document.getElementById('pl-msgs')) return;
+
+        plSet('groups', d.groups_active);
+        plSet('msgs', d.msgs_1h, 'in / hour · newest ' + fmtAgo(d.last_message_at));
+        plSet('media', d.media_1h, 'to CDN / hour · ' + (d.media_pending || 0) + ' pending');
+        plSet('intake', d.intake, (d.running || 0) > 0 ? d.running + ' being read now' : 'waiting');
+        plSet('classify', d.classify_1h, 'reads / hour · last ' + fmtAgo(d.last_classify_at));
+        plSet('verify_q', d.awaiting_verify);
+        plSet('verify', d.verify_1h, 'agreed / hour · last ' + fmtAgo(d.last_verify_at));
+        plSet('done', d.classified_today);
+        plSet('noise', d.noise_1h);
+        plSet('failed', d.failed, d.failed > 0 ? 'requeue them in Health' : 'nothing stuck');
+
+        var msgRate = d.msgs_1h || 0, clsRate = d.classify_1h || 0, vfyRate = d.verify_1h || 0;
+        plFlow('g_m', msgRate);
+        plFlow('m_i', clsRate);
+        plFlow('i_c', clsRate);
+        plFlow('c_q', vfyRate);
+        plFlow('q_v', vfyRate);
+        plFlow('v_d', vfyRate);
+        plFlow('m_media', d.media_1h || 0);
+        plFlow('media_c', d.media_1h || 0);
+        plFlow('c_n', d.noise_1h || 0);
+        plFlow('v_f', 0);
+
+        var tick = document.getElementById('pl-tickline');
+        if (tick) tick.textContent = 'Latest reads · updates every 4s · ' +
+            (d.classified_today || 0).toLocaleString() + ' classified today';
+        var tb = document.getElementById('pl-recent');
+        if (tb) tb.innerHTML = (d.recent || []).map(function (r) {
+            return '<tr><td style="width:110px"><span class="tmono">' + esc(fmtAgo(r.finished_at)) + '</span></td>' +
+                '<td><span class="tname">' + esc([r.brand, r.model].filter(Boolean).join(' ') || 'Unidentified') + '</span>' +
+                ' <span class="tmono">' + esc(r.reference || '') + '</span></td>' +
+                '<td style="width:90px"><span class="tmono">' + esc(r.listing_type || '') + '</span></td>' +
+                '<td style="width:110px;text-align:right"><span class="tmono">' + esc(money(r.price_usd)) + '</span></td></tr>';
+        }).join('');
     }
 
     async function renderHealth() {

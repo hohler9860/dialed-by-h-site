@@ -1172,6 +1172,39 @@ module.exports = async (req, res) => {
             return res.status(200).json({ failed, counts, types });
         }
 
+        // Live snapshot behind the Pipeline diagram. One RPC, polled every few
+        // seconds while the tab is open.
+        if (action === "pipeline") {
+            const snap = await supabase("rpc/pipeline_snapshot", {
+                method: "POST",
+                headers: { "Content-Profile": "wholesale", "Accept-Profile": "wholesale" },
+                body: JSON.stringify({}),
+            });
+            return res.status(200).json(snap || {});
+        }
+
+        // Bulk-sign storage paths so the card view can show the actual photos.
+        // The bucket is private on purpose; signing stays server-side.
+        if (action === "sign-images") {
+            const paths = Array.isArray(body.paths) ? body.paths.slice(0, 300).filter((p) => typeof p === "string") : [];
+            if (!paths.length) return res.status(200).json({ urls: {} });
+            const r = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    apikey: SUPABASE_KEY,
+                    Authorization: `Bearer ${SUPABASE_KEY}`,
+                },
+                body: JSON.stringify({ expiresIn: 3600, paths }),
+            });
+            const rows = r.ok ? await r.json() : [];
+            const urls = {};
+            for (const row of Array.isArray(rows) ? rows : []) {
+                if (row.signedURL && row.path) urls[row.path] = `${SUPABASE_URL}/storage/v1${row.signedURL}`;
+            }
+            return res.status(200).json({ urls });
+        }
+
         // Requeue = delete the failed job row. The listing's status never moved
         // (it only advances on success), so the worker's next tick claims it
         // fresh. Only failed rows can be requeued; a running job is left alone.

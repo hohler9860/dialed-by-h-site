@@ -246,8 +246,10 @@ table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line)
 .wcard.open .wc-detail { display: block; }
 
 /* Pipeline diagram */
-.pipe-wrap { padding-top: 8px; }
+.pipe-wrap { padding-top: 8px; overflow-x: auto; }
 .pipe-svg { width: 100%; height: auto; display: block; }
+/* On a phone the diagram scrolls sideways instead of shrinking to confetti. */
+@media (max-width: 820px) { .pipe-svg { min-width: 900px; } }
 .pipe-svg .pnode { fill: var(--b1); stroke: var(--line); stroke-width: 1; }
 .pipe-svg .pnode--work { stroke: var(--l2); }
 .pipe-svg .plabel { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; fill: var(--l2); }
@@ -4174,7 +4176,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     var plTimer = null, plLast = {};
 
     function plNode(x, y, w, id, label, sub, work) {
-        return '<g transform="translate(' + x + ',' + y + ')">' +
+        return '<g id="pl-g-' + id + '" transform="translate(' + x + ',' + y + ')">' +
             '<rect class="pnode' + (work ? ' pnode--work' : '') + '" width="' + w + '" height="76" rx="2"/>' +
             '<text class="plabel" x="12" y="20">' + label + '</text>' +
             '<text class="pnum" id="pl-' + id + '" x="12" y="48">—</text>' +
@@ -4223,8 +4225,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             plEdge('c_n', 'M595,226 L595,290') +
             plEdge('v_f', 'M955,226 L955,290') +
           '</svg></div>' +
+          '<div id="pl-failed-panel"></div>' +
           '<div class="pipe-recent"><p class="count" id="pl-tickline">Latest reads…</p>' +
           '<div class="tbl-wrap"><table class="leads"><tbody id="pl-recent"></tbody></table></div></div>';
+
+        // The failed bin opens right here: the boss's spec is "show failed jobs
+        // and choose to requeue them", and the diagram is where you're looking
+        // when you notice the number.
+        var fg = document.getElementById('pl-g-failed');
+        if (fg) {
+            fg.style.cursor = 'pointer';
+            fg.addEventListener('click', togglePlFailed);
+        }
 
         plLast = {};
         await pollPipeline();
@@ -4235,6 +4247,45 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (document.hidden) return;
             pollPipeline();
         }, 4000);
+    }
+
+    var plFailedOpen = false;
+    function togglePlFailed() {
+        plFailedOpen = !plFailedOpen;
+        var panel = document.getElementById('pl-failed-panel');
+        if (!panel) return;
+        if (!plFailedOpen) { panel.innerHTML = ''; return; }
+        panel.innerHTML = '<p class="count">Loading failed jobs…</p>';
+        A.adminFetchTo('/api/leads-admin', 'jobs').then(function (jb) {
+            var failed = jb.failed || [];
+            panel.innerHTML =
+              '<p class="count" style="margin-top:14px">' +
+                (failed.length ? failed.length + ' failed job' + (failed.length === 1 ? '' : 's') +
+                    ' · requeue puts the listing back in front of its worker'
+                 : 'Nothing stuck. Failures land here with their reason.') + '</p>' +
+              (failed.length ?
+                '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+                  '<th style="width:70px">Job</th><th style="width:150px">Type</th><th>Failure reason</th>' +
+                  '<th style="width:110px">When</th><th style="width:100px"></th>' +
+                '</tr></thead><tbody>' +
+                failed.map(function (f) {
+                    return '<tr><td class="tmono">#' + esc(f.id) + '</td>' +
+                      '<td>' + esc(f.job_type) + '</td>' +
+                      '<td class="count">' + esc(f.error || '—') + '</td>' +
+                      '<td>' + esc(fmtDate(f.claimed_at)) + '</td>' +
+                      '<td><button class="btn ghost" data-pl-requeue="' + esc(f.id) + '">Requeue</button></td></tr>';
+                }).join('') + '</tbody></table></div>' : '');
+            [].forEach.call(panel.querySelectorAll('[data-pl-requeue]'), function (b) {
+                b.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var self = this;
+                    self.disabled = true; self.textContent = '…';
+                    A.adminFetchTo('/api/leads-admin', 'job-requeue', { job_id: Number(this.dataset.plRequeue) })
+                        .then(function () { plFailedOpen = false; togglePlFailed(); pollPipeline(); })
+                        .catch(function (err) { alert(err.message); self.disabled = false; self.textContent = 'Requeue'; });
+                });
+            });
+        }).catch(function (e) { panel.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
     }
 
     function plSet(id, val, sub) {
@@ -4285,7 +4336,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         plSet('verify', d.verify_1h, 'agreed / hour · last ' + fmtAgo(d.last_verify_at));
         plSet('done', d.classified_today);
         plSet('noise', d.noise_1h);
-        plSet('failed', d.failed, d.failed > 0 ? 'requeue them in Health' : 'nothing stuck');
+        plSet('failed', d.failed, d.failed > 0 ? 'click to view + requeue' : 'nothing stuck');
 
         var msgRate = d.msgs_1h || 0, clsRate = d.classify_1h || 0, vfyRate = d.verify_1h || 0;
         plFlow('g_m', msgRate);

@@ -70,6 +70,31 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
 
   if (!fs.existsSync(WA_DB)) { console.error('No WhatsApp DB at ' + WA_DB); process.exit(1); }
 
+  // WhatsApp increasingly hides numbers behind @lid chat identifiers (saved
+  // contacts especially), and those chats carry no phone digits at all — so a
+  // lead like Emily could message TODAY and never match. The address book
+  // table maps lid → phone. Read it (contacts only, never messages), keep
+  // ONLY rows whose phone belongs to a lead, and register each lead under the
+  // last-10 of its lid as an extra lookup key.
+  const CONTACTS_DB = path.join(os.homedir(),
+    'Library/Group Containers/group.net.whatsapp.WhatsApp.shared/ContactsV2.sqlite');
+  if (fs.existsSync(CONTACTS_DB)) {
+    try {
+      const o = execFileSync('sqlite3', ['-json', '-readonly', CONTACTS_DB,
+        'SELECT ZLID AS lid, ZPHONENUMBER AS phone FROM ZWAADDRESSBOOKCONTACT ' +
+        'WHERE ZLID IS NOT NULL AND ZPHONENUMBER IS NOT NULL;'],
+        { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+      let lids = 0;
+      for (const p of (o.trim() ? JSON.parse(o) : [])) {
+        const lead = byPhone.get(key(p.phone));
+        if (!lead) continue;                       // not a lead: discard immediately
+        const lk = key(p.lid);
+        if (lk.length === 10 && !byPhone.has(lk)) { byPhone.set(lk, lead); lids++; }
+      }
+      if (lids) console.log(`${lids} lead number${lids === 1 ? '' : 's'} resolved behind @lid identifiers`);
+    } catch (e) { /* contacts db unreadable: lid chats simply stay unmatched */ }
+  }
+
   const safe = [...byPhone.keys()].filter(k => /^[0-9]{10}$/.test(k));
   if (!safe.length) { console.log('nothing to look up'); return; }
   const inList = safe.map(k => `'${k}'`).join(',');

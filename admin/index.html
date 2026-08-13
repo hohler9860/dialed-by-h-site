@@ -2525,7 +2525,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                   WS.listings.length + ' found' + (WS.capped ? ', showing the first batch' : '') + ' · press Enter to search again. '
                 : 'Showing the last ' + (WS.windowDays || 1) + ' day' + ((WS.windowDays || 1) === 1 ? '' : 's') +
                   ' · ' + WS.listings.length.toLocaleString() + ' of ' + (WS.held || 0).toLocaleString() +
-                  ' held' + (WS.capped ? ' · <button class="btn ghost" id="w-more" style="vertical-align:baseline">Load 2,000 more</button>' : '') +
+                  ' held' + (WS.capped ? ' · <button class="btn ghost" id="w-more" style="vertical-align:baseline">Load more</button>' : '') +
                   ' · press Enter in search to look across all of them. ') +
               (WS.listings.length
                 ? 'Newest ' + esc(fmtAgo(WS.listings.reduce(function (a, b) {
@@ -2782,7 +2782,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     WS.capped = r.listings_capped;
                     paintWholesale();
                 })
-                .catch(function (e) { alert(e.message); self.disabled = false; self.textContent = 'Load 2,000 more'; });
+                .catch(function (e) { alert(e.message); self.disabled = false; self.textContent = 'Load more'; });
         });
 
         var dens = document.getElementById('w-dense');

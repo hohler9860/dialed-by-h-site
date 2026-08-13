@@ -33,7 +33,11 @@ const MAX_ROWS = 5000;
 // wholesale payload, so they are capped and the true total is reported next
 // to them. Raising this without measuring the response size will break the
 // tab outright rather than degrade it.
-const LISTING_CAP = 2000;
+// Dropped from 2000 when the RWB groups roughly doubled the feed: the page
+// plus stats plus signed image URLs must stay clear of Vercel's 4.5MB kill
+// line, and Load-more paging means a smaller page costs one extra click, not
+// data.
+const LISTING_CAP = 1500;
 
 const ALLOWED_ORIGINS = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
 
@@ -346,8 +350,12 @@ module.exports = async (req, res) => {
                     listingFilter + "&order=message_ts.desc" + (offset ? `&offset=${offset}` : ""),
                     {}, LISTING_CAP
                 ),
-                qAll("reference_stats?select=*&order=n.desc"),
-                qAll("variant_stats?select=*&order=n.desc"),
+                // Both stats tables grew past what one response can carry once
+                // the RWB groups joined (4.4k variants and climbing). The tab
+                // only ever surfaces the head of these lists, so cap them by
+                // volume rather than shipping the tail into a 4.5MB wall.
+                qAll("reference_stats?select=*&order=n.desc", {}, 800),
+                qAll("variant_stats?select=*&order=n.desc", {}, 1200),
                 // Join through to the listing so the UI can show what was on offer.
                 q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200"),
                 q("groups?select=jid,name,is_price_baseline,active"),

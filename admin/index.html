@@ -2371,11 +2371,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         }, 60000);
     }
 
+    // Demand (WTB/NTQ/ISO) and parts are filtered out server-side now: demand
+    // belongs to Buyers/Matches, parts to the Parts tab. This feed is supply.
     var WTILES = [
         { k: '',         l: 'For sale' },
         { k: 'deals',    l: 'Under market' },
         { k: 'priced',   l: 'Priced' },
-        { k: 'wtb',      l: 'Wanted' },
         { k: 'diamonds', l: 'Diamonds' },
         { k: 'mismatch', l: 'Photo ≠ text' },
         { k: 'weak',     l: 'Check these' },
@@ -2389,7 +2390,6 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (!k) return !isDemand && !isParts;
         if (k === 'deals')    return l.delta_pct != null && l.delta_pct >= 10 && !isDemand && !isParts;
         if (k === 'priced')   return l.price_usd != null && !isDemand && !isParts;
-        if (k === 'wtb')      return isDemand;
         if (k === 'diamonds') return !!l.has_diamonds && !isDemand && !isParts;
         if (k === 'mismatch') return !!l.vision_mismatch;
         // Anything the extractor could not back up against the original message.

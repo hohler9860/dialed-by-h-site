@@ -325,9 +325,12 @@ module.exports = async (req, res) => {
             // ever building a response Vercel would refuse.
             const offset = Number(body.offset) > 0 ? Math.min(Number(body.offset), 200000) : 0;
 
-            // Parts have their own tab and their own action; the buy feed never
-            // carries them, whichever group they were posted in.
-            const PARTS_EXCLUDE = `&group_jid=neq.${PARTS_GROUP_JID}&listing_type=neq.PARTS`;
+            // The wholesale tab is supply of whole watches, nothing else. Parts
+            // live in the Parts tab; dealer demand (WTB/NTQ/ISO) feeds the
+            // Buyers board and matching, never this feed.
+            const PARTS_EXCLUDE =
+                `&group_jid=neq.${PARTS_GROUP_JID}` +
+                `&listing_type=not.in.(PARTS,WTB,NTQ,ISO)`;
 
             let listingFilter = `&message_ts=gte.${since}`;
             if (term) {

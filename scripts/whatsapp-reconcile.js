@@ -95,6 +95,27 @@ const when = (d) => new Date(APPLE_EPOCH + Number(d) * 1000);
     } catch (e) { /* contacts db unreadable: lid chats simply stay unmatched */ }
   }
 
+  // The address book only covers SAVED contacts. Unsaved chats (most inbound
+  // WhatsApp leads) are also behind @lid, but their display name IS the phone
+  // number — wrapped in Unicode directional isolates and non-breaking spaces,
+  // which is why SQL LIKE never finds them. Read the 1:1 session list (chat
+  // metadata only, no message content), strip every non-digit from the display
+  // name in JS, and register matching leads under their lid key as well.
+  try {
+    const o = execFileSync('sqlite3', ['-json', '-readonly', WA_DB,
+      'SELECT ZCONTACTJID AS jid, ZPARTNERNAME AS name FROM ZWACHATSESSION ' +
+      "WHERE ZSESSIONTYPE = 0 AND ZCONTACTJID LIKE '%@lid';"],
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+    let named = 0;
+    for (const s of (o.trim() ? JSON.parse(o) : [])) {
+      const lead = byPhone.get(key(s.name));
+      if (!lead) continue;                         // display name is not a lead number
+      const lk = key(s.jid.split('@')[0]);
+      if (lk.length === 10 && !byPhone.has(lk)) { byPhone.set(lk, lead); named++; }
+    }
+    if (named) console.log(`${named} lead number${named === 1 ? '' : 's'} matched by chat display name`);
+  } catch (e) { /* session list unreadable: those chats stay unmatched */ }
+
   const safe = [...byPhone.keys()].filter(k => /^[0-9]{10}$/.test(k));
   if (!safe.length) { console.log('nothing to look up'); return; }
   const inList = safe.map(k => `'${k}'`).join(',');

@@ -217,6 +217,11 @@ table.leads th .ar { color: var(--l3); margin-left: 3px; }
 table.leads th.on { color: var(--l1); }
 table.leads th.on .ar { color: var(--l1); }
 table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+/* Compact density for the wholesale feed: roughly twice the rows per screen. */
+.tbl-wrap.dense table.leads { font-size: 12px; }
+.tbl-wrap.dense table.leads td { padding: 4px 8px 4px 0; }
+.tbl-wrap.dense table.leads th { padding: 6px 8px 6px 0; }
+.tbl-wrap.dense .tsub, .tbl-wrap.dense .tmono { font-size: 10px; margin-top: 0; }
 table.leads tbody tr { cursor: pointer; }
 table.leads tbody tr:hover { background: rgba(var(--label-d),.04); }
 .tname { font-weight: 700; letter-spacing: -.01em; }
@@ -2265,6 +2270,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // WHOLESALE  — the price index scraped out of the dealer groups
     // ══════════════════════════════════════════════════════════
     var WS = { listings: [], stats: [], variants: [], alerts: [], names: {}, counters: {}, loadedAt: null };
+    // Density is a stable preference, not a per-visit choice.
+    var wDense = false;
+    try { wDense = !!localStorage.getItem('w-dense'); } catch (e) {}
     var wq = '';
     var wfilter = { tile: '', brand: '', group: '', days: '' };
     var wsort = 'message_ts';
@@ -2470,6 +2478,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 }).join('') + '</select>' +
               '<button class="btn ghost" id="w-csv">Export</button>' +
               '<button class="btn ghost" id="w-refresh">Refresh</button>' +
+              '<button class="btn ghost" id="w-dense">' + (wDense ? 'Comfortable' : 'Compact') + '</button>' +
             '</div>' +
 
             // Newest listing age is the real health signal: the ingest runs every
@@ -2480,7 +2489,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                   WS.listings.length + ' found' + (WS.capped ? ', showing the first batch' : '') + ' · press Enter to search again. '
                 : 'Showing the last ' + (WS.windowDays || 1) + ' day' + ((WS.windowDays || 1) === 1 ? '' : 's') +
                   ' · ' + WS.listings.length.toLocaleString() + ' of ' + (WS.held || 0).toLocaleString() +
-                  ' held' + (WS.capped ? ' (window is full, narrow it or search)' : '') +
+                  ' held' + (WS.capped ? ' · <button class="btn ghost" id="w-more" style="vertical-align:baseline">Load 2,000 more</button>' : '') +
                   ' · press Enter in search to look across all of them. ') +
               (WS.listings.length
                 ? 'Newest ' + esc(fmtAgo(WS.listings.reduce(function (a, b) {
@@ -2493,7 +2502,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               ' · ' + (c.variants || 0) + ' variants tracked' +
               ((c.alerts || 0) ? ' · ' + c.alerts + ' alert' + (c.alerts === 1 ? '' : 's') + ' fired' : '') + '</p>' +
 
-            '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<div class="tbl-wrap' + (wDense ? ' dense' : '') + '"><table class="leads"><thead><tr>' +
               WCOLS.map(function (col) {
                   var on = wsort === col.k;
                   return '<th class="s' + (on ? ' on' : '') + '" data-wsort="' + col.k + '"' +
@@ -2673,6 +2682,31 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (rf) rf.addEventListener('click', function () {
             view.innerHTML = '<p class="count">Loading…</p>';
             renderWholesale().catch(function (e) { view.innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+        });
+
+        // Page through the rest of the window: same filter, next 2,000 rows,
+        // appended so what is already on screen never jumps.
+        var more = document.getElementById('w-more');
+        if (more) more.addEventListener('click', function () {
+            var self = this;
+            self.disabled = true; self.textContent = 'Loading…';
+            A.adminFetchTo('/api/leads-admin', 'wholesale',
+                { days: wfilter.days || 1, q: wq || '', offset: WS.listings.length })
+                .then(function (r) {
+                    var seen = {};
+                    WS.listings.forEach(function (l) { seen[l.id] = 1; });
+                    (r.listings || []).forEach(function (l) { if (!seen[l.id]) WS.listings.push(l); });
+                    WS.capped = r.listings_capped;
+                    paintWholesale();
+                })
+                .catch(function (e) { alert(e.message); self.disabled = false; self.textContent = 'Load 2,000 more'; });
+        });
+
+        var dens = document.getElementById('w-dense');
+        if (dens) dens.addEventListener('click', function () {
+            wDense = !wDense;
+            try { localStorage.setItem('w-dense', wDense ? '1' : ''); } catch (e) {}
+            paintWholesale();
         });
 
         var csv = document.getElementById('w-csv');
@@ -3949,9 +3983,47 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     async function renderHealth() {
-        var d = await A.adminFetchTo('/api/leads-admin', 'health');
+        var pair = await Promise.all([
+            A.adminFetchTo('/api/leads-admin', 'health'),
+            A.adminFetchTo('/api/leads-admin', 'jobs'),
+        ]);
+        var d = pair[0], jb = pair[1] || {};
         var steps = d.steps || [];
         var bad = d.dead + d.stale;
+
+        // Jobs board: the pipeline is a set of 30s workers coordinating through
+        // wholesale.jobs. Failures never retry themselves — they are listed
+        // here with their reason and a Requeue button.
+        var jbCounts = jb.counts || {};
+        var jbFailed = jb.failed || [];
+        var jobsHtml =
+          '<p class="count" style="margin-top:22px">Jobs pipeline · last 24h per worker · ' +
+          jbFailed.length + ' failed waiting for requeue</p>' +
+          '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
+            '<th style="width:200px">Job type</th><th style="width:90px">Success</th>' +
+            '<th style="width:90px">Failed</th><th style="width:90px">Running</th>' +
+          '</tr></thead><tbody>' +
+          Object.keys(jbCounts).map(function (k) {
+              var c = jbCounts[k];
+              return '<tr><td>' + esc(k) + '</td>' +
+                '<td>' + (c.success || 0) + '</td>' +
+                '<td>' + ((c.failed || 0) > 0 ? '<span class="tag spam">' + c.failed + '</span>' : '0') + '</td>' +
+                '<td>' + (c.running || 0) + '</td></tr>';
+          }).join('') +
+          '</tbody></table></div>' +
+          (jbFailed.length ?
+            '<div class="tbl-wrap" style="margin-top:10px"><table class="leads"><thead><tr>' +
+              '<th style="width:70px">Job</th><th style="width:160px">Type</th><th>Failure reason</th>' +
+              '<th style="width:110px">When</th><th style="width:100px"></th>' +
+            '</tr></thead><tbody>' +
+            jbFailed.map(function (f) {
+                return '<tr><td class="tmono">#' + esc(f.id) + '</td>' +
+                  '<td>' + esc(f.job_type) + '</td>' +
+                  '<td class="count">' + esc(f.error || '—') + '</td>' +
+                  '<td>' + esc(fmtDate(f.claimed_at)) + '</td>' +
+                  '<td><button class="btn ghost" data-requeue="' + esc(f.id) + '">Requeue</button></td></tr>';
+            }).join('') +
+            '</tbody></table></div>' : '');
 
         view.innerHTML =
           '<div class="tiles">' +
@@ -4009,7 +4081,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') +
           '</tbody></table></div>' +
           '<p class="count">Solid is 85+, weak is under 70. Corrected is the only real ground ' +
-          'truth there is, so the more you fix in Wholesale the sharper this gets.</p>';
+          'truth there is, so the more you fix in Wholesale the sharper this gets.</p>' +
+          jobsHtml;
+
+        [].forEach.call(view.querySelectorAll('[data-requeue]'), function (b) {
+            b.addEventListener('click', function () {
+                var self = this;
+                self.disabled = true; self.textContent = '…';
+                A.adminFetchTo('/api/leads-admin', 'job-requeue', { job_id: Number(this.dataset.requeue) })
+                    .then(function () { renderHealth(); })
+                    .catch(function (e) { alert(e.message); self.disabled = false; self.textContent = 'Requeue'; });
+            });
+        });
 
         // Keep it live while he is looking at it, and stop the moment he is not.
         if (hlTimer) clearInterval(hlTimer);

@@ -308,6 +308,10 @@ module.exports = async (req, res) => {
             const days = Number(body.days) > 0 ? Math.min(Number(body.days), 365) : 1;
             const term = String(body.q || "").trim().slice(0, 60);
             const since = new Date(Date.now() - days * 86400000).toISOString();
+            // Paging: "Load more" passes the number of rows already shown and
+            // receives the next window, so the whole feed is reachable without
+            // ever building a response Vercel would refuse.
+            const offset = Number(body.offset) > 0 ? Math.min(Number(body.offset), 200000) : 0;
 
             let listingFilter = `&message_ts=gte.${since}`;
             if (term) {
@@ -339,7 +343,7 @@ module.exports = async (req, res) => {
                     "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
                     "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
                     "vision_mismatch,confidence,message_ts,image_path" +
-                    listingFilter + "&order=message_ts.desc",
+                    listingFilter + "&order=message_ts.desc" + (offset ? `&offset=${offset}` : ""),
                     {}, LISTING_CAP
                 ),
                 qAll("reference_stats?select=*&order=n.desc"),
@@ -1144,6 +1148,41 @@ module.exports = async (req, res) => {
                 stale: list.filter((s) => s.status === "STALE").length,
                 checked_at: new Date().toISOString(),
             });
+        }
+
+        // ── Jobs board ─────────────────────────────────────────────────────
+        // The jobs pipeline replaced the monolithic extractor 2026-08-12: every
+        // stage is a 30s worker that claims one listing by inserting a job row.
+        // Failures never retry on their own; they sit here with their reason
+        // until requeued by hand.
+        if (action === "jobs") {
+            const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
+            const [failed, recent, types] = await Promise.all([
+                wh("jobs?select=id,listing_id,job_type,error,claimed_at,finished_at" +
+                   "&status=eq.failed&order=claimed_at.desc&limit=200"),
+                wh("jobs?select=job_type,status&claimed_at=gte." +
+                   new Date(Date.now() - 86400000).toISOString()),
+                wh("job_types?select=key,description,entry_status,success_status,model,active"),
+            ]);
+            const counts = {};
+            for (const j of recent) {
+                counts[j.job_type] = counts[j.job_type] || { success: 0, failed: 0, running: 0 };
+                counts[j.job_type][j.status] = (counts[j.job_type][j.status] || 0) + 1;
+            }
+            return res.status(200).json({ failed, counts, types });
+        }
+
+        // Requeue = delete the failed job row. The listing's status never moved
+        // (it only advances on success), so the worker's next tick claims it
+        // fresh. Only failed rows can be requeued; a running job is left alone.
+        if (action === "job-requeue") {
+            const { job_id } = body;
+            if (!job_id) return res.status(400).json({ error: "Missing job_id" });
+            await supabase(`jobs?id=eq.${encodeURIComponent(job_id)}&status=eq.failed`, {
+                method: "DELETE",
+                headers: { "Content-Profile": "wholesale", "Accept-Profile": "wholesale" },
+            });
+            return res.status(200).json({ requeued: true });
         }
 
         // What the extractor actually gets wrong, per field and per model.

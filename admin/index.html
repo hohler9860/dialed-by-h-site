@@ -4384,7 +4384,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var jbFailed = jb.failed || [];
         var jobsHtml =
           '<p class="count" style="margin-top:22px">Jobs pipeline · last 24h per worker · ' +
-          jbFailed.length + ' failed waiting for requeue</p>' +
+          jbFailed.length + ' failed waiting for requeue' +
+          (jbFailed.length ? ' <button class="btn ghost" data-requeue-all style="margin-left:8px">Requeue all failed</button>' : '') +
+          '</p>' +
           '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
             '<th style="width:200px">Job type</th><th style="width:90px">Success</th>' +
             '<th style="width:90px">Failed</th><th style="width:90px">Running</th>' +
@@ -4469,6 +4471,16 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           '<p class="count">Solid is 85+, weak is under 70. Corrected is the only real ground ' +
           'truth there is, so the more you fix in Wholesale the sharper this gets.</p>' +
           jobsHtml;
+
+        var reqAll = view.querySelector('[data-requeue-all]');
+        if (reqAll) reqAll.addEventListener('click', function () {
+            if (!confirm('Requeue every failed job? Workers will re-run them all.')) return;
+            var self = this;
+            self.disabled = true; self.textContent = '…';
+            A.adminFetchTo('/api/leads-admin', 'job-requeue-all', {})
+                .then(function (r) { alert((r.requeued || 0) + ' jobs requeued'); renderHealth(); })
+                .catch(function (e) { alert(e.message); self.disabled = false; self.textContent = 'Requeue all failed'; });
+        });
 
         [].forEach.call(view.querySelectorAll('[data-requeue]'), function (b) {
             b.addEventListener('click', function () {

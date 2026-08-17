@@ -1283,6 +1283,23 @@ module.exports = async (req, res) => {
             return res.status(200).json({ requeued: true });
         }
 
+        // Bulk requeue for mass failures (credit outages fail thousands at
+        // once). Same mechanics as job-requeue, across every failed row —
+        // optionally narrowed to one job_type.
+        if (action === "job-requeue-all") {
+            let path = "jobs?status=eq.failed&select=id";
+            if (body.job_type) path += `&job_type=eq.${encodeURIComponent(body.job_type)}`;
+            const gone = await supabase(path, {
+                method: "DELETE",
+                headers: {
+                    "Content-Profile": "wholesale",
+                    "Accept-Profile": "wholesale",
+                    Prefer: "return=representation",
+                },
+            });
+            return res.status(200).json({ requeued: Array.isArray(gone) ? gone.length : 0 });
+        }
+
         // What the extractor actually gets wrong, per field and per model.
         if (action === "extraction-errors") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });

@@ -835,7 +835,7 @@
     </main>
 
     <!-- MODAL OVERLAY -->
-    <div id="modal-overlay" class="modal-hidden fixed inset-0 z-50 flex opacity-0" style="background:rgba(0,0,0,0.82);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">
+    <div id="modal-overlay" data-lenis-prevent class="modal-hidden fixed inset-0 z-50 flex opacity-0" style="background:rgba(0,0,0,0.82);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch">
         <div class="w-full max-w-lg glass-strong relative shadow-2xl rounded-2xl" style="margin:auto;padding:0;overflow-x:hidden">
             <button onclick="app.closeModal()"
                     class="absolute top-3 right-3 z-30 w-9 h-9 flex items-center justify-center bg-charcoal/80 backdrop-blur-sm border border-ivory/20 rounded-full text-muted hover:text-ivory hover:bg-charcoal transition-all duration-200">
@@ -1340,6 +1340,10 @@
 
                 // Pause ticker GSAP tweens while modal is open
                 app.pauseTickers();
+                // Lenis keeps steering wheel events at the page behind the
+                // overlay; with a zoomed/short window the form bottom becomes
+                // unreachable. Same pause the pt-modals already get.
+                if (window.__lenis) window.__lenis.stop();
 
                 overlay.classList.remove('modal-hidden');
                 overlay.classList.add('modal-visible');
@@ -1367,6 +1371,7 @@
                         document.body.style.paddingRight = '';
                         // Resume ticker GSAP tweens
                         app.resumeTickers();
+                        if (window.__lenis) window.__lenis.start();
                     }
                 });
             },

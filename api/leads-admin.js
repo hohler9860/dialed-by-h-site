@@ -357,7 +357,7 @@ module.exports = async (req, res) => {
                 // alongside so the tab can say what it is not showing.
                 qAll(
                     "listings_with_image?select=id,message_pk,group_jid,listing_type,brand,model," +
-                    "reference,price_usd,condition,set_completeness,year,seller_name,dial_color," +
+                    "reference,price_usd,price_original,price_currency,condition,set_completeness,year,seller_name,dial_color," +
                     "dial_material,bracelet,bezel,case_material,case_size_mm,complications," +
                     "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
                     "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +

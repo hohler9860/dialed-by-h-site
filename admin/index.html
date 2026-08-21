@@ -2467,6 +2467,16 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
     }
 
+    // Listings priced in HKD/AED/EUR/… are converted to USD at ingest (daily
+    // rate). Show the dealer's original figure next to the converted one so
+    // the number on screen can be checked against the message at a glance.
+    var FX_SIGN = { HKD: 'HK$', AED: 'AED ', EUR: '€', GBP: '£', CHF: 'CHF ', SGD: 'S$', JPY: '¥', CNY: 'CN¥' };
+    function fxOriginal(l) {
+        if (!l || l.price_original == null || !l.price_currency || l.price_currency === 'USD') return '';
+        return (FX_SIGN[l.price_currency] || l.price_currency + ' ') +
+               Number(l.price_original).toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+
     // The model's own confidence sat at 97% average and never moved, so it told
     // us nothing. Trust is computed from things that can be checked against the
     // original message: was the reference actually written, was the price
@@ -2617,6 +2627,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '</div>' +
                 '<div class="wc-ref">' + esc(l.reference || 'no ref') +
                     (l.nickname ? ' · ' + esc(l.nickname) : '') +
+                    (fxOriginal(l) ? ' · ' + esc(fxOriginal(l)) : '') +
                     (meta ? ' · ' + esc(meta) : '') + '</div>' +
                 detail +
             '</div>';
@@ -2647,7 +2658,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<span class="tsub">' + esc(l.reference || 'no ref') + '</span></span>' +
             '</div></td>' +
             '<td>' + (specOf(l) ? esc(specOf(l)) : '<span class="tmono">—</span>') + '</td>' +
-            '<td><span class="tmono">' + esc(money(l.price_usd)) + '</span></td>' +
+            '<td><span class="tmono">' + esc(money(l.price_usd)) + '</span>' +
+                (fxOriginal(l) ? '<div class="tsub">' + esc(fxOriginal(l)) + '</div>' : '') + '</td>' +
             '<td>' + deltaCell + '</td>' +
             '<td><span class="tsub">' + esc(l.seller_name || '—') + '</span></td>' +
         '</tr>';
@@ -2656,7 +2668,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         var rows = [
             ['Reference',   l.reference || '—'],
-            ['Asking',      money(l.price_usd)],
+            ['Asking',      money(l.price_usd) + (fxOriginal(l) ? ' — converted from ' + fxOriginal(l) + ' at the daily rate' : '')],
             // An exact match now means same dial colour too, which is the single
             // biggest price driver. Where there is no number, say which reason.
             ['Market',      l.baseline_usd
@@ -2858,7 +2870,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     function exportWholesale() {
         var list = sortWs(wsAfter(wfilter.tile, wfilter.brand, wfilter.group, wfilter.days, wq));
-        var cols = ['message_ts', 'brand', 'model', 'reference', 'price_usd', 'baseline_usd', 'delta_pct',
+        var cols = ['message_ts', 'brand', 'model', 'reference', 'price_usd', 'price_original', 'price_currency', 'baseline_usd', 'delta_pct',
                     'condition', 'set_completeness', 'year', 'dial_color', 'dial_material', 'case_material',
                     'case_size_mm', 'bracelet', 'bezel', 'has_diamonds', 'nickname', 'seller_name',
                     'listing_type', 'trust_score', 'model_used'];

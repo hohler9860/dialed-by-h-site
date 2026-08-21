@@ -2622,6 +2622,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     function paintWholesale() {
+        // The feed query can take seconds. If the user has already clicked to
+        // another tab by the time it resolves, painting here would clobber
+        // that tab's view — the "stuck on Wholesale" glitch.
+        if (!document.querySelector('#tabs button[data-tab="wholesale"][aria-selected="true"]')) return;
         var list = sortWs(wsAfter(wfilter.tile, wfilter.brand, wfilter.group, wfilter.days, wq));
         var c = WS.counters;
         var brands = Object.keys(WS.listings.reduce(function (m, l) {

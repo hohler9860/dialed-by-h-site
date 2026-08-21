@@ -354,7 +354,7 @@ fbq('init', '798516899968965'); fbq('track', 'PageView');
 <a href="/buy/" class="full flex items-center"><span data-scramble data-delay="300">Buy</span></a><a href="#" class="js-nav-desktop-toggle" style="display:none" aria-hidden="true"></a></li><li id="menu-item-1653690" class="menu-item menu-item-type-taxonomy menu-item-object-product_cat current-menu-item menu-item-1653690"><a href="#trade" data-modal="trade" aria-current="page"><span data-scramble data-delay="360">Trade</span></a></li><li id="menu-item-1653691" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1653691"><a href="#sell" data-modal="sell"><span data-scramble data-delay="420">Sell</span></a></li></ul><a href="/" aria-label="Dialed By H" class="header__bar__logo absolute">
 <img src="/assets/dbh/logo.png" alt="Dialed By H" width="438" height="58" style="height:inherit;width:auto;aspect-ratio:438/58;display:block;">
 </a><ul class="header__bar__right hidden b1024:flex"><li id="menu-item-1653721" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1653721"><a href="/about/"><span data-scramble data-delay="300">About</span></a></li><li class="hidden b1024:block">
-<a href="/process/" class="header__bar__search"><span data-scramble data-delay="360">Process</span></a></li><li class="hidden b1024:block"><a href="/journal/" class="header__bar__search"><span data-scramble data-delay="420">Journal</span></a></li></ul><a href="#source" data-modal="source" class="cart-icon"><span data-scramble data-delay="420">Request to Source</span></a><a href="#" class="cart-icon js-toggle-cart" style="display:none" aria-hidden="true">
+<a href="/process/" class="header__bar__search"><span data-scramble data-delay="360">Process</span></a></li><li class="hidden b1024:block"><a href="/journal/" class="header__bar__search"><span data-scramble data-delay="420">Journal</span></a></li></ul><a href="/source" class="cart-icon"><span data-scramble data-delay="420">Request to Source</span></a><a href="#" class="cart-icon js-toggle-cart" style="display:none" aria-hidden="true">
 <svg viewBox="0 0 16 18" class="b1024:hidden w-4 mr-2" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.25 5.875v-1.25A3.75 3.75 0 018 .875v0a3.75 3.75 0 013.75 3.75v1.25m-10.625 0A.625.625 0 00.5 6.5v8.438c0 1.18 1.006 2.187 2.188 2.187h10.624c1.182 0 2.188-.957 2.188-2.139V6.5a.625.625 0 00-.625-.625H1.125z" class="stroke-current" stroke-linecap="round" stroke-linejoin="round"/></svg><i class="hidden b1024:inline not-italic">Cart (</i>
 <i class="bg-beige b1024:bg-transparent w-5 b1024:w-auto h-5 b1024:h-auto flex not-italic items-center justify-center rounded-full js-i">
 <span class="overflow-hidden relative b1024:text-current">
@@ -380,7 +380,7 @@ ${w.details ? `<p class="pt-blurb">${escHtml(w.details)}</p>` : ''}
 <div class="pt-inquiry">
 <p>Interested in this piece? Inquire below and I&rsquo;ll get back to you with sourcing details, pricing, and availability.</p>
 <a class="pt-btn pt-btn--wa" href="${waLink}" target="_blank" rel="noopener">Message on WhatsApp</a>
-<button type="button" class="pt-btn pt-btn--ghost" data-modal="source">Inquire to source</button>
+<button type="button" class="pt-btn pt-btn--ghost" onclick="location.href='/source'">Inquire to source</button>
 </div>
 <div class="pt-chips"><span class="pt-chip">Authenticated</span><span class="pt-chip">Insured nationwide</span><span class="pt-chip">Secure transaction</span></div>
 </div>
@@ -422,7 +422,7 @@ ${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
 <li class="menu-item"><a href="/buy/">Buy</a></li>
 <li class="menu-item"><a href="#trade" data-modal="trade">Trade</a></li>
 <li class="menu-item"><a href="#sell" data-modal="sell">Sell</a></li>
-<li class="menu-item"><a href="#source" data-modal="source">Request to Source</a></li>
+<li class="menu-item"><a href="/source">Request to Source</a></li>
 </ul></div>
 <div class="col-span-24 b768:col-span-6 border text-14">
 <span class="text-10 b768:text-navy py-5 b768:py-0 b768:mb-5 flex relative">Company</span>
@@ -465,7 +465,7 @@ document.querySelectorAll('.pt-thumbs button').forEach(function (b) {
 <a href="/about/">About</a>
 <a href="/process/">Process</a>
 <a href="/journal/">Journal</a>
-<button type="button" data-modal="source">Request to Source</button>
+<button type="button" onclick="location.href='/source'">Request to Source</button>
 </div>
 <script>
 (function(){

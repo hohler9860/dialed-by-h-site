@@ -328,7 +328,7 @@
                             <li><a href="/process/"><span data-scramble data-delay="360">Process</span></a></li>
                             <li><a href="/journal/"><span data-scramble data-delay="420">Journal</span></a></li>
                         </ul>
-                        <a href="#source" data-modal="source"><span data-scramble data-delay="480">Request to Source</span></a>
+                        <a href="/source"><span data-scramble data-delay="480">Request to Source</span></a>
                     </div>
                     <button id="mobile-menu-btn" onclick="app.toggleMobileMenu()" class="dbh-header__burger" aria-label="Menu">
                         <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
@@ -343,7 +343,7 @@
                     <h1 class="dbh-display pt-reveal">Boston&#39;s Luxury Watch Dealer &amp; Concierge</h1>
                     <p class="lead pt-reveal">Dialed By H is an independent luxury watch dealer serving Boston collectors who want more than the local authorized dealer can offer. I buy, sell and trade Rolex, Patek Philippe, Audemars Piguet and more. Every piece is personally sourced, independently authenticated, and competitively priced.</p>
                     <div class="actions pt-reveal">
-                        <button data-modal="source" class="dbh-btn dbh-btn--solid">Request a piece</button>
+                        <button onclick="location.href='/source'" class="dbh-btn dbh-btn--solid">Request a piece</button>
                         <a href="/buy/" class="dbh-btn">Browse pieces</a>
                     </div>
                 </div>
@@ -463,7 +463,7 @@
                     <h2 class="dbh-display pt-reveal">Start your search</h2>
                     <p class="lead pt-reveal">Looking to buy, sell, or trade a luxury watch in Boston? Tell me what you have in mind.</p>
                     <div class="actions pt-reveal">
-                        <button data-modal="source" class="dbh-btn dbh-btn--solid">Request a piece</button>
+                        <button onclick="location.href='/source'" class="dbh-btn dbh-btn--solid">Request a piece</button>
                         <a href="sms:+19146211848" class="dbh-btn">Text me</a>
                     </div>
                 </div>
@@ -488,7 +488,7 @@
                         <li><a href="/buy/">Buy</a></li>
                         <li><a href="#trade" data-modal="trade">Trade</a></li>
                         <li><a href="#sell" data-modal="sell">Sell</a></li>
-                        <li><a href="#source" data-modal="source">Request to Source</a></li>
+                        <li><a href="/source">Request to Source</a></li>
                     </ul>
                 </div>
                 <div>
@@ -583,7 +583,7 @@
       <a href="/about/">About</a>
       <a href="/process/">Process</a>
       <a href="/journal/">Journal</a>
-      <button type="button" data-modal="source">Request to Source</button>
+      <button type="button" onclick="location.href='/source'">Request to Source</button>
     </div>
 </body>
 </html>

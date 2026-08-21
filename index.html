@@ -1247,11 +1247,11 @@
                         </div>
                     `;
                 } else {
-                    const title = `Request to ${type}`;
+                    const title = type === 'BUY' ? 'Request to Source' : `Request to ${type}`;
                     html = `
                         <div id="form-view" class="p-5 sm:p-6">
-                            <h2 class="dbh-display text-2xl font-space font-bold tracking-tight mb-2">${title}</h2>
-                            <p class="text-xs text-muted mb-8 tracking-wide">Quick form. I'll text you back.</p>
+                            <h2 class="dbh-display text-2xl font-space font-bold tracking-tight mb-2 js-modal-title">${title}</h2>
+                            <p class="text-xs text-muted mb-8 tracking-wide js-modal-sub">Quick form. I'll text you back.</p>
                             <form onsubmit="event.preventDefault(); app.submitForm(this, '${type}');" class="space-y-4">
                                 <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
                                 <div>
@@ -1332,6 +1332,41 @@
 
                 body.innerHTML = html;
                 safeCreateIcons();
+
+                // pt-modal style entrance animations (ported from assets/modals.js):
+                // char-by-char fade on the title, scramble on the sub line,
+                // staggered rise on the form fields.
+                const titleEl = body.querySelector('.js-modal-title');
+                if (titleEl) {
+                    const words = titleEl.textContent.split(' ');
+                    titleEl.textContent = '';
+                    words.forEach((word, wi) => {
+                        if (wi > 0) titleEl.appendChild(document.createTextNode(' '));
+                        const w = document.createElement('span');
+                        w.style.display = 'inline-block';
+                        w.style.whiteSpace = 'nowrap';
+                        for (const ch of word) {
+                            const s = document.createElement('span');
+                            s.textContent = ch;
+                            s.style.display = 'inline-block';
+                            s.style.opacity = '0';
+                            s.style.animation = 'hsstFadeIn 0.23s linear ' + (0.35 + Math.random() * 0.5).toFixed(3) + 's forwards';
+                            w.appendChild(s);
+                        }
+                        titleEl.appendChild(w);
+                    });
+                }
+                const subEl = body.querySelector('.js-modal-sub');
+                if (subEl && window.ScrambleText) {
+                    new window.ScrambleText(subEl, { startDelay: 250, letterDelay: 26 });
+                }
+                const formEl = body.querySelector('form');
+                if (formEl && window.gsap) {
+                    gsap.fromTo(formEl.children,
+                        { opacity: 0, y: 10 },
+                        { opacity: 1, y: 0, duration: 0.5, stagger: 0.055, delay: 0.2, ease: 'power2.out', clearProps: 'opacity,transform' }
+                    );
+                }
 
                 // Prevent scrollbar layout shift: compensate width before hiding overflow
                 const scrollbarW = window.innerWidth - document.documentElement.clientWidth;

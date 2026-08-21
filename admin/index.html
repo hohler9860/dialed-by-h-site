@@ -849,7 +849,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                         (bkPeriod === p) + '">' + label + '</button>';
                 }).join('') +
                 '<span style="flex:1"></span>' +
-                '<button class="btn ghost" id="bk-csv">Import Bank CSV</button>' +
+                '<button class="btn ghost" id="bk-csv">Import Bank Statement</button>' +
                 '<button class="btn" id="bk-exp-new">Log Expense</button>' +
             '</div>' +
             '<div class="bk-stats">' + tiles.map(function (t) {
@@ -1219,7 +1219,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }).join('') + '</tr></thead><tbody>' +
             rows.map(function (d) {
                 var p = bkProfit(d);
-                return '<tr data-id="' + esc(d.id) + '"><td>' + esc(d.ref) + '</td>' +
+                var ndocs = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; }).length;
+                return '<tr data-id="' + esc(d.id) + '"><td>' + esc(d.ref) +
+                    (ndocs ? ' <span class="bk-mute" title="' + ndocs + ' attached">&#128206;' + ndocs + '</span>' : '') + '</td>' +
                     '<td class="nm">' + esc((d.brand ? d.brand + ' ' : '') + (d.model || '')) + '</td>' +
                     '<td class="bk-mute">' + esc(d.reference || '') + '</td>' +
                     '<td class="bk-mute">' + esc(d.serial || '') + '</td>' +
@@ -1270,7 +1272,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     var DEAL_FORM = [
-        ['ref', 'Ref #'], ['status', 'Status', '', 'In Stock / Sold'],
+        ['ref', 'Ref #', '', 'leave blank to auto-number'], ['status', 'Status', '', 'In Stock / Sold'],
         ['brand', 'Brand'], ['model', 'Model'],
         ['reference', 'Reference'], ['serial', 'Serial'],
         ['year', 'Year'], ['condition', 'Condition'],
@@ -1305,12 +1307,17 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '</div>' +
             '</div>' +
             '<h2>' + (isNew ? 'New Deal' : esc(v.ref)) + '</h2>' +
-            '<p class="note">Profit and margin are worked out from these numbers, not typed in.</p>' +
+            '<p class="note">Profit and margin are worked out from these numbers, not typed in.' +
+                (isNew ? ' The ref number is minted when you save.' : '') + '</p>' +
             bkFields(DEAL_FORM, form) +
+            (isNew
+                ? '<p class="note" style="margin-top:24px">Save the deal first, then contracts and invoices can be attached here.</p>'
+                : '<div id="deal-docs" style="margin-top:28px"></div>') +
             '<p class="err hidden" id="s-err"></p>';
 
         sheet.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        if (!isNew) paintDealDocs(d);
         document.getElementById('s-close').addEventListener('click', closeSheet);
         document.getElementById('s-save').addEventListener('click', function () { saveDeal(d); });
         var del = document.getElementById('s-del');
@@ -1322,6 +1329,86 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 document.getElementById('f-date_sold').value = bkToday();
             }
             document.getElementById('f-sell_total').focus();
+        });
+    }
+
+    // ── deal attachments: contracts, invoices ───────────────────
+    // Files go straight from the browser to Supabase storage on a one-shot
+    // signed URL the API hands out, so a 10MB contract never squeezes
+    // through the Vercel function.
+    function paintDealDocs(d) {
+        var box = document.getElementById('deal-docs');
+        if (!box) return;
+        var docs = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; });
+        box.innerHTML =
+            '<label style="display:block;margin-bottom:10px">Attachments</label>' +
+            (docs.length
+                ? '<table class="bk-tbl" style="margin-bottom:14px"><tbody>' + docs.map(function (x) {
+                    return '<tr><td style="width:90px"><span class="tag">' + esc(x.kind.toUpperCase()) + '</span></td>' +
+                        '<td><a href="#" class="js-doc-open" data-path="' + esc(x.path) + '">' + esc(x.filename) + '</a></td>' +
+                        '<td class="bk-mute" style="width:110px">' + esc((x.uploaded_at || '').slice(0, 10)) + '</td>' +
+                        '<td style="width:34px;text-align:right"><a href="#" class="js-doc-del" data-id="' + esc(x.id) + '" data-path="' + esc(x.path) + '" title="Delete">&#10005;</a></td></tr>';
+                }).join('') + '</tbody></table>'
+                : '<p class="note">Nothing attached yet.</p>') +
+            '<div class="bar">' +
+                '<select id="doc-kind" class="ctl"><option value="contract">CONTRACT</option>' +
+                    '<option value="invoice">INVOICE</option><option value="other">OTHER</option></select>' +
+                '<button class="btn ghost" id="doc-add">Attach file&hellip;</button>' +
+                '<input id="doc-file" type="file" multiple style="display:none" ' +
+                    'accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx,.csv">' +
+                '<span class="note" id="doc-status"></span>' +
+            '</div>';
+
+        [].forEach.call(box.querySelectorAll('.js-doc-open'), function (a) {
+            a.addEventListener('click', async function (e) {
+                e.preventDefault();
+                try {
+                    var r = await A.adminFetchTo('/api/leads-admin', 'books-doc-url', { path: a.dataset.path });
+                    window.open(r.url, '_blank', 'noopener');
+                } catch (err) { alert(err.message || 'Could not open file'); }
+            });
+        });
+        [].forEach.call(box.querySelectorAll('.js-doc-del'), function (a) {
+            a.addEventListener('click', async function (e) {
+                e.preventDefault();
+                if (!confirm('Delete this file? This cannot be undone.')) return;
+                try {
+                    await A.adminFetchTo('/api/leads-admin', 'books-doc-delete',
+                        { id: a.dataset.id, path: a.dataset.path });
+                    BOOKS.docs = (BOOKS.docs || []).filter(function (x) { return x.id !== a.dataset.id; });
+                    paintDealDocs(d);
+                } catch (err) { alert(err.message || 'Delete failed'); }
+            });
+        });
+
+        var file = document.getElementById('doc-file');
+        document.getElementById('doc-add').addEventListener('click', function () { file.click(); });
+        file.addEventListener('change', async function () {
+            var kind = document.getElementById('doc-kind').value;
+            var status = document.getElementById('doc-status');
+            var files = [].slice.call(file.files);
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+                status.textContent = 'Uploading ' + f.name + '…';
+                try {
+                    var sign = await A.adminFetchTo('/api/leads-admin', 'books-doc-sign-upload',
+                        { deal_id: d.id, filename: f.name });
+                    var put = await fetch(sign.uploadUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': f.type || 'application/octet-stream' },
+                        body: f
+                    });
+                    if (!put.ok) throw new Error('Upload failed (' + put.status + ')');
+                    var rec = await A.adminFetchTo('/api/leads-admin', 'books-doc-record', {
+                        doc: { deal_id: d.id, kind: kind, filename: f.name, path: sign.path,
+                               mime: f.type || null, size_bytes: f.size }
+                    });
+                    BOOKS.docs = [rec.doc].concat(BOOKS.docs || []);
+                } catch (err) {
+                    alert(f.name + ': ' + (err.message || 'upload failed'));
+                }
+            }
+            paintDealDocs(d);
         });
     }
 
@@ -1447,10 +1534,16 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '<button class="btn ghost" id="s-close">← Back</button>' +
               '<button class="btn" id="s-go">Import</button>' +
             '</div>' +
-            '<h2>Import Bank CSV</h2>' +
-            '<p class="note">Paste the whole Chase export, header row included. Rows already in ' +
-                'the register are skipped, so overlapping exports are safe to paste.</p>' +
-            '<div class="field wide" style="margin-top:24px">' +
+            '<h2>Import Bank Statement</h2>' +
+            '<p class="note">Upload the Chase CSV export (or paste it below), header row included. ' +
+                'Rows already in the register are skipped automatically, so overlapping statements ' +
+                'are safe — cash on hand stays right.</p>' +
+            '<div class="bar" style="margin-top:18px">' +
+                '<button class="btn ghost" id="f-pick">Choose CSV file&hellip;</button>' +
+                '<input id="f-file" type="file" accept=".csv,text/csv" style="display:none">' +
+                '<span class="note" id="f-fname"></span>' +
+            '</div>' +
+            '<div class="field wide" style="margin-top:14px">' +
                 '<textarea id="f-csv" rows="14" placeholder="Details,Posting Date,Description,Amount,Type,Balance"></textarea>' +
             '</div>' +
             '<p class="note" id="s-prev"></p>' +
@@ -1461,12 +1554,27 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         document.getElementById('s-close').addEventListener('click', closeSheet);
 
         var ta = document.getElementById('f-csv'), prev = document.getElementById('s-prev');
-        ta.addEventListener('input', function () {
+        function preview() {
             var n = bkParseBank(ta.value).length;
             prev.textContent = ta.value.trim()
                 ? (n ? n + ' transaction' + (n === 1 ? '' : 's') + ' readable'
                      : 'Cannot read that — is the header row included?')
                 : '';
+        }
+        ta.addEventListener('input', preview);
+
+        var fpick = document.getElementById('f-file');
+        document.getElementById('f-pick').addEventListener('click', function () { fpick.click(); });
+        fpick.addEventListener('change', function () {
+            var f = fpick.files[0];
+            if (!f) return;
+            var rd = new FileReader();
+            rd.onload = function () {
+                ta.value = String(rd.result || '');
+                document.getElementById('f-fname').textContent = f.name;
+                preview();
+            };
+            rd.readAsText(f);
         });
 
         document.getElementById('s-go').addEventListener('click', async function () {

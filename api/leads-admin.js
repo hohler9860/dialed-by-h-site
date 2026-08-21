@@ -522,12 +522,13 @@ module.exports = async (req, res) => {
             // These are the money tiles. A limit above 1000 is a lie -- PostgREST
             // caps the response there and says nothing -- so a growing bank
             // register would have started quietly understating cash and profit.
-            const [deals, expenses, subscriptions, capital, bank] = await Promise.all([
+            const [deals, expenses, subscriptions, capital, bank, docs] = await Promise.all([
                 supabaseAll("dbh_deals?select=*&order=date_bought.asc"),
                 supabaseAll("dbh_expenses?select=*&order=spent_on.asc"),
                 supabaseAll("dbh_subscriptions?select=*&order=monthly_cost.desc"),
                 supabaseAll("dbh_capital?select=*&order=moved_on.asc"),
                 supabaseAll("dbh_bank_txns?select=*&order=posted_on.asc"),
+                supabaseAll("dbh_deal_docs?select=*&order=uploaded_at.desc"),
             ]);
 
             // Cash is a whole-account fact, not a period one: it is every row the
@@ -538,7 +539,7 @@ module.exports = async (req, res) => {
             );
 
             return res.status(200).json({
-                deals, expenses, subscriptions, capital, bank,
+                deals, expenses, subscriptions, capital, bank, docs,
                 cash: Math.round(cash * 100) / 100,
             });
         }
@@ -550,6 +551,21 @@ module.exports = async (req, res) => {
         // silently write somewhere it was not meant to.
         if (action === "books-save-deal") {
             const row = pick(body.deal, DEAL_FIELDS);
+            // New deals mint their own ref: next free DBH-<year>-NNN. Generated
+            // here rather than in the form so two open tabs can't pick the same
+            // number by both reading the list before either saves.
+            if (!row.ref && !body.id) {
+                const year = new Date().getFullYear();
+                const prefix = `DBH-${year}-`;
+                const taken = await supabase(
+                    `dbh_deals?select=ref&ref=like.${encodeURIComponent(prefix + "%")}`
+                );
+                const next = taken.reduce((m, d) => {
+                    const n = parseInt(String(d.ref).slice(prefix.length), 10);
+                    return Number.isFinite(n) && n > m ? n : m;
+                }, 0) + 1;
+                row.ref = prefix + String(next).padStart(3, "0");
+            }
             if (!row.ref) return res.status(400).json({ error: "Ref is required" });
             if (row.sell_total != null && !row.date_sold) {
                 return res.status(400).json({ error: "A sold piece needs a sold date" });
@@ -578,6 +594,83 @@ module.exports = async (req, res) => {
             if (!table || !body.id) return res.status(400).json({ error: "Bad delete" });
             await supabase(`${table}?id=eq.${encodeURIComponent(body.id)}`, { method: "DELETE" });
             console.log("[leads-admin] books deleted", body.kind, body.id);
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── Deal documents (contracts / invoices) ──────────────────────────
+        // Files live in the private dbh-docs bucket. The browser never sees a
+        // storage key: it asks here for a one-shot signed upload URL, PUTs the
+        // file straight to Supabase (dodging Vercel's 4.5MB body cap), then
+        // records the row. Downloads are hour-long signed URLs, same as the
+        // wholesale photos.
+        if (action === "books-doc-sign-upload") {
+            const { deal_id, filename } = body || {};
+            if (!deal_id || !filename) return res.status(400).json({ error: "Missing deal or filename" });
+            const safe = String(filename).replace(/[^\w.\- ]+/g, "_").slice(0, 120);
+            const path = `${deal_id}/${Date.now()}-${safe}`;
+            const r = await fetch(
+                `${SUPABASE_URL}/storage/v1/object/upload/sign/dbh-docs/${encodeURI(path)}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`,
+                    },
+                    body: "{}",
+                }
+            );
+            if (!r.ok) {
+                const err = await r.json().catch(() => ({}));
+                return res.status(500).json({ error: err.message || "Could not sign upload" });
+            }
+            const signed = await r.json();
+            return res.status(200).json({
+                path,
+                uploadUrl: `${SUPABASE_URL}/storage/v1${signed.url}`,
+            });
+        }
+
+        if (action === "books-doc-record") {
+            const row = pick(body.doc, ["deal_id", "kind", "filename", "path", "mime", "size_bytes"]);
+            if (!row.deal_id || !row.path || !row.filename) {
+                return res.status(400).json({ error: "Missing document fields" });
+            }
+            if (!["contract", "invoice", "statement", "other"].includes(row.kind)) row.kind = "other";
+            const [doc] = await supabase("dbh_deal_docs", {
+                method: "POST",
+                headers: { Prefer: "return=representation" },
+                body: JSON.stringify([row]),
+            });
+            return res.status(200).json({ doc });
+        }
+
+        if (action === "books-doc-url") {
+            if (!body.path) return res.status(400).json({ error: "Missing path" });
+            const r = await fetch(
+                `${SUPABASE_URL}/storage/v1/object/sign/dbh-docs/${encodeURI(body.path)}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        apikey: SUPABASE_KEY,
+                        Authorization: `Bearer ${SUPABASE_KEY}`,
+                    },
+                    body: JSON.stringify({ expiresIn: 3600 }),
+                }
+            );
+            if (!r.ok) return res.status(500).json({ error: "Could not sign download" });
+            const signed = await r.json();
+            return res.status(200).json({ url: `${SUPABASE_URL}/storage/v1${signed.signedURL}` });
+        }
+
+        if (action === "books-doc-delete") {
+            if (!body.id || !body.path) return res.status(400).json({ error: "Bad delete" });
+            await fetch(`${SUPABASE_URL}/storage/v1/object/dbh-docs/${encodeURI(body.path)}`, {
+                method: "DELETE",
+                headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+            });
+            await supabase(`dbh_deal_docs?id=eq.${encodeURIComponent(body.id)}`, { method: "DELETE" });
             return res.status(200).json({ ok: true });
         }
 

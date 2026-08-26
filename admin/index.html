@@ -2443,6 +2443,19 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // by about 5,000 a day.
         var r = await A.adminFetchTo('/api/leads-admin', 'wholesale',
             { days: wfilter.days || 1, q: wq || '' });
+        // An ingest outage empties the default 1-day window, which reads as
+        // "everything is gone". Widen automatically until something shows,
+        // and say so, rather than presenting a blank page.
+        WS.fallbackDays = null;
+        if (!(r.listings || []).length && !wq) {
+            var tries = [7, 30, 90];
+            for (var fi = 0; fi < tries.length; fi++) {
+                if (Number(wfilter.days || 1) >= tries[fi]) continue;
+                var rf = await A.adminFetchTo('/api/leads-admin', 'wholesale',
+                    { days: tries[fi], q: '' });
+                if ((rf.listings || []).length) { r = rf; WS.fallbackDays = tries[fi]; break; }
+            }
+        }
         WS.listings = r.listings || [];
         WS.stats    = r.stats || [];
         WS.variants = r.variants || [];
@@ -2471,7 +2484,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             // user flipped open, so the auto-poll stands down there. Refresh is
             // one click away and switching back to table resumes it.
             if (wView === 'cards') return;
-            A.adminFetchTo('/api/leads-admin', 'wholesale').then(function (r) {
+            // Respect an active empty-window fallback, or the poll would
+            // overwrite the widened view with the same empty result.
+            A.adminFetchTo('/api/leads-admin', 'wholesale',
+                { days: WS.fallbackDays || wfilter.days || 1 }).then(function (r) {
                 WS.listings = r.listings || [];
                 WS.stats    = r.stats || [];
                 WS.variants = r.variants || [];
@@ -2666,7 +2682,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               (WS.searched
                 ? 'Searching all ' + (WS.held || 0).toLocaleString() + ' listings for "' + esc(WS.searched) + '" · ' +
                   WS.listings.length + ' found' + (WS.capped ? ', showing the first batch' : '') + ' · press Enter to search again. '
-                : 'Showing the last ' + (WS.windowDays || 1) + ' day' + ((WS.windowDays || 1) === 1 ? '' : 's') +
+                : (WS.fallbackDays
+                    ? '<span class="tag warm">No listings in the selected window</span> — nothing new has arrived recently, so showing the last ' +
+                      WS.fallbackDays + ' days instead · '
+                    : '') +
+                  'Showing the last ' + (WS.windowDays || 1) + ' day' + ((WS.windowDays || 1) === 1 ? '' : 's') +
                   ' · ' + WS.listings.length.toLocaleString() + ' of ' + (WS.held || 0).toLocaleString() +
                   ' held' + (WS.capped ? ' · <button class="btn ghost" id="w-more" style="vertical-align:baseline">Load more</button>' : '') +
                   ' · press Enter in search to look across all of them. ') +

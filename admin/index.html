@@ -2986,16 +2986,28 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                         s.replace(/_/g, ' ') + (counts[s] ? ' (' + counts[s] + ')' : '') + '</button>';
                 }).join('') + '</div>' +
             '<div style="overflow-x:auto"><table class="leads"><thead><tr>' +
-                '<th>Brand</th><th>Where</th><th>Pri</th><th>Status</th><th>Contact</th><th>Email</th>' +
+                '<th></th><th>Brand</th><th>Where</th><th>Pri</th><th>Status</th><th>Contact</th><th>Email</th>' +
                 '<th>Last touch</th><th>Follow up</th><th>Notes</th>' +
             '</tr></thead><tbody>' +
             list.map(function (b) {
+                var draftRow = b.draft_body
+                    ? '<tr class="ww-draft" data-draft-for="' + esc(b.id) + '" style="display:none"><td></td><td colspan="9">' +
+                        '<div style="padding:10px 0 16px">' +
+                        '<div class="tsub" style="margin-bottom:6px">To: ' + esc(b.contact_email || '') +
+                            ' · Subject: ' + esc(b.draft_subject || '') +
+                            (b.gmail_draft_url ? ' · <a href="' + esc(b.gmail_draft_url) + '" target="_blank" rel="noopener">Open in Gmail</a>' : '') + '</div>' +
+                        '<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.5;margin:0;max-width:640px">' +
+                        esc(b.draft_body) + '</pre></div></td></tr>'
+                    : '';
                 var inp = function (field, val, w, type) {
                     return '<input class="ctl js-ww" data-id="' + esc(b.id) + '" data-field="' + field + '" ' +
                         (type ? 'type="' + type + '" ' : '') +
                         'value="' + esc(val == null ? '' : val) + '" style="font-size:11px;padding:4px 6px;width:' + w + '">';
                 };
                 return '<tr>' +
+                    '<td>' + (b.draft_body
+                        ? '<button class="btn ghost js-ww-toggle" data-toggle="' + esc(b.id) + '" style="font-size:10px;padding:3px 8px">Draft</button>'
+                        : '') + '</td>' +
                     '<td><span class="tname">' + esc(b.brand) + '</span>' +
                         '<div class="tsub">' + esc((b.type || '').replace(/_/g, ' ')) + (b.ww_exhibitor ? ' · exhibits' : '') + '</div></td>' +
                     '<td><span class="tsub">' + esc(b.location || '') + '</span></td>' +
@@ -3010,8 +3022,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<td>' + inp('last_contact_at', b.last_contact_at, '110px', 'date') + '</td>' +
                     '<td>' + inp('follow_up_on', b.follow_up_on, '110px', 'date') + '</td>' +
                     '<td>' + inp('notes', b.notes, '220px') + '</td>' +
-                '</tr>';
+                '</tr>' + draftRow;
             }).join('') + '</tbody></table></div>';
+
+        [].forEach.call(view.querySelectorAll('.js-ww-toggle'), function (btn) {
+            btn.addEventListener('click', function () {
+                var tr = view.querySelector('[data-draft-for="' + this.dataset.toggle + '"]');
+                if (tr) tr.style.display = tr.style.display === 'none' ? '' : 'none';
+            });
+        });
 
         [].forEach.call(view.querySelectorAll('[data-ws]'), function (btn) {
             btn.addEventListener('click', function () { wwStatus = this.dataset.ws; paintWW(); });

@@ -6,6 +6,10 @@
     {
       "path": "/api/keep-alive",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/leads-admin?action=auto-subs",
+      "schedule": "0 13 * * *"
     }
   ],
   "headers": [

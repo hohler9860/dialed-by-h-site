@@ -205,10 +205,70 @@ async function upsert(table, id, row) {
     return saved[0];
 }
 
+// Fixed-amount subscriptions, auto-logged on their monthly charge date by the
+// daily cron below. Variable-amount services (Supabase, Claude, OpenRouter,
+// ElevenLabs, LinkedIn) are deliberately NOT here: guessing their amounts
+// would break the register's to-the-penny reconciliation — they arrive via
+// CSV import instead. The importer absorbs these auto rows when the real
+// bank row posts, so nothing doubles.
+const AUTO_SUBS = [
+    { vendor: "Canva",        match: "canva",        amount: 16.26, day: 13, category: "Software — Canva" },
+    { vendor: "DocuSign",     match: "docusign",     amount: 48.77, day: 3,  category: "Software — DocuSign" },
+    { vendor: "Amazon Prime", match: "amazon prime", amount: 7.49,  day: 30, category: "Subscription — Amazon Prime" },
+    { vendor: "Captions.AI",  match: "captions",     amount: 10.83, day: 8,  category: "Software — Captions" },
+    { vendor: "Coolify",      match: "coollabs",     amount: 5.00,  day: 4,  category: "Software — Coolify" },
+];
+
+async function runAutoSubs() {
+    const now = new Date();
+    const y = now.getUTCFullYear(), m = now.getUTCMonth();
+    const monthStart = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
+    const existing = await supabase(
+        `dbh_bank_txns?select=description,money_out&posted_on=gte.${monthStart}`);
+    const logged = [];
+    for (const s of AUTO_SUBS) {
+        if (now.getUTCDate() < s.day) continue;               // not due yet this month
+        const seen = existing.some((r) =>
+            String(r.description || "").toLowerCase().includes(s.match) &&
+            Math.abs(Number(r.money_out || 0) - s.amount) < 0.01);
+        if (seen) continue;                                    // real row or earlier auto row
+        const posted = new Date(Date.UTC(y, m, s.day)).toISOString().slice(0, 10);
+        await supabase("dbh_bank_txns", {
+            method: "POST",
+            headers: { Prefer: "return=representation" },
+            body: JSON.stringify([{
+                posted_on: posted,
+                description: s.vendor + " (auto-logged subscription)",
+                category: s.category, money_in: 0, money_out: s.amount,
+                txn_type: "DEBIT_CARD", import_batch: "auto-sub",
+            }]),
+        });
+        logged.push(s.vendor);
+    }
+    return logged;
+}
+
 module.exports = async (req, res) => {
     setCors(req, res);
 
     if (req.method === "OPTIONS") return res.status(200).end();
+
+    // Vercel cron fires a GET with the CRON_SECRET bearer. Everything else
+    // stays POST + admin password.
+    if (req.method === "GET") {
+        const q = req.query || {};
+        const auth = String(req.headers.authorization || "");
+        if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        if (q.action === "auto-subs") {
+            const logged = await runAutoSubs();
+            console.log("[leads-admin] auto-subs logged:", logged.join(", ") || "nothing due");
+            return res.status(200).json({ logged });
+        }
+        return res.status(400).json({ error: "Unknown cron action" });
+    }
+
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
     if (!SUPABASE_KEY) {
@@ -686,15 +746,40 @@ module.exports = async (req, res) => {
                 .map((r) => pick(r, BANK_FIELDS))
                 .filter((r) => r.posted_on && (r.money_in || r.money_out));
 
-            const existing = await supabase("dbh_bank_txns?select=posted_on,description,money_in,money_out");
+            const existing = await supabase("dbh_bank_txns?select=id,posted_on,description,money_in,money_out,import_batch");
             const key = (r) =>
                 [r.posted_on, String(r.description || "").trim().toLowerCase(),
                  Number(r.money_in || 0).toFixed(2), Number(r.money_out || 0).toFixed(2)].join("|");
             const seen = new Set(existing.map(key));
 
+            // Auto-logged subscription placeholders get absorbed by the real
+            // bank row: same amount within a week means it IS that charge, so
+            // the placeholder takes on the bank's description and date rather
+            // than a second row appearing.
+            const autoRows = existing.filter((r) => r.import_batch === "auto-sub");
+            const absorbed = new Set();
+
             const fresh = [];
             for (const r of clean) {
                 if (seen.has(key(r))) continue;
+                const twin = autoRows.find((a) =>
+                    !absorbed.has(a.id) &&
+                    Math.abs(Number(a.money_out || 0) - Number(r.money_out || 0)) < 0.01 &&
+                    Number(r.money_out || 0) > 0 &&
+                    Math.abs(new Date(a.posted_on) - new Date(r.posted_on)) < 8 * 86400000);
+                if (twin) {
+                    absorbed.add(twin.id);
+                    await supabase(`dbh_bank_txns?id=eq.${twin.id}`, {
+                        method: "PATCH",
+                        headers: { Prefer: "return=representation" },
+                        body: JSON.stringify({
+                            posted_on: r.posted_on, description: r.description,
+                            txn_type: r.txn_type, import_batch: "csv-absorbed",
+                        }),
+                    });
+                    seen.add(key(r));
+                    continue;
+                }
                 seen.add(key(r));                       // also dedupes within the paste itself
                 fresh.push({ ...r, import_batch: "paste-" + new Date().toISOString().slice(0, 10) });
             }

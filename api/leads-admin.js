@@ -390,7 +390,13 @@ module.exports = async (req, res) => {
             // Buyers board and matching, never this feed.
             const PARTS_EXCLUDE =
                 `&group_jid=neq.${PARTS_GROUP_JID}` +
-                `&listing_type=not.in.(PARTS,WTB,NTQ,ISO)`;
+                `&listing_type=not.in.(PARTS,WTB,NTQ,ISO)` +
+                // Unprocessed intake rows have no brand, no photo, nothing to
+                // show — during a backlog they flood the window and bury every
+                // finished listing under "UNIDENTIFIED" husks. Keep them out
+                // of the feed until the pipeline has read them; anything with
+                // a brand (rule-corrected intake included) still shows.
+                `&or=(status.neq.intake,brand.not.is.null)`;
 
             let listingFilter = `&message_ts=gte.${since}`;
             if (term) {

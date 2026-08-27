@@ -350,6 +350,13 @@ select.stat {
     letter-spacing: -.01em; font-variation-settings: 'wdth' 115;
 }
 .bk-card .cap { margin-top: 5px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
+.bk-cat-row { display: flex; align-items: baseline; gap: 12px; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.bk-cat-row:last-child { border-bottom: none; }
+.bk-cat-row.on { background: var(--l1); color: var(--b1); padding-left: 8px; padding-right: 8px; }
+.bk-cat-row .bk-cat-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-cat-row .bk-cat-c { font-family: var(--mono); font-size: 11px; color: var(--l2); }
+.bk-cat-row.on .bk-cat-c { color: inherit; }
+.bk-cat-row .bk-cat-v { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bk-legend {
     margin-top: 12px; display: flex; gap: 16px; font-family: var(--mono);
     font-size: 11px; color: var(--l2); text-transform: uppercase; letter-spacing: .04em;
@@ -564,6 +571,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // them. Fetched once per tab visit, then re-derived locally on filter change.
     var BOOKS = null;
     var bkPeriod = 'all';
+    var bkCat = '';        // category filter for the transaction register
 
     function bkMoney(n, d) {
         d = d || 0;
@@ -874,7 +882,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<div class="bk-card"><h3>Monthly burn</h3>' +
                     '<p class="cap">Recurring tools. Not scoped by the period filter.</p>' +
                     '<div id="bk-subs"></div></div>' +
-            '</div>';
+            '</div>' +
+            '<div class="bk-grid two" style="margin-top:18px">' +
+                '<div class="bk-card"><h3>Spend by category</h3>' +
+                    '<p class="cap">Bank money out, grouped. Click a row to filter the register.</p>' +
+                    '<div id="bk-cats"></div></div>' +
+                '<div class="bk-card"><h3>Money in by category</h3>' +
+                    '<p class="cap">Bank money in, grouped.</p>' +
+                    '<div id="bk-cats-in"></div></div>' +
+            '</div>' +
+            '<div class="bk-card" style="margin-top:18px"><h3>Every transaction</h3>' +
+                '<p class="cap" id="bk-reg-cap"></p>' +
+                '<div id="bk-register" style="overflow-x:auto"></div></div>';
 
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
             b.addEventListener('click', function () { bkPeriod = b.dataset.p; paintBooks(); });
@@ -886,6 +905,68 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         bkExpChart(inRange);
         bkDealChart(sold);
         bkSubs();
+        bkCategories(inRange);
+        bkRegister(inRange);
+    }
+
+    // Bank money grouped by the category column, biggest first. Clicking a
+    // spend row scopes the register below to that category; clicking it again
+    // clears the filter.
+    function bkCategories(inRange) {
+        var out = {}, inn = {};
+        BOOKS.bank.forEach(function (t) {
+            if (!inRange(t.posted_on)) return;
+            var c = t.category || 'Uncategorized';
+            if (bkNum(t.money_out)) { out[c] = out[c] || [0, 0]; out[c][0] += bkNum(t.money_out); out[c][1]++; }
+            if (bkNum(t.money_in))  { inn[c] = inn[c] || [0, 0]; inn[c][0] += bkNum(t.money_in);  inn[c][1]++; }
+        });
+        var row = function (c, v, clickable) {
+            return '<div class="bk-cat-row' + (clickable && bkCat === c ? ' on' : '') + '"' +
+                (clickable ? ' data-cat="' + esc(c) + '" style="cursor:pointer"' : '') + '>' +
+                '<span class="bk-cat-n">' + esc(c) + '</span>' +
+                '<span class="bk-cat-c">' + v[1] + '</span>' +
+                '<span class="bk-cat-v">' + bkMoney(v[0]) + '</span></div>';
+        };
+        var paint = function (host, data, clickable) {
+            var keys = Object.keys(data).sort(function (a, b) { return data[b][0] - data[a][0]; });
+            var total = keys.reduce(function (s, k) { return s + data[k][0]; }, 0);
+            host.innerHTML = keys.map(function (k) { return row(k, data[k], clickable); }).join('') +
+                '<div class="bk-cat-row" style="border-top:1px solid var(--line);font-weight:600">' +
+                '<span class="bk-cat-n">Total</span><span class="bk-cat-c"></span>' +
+                '<span class="bk-cat-v">' + bkMoney(total) + '</span></div>';
+        };
+        paint(document.getElementById('bk-cats'), out, true);
+        paint(document.getElementById('bk-cats-in'), inn, false);
+        [].forEach.call(document.querySelectorAll('#bk-cats [data-cat]'), function (el) {
+            el.addEventListener('click', function () {
+                bkCat = (bkCat === this.dataset.cat) ? '' : this.dataset.cat;
+                paintBooks();
+            });
+        });
+    }
+
+    function bkRegister(inRange) {
+        var rows = BOOKS.bank.filter(function (t) {
+            if (!inRange(t.posted_on)) return false;
+            if (bkCat && (t.category || 'Uncategorized') !== bkCat) return false;
+            return true;
+        }).sort(function (a, b) { return a.posted_on < b.posted_on ? 1 : -1; });
+        var CAP = 500;
+        document.getElementById('bk-reg-cap').textContent =
+            rows.length + ' transaction' + (rows.length === 1 ? '' : 's') +
+            (bkCat ? ' in ' + bkCat + ' — click the category again to clear' : '') +
+            (rows.length > CAP ? ' · showing the newest ' + CAP : '');
+        document.getElementById('bk-register').innerHTML =
+            '<table class="leads"><thead><tr><th>Date</th><th>Description</th><th>Category</th>' +
+            '<th style="text-align:right">In</th><th style="text-align:right">Out</th></tr></thead><tbody>' +
+            rows.slice(0, CAP).map(function (t) {
+                return '<tr><td class="tmono">' + esc(t.posted_on) + '</td>' +
+                    '<td>' + esc(t.description || '') +
+                        (t.logged_as ? '<div class="tsub">' + esc(t.logged_as) + '</div>' : '') + '</td>' +
+                    '<td class="tmono">' + esc(t.category || '—') + '</td>' +
+                    '<td class="tmono" style="text-align:right">' + (bkNum(t.money_in) ? bkMoney(t.money_in) : '') + '</td>' +
+                    '<td class="tmono" style="text-align:right">' + (bkNum(t.money_out) ? bkMoney(t.money_out) : '') + '</td></tr>';
+            }).join('') + '</tbody></table>';
     }
 
     // Hover is an enhancement only — every value here is also readable from the

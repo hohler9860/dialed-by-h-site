@@ -806,6 +806,25 @@ module.exports = async (req, res) => {
         // The wants book is the seam between the site and the dealer groups.
         // A want stays open until closed, so supply arriving weeks later still
         // finds the client who asked for it.
+        // ── Watches & Wonders 2027 outreach tracker ────────────────────────
+        if (action === "ww") {
+            const rows = await supabase(
+                "dbh_ww_outreach?select=*&order=priority.asc,brand.asc");
+            return res.status(200).json({ rows });
+        }
+        if (action === "ww-save") {
+            const WW_FIELDS = {
+                brand: "text", type: "text", location: "text", ww_exhibitor: "bool",
+                contact_name: "text", contact_email: "text", contact_source: "text",
+                status: "text", priority: "num", notes: "text",
+                last_contact_at: "date", follow_up_on: "date",
+            };
+            const row = pick(body.row || {}, WW_FIELDS);
+            row.updated_at = new Date().toISOString();
+            const saved = await upsert("dbh_ww_outreach", body.id, row);
+            return res.status(200).json({ row: saved });
+        }
+
         if (action === "matches") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
 

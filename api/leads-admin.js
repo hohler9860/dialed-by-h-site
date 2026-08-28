@@ -391,12 +391,11 @@ module.exports = async (req, res) => {
             const PARTS_EXCLUDE =
                 `&group_jid=neq.${PARTS_GROUP_JID}` +
                 `&listing_type=not.in.(PARTS,WTB,NTQ,ISO)` +
-                // Unprocessed intake rows have no brand, no photo, nothing to
-                // show — during a backlog they flood the window and bury every
-                // finished listing under "UNIDENTIFIED" husks. Keep them out
-                // of the feed until the pipeline has read them; anything with
-                // a brand (rule-corrected intake included) still shows.
-                `&or=(status.neq.intake,brand.not.is.null)` +
+                // The feed shows named watches only: no unprocessed intake
+                // husks, no brand-less "UNIDENTIFIED" cards, no chatter rows
+                // that slipped a listing shell. A listing appears once it has
+                // a brand (classified, or rule-corrected on the way in).
+                `&status=neq.noise&brand=not.is.null` +
                 // Henry's call 2026-08-28: a listing whose photo exists on
                 // WhatsApp waits for that photo before it shows. Text-only
                 // listings (no media on the message) pass through — there is

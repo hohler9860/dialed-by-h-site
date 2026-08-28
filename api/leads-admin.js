@@ -396,7 +396,12 @@ module.exports = async (req, res) => {
                 // finished listing under "UNIDENTIFIED" husks. Keep them out
                 // of the feed until the pipeline has read them; anything with
                 // a brand (rule-corrected intake included) still shows.
-                `&or=(status.neq.intake,brand.not.is.null)`;
+                `&or=(status.neq.intake,brand.not.is.null)` +
+                // Henry's call 2026-08-28: a listing whose photo exists on
+                // WhatsApp waits for that photo before it shows. Text-only
+                // listings (no media on the message) pass through — there is
+                // nothing to wait for.
+                `&or=(image_path.not.is.null,media_type.is.null)`;
 
             let listingFilter = `&message_ts=gte.${since}`;
             if (term) {

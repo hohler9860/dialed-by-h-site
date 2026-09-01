@@ -433,7 +433,11 @@ module.exports = async (req, res) => {
                     "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
                     "vision_mismatch,confidence,message_ts,image_path" +
                     listingFilter + PARTS_EXCLUDE + "&order=message_ts.desc",
-                    {}, LISTING_CAP, offset
+                    // A search scans the whole table with five wildcard
+                    // matches; a second offset page repeats that scan and can
+                    // trip the database's statement timeout. One page is
+                    // plenty — the tab already says when results are capped.
+                    {}, term ? 1000 : LISTING_CAP, offset
                 ),
                 // Both stats tables grew past what one response can carry once
                 // the RWB groups joined (4.4k variants and climbing). The tab
@@ -452,7 +456,10 @@ module.exports = async (req, res) => {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=id&limit=1`, {
                     headers: {
                         apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
-                        "Accept-Profile": "wholesale", Prefer: "count=exact",
+                        // planned (estimated) count: exact counting walks the
+                        // whole 80k+ table and started tripping the database's
+                        // statement timeout. The header number is cosmetic.
+                        "Accept-Profile": "wholesale", Prefer: "count=planned",
                         Range: "0-0", "Range-Unit": "items",
                     },
                 });

@@ -891,6 +891,8 @@
             </div>
             <h3 class="text-xl font-space font-bold tracking-widest mb-2">Got it.</h3>
             <p class="text-muted text-xs tracking-wide">I'll be in touch shortly.</p>
+            <p class="text-muted text-xs tracking-wide mt-5">In the meantime, follow Dialed By H on Instagram. That's where every new piece shows up first.</p>
+            <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener" class="dbh-btn dbh-btn--solid w-full mt-4">Follow @dialedbyh</a>
         </div>
     </div>
 
@@ -1300,20 +1302,6 @@
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reference Number (if known)</label>
                                         <input type="text" name="watchRef" placeholder="e.g. 126500LN" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
                                     </div>
-                                    ${type !== 'WATCH_DETAIL' ? `
-                                    <div>
-                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">${type === 'SELL' ? 'What you are hoping to get' : type === 'TRADE' ? 'Budget on top of your trade' : 'Budget'}</label>
-                                        <select name="budget" required class="w-full bg-charcoal border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase appearance-none cursor-pointer">
-                                            <option value="" class="bg-charcoal">${type === 'SELL' ? 'Select a range' : 'Select Budget'}</option>
-                                            <option value="Under $10k" class="bg-charcoal">Under $10k</option>
-                                            <option value="$10k - $25k" class="bg-charcoal">$10k - $25k</option>
-                                            <option value="$25k - $50k" class="bg-charcoal">$25k - $50k</option>
-                                            <option value="$50k - $100k" class="bg-charcoal">$50k - $100k</option>
-                                            <option value="$100k - $250k" class="bg-charcoal">$100k - $250k</option>
-                                            <option value="$250k+" class="bg-charcoal">$250k+</option>
-                                        </select>
-                                    </div>
-                                    ` : ''}
                                     ${(type === 'SELL' || type === 'TRADE') ? `
                                     <div>
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reason for ${type === 'SELL' ? 'Selling' : 'Trading'}</label>
@@ -1322,7 +1310,7 @@
                                     ` : ''}
                                     <div>
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Additional Details</label>
-                                        <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, budget, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
+                                        <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>
                                     </div>
                                 <button type="submit" class="dbh-btn dbh-btn--solid w-full">Send It</button>
                             </form>

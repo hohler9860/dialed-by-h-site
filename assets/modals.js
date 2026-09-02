@@ -27,13 +27,14 @@
       field('Email', '<input type="email" name="email" autocomplete="email">') +
       field('Mobile / WhatsApp', '<input required type="tel" name="phone" autocomplete="tel" placeholder="+1 ...">') +
       field('Preferred contact', '<select name="preferred"><option value="">Select platform</option><option>WhatsApp</option><option>Text message</option><option>Email</option><option>Instagram DM</option></select>') +
+      field('Where are you based?', '<input required type="text" name="location" autocomplete="address-level2" placeholder="City, or city and state">') +
       field('Brand', '<select name="brand" class="js-brand"><option value="">Select brand</option>' + brands + '</select>') +
       field('Model', '<select name="model" class="js-model" disabled><option value="">Select brand first</option></select>') +
       field('Reference (if known)', '<input type="text" name="reference" placeholder="e.g. 126500LN">')
     );
   }
   function detailsField(full) {
-    return field('Additional details', '<textarea name="details" placeholder="Condition, box &amp; papers, budget, etc."></textarea>', full);
+    return field('Additional details', '<textarea name="details" placeholder="Condition, box &amp; papers, etc."></textarea>', full);
   }
 
   var FORMS = {
@@ -57,7 +58,6 @@
       title: 'Request to source.',
       sub: "Tell us what you're after. I'll text you back.",
       fields: baseFields() +
-        field('Budget', '<select name="budget" required><option value="">Select budget</option><option>Under $10k</option><option>$10k - $25k</option><option>$25k - $50k</option><option>$50k - $100k</option><option>$100k - $250k</option><option>$250k+</option></select>') +
         detailsField(true)
     }
   };
@@ -143,7 +143,7 @@
         var fd = new FormData(e.target);
         var get = function (k) { return (fd.get(k) || '').toString().trim(); };
         var detailParts = [];
-        [['Reference', 'reference'], ['Budget', 'budget'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
+        [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
           if (get(p[1])) detailParts.push(p[0] + ': ' + get(p[1]));
         });
         detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
@@ -161,17 +161,29 @@
             watchBrand: get('brand'),
             watchRef: get('reference'),
             phone: get('phone') || null,
-            budget: get('budget') || null,
+            location: get('location') || null,
+            preferred: get('preferred') || null,
+            okToText: !!fd.get('textok'),
             watchDetails: detailParts.join(' | '),
             website: get('website')
           })
         }).then(function (r) {
           if (!r.ok) throw new Error(r.status);
-          btn.textContent = 'Request received \u2713';
-          setTimeout(close, 1200);
+          // Swap the form for a thank-you with the Instagram follow. Most
+          // visitors from search have never seen the account; this is the
+          // one moment they are paying attention.
+          var wrap = modal.querySelector('.pm-wrap');
+          wrap.innerHTML =
+            '<div class="pm-left">' +
+            '<h3 class="pm-title"><span>Got it.</span></h3>' +
+            '<p class="pm-sub">I\'ll be in touch shortly. In the meantime, follow Dialed By H on Instagram. That\'s where every new piece shows up first.</p>' +
+            '</div><div class="pt-dm">' +
+            '<a href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>' +
+            '</div>';
+          wrap.querySelectorAll('.pm-title span').forEach(charFade);
         }).catch(function () {
           var lines = [cfg.title + ' — Dialed By H'];
-          var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', budget: 'Budget', price: 'Asking price', reason: 'Reason', details: 'Details' };
+          var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
           Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
           window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
           close();

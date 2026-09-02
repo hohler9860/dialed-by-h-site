@@ -1,7 +1,4 @@
 const { Resend } = require("resend");
-const { render } = require("@react-email/render");
-const React = require("react");
-const { InquiryEmail } = require("../lib/emails/inquiry.js");
 const { guard } = require("../lib/ratelimit.js");
 
 // Supabase REST API — DialedbyH project
@@ -267,13 +264,8 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "Please tell me where you are based" });
     }
 
-    // Budget on everything except a watch-page enquiry, where the piece and
-    // its price are already on screen. Without it nothing can be sourced to a
-    // sensible range, which is the single most common reason a lead stalls.
-    if (type !== "WATCH_DETAIL" && !String(budget || "").trim()) {
-      console.error("[submit-form] VALIDATION FAIL -missing budget for type:", type);
-      return res.status(400).json({ error: "Please choose a range" });
-    }
+    // Budget is no longer asked on any form (Henry, 2026-09-02). The column is
+    // kept so old rows still read; new rows land null.
 
     // Phone is required on every lead form. The `required` attribute on the
     // inputs is only a hint; this is the real gate, since anyone can POST
@@ -354,37 +346,9 @@ module.exports = async (req, res) => {
         );
       }
 
-      // 3. Inquiry confirmation email to user (WATCH_DETAIL or BUY)
-      if (type === "WATCH_DETAIL" || type === "BUY") {
-        const firstName = data.full_name ? data.full_name.split(" ")[0] : null;
-        console.log("[submit-form] Queuing inquiry confirmation to:", data.email);
-
-        emailPromises.push(
-          render(React.createElement(InquiryEmail, {
-            firstName,
-            watchName: data.watch_name || null,
-            watchRef: data.watch_ref || null,
-            watchBrand: watchBrand || null,
-            watchImage: watchImage || null,
-          }))
-            .then(inquiryHtml =>
-              getResend().emails.send({
-                from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
-                to: data.email,
-                subject: cleanSubject(`Your Inquiry: ${data.watch_name || "Watch Inquiry"}`),
-                html: inquiryHtml,
-              })
-            )
-            .then(result => {
-              if (result.error) console.error("[submit-form] INQUIRY EMAIL ERROR:", JSON.stringify(result.error));
-              else { console.log("[submit-form] Inquiry email sent -ID:", result.data?.id); inquirySent = true; }
-              return result;
-            })
-            .catch(err => {
-              console.error("[submit-form] INQUIRY EMAIL THREW:", err.message);
-            })
-        );
-      }
+      // No confirmation email to the visitor. Henry pulled it 2026-09-02: the
+      // template read badly and the personal reply is the follow-up anyway.
+      // Only the internal notification above goes out.
 
       await Promise.all(emailPromises);
     } catch (emailErr) {

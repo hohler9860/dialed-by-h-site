@@ -405,52 +405,49 @@ table.bk-tbl th.n, table.bk-tbl td.n { text-align: right; padding-right: 14px; }
 table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-mute { color: var(--l3); }
 
-/* Books runs dark: it is the one tab read as a dashboard, not a list. Every
-   bk- component already paints from the console tokens, so re-pointing those
-   tokens inside .bk is the whole theme. Green = money in / profit, red = money
-   out / loss, nothing else carries colour. */
+/* Books on white. Cards are frosted glass: translucent white over a faint
+   tinted wash, hairline border, soft lift, and a 1px inner highlight so the
+   edge reads as glass rather than a flat rule. Green = money in / profit,
+   red = money out / loss, nothing else carries colour. */
 .bk {
-    --bkbg: #0b0e12; --bkcard: #11151b; --bkline: #1e2530; --bkt: #e7ebf0; --bkm: #8a94a3; --bkm2: #5b6675;
-    --g: #22c55e; --r: #ef4444;
+    --bkbg: #ffffff; --bkcard: rgba(255,255,255,.72); --bkline: rgba(15,23,42,.08); --bkt: #0f172a; --bkm: #64748b; --bkm2: #94a3b8;
+    --g: #16a34a; --r: #dc2626;
     --s1: var(--g); --s2: var(--r); --ok: var(--g); --bad: var(--r);
-    --line: var(--bkline); --l1: var(--bkt); --l2: var(--bkm); --l3: var(--bkm2); --b1: var(--bkcard);
-    background: var(--bkbg); color: var(--bkt); padding: 18px; border-radius: 14px;
+    --line: var(--bkline); --l1: var(--bkt); --l2: var(--bkm); --l3: var(--bkm2); --b1: #ffffff;
+    --glass: 0 1px 2px rgba(15,23,42,.04), 0 10px 30px -12px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.9);
+    position: relative; color: var(--bkt); padding: 18px; border-radius: 16px; background: var(--bkbg);
+    background-image:
+        radial-gradient(900px 420px at 8% -10%, rgba(34,197,94,.07), transparent 60%),
+        radial-gradient(800px 420px at 100% 0%, rgba(239,68,68,.06), transparent 60%);
 }
 .bk .bk-filters { border-color: var(--bkline); padding: 8px 0 12px; border-top: 0; }
 .bk .bk-seg { color: var(--bkm); }
 .bk .bk-seg:hover { color: var(--bkt); }
-.bk .bk-seg[aria-pressed="true"] { background: var(--bkt); color: var(--bkbg); }
-.bk .btn { border-color: var(--bkline); color: var(--bkt); background: transparent; }
-.bk .btn:not(.ghost) { background: var(--bkt); color: var(--bkbg); border-color: var(--bkt); }
-.bk .btn:hover { border-color: var(--bkm); }
-.bk .bk-stats { margin-top: 0; gap: 1px; background: var(--bkline); border-color: var(--bkline); }
-.bk .bk-stat { background: var(--bkcard); padding: 14px 14px 12px; }
-.bk .bk-v { font-size: 24px; margin-top: 7px; }
-.bk .bk-v.pos { color: var(--g); }
-.bk .bk-v.neg { color: var(--r); }
-.bk .bk-v.flat { color: var(--bkt); }
-.bk .bk-s { color: var(--bkm2); }
-.bk .bk-mas { margin-top: 14px; columns: 1; column-gap: 14px; }
-@media (min-width: 900px) { .bk .bk-mas { columns: 2; } }
-.bk .bk-mas > .bk-card { break-inside: avoid; margin: 0 0 14px; }
-.bk .bk-card { background: var(--bkcard); border-color: var(--bkline); padding: 16px 16px 12px; border-radius: 10px; }
-.bk .bk-card h3 { font-size: 13px; letter-spacing: .02em; }
+.bk .bk-seg[aria-pressed="true"] { background: var(--bkt); color: #fff; border-radius: 6px; }
+.bk .btn { border-color: var(--bkline); color: var(--bkt); background: rgba(255,255,255,.7); border-radius: 8px; box-shadow: var(--glass); }
+.bk .btn:not(.ghost) { background: var(--bkt); color: #fff; border-color: var(--bkt); }
+.bk .btn:hover { border-color: var(--bkm2); }
+.bk .bk-card {
+    background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 14px; padding: 16px 16px 12px;
+    box-shadow: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+}
+.bk .bk-card h3 { font-size: 13px; letter-spacing: .02em; color: var(--bkt); }
 .bk .bk-card .cap { color: var(--bkm2); margin-top: 3px; }
 .bk .bk-cat-row { padding: 6px 2px; border-color: var(--bkline); font-size: 12.5px; }
-.bk .bk-cat-row.on { background: var(--bkt); color: var(--bkbg); }
+.bk .bk-cat-row.on { background: var(--bkt); color: #fff; border-radius: 6px; }
 .bk .bk-cat-row .bk-cat-c { color: var(--bkm2); }
 .bk .bk-cat-v.in { color: var(--g); }
 .bk .bk-cat-v.out { color: var(--r); }
 .bk .bk-cat-row.on .bk-cat-v { color: inherit; }
 .bk .bk-tick, .bk .bk-dsub { fill: var(--bkm2); }
 .bk .bk-dlab { fill: var(--bkt); }
-.bk .bk-gl { stroke: rgba(255,255,255,.06); }
-.bk .bk-base { stroke: rgba(255,255,255,.22); }
-.bk .bk-tip { background: #000; color: #fff; border: 1px solid var(--bkline); }
+.bk .bk-gl { stroke: rgba(15,23,42,.06); }
+.bk .bk-base { stroke: rgba(15,23,42,.25); }
+.bk .bk-tip { background: #0f172a; color: #fff; border-radius: 8px; }
 .bk .bk-sub { border-color: var(--bkline); padding: 8px 0; }
 .bk .bk-sub .amt { color: var(--r); }
 .bk .bk-sub.dead .amt { color: var(--bkm2); }
-.bk select.stat { background: var(--bkcard); border-color: var(--bkline); }
+.bk select.stat { background: rgba(255,255,255,.8); border-color: var(--bkline); border-radius: 6px; }
 .bk .bk-foot { color: var(--bkm2); }
 .bk .bk-burn { color: var(--r); }
 .bk table.leads th { color: var(--bkm2); border-color: var(--bkline); }
@@ -461,11 +458,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk td.out { color: var(--r); }
 .bk .count { color: var(--bkm); }
 .bk .bk-legend { color: var(--bkm); margin-top: 8px; }
-.bk .bk-tax { margin: 14px 0 0; display: grid; gap: 1px; background: var(--bkline); border: 1px solid var(--bkline); border-radius: 10px; overflow: hidden; }
+.bk .bk-tax { margin: 14px 0 0; display: grid; gap: 10px; }
 @media (min-width: 760px) { .bk .bk-tax { grid-template-columns: repeat(3, 1fr); } }
-.bk .bk-tax .t { background: var(--bkcard); padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 4px; min-height: 96px; }
+.bk .bk-tax .t {
+    background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 14px; box-shadow: var(--glass);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 4px; min-height: 96px;
+}
 .bk .bk-tax .d { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
-.bk .bk-tax .d.soon { color: var(--r); } .bk .bk-tax .d.near { color: #f59e0b; } .bk .bk-tax .d.far { color: var(--g); }
+.bk .bk-tax .d.soon { color: var(--r); } .bk .bk-tax .d.near { color: #d97706; } .bk .bk-tax .d.far { color: var(--g); }
 .bk .bk-tax .n { font-size: 13px; font-weight: 700; margin-top: 4px; }
 .bk .bk-tax .w { font-family: var(--mono); font-size: 10.5px; color: var(--bkm2); text-transform: uppercase; letter-spacing: .06em; }
 .bk .bk-note { font-family: var(--mono); font-size: 11px; color: var(--bkm); text-transform: none; letter-spacing: 0; line-height: 1.5; margin-top: 4px; }
@@ -485,7 +486,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .bk-kpis { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
 @media (min-width: 760px)  { .bk .bk-kpis { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 1100px) { .bk .bk-kpis { grid-template-columns: repeat(6, 1fr); } }
-.bk .kpi { background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 10px; padding: 14px 12px 12px; text-align: center; }
+.bk .kpi { background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 14px; padding: 14px 12px 12px; text-align: center; box-shadow: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .bk .kpi .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--bkm); }
 .bk .kpi .v { margin-top: 8px; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
 .bk .kpi .v.pos { color: var(--g); } .bk .kpi .v.neg { color: var(--r); } .bk .kpi .v.flat { color: var(--bkt); }
@@ -493,6 +494,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .kpi .cmp span { padding: 0 9px; }
 .bk .kpi .cmp span + span { border-left: 1px solid var(--bkline); }
 .bk .kpi .cmp b { display: block; font-size: 12px; font-weight: 700; color: var(--bkt); }
+.bk .kpi .cmp span + span { border-left: 1px solid var(--bkline); }
 .bk .kpi .cmp b.up { color: var(--g); } .bk .kpi .cmp b.down { color: var(--r); }
 .bk .bk-g3 { display: grid; gap: 12px; grid-template-columns: 1fr; }
 @media (min-width: 760px)  { .bk .bk-g3 { grid-template-columns: repeat(2, 1fr); } }
@@ -511,6 +513,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .bk-stack { margin-top: 14px; }
 .bk .bk-stack .bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; }
 .bk .bk-stack .bar div { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; color: #fff; overflow: hidden; white-space: nowrap; }
+.bk .bk-stack .bar { box-shadow: inset 0 0 0 1px rgba(15,23,42,.06); }
 .bk .bk-stack .lg { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--bkm); }
 .bk .bk-stack .lg i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 2px; }
 .bk .bk-mas.tools { margin-top: 0; }
@@ -1024,7 +1027,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<div class="bk-plot" id="bk-cash"><div class="bk-tip" id="bk-cash-t"></div></div></div>' +
                 '<div class="bk-card"><h3>Revenue vs profit by month</h3>' +
                     '<p class="cap">Sale price and what you kept, by sale month</p>' +
-                    '<div class="bk-legend" style="justify-content:center"><span><i style="background:rgba(34,197,94,.35)"></i>Revenue</span>' +
+                    '<div class="bk-legend" style="justify-content:center"><span><i style="background:rgba(22,163,74,.3)"></i>Revenue</span>' +
                     '<span><i style="background:var(--g)"></i>Gross profit</span><span><i style="background:var(--r)"></i>Overhead</span></div>' +
                     '<div class="bk-plot" id="bk-pl"><div class="bk-tip" id="bk-pl-t"></div></div></div>' +
                 '<div class="bk-card"><h3>Where revenue went</h3>' +
@@ -1207,7 +1210,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var xi0 = C + r * Math.cos(a1), yi0 = C + r * Math.sin(a1), xi1 = C + r * Math.cos(a0), yi1 = C + r * Math.sin(a0);
             paths += '<path d="M' + x0 + ' ' + y0 + ' A' + R + ' ' + R + ' 0 ' + large + ' 1 ' + x1 + ' ' + y1 +
                      ' L' + xi0 + ' ' + yi0 + ' A' + r + ' ' + r + ' 0 ' + large + ' 0 ' + xi1 + ' ' + yi1 + ' Z" fill="' +
-                     palette[i % palette.length] + '" stroke="var(--bkcard)" stroke-width="1.5"><title>' + esc(p.label) + ' ' + bkMoney(p.value) + '</title></path>';
+                     palette[i % palette.length] + '" stroke="#fff" stroke-width="1.5"><title>' + esc(p.label) + ' ' + bkMoney(p.value) + '</title></path>';
         });
         host.innerHTML = '<div class="bk-donut"><svg viewBox="0 0 150 150" role="img">' + paths +
             '<text x="75" y="71" text-anchor="middle" style="font:700 15px var(--sans);fill:var(--bkt)">' + bkCompact(total) + '</text>' +
@@ -1224,7 +1227,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (!host) return;
         if (!m.rev) { host.innerHTML = '<p class="bk-empty">No sales in this period</p>'; return; }
         var parts = [
-            ['Cost of watches', m.cogs, '#3f3f46'],
+            ['Cost of watches', m.cogs, '#94a3b8'],
             ['Overhead', Math.min(m.opex, Math.max(m.rev - m.cogs, 0)), 'var(--r)'],
             ['Net profit', Math.max(m.net, 0), 'var(--g)']
         ];
@@ -1271,7 +1274,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var bars = '', hits = '';
         rows.forEach(function (r, i) {
             var cx = padL + step * i + step / 2;
-            bars += '<path d="' + bkBar(cx - bw * 1.5 - 2, y(r[1]), bw, padT + ph - y(r[1]), 3) + '" fill="rgba(34,197,94,.35)"/>' +
+            bars += '<path d="' + bkBar(cx - bw * 1.5 - 2, y(r[1]), bw, padT + ph - y(r[1]), 3) + '" fill="rgba(22,163,74,.3)"/>' +
                     '<path d="' + bkBar(cx - bw / 2, y(r[2]), bw, padT + ph - y(r[2]), 3) + '" fill="var(--g)"/>' +
                     '<path d="' + bkBar(cx + bw / 2 + 2, y(r[3]), bw, padT + ph - y(r[3]), 3) + '" fill="var(--r)"/>' +
                     '<text class="bk-tick" x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' + BK_MON[+r[0].slice(5, 7) - 1] + '</text>';

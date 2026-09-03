@@ -825,11 +825,13 @@ module.exports = async (req, res) => {
             const fresh = [];
             for (const r of clean) {
                 if (seen.has(key(r))) continue;
+                // Money in is matched too, so a hand-logged sale payment is
+                // absorbed by the real deposit the same way a placeholder charge is.
                 const twin = autoRows.find((a) =>
                     !absorbed.has(a.id) &&
-                    Math.abs(Number(a.money_out || 0) - Number(r.money_out || 0)) < 0.01 &&
-                    Number(r.money_out || 0) > 0 &&
-                    Math.abs(new Date(a.posted_on) - new Date(r.posted_on)) < 8 * 86400000);
+                    Math.abs(new Date(a.posted_on) - new Date(r.posted_on)) < 8 * 86400000 &&
+                    ((Number(r.money_out || 0) > 0 && Math.abs(Number(a.money_out || 0) - Number(r.money_out || 0)) < 0.01) ||
+                     (Number(r.money_in || 0) > 0 && Math.abs(Number(a.money_in || 0) - Number(r.money_in || 0)) < 0.01)));
                 if (twin) {
                     absorbed.add(twin.id);
                     await supabase(`dbh_bank_txns?id=eq.${twin.id}`, {

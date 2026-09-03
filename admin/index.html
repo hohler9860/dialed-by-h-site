@@ -889,6 +889,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<p class="cap">Recurring tools. Not scoped by the period filter.</p>' +
                     '<div id="bk-subs"></div></div>' +
             '</div>' +
+            '<div class="bk-card" style="margin-top:18px"><h3>Tax calendar</h3>' +
+                '<p class="cap">Next 12 months. Email reminders go out 30/14/7/1 days ahead.</p>' +
+                '<div id="bk-tax">Loading…</div></div>' +
             '<div class="bk-grid two" style="margin-top:18px">' +
                 '<div class="bk-card"><h3>Spend by category</h3>' +
                     '<p class="cap">Bank money out, grouped. Click a row to filter the register.</p>' +
@@ -923,6 +926,40 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         bkSubs();
         bkCategories(inRange);
         bkRegister(inRange);
+        bkTaxCalendar();
+    }
+
+    // Deadlines come from the API (lib/tax-calendar.js) so the tab and the
+    // reminder email are reading one list. Cached for the tab visit.
+    var BK_TAX = null;
+    async function bkTaxCalendar() {
+        var host = document.getElementById('bk-tax');
+        if (!host) return;
+        if (!BK_TAX) {
+            try { BK_TAX = (await A.adminFetchTo('/api/leads-admin', 'tax-calendar')).items; }
+            catch (e) { host.textContent = 'Could not load the calendar: ' + e.message; return; }
+        }
+        var items = BK_TAX.filter(function (o) { return !o.chore; });
+        var chores = BK_TAX.filter(function (o) { return o.chore && o.days <= 31; });
+        var fmt = function (d) { return new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+        var colour = function (days) { return days <= 7 ? BAD_RED : days <= 30 ? WARN_AMBER : 'var(--l3)'; };
+        var row = function (o) {
+            var when = o.days === 0 ? 'today' : o.days === 1 ? 'tomorrow' : 'in ' + o.days + 'd';
+            return '<div class="bk-cat-row" style="align-items:flex-start;padding:10px 0">' +
+                '<span class="bk-cat-n" style="flex:1">' +
+                    '<div><b>' + esc(o.title) + '</b>' + (o.label ? ' <span class="count">' + esc(o.label) + '</span>' : '') +
+                    (o.placeholder ? ' <span class="count" style="color:' + WARN_AMBER + '">date unconfirmed</span>' : '') + '</div>' +
+                    '<div class="count" style="margin-top:2px">' + esc(o.who) + '</div>' +
+                    '<div class="count" style="margin-top:4px;color:inherit;opacity:.8;max-width:720px;line-height:1.45">' + esc(o.note) + '</div>' +
+                '</span>' +
+                '<span class="bk-cat-v" style="text-align:right;min-width:120px">' +
+                    '<div class="tmono">' + esc(fmt(o.date)) + '</div>' +
+                    '<div class="count" style="color:' + colour(o.days) + ';font-weight:600">' + esc(when) + '</div>' +
+                '</span></div>';
+        };
+        host.innerHTML = items.slice(0, 14).map(row).join('') +
+            (chores.length ? '<div class="count" style="margin-top:12px">Monthly chore: ' +
+                chores.map(function (c) { return esc(c.title) + ' by ' + esc(fmt(c.date)); }).join('; ') + '</div>' : '');
     }
 
     // Bank money grouped by the category column, biggest first. Clicking a

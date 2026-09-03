@@ -10,6 +10,10 @@
     {
       "path": "/api/leads-admin?action=auto-subs",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/leads-admin?action=tax-reminders",
+      "schedule": "0 12 * * *"
     }
   ],
   "headers": [

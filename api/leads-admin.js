@@ -7,6 +7,7 @@
 // compare, same CORS allowlist. If the admin auth model changes, change it in both.
 
 const crypto = require("crypto");
+const taxCal = require("../lib/tax-calendar.js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -248,6 +249,42 @@ async function runAutoSubs() {
     return logged;
 }
 
+// Daily at 12:00 UTC (8am ET). Emails Henry for every deadline whose
+// days-until matches one of its reminder offsets, so each one nags on a
+// fixed ladder (30/14/7/1 days) and never twice on the same day. Uses the
+// same Resend sender as lead notifications.
+async function sendTaxReminders() {
+    const due = taxCal.dueToday();
+    if (!due.length) return [];
+    const { Resend } = require("resend");
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const to = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
+    const esc = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const fmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+    const line = (o) => {
+        const when = o.days === 0 ? "TODAY" : o.days === 1 ? "tomorrow" : `in ${o.days} days`;
+        return `<div style="padding:14px 0;border-bottom:1px solid #e5e5e5">
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${o.days <= 1 ? "#b00020" : "#888"}">${esc(when)} · ${esc(fmt(o.date))}</div>
+          <div style="font-size:16px;font-weight:700;margin:4px 0 2px;color:#111">${esc(o.title)}${o.label ? " · " + esc(o.label) : ""}</div>
+          <div style="font-size:12px;color:#666">${esc(o.who)}</div>
+          <div style="font-size:13px;color:#333;margin-top:6px;line-height:1.5">${esc(o.note)}</div>
+          ${o.placeholder ? '<div style="font-size:12px;color:#b00020;margin-top:6px">Date is a placeholder, confirm it.</div>' : ""}
+        </div>`;
+    };
+    const soonest = due[0];
+    const subject = due.length === 1
+        ? `Tax reminder: ${soonest.title}${soonest.label ? " " + soonest.label : ""} ${soonest.days === 0 ? "is due today" : soonest.days === 1 ? "is due tomorrow" : "in " + soonest.days + " days"}`
+        : `Tax reminders: ${due.length} deadlines coming up`;
+    const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1a1a1a;background:#fafafa">
+      <div style="border-bottom:2px solid #1a1a1a;padding-bottom:14px;margin-bottom:8px"><strong style="font-size:11px;letter-spacing:3px;text-transform:uppercase">DIALED BY H · TAX CALENDAR</strong></div>
+      ${due.map(line).join("")}
+      <div style="margin-top:20px;font-size:12px;color:#888">Full calendar is on the Books tab of the admin. These reminders come from lib/tax-calendar.js; if a date is wrong, fix it there.</div>
+    </div>`;
+    const r = await resend.emails.send({ from: "Dialed By H <inquiries@mail.dialedbyhenry.com>", to, subject, html });
+    if (r.error) throw new Error("Resend: " + (r.error.message || JSON.stringify(r.error)));
+    return due.map(o => o.key + "@" + o.days);
+}
+
 module.exports = async (req, res) => {
     setCors(req, res);
 
@@ -265,6 +302,11 @@ module.exports = async (req, res) => {
             const logged = await runAutoSubs();
             console.log("[leads-admin] auto-subs logged:", logged.join(", ") || "nothing due");
             return res.status(200).json({ logged });
+        }
+        if (q.action === "tax-reminders") {
+            const sent = await sendTaxReminders();
+            console.log("[leads-admin] tax-reminders:", sent.join(", ") || "nothing due today");
+            return res.status(200).json({ sent });
         }
         return res.status(400).json({ error: "Unknown cron action" });
     }
@@ -595,6 +637,10 @@ module.exports = async (req, res) => {
         // /admin/index.html source. It only ever crosses the wire behind the
         // Bearer check above. The dbh_* tables have RLS on with zero policies,
         // so the service-role key is the only way to read them.
+        if (action === "tax-calendar") {
+            return res.status(200).json({ items: taxCal.upcoming() });
+        }
+
         if (action === "books") {
             // These are the money tiles. A limit above 1000 is a lie -- PostgREST
             // caps the response there and says nothing -- so a growing bank

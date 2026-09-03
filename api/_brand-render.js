@@ -321,7 +321,7 @@ ${c.headAssets}
 
 <section class="bp-sec">
 <h2>Boston, New York, Miami</h2>
-<p class="bp-cities">I am based in Boston and hand over in person across Greater Boston, from Back Bay and the Seaport to Wellesley, Newton, Brookline and the North Shore. I am in New York and Miami every month. Everywhere else in the US ships fully insured. Read more about <a href="/boston">buying and selling watches in Boston</a> or <a href="/process/">how the process works</a>.</p>
+<p class="bp-cities">I am based in Boston and hand over in person across Greater Boston, from Back Bay and the Seaport to Wellesley, Newton, Brookline and the North Shore. I am in New York and Miami every month. Everywhere else in the US ships fully insured. Read more about <a href="/boston">buying and selling watches in Boston</a>, <a href="/buy-rolex-boston">buying a Rolex in Boston</a>, <a href="/sell-rolex-boston">selling a Rolex in Boston</a>, <a href="/patek-philippe-boston">Patek Philippe in Boston</a>, or <a href="/process/">how the process works</a>.</p>
 </section>
 
 <section class="bp-sec">

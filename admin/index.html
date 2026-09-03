@@ -496,7 +496,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .kpi .cmp b { display: block; font-size: 12px; font-weight: 700; color: var(--bkt); }
 .bk .kpi .cmp span + span { border-left: 1px solid var(--bkline); }
 .bk .kpi .cmp b.up { color: var(--g); } .bk .kpi .cmp b.down { color: var(--r); }
-.bk .bk-g3 { display: grid; gap: 12px; grid-template-columns: 1fr; }
+.bk .bk-g3 { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
 @media (min-width: 760px)  { .bk .bk-g3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1100px) { .bk .bk-g3 { grid-template-columns: repeat(3, 1fr); } }
 .bk .bk-g3 .bk-card { margin: 0; display: flex; flex-direction: column; }
@@ -1298,17 +1298,24 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             .map(function (d) { return [d, bkDays(d.date_bought, d.date_sold)]; })
             .sort(function (a, b) { return b[1] - a[1]; });
         if (!rows.length) { host.innerHTML = '<p class="bk-empty">Nothing sold in this period</p>'; return; }
-        var W = 560, rowH = 30, labW = 168, H = rows.length * rowH + 4;
+        // Fixed label column with a clip so a long model name can never run
+        // into its bar; the bar track starts after it. Same-day flips get a
+        // stub bar and the word, not a hairline and "0d".
+        var W = 560, rowH = 34, labW = 190, valW = 58, H = rows.length * rowH + 6;
         var max = Math.max.apply(null, rows.map(function (r) { return r[1]; })) || 1;
-        var pw = W - labW - 60;
-        var svg = rows.map(function (r, i) {
-            var d = r[0], y0 = i * rowH, w = Math.max(3, r[1] / max * pw);
-            var nm = (d.brand + ' ' + d.model).slice(0, 26);
-            return '<text class="bk-dlab" x="0" y="' + (y0 + 14) + '">' + esc(nm) + '</text>' +
-                   '<text class="bk-dsub" x="0" y="' + (y0 + 25) + '">' + esc(d.reference || '') + '</text>' +
-                   '<rect x="' + labW + '" y="' + (y0 + 7) + '" width="' + w + '" height="14" rx="4" fill="' + (r[1] > 30 ? 'var(--r)' : 'var(--g)') + '"/>' +
-                   '<text class="bk-dlab" x="' + (labW + w + 8) + '" y="' + (y0 + 18) + '">' + r[1] + 'd</text>';
-        }).join('');
+        var pw = W - labW - valW - 12;
+        var svg = '<defs><clipPath id="bk-days-clip"><rect x="0" y="0" width="' + (labW - 12) + '" height="' + H + '"/></clipPath></defs>' +
+            '<g clip-path="url(#bk-days-clip)">' + rows.map(function (r, i) {
+                var d = r[0], y0 = i * rowH;
+                return '<text class="bk-dlab" x="0" y="' + (y0 + 15) + '">' + esc(((d.brand || '') + ' ' + (d.model || '')).trim()) + '</text>' +
+                       '<text class="bk-dsub" x="0" y="' + (y0 + 28) + '">' + esc(d.reference || '') + '</text>';
+            }).join('') + '</g>' +
+            rows.map(function (r, i) {
+                var y0 = i * rowH, w = Math.max(6, r[1] / max * pw);
+                var lab = r[1] === 0 ? 'same day' : r[1] + 'd';
+                return '<rect x="' + labW + '" y="' + (y0 + 9) + '" width="' + w + '" height="16" rx="5" fill="' + (r[1] > 30 ? 'var(--r)' : 'var(--g)') + '"/>' +
+                       '<text class="bk-dlab" x="' + (labW + w + 8) + '" y="' + (y0 + 21) + '">' + lab + '</text>';
+            }).join('');
         host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Days to sell per piece">' + svg + '</svg>';
     }
 

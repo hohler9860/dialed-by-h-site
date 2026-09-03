@@ -858,7 +858,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                         (bkPeriod === p) + '">' + label + '</button>';
                 }).join('') +
                 '<span style="flex:1"></span>' +
-                '<button class="btn ghost" id="bk-xlsx">Export for Investors</button>' +
+                '<button class="btn ghost" id="bk-xlsx">Export to Spreadsheet</button>' +
                 '<button class="btn ghost" id="bk-csv">Import Bank Statement</button>' +
                 '<button class="btn" id="bk-exp-new">Log Expense</button>' +
             '</div>' +
@@ -1734,7 +1734,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         } catch (e) {
             alert('Export failed: ' + e.message);
         } finally {
-            btn.disabled = false; btn.textContent = 'Export for Investors';
+            btn.disabled = false; btn.textContent = 'Export to Spreadsheet';
         }
     }
 

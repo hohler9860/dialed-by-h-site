@@ -858,6 +858,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                         (bkPeriod === p) + '">' + label + '</button>';
                 }).join('') +
                 '<span style="flex:1"></span>' +
+                '<button class="btn ghost" id="bk-xlsx">Export for Investors</button>' +
                 '<button class="btn ghost" id="bk-csv">Import Bank Statement</button>' +
                 '<button class="btn" id="bk-exp-new">Log Expense</button>' +
             '</div>' +
@@ -901,6 +902,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         document.getElementById('bk-exp-new').addEventListener('click', function () { editExpense(null); });
         document.getElementById('bk-csv').addEventListener('click', importBank);
+        document.getElementById('bk-xlsx').addEventListener('click', bkExport);
 
         bkCashChart(inRange);
         bkExpChart(inRange);
@@ -1563,6 +1565,177 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             await A.adminFetchTo('/api/leads-admin', 'books-delete', { kind: kind, id: row.id });
             await bkRefresh(kind === 'deal' ? 'deals' : 'books');
         } catch (e) { sheetErr(e.message || 'Delete failed'); }
+    }
+
+
+    // ── Export for investors ────────────────────────────────────
+    // One .xlsx with the same numbers the dashboard shows, scoped to the
+    // selected period, laid out the way someone outside the business reads
+    // them: summary first, then the ledgers that back it. Built in the browser
+    // from BOOKS so it can never disagree with the tiles. SheetJS is fetched on
+    // first click so the admin page does not carry it for everyone else.
+    function bkLoadXlsx() {
+        if (window.XLSX) return Promise.resolve(window.XLSX);
+        return new Promise(function (ok, bad) {
+            var el = document.createElement('script');
+            el.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            el.onload = function () { ok(window.XLSX); };
+            el.onerror = function () { bad(new Error('Could not load the spreadsheet library')); };
+            document.head.appendChild(el);
+        });
+    }
+
+    function bkBuildWorkbook(XLSX, B, period) {
+        var cut = bkCutoff();
+        var inRange = function (d) { return d && d >= cut; };
+        var label = period === 'all' ? 'All time' : period === '90' ? 'Last 90 days' : 'This month';
+        var today = new Date().toISOString().slice(0, 10);
+        var USD = '"$"#,##0.00;[Red]-"$"#,##0.00';
+        var PCT = '0.0%';
+        var n = function (v) { return v == null || v === '' ? null : Number(v); };
+        var money = function (v) { return { v: n(v) == null ? 0 : n(v), t: 'n', z: USD }; };
+        var pct = function (v) { return v == null ? '' : { v: v, t: 'n', z: PCT }; };
+
+        var sold = B.deals.filter(function (d) { return d.sell_total != null && inRange(d.date_sold); })
+            .sort(function (a, b) { return a.date_sold < b.date_sold ? 1 : -1; });
+        var held = B.deals.filter(function (d) { return d.sell_total == null; });
+        var exp = B.expenses.filter(function (e) { return inRange(e.spent_on); })
+            .sort(function (a, b) { return a.spent_on < b.spent_on ? 1 : -1; });
+        var bank = B.bank.filter(function (t) { return inRange(t.posted_on); })
+            .sort(function (a, b) { return a.posted_on < b.posted_on ? -1 : 1; });
+
+        var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
+        var cogs = sold.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+        var gp = rev - cogs;
+        var opex = exp.reduce(function (s, e) { return s + bkNum(e.amount); }, 0);
+        var net = gp - opex;
+        var stock = held.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+        var avgDays = sold.length
+            ? Math.round(sold.reduce(function (s, d) { return s + bkDays(d.date_bought, d.date_sold); }, 0) / sold.length)
+            : null;
+        var burn = B.subscriptions.filter(function (x) { return x.status !== 'Cancel'; })
+            .reduce(function (s, x) { return s + bkNum(x.monthly_cost); }, 0);
+
+        // ── Summary ──
+        var S = [
+            ['Dialed By H — Financial Summary'],
+            ['Period', label, 'Prepared', today],
+            [],
+            ['Revenue (watches sold)', money(rev)],
+            ['Cost of goods sold', money(cogs)],
+            ['Gross profit', money(gp)],
+            ['Blended margin', pct(rev ? gp / rev : null)],
+            ['Overhead (operating expenses)', money(opex)],
+            ['Net profit', money(net)],
+            [],
+            ['Cash on hand (all time)', money(B.cash)],
+            ['Inventory at cost', money(stock), held.length + ' piece' + (held.length === 1 ? '' : 's')],
+            ['Pieces sold', sold.length],
+            ['Average days to sell', avgDays == null ? '—' : avgDays],
+            ['Recurring tools per month', money(burn)],
+            [],
+            ['Month', 'Revenue', 'COGS', 'Gross profit', 'Overhead', 'Net profit', 'Pieces sold'],
+        ];
+        var months = {};
+        var mk = function (d) { return String(d).slice(0, 7); };
+        sold.forEach(function (d) {
+            var m = mk(d.date_sold); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0 };
+            months[m].r += bkNum(d.sell_total); months[m].c += bkNum(d.buy_total) + bkNum(d.other_costs); months[m].k++;
+        });
+        exp.forEach(function (e) {
+            var m = mk(e.spent_on); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0 };
+            months[m].o += bkNum(e.amount);
+        });
+        Object.keys(months).sort().forEach(function (m) {
+            var x = months[m], g = x.r - x.c;
+            S.push([BK_MON[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4), money(x.r), money(x.c), money(g), money(x.o), money(g - x.o), x.k]);
+        });
+
+        // ── Deals ──
+        var D = [['Ref', 'Status', 'Brand', 'Model', 'Reference', 'Year', 'Condition', 'Box', 'Papers',
+                  'Bought', 'Sold', 'Days held', 'Source', 'Buyer', 'Purchase price', 'Other costs',
+                  'Sale price', 'Profit', 'Margin', 'Payment in', 'Payment out', 'Notes']];
+        B.deals.slice().sort(function (a, b) { return (a.date_bought || '') < (b.date_bought || '') ? 1 : -1; })
+            .forEach(function (d) {
+                var p = bkProfit(d);
+                D.push([d.ref, d.sell_total == null ? 'In stock' : (d.status || 'Sold'), d.brand, d.model, d.reference,
+                    d.year, d.condition, d.box ? 'Yes' : '', d.papers ? 'Yes' : '',
+                    d.date_bought, d.date_sold, d.date_sold && d.date_bought ? bkDays(d.date_bought, d.date_sold) : '',
+                    d.source_seller, d.buyer, money(d.buy_total), money(d.other_costs),
+                    d.sell_total == null ? '' : money(d.sell_total), p == null ? '' : money(p), pct(bkMargin(d)),
+                    d.payment_in, d.payment_out, d.notes]);
+            });
+
+        // ── Expenses ──
+        var byCat = {};
+        exp.forEach(function (e) { var c = e.category || 'Uncategorized'; byCat[c] = (byCat[c] || 0) + bkNum(e.amount); });
+        var E = [['Overhead by category', label], ['Category', 'Amount', 'Share']];
+        Object.keys(byCat).sort(function (a, b) { return byCat[b] - byCat[a]; }).forEach(function (c) {
+            E.push([c, money(byCat[c]), pct(opex ? byCat[c] / opex : null)]);
+        });
+        E.push(['Total', money(opex), pct(opex ? 1 : null)]);
+        E.push([]);
+        E.push(['Date', 'Category', 'Description', 'Vendor', 'Amount', 'Paid with', 'Deal', 'Deductible', 'Trip', 'Notes']);
+        exp.forEach(function (e) {
+            E.push([e.spent_on, e.category, e.description, e.vendor, money(e.amount), e.payment_method,
+                    e.deal_ref, e.deductible ? 'Yes' : '', e.trip, e.notes]);
+        });
+
+        // ── Bank ──
+        var bal = 0;
+        var K = [['Date', 'Description', 'Category', 'Type', 'Money in', 'Money out', 'Running balance']];
+        bank.forEach(function (t) {
+            bal += bkNum(t.money_in) - bkNum(t.money_out);
+            K.push([t.posted_on, t.description, t.category || 'Uncategorized', t.txn_type,
+                    bkNum(t.money_in) ? money(t.money_in) : '', bkNum(t.money_out) ? money(t.money_out) : '', money(bal)]);
+        });
+        var inn = bank.reduce(function (s, t) { return s + bkNum(t.money_in); }, 0);
+        var out = bank.reduce(function (s, t) { return s + bkNum(t.money_out); }, 0);
+        K.push([]);
+        K.push(['Total', '', '', '', money(inn), money(out), money(inn - out)]);
+
+        // ── Subscriptions ──
+        var U = [['Tool', 'Purpose', 'Monthly cost', 'Billing', 'Paid with', 'Status', 'Notes']];
+        B.subscriptions.slice().sort(function (a, b) { return bkNum(b.monthly_cost) - bkNum(a.monthly_cost); })
+            .forEach(function (x) {
+                U.push([x.name, x.purpose, money(x.monthly_cost), x.billing, x.payment,
+                        x.status === 'Cancel' ? 'Cancelled' : 'Active', x.notes]);
+            });
+        U.push([]); U.push(['Active per month', '', money(burn)]);
+
+        // ── Capital ──
+        var C = [['Date', 'Direction', 'Amount', 'Description', 'Notes']];
+        (B.capital || []).slice().sort(function (a, b) { return a.moved_on < b.moved_on ? -1 : 1; })
+            .forEach(function (c) { C.push([c.moved_on, c.direction, money(c.amount), c.description, c.notes]); });
+
+        var wb = XLSX.utils.book_new();
+        var add = function (name, rows, widths) {
+            var ws = XLSX.utils.aoa_to_sheet(rows);
+            ws['!cols'] = widths.map(function (w) { return { wch: w }; });
+            XLSX.utils.book_append_sheet(wb, ws, name);
+        };
+        add('Summary', S, [30, 16, 14, 14, 14, 14, 12]);
+        add('Deals', D, [13, 10, 16, 18, 14, 7, 12, 6, 7, 11, 11, 9, 18, 18, 14, 12, 14, 14, 9, 12, 12, 30]);
+        add('Expenses', E, [12, 18, 34, 20, 14, 12, 12, 10, 12, 30]);
+        add('Bank', K, [12, 44, 18, 10, 14, 14, 16]);
+        add('Subscriptions', U, [22, 28, 14, 10, 14, 10, 30]);
+        add('Capital', C, [12, 10, 14, 34, 30]);
+        return wb;
+    }
+
+    async function bkExport() {
+        var btn = document.getElementById('bk-xlsx');
+        btn.disabled = true; btn.textContent = 'Building…';
+        try {
+            var XLSX = await bkLoadXlsx();
+            var wb = bkBuildWorkbook(XLSX, BOOKS, bkPeriod);
+            var tag = bkPeriod === 'all' ? 'all-time' : bkPeriod === '90' ? 'last-90-days' : 'this-month';
+            XLSX.writeFile(wb, 'DialedByH-Books-' + tag + '-' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        } catch (e) {
+            alert('Export failed: ' + e.message);
+        } finally {
+            btn.disabled = false; btn.textContent = 'Export for Investors';
+        }
     }
 
     // ── bank CSV paste ──────────────────────────────────────────

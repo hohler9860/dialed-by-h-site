@@ -1,9 +1,30 @@
 // Retry an <img> that failed to load, up to four times with growing delays.
-// Storage rate-limits (429) and flaky mobile radios both clear within seconds;
-// a permanent 404 gives up quietly after the last attempt.
+// Storage rate-limits (429) and flaky mobile radios both clear within seconds.
+// Chrome reports the refusal as net::ERR_BLOCKED_BY_ORB, because the 429 body
+// is JSON rather than an image, so the tile sees a plain error event.
+// The retries keep the same srcset (the ~14KB medium variant): a grid-level
+// listener used to answer the first failure by fetching the 900px file at
+// once, and this retry then fetched that same file again with a cache-bust,
+// so one refused thumbnail cost two 30-47KB downloads on the radio the LCP
+// tile was still using. After the last retry the full-size file is tried
+// once, which covers a variant that is genuinely missing, and only if that
+// fails too does the tile become the wordmark placeholder.
 window.dbhImgRetry = function (el) {
   var n = Number(el.dataset.retry || 0);
-  if (n >= 4) { el.onerror = null; el.style.opacity = '0'; return; }
+  if (n >= 4) {
+    if (el.dataset.full && !el.dataset.fullTried && el.getAttribute('src').indexOf(el.dataset.full) !== 0) {
+      el.dataset.fullTried = '1';
+      el.removeAttribute('srcset');
+      el.setAttribute('src', el.dataset.full);
+      return;
+    }
+    el.onerror = null;
+    var ph = document.createElement('span');
+    ph.className = 'ph';
+    ph.textContent = 'DIALED BY H';
+    if (el.parentNode) el.parentNode.replaceChild(ph, el);
+    return;
+  }
   el.dataset.retry = n + 1;
   var wait = [1200, 3000, 7000, 15000][n] + Math.random() * 800;
   setTimeout(function () {
@@ -487,16 +508,40 @@ window.dbhImgRetry = function (el) {
     place(0, head);
     if (head < slice.length) {
       revealCards();
-      later(function () {
-        // A filter or search re-rendered the grid in the meantime; this
-        // batch belongs to a list that is no longer on screen.
-        if (token !== chunkToken) return;
-        place(head, slice.length);
-        finish();
+      // Wait for the high-priority tiles to land before building the rest.
+      // Storage refuses part of any burst much past ~28 requests (429, seen
+      // by Chrome as ERR_BLOCKED_BY_ORB) and a refused first-row tile is a
+      // multi-second LCP. Twelve tiles now go out alone; the next 48, and the
+      // ~25 lazy requests Chrome makes for them, follow once the first row
+      // is in, or after 1.5s regardless.
+      whenSettled(grid.querySelectorAll('img[fetchpriority="high"]'), 1500, function () {
+        later(function () {
+          // A filter or search re-rendered the grid in the meantime; this
+          // batch belongs to a list that is no longer on screen.
+          if (token !== chunkToken) return;
+          place(head, slice.length);
+          finish();
+        });
       });
     } else {
       finish();
     }
+  }
+
+  // Run cb once every image in the list has loaded or errored, or after
+  // maxWait ms, whichever comes first. Never fires twice.
+  function whenSettled(imgs, maxWait, cb) {
+    var left = 0, done = false;
+    var fire = function () { if (!done) { done = true; cb(); } };
+    var one = function () { if (--left <= 0) fire(); };
+    [].forEach.call(imgs, function (im) {
+      if (im.complete) return;
+      left++;
+      im.addEventListener('load', one, { once: true });
+      im.addEventListener('error', one, { once: true });
+    });
+    if (left === 0) return fire();
+    setTimeout(fire, maxWait);
   }
 
   function render() {
@@ -578,27 +623,13 @@ window.dbhImgRetry = function (el) {
       return art;
   }
 
-  // staggered scroll reveal (haoqi work-grid pattern), applied to not-yet-revealed cards
-  // A tile that fails to load stayed broken: there was no onerror, so a
-  // transient failure on one of the 1,700 thumbnails left the browser's broken
-  // image icon for the rest of the session. Every URL checked resolves, so the
-  // failures are transient rather than missing files. Retry once at full size,
-  // then fall back to the wordmark placeholder.
-  grid.addEventListener('error', function (e) {
-    var el = e.target;
-    if (!el || el.tagName !== 'IMG' || el.dataset.retried) return;
-    el.dataset.retried = '1';
-    el.removeAttribute('srcset');
-    if (el.dataset.full && el.src !== el.dataset.full) {
-      el.src = el.dataset.full;
-    } else {
-      var ph = document.createElement('span');
-      ph.className = 'ph';
-      ph.textContent = 'DIALED BY H';
-      if (el.parentNode) el.parentNode.replaceChild(ph, el);
-    }
-  }, true);
+  // Tile image failures are handled by dbhImgRetry (top of file) via each
+  // tile's inline onerror. A capture-phase listener here used to swap in the
+  // full-size file on the first failure; it ran alongside the retry and
+  // doubled the downloads, so its two steps (full-size once, then the
+  // wordmark placeholder) now live in dbhImgRetry's give-up path.
 
+  // staggered scroll reveal (haoqi work-grid pattern), applied to not-yet-revealed cards
   function revealCards() {
     var items = [].slice.call(grid.querySelectorAll('.pt-reveal:not(.is-observed)'));
     var io = new IntersectionObserver(function (es) {

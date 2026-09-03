@@ -573,6 +573,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     var BOOKS = null;
     var bkPeriod = 'all';
     var bkCat = '';        // category filter for the transaction register
+    // The register is long and rarely the thing being looked for, so it starts
+    // folded. Picking a category opens it, since that is a request to see rows.
+    var bkRegOpen = false;
+    try { bkRegOpen = localStorage.getItem('bk-reg-open') === '1'; } catch (e) {}
 
     function bkMoney(n, d) {
         d = d || 0;
@@ -893,9 +897,13 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<p class="cap">Bank money in, grouped.</p>' +
                     '<div id="bk-cats-in"></div></div>' +
             '</div>' +
-            '<div class="bk-card" style="margin-top:18px"><h3>Every transaction</h3>' +
+            '<div class="bk-card" style="margin-top:18px">' +
+                '<div style="display:flex;align-items:baseline;gap:12px"><h3 style="margin:0">Every transaction</h3>' +
+                '<span style="flex:1"></span>' +
+                '<button class="btn ghost" id="bk-reg-toggle" aria-expanded="' + bkRegOpen + '">' +
+                    (bkRegOpen ? 'Hide' : 'Show') + '</button></div>' +
                 '<p class="cap" id="bk-reg-cap"></p>' +
-                '<div id="bk-register" style="overflow-x:auto"></div></div>';
+                '<div id="bk-register" style="overflow-x:auto"' + (bkRegOpen ? '' : ' hidden') + '></div></div>';
 
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
             b.addEventListener('click', function () { bkPeriod = b.dataset.p; paintBooks(); });
@@ -903,6 +911,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         document.getElementById('bk-exp-new').addEventListener('click', function () { editExpense(null); });
         document.getElementById('bk-csv').addEventListener('click', importBank);
         document.getElementById('bk-xlsx').addEventListener('click', bkExport);
+        document.getElementById('bk-reg-toggle').addEventListener('click', function () {
+            bkRegOpen = !bkRegOpen;
+            try { localStorage.setItem('bk-reg-open', bkRegOpen ? '1' : '0'); } catch (e) {}
+            paintBooks();
+        });
 
         bkCashChart(inRange);
         bkExpChart(inRange);
@@ -943,6 +956,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         [].forEach.call(document.querySelectorAll('#bk-cats [data-cat]'), function (el) {
             el.addEventListener('click', function () {
                 bkCat = (bkCat === this.dataset.cat) ? '' : this.dataset.cat;
+                if (bkCat) bkRegOpen = true;
                 paintBooks();
             });
         });
@@ -1575,151 +1589,268 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // from BOOKS so it can never disagree with the tiles. SheetJS is fetched on
     // first click so the admin page does not carry it for everyone else.
     function bkLoadXlsx() {
-        if (window.XLSX) return Promise.resolve(window.XLSX);
+        if (window.XLSX && window.XLSX.__styled) return Promise.resolve(window.XLSX);
         return new Promise(function (ok, bad) {
             var el = document.createElement('script');
-            el.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-            el.onload = function () { ok(window.XLSX); };
+            // xlsx-js-style = SheetJS community build plus cell styling (fonts,
+            // fills, borders), which the plain build silently drops.
+            el.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+            el.onload = function () { window.XLSX.__styled = true; ok(window.XLSX); };
             el.onerror = function () { bad(new Error('Could not load the spreadsheet library')); };
             document.head.appendChild(el);
         });
     }
+
+    // One visual system for every sheet: dark header band, light rules, money
+    // right-aligned in a fixed currency format, totals bold on a grey band,
+    // negatives red. Styles are attached after the grid is built so the data
+    // code above stays about numbers.
+    var BK_XS = {
+        title:   { font: { name: 'Arial', sz: 16, bold: true, color: { rgb: '111111' } } },
+        sub:     { font: { name: 'Arial', sz: 10, color: { rgb: '666666' } } },
+        section: { font: { name: 'Arial', sz: 11, bold: true, color: { rgb: '111111' } },
+                   border: { bottom: { style: 'medium', color: { rgb: '111111' } } } },
+        head:    { font: { name: 'Arial', sz: 10, bold: true, color: { rgb: 'FFFFFF' } },
+                   fill: { patternType: 'solid', fgColor: { rgb: '111111' } },
+                   alignment: { vertical: 'center' },
+                   border: { bottom: { style: 'thin', color: { rgb: '111111' } } } },
+        headR:   null,
+        cell:    { font: { name: 'Arial', sz: 10, color: { rgb: '111111' } },
+                   border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } } },
+        label:   { font: { name: 'Arial', sz: 10, color: { rgb: '444444' } } },
+        money:   { font: { name: 'Arial', sz: 10, color: { rgb: '111111' } },
+                   alignment: { horizontal: 'right' },
+                   border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } },
+                   numFmt: '"$"#,##0.00;[Red]-"$"#,##0.00' },
+        pct:     { font: { name: 'Arial', sz: 10, color: { rgb: '111111' } },
+                   alignment: { horizontal: 'right' }, numFmt: '0.0%' },
+        total:   { font: { name: 'Arial', sz: 10, bold: true, color: { rgb: '111111' } },
+                   fill: { patternType: 'solid', fgColor: { rgb: 'F2F2F2' } },
+                   border: { top: { style: 'thin', color: { rgb: '111111' } } } },
+        big:     { font: { name: 'Arial', sz: 14, bold: true, color: { rgb: '111111' } },
+                   alignment: { horizontal: 'right' }, numFmt: '"$"#,##0;[Red]-"$"#,##0' },
+        bigNeg:  { font: { name: 'Arial', sz: 14, bold: true, color: { rgb: 'B00020' } },
+                   alignment: { horizontal: 'right' }, numFmt: '"$"#,##0;[Red]-"$"#,##0' }
+    };
+    BK_XS.headR = Object.assign({}, BK_XS.head, { alignment: { horizontal: 'right', vertical: 'center' } });
 
     function bkBuildWorkbook(XLSX, B, period) {
         var cut = bkCutoff();
         var inRange = function (d) { return d && d >= cut; };
         var label = period === 'all' ? 'All time' : period === '90' ? 'Last 90 days' : 'This month';
         var today = new Date().toISOString().slice(0, 10);
-        var USD = '"$"#,##0.00;[Red]-"$"#,##0.00';
-        var PCT = '0.0%';
-        var n = function (v) { return v == null || v === '' ? null : Number(v); };
-        var money = function (v) { return { v: n(v) == null ? 0 : n(v), t: 'n', z: USD }; };
-        var pct = function (v) { return v == null ? '' : { v: v, t: 'n', z: PCT }; };
+        var n = function (v) { return v == null || v === '' ? 0 : Number(v); };
+        var M = function (v) { return { v: n(v), t: 'n', s: BK_XS.money }; };
+        var P = function (v) { return v == null ? { v: '', s: BK_XS.cell } : { v: v, t: 'n', s: BK_XS.pct }; };
+        var T = function (v) { return { v: v == null ? '' : v, s: BK_XS.cell }; };
+        var H = function (v, right) { return { v: v, s: right ? BK_XS.headR : BK_XS.head }; };
+        var TOT = function (v, kind) {
+            var st = Object.assign({}, BK_XS.total);
+            if (kind === 'money') { st.numFmt = BK_XS.money.numFmt; st.alignment = { horizontal: 'right' }; return { v: n(v), t: 'n', s: st }; }
+            if (kind === 'pct') { st.numFmt = '0.0%'; st.alignment = { horizontal: 'right' }; return v == null ? { v: '', s: st } : { v: v, t: 'n', s: st }; }
+            return { v: v == null ? '' : v, s: st };
+        };
+        var blank = [];
 
-        var sold = B.deals.filter(function (d) { return d.sell_total != null && inRange(d.date_sold); })
+        var deals = B.deals.slice();
+        var sold = deals.filter(function (d) { return d.sell_total != null && inRange(d.date_sold); })
             .sort(function (a, b) { return a.date_sold < b.date_sold ? 1 : -1; });
-        var held = B.deals.filter(function (d) { return d.sell_total == null; });
+        var held = deals.filter(function (d) { return d.sell_total == null; });
         var exp = B.expenses.filter(function (e) { return inRange(e.spent_on); })
             .sort(function (a, b) { return a.spent_on < b.spent_on ? 1 : -1; });
         var bank = B.bank.filter(function (t) { return inRange(t.posted_on); })
             .sort(function (a, b) { return a.posted_on < b.posted_on ? -1 : 1; });
 
-        var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
-        var cogs = sold.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+        var rev = sold.reduce(function (s, d) { return s + n(d.sell_total); }, 0);
+        var cogs = sold.reduce(function (s, d) { return s + n(d.buy_total) + n(d.other_costs); }, 0);
         var gp = rev - cogs;
-        var opex = exp.reduce(function (s, e) { return s + bkNum(e.amount); }, 0);
+        var opex = exp.reduce(function (s, e) { return s + n(e.amount); }, 0);
         var net = gp - opex;
-        var stock = held.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+        var stock = held.reduce(function (s, d) { return s + n(d.buy_total) + n(d.other_costs); }, 0);
         var avgDays = sold.length
             ? Math.round(sold.reduce(function (s, d) { return s + bkDays(d.date_bought, d.date_sold); }, 0) / sold.length)
             : null;
-        var burn = B.subscriptions.filter(function (x) { return x.status !== 'Cancel'; })
-            .reduce(function (s, x) { return s + bkNum(x.monthly_cost); }, 0);
+        var liveSubs = B.subscriptions.filter(function (x) { return x.status !== 'Cancel'; });
+        var burn = liveSubs.reduce(function (s, x) { return s + n(x.monthly_cost); }, 0);
+        var capIn = (B.capital || []).reduce(function (s, c) { return s + (String(c.direction).toLowerCase() === 'in' ? n(c.amount) : -n(c.amount)); }, 0);
+
+        var byCat = {};
+        exp.forEach(function (e) { var c = e.category || 'Uncategorized'; byCat[c] = (byCat[c] || 0) + n(e.amount); });
+        var cats = Object.keys(byCat).sort(function (a, b) { return byCat[b] - byCat[a]; });
 
         // ── Summary ──
+        var big = function (v) { return { v: v, t: 'n', s: v < 0 ? BK_XS.bigNeg : BK_XS.big }; };
         var S = [
-            ['Dialed By H — Financial Summary'],
-            ['Period', label, 'Prepared', today],
-            [],
-            ['Revenue (watches sold)', money(rev)],
-            ['Cost of goods sold', money(cogs)],
-            ['Gross profit', money(gp)],
-            ['Blended margin', pct(rev ? gp / rev : null)],
-            ['Overhead (operating expenses)', money(opex)],
-            ['Net profit', money(net)],
-            [],
-            ['Cash on hand (all time)', money(B.cash)],
-            ['Inventory at cost', money(stock), held.length + ' piece' + (held.length === 1 ? '' : 's')],
-            ['Pieces sold', sold.length],
-            ['Average days to sell', avgDays == null ? '—' : avgDays],
-            ['Recurring tools per month', money(burn)],
-            [],
-            ['Month', 'Revenue', 'COGS', 'Gross profit', 'Overhead', 'Net profit', 'Pieces sold'],
+            [{ v: 'Dialed By H', s: BK_XS.title }],
+            [{ v: 'Financial summary  ·  ' + label + '  ·  prepared ' + today, s: BK_XS.sub }],
+            blank,
+            [{ v: 'At a glance', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }],
+            [{ v: 'Revenue', s: BK_XS.label }, big(rev), { v: sold.length + ' piece' + (sold.length === 1 ? '' : 's') + ' sold', s: BK_XS.sub }],
+            [{ v: 'Gross profit', s: BK_XS.label }, big(gp), { v: rev ? (gp / rev * 100).toFixed(1) + '% blended margin' : '', s: BK_XS.sub }],
+            [{ v: 'Overhead', s: BK_XS.label }, big(opex), { v: 'operating expenses, not watches', s: BK_XS.sub }],
+            [{ v: 'Net profit', s: BK_XS.label }, big(net), { v: net < 0 ? 'overhead ahead of margin' : 'after overhead', s: BK_XS.sub }],
+            [{ v: 'Cash on hand', s: BK_XS.label }, big(n(B.cash)), { v: 'bank balance today, all time', s: BK_XS.sub }],
+            [{ v: 'Inventory at cost', s: BK_XS.label }, big(stock), { v: held.length + ' piece' + (held.length === 1 ? '' : 's') + ' held', s: BK_XS.sub }],
+            [{ v: 'Capital contributed', s: BK_XS.label }, big(capIn), { v: 'owner and trust money in, net', s: BK_XS.sub }],
+            [{ v: 'Recurring tools / month', s: BK_XS.label }, big(burn), { v: liveSubs.length + ' active subscriptions', s: BK_XS.sub }],
+            [{ v: 'Average days to sell', s: BK_XS.label }, { v: avgDays == null ? '—' : avgDays, s: Object.assign({}, BK_XS.big, { numFmt: '0' }) }, { v: 'bought to sold', s: BK_XS.sub }],
+            blank,
+            [{ v: 'Profit & loss', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }],
+            [T('Watch sales'), M(rev)],
+            [T('Cost of watches sold'), M(-cogs)],
+            [TOT('Gross profit'), TOT(gp, 'money'), TOT(rev ? gp / rev : null, 'pct')],
         ];
+        cats.forEach(function (c) { S.push([T('  ' + c), M(-byCat[c])]); });
+        S.push([TOT('Total overhead'), TOT(-opex, 'money'), TOT(rev ? opex / rev : null, 'pct')]);
+        S.push([TOT('Net profit'), TOT(net, 'money'), TOT(rev ? net / rev : null, 'pct')]);
+
+        // ── P&L by month ──
         var months = {};
         var mk = function (d) { return String(d).slice(0, 7); };
         sold.forEach(function (d) {
             var m = mk(d.date_sold); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0 };
-            months[m].r += bkNum(d.sell_total); months[m].c += bkNum(d.buy_total) + bkNum(d.other_costs); months[m].k++;
+            months[m].r += n(d.sell_total); months[m].c += n(d.buy_total) + n(d.other_costs); months[m].k++;
         });
         exp.forEach(function (e) {
             var m = mk(e.spent_on); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0 };
-            months[m].o += bkNum(e.amount);
+            months[m].o += n(e.amount);
         });
+        var PL = [
+            [{ v: 'Profit & loss by month', s: BK_XS.title }],
+            [{ v: label + '  ·  watches sold by sale date, overhead by spend date', s: BK_XS.sub }],
+            blank,
+            [H('Month'), H('Pieces', true), H('Revenue', true), H('Cost of goods', true), H('Gross profit', true), H('Margin', true), H('Overhead', true), H('Net profit', true)]
+        ];
+        var acc = { r: 0, c: 0, o: 0, k: 0 };
         Object.keys(months).sort().forEach(function (m) {
             var x = months[m], g = x.r - x.c;
-            S.push([BK_MON[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4), money(x.r), money(x.c), money(g), money(x.o), money(g - x.o), x.k]);
+            acc.r += x.r; acc.c += x.c; acc.o += x.o; acc.k += x.k;
+            PL.push([T(BK_MON[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4)), T(x.k), M(x.r), M(x.c), M(g), P(x.r ? g / x.r : null), M(x.o), M(g - x.o)]);
         });
+        PL.push([TOT('Total'), TOT(acc.k), TOT(acc.r, 'money'), TOT(acc.c, 'money'), TOT(acc.r - acc.c, 'money'), TOT(acc.r ? (acc.r - acc.c) / acc.r : null, 'pct'), TOT(acc.o, 'money'), TOT(acc.r - acc.c - acc.o, 'money')]);
 
         // ── Deals ──
-        var D = [['Ref', 'Status', 'Brand', 'Model', 'Reference', 'Year', 'Condition', 'Box', 'Papers',
-                  'Bought', 'Sold', 'Days held', 'Source', 'Buyer', 'Purchase price', 'Other costs',
-                  'Sale price', 'Profit', 'Margin', 'Payment in', 'Payment out', 'Notes']];
-        B.deals.slice().sort(function (a, b) { return (a.date_bought || '') < (b.date_bought || '') ? 1 : -1; })
+        var D = [
+            [{ v: 'Deals', s: BK_XS.title }],
+            [{ v: 'Every piece bought, newest first. Profit = sale price − purchase price − other costs.', s: BK_XS.sub }],
+            blank,
+            [H('Ref'), H('Status'), H('Watch'), H('Reference'), H('Serial'), H('Year'), H('Set'), H('Bought'), H('Sold'), H('Days', true),
+             H('Purchase', true), H('Other costs', true), H('Sale', true), H('Profit', true), H('Margin', true), H('Bought from'), H('Sold to'), H('Notes')]
+        ];
+        deals.sort(function (a, b) { return (a.date_bought || a.date_sold || '') < (b.date_bought || b.date_sold || '') ? 1 : -1; })
             .forEach(function (d) {
                 var p = bkProfit(d);
-                D.push([d.ref, d.sell_total == null ? 'In stock' : (d.status || 'Sold'), d.brand, d.model, d.reference,
-                    d.year, d.condition, d.box ? 'Yes' : '', d.papers ? 'Yes' : '',
-                    d.date_bought, d.date_sold, d.date_sold && d.date_bought ? bkDays(d.date_bought, d.date_sold) : '',
-                    d.source_seller, d.buyer, money(d.buy_total), money(d.other_costs),
-                    d.sell_total == null ? '' : money(d.sell_total), p == null ? '' : money(p), pct(bkMargin(d)),
-                    d.payment_in, d.payment_out, d.notes]);
+                var set = d.box && d.papers ? 'Full set' : d.box ? 'Box only' : d.papers ? 'Papers only' : (d.box === false && d.papers === false ? 'Watch only' : '');
+                D.push([T(d.ref), T(d.sell_total == null ? 'In stock' : 'Sold'), T([d.brand, d.model].filter(Boolean).join(' ')), T(d.reference), T(d.serial), T(d.year), T(set),
+                    T(d.date_bought), T(d.date_sold), T(d.date_sold && d.date_bought ? bkDays(d.date_bought, d.date_sold) : ''),
+                    M(d.buy_total), M(d.other_costs), d.sell_total == null ? T('') : M(d.sell_total), p == null ? T('') : M(p), P(bkMargin(d)),
+                    T(d.source_seller), T(d.buyer), T(d.notes)]);
             });
+        var sAll = deals.filter(function (d) { return d.sell_total != null; });
+        var sr = sAll.reduce(function (s, d) { return s + n(d.sell_total); }, 0);
+        var sp = sAll.reduce(function (s, d) { return s + bkProfit(d); }, 0);
+        D.push([TOT('Sold, all time'), TOT(sAll.length + ' pieces'), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''),
+            TOT(sAll.reduce(function (s, d) { return s + n(d.buy_total); }, 0), 'money'), TOT(sAll.reduce(function (s, d) { return s + n(d.other_costs); }, 0), 'money'),
+            TOT(sr, 'money'), TOT(sp, 'money'), TOT(sr ? sp / sr : null, 'pct'), TOT(''), TOT(''), TOT('')]);
 
         // ── Expenses ──
-        var byCat = {};
-        exp.forEach(function (e) { var c = e.category || 'Uncategorized'; byCat[c] = (byCat[c] || 0) + bkNum(e.amount); });
-        var E = [['Overhead by category', label], ['Category', 'Amount', 'Share']];
-        Object.keys(byCat).sort(function (a, b) { return byCat[b] - byCat[a]; }).forEach(function (c) {
-            E.push([c, money(byCat[c]), pct(opex ? byCat[c] / opex : null)]);
-        });
-        E.push(['Total', money(opex), pct(opex ? 1 : null)]);
-        E.push([]);
-        E.push(['Date', 'Category', 'Description', 'Vendor', 'Amount', 'Paid with', 'Deal', 'Deductible', 'Trip', 'Notes']);
+        var E = [
+            [{ v: 'Overhead', s: BK_XS.title }],
+            [{ v: label + '  ·  operating expenses only, watch purchases are on the Deals sheet', s: BK_XS.sub }],
+            blank,
+            [{ v: 'By category', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }],
+            [H('Category'), H('Amount', true), H('Share', true)]
+        ];
+        cats.forEach(function (c) { E.push([T(c), M(byCat[c]), P(opex ? byCat[c] / opex : null)]); });
+        E.push([TOT('Total'), TOT(opex, 'money'), TOT(opex ? 1 : null, 'pct')]);
+        E.push(blank);
+        E.push([{ v: 'Every expense', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
+        E.push([H('Date'), H('Category'), H('What'), H('Vendor'), H('Amount', true), H('Paid with'), H('Deal'), H('Deductible'), H('Notes')]);
         exp.forEach(function (e) {
-            E.push([e.spent_on, e.category, e.description, e.vendor, money(e.amount), e.payment_method,
-                    e.deal_ref, e.deductible ? 'Yes' : '', e.trip, e.notes]);
+            E.push([T(e.spent_on), T(e.category), T(e.description), T(e.vendor), M(e.amount), T(e.payment_method), T(e.deal_ref), T(e.deductible ? 'Yes' : ''), T(e.notes)]);
         });
 
         // ── Bank ──
         var bal = 0;
-        var K = [['Date', 'Description', 'Category', 'Type', 'Money in', 'Money out', 'Running balance']];
+        var K = [
+            [{ v: 'Bank register', s: BK_XS.title }],
+            [{ v: 'Chase ·1791  ·  ' + label + '  ·  every transaction with a running balance', s: BK_XS.sub }],
+            blank,
+            [H('Date'), H('Description'), H('Category'), H('Money in', true), H('Money out', true), H('Balance', true)]
+        ];
         bank.forEach(function (t) {
-            bal += bkNum(t.money_in) - bkNum(t.money_out);
-            K.push([t.posted_on, t.description, t.category || 'Uncategorized', t.txn_type,
-                    bkNum(t.money_in) ? money(t.money_in) : '', bkNum(t.money_out) ? money(t.money_out) : '', money(bal)]);
+            bal += n(t.money_in) - n(t.money_out);
+            K.push([T(t.posted_on), T(t.logged_as || t.description), T(t.category || 'Uncategorized'),
+                    n(t.money_in) ? M(t.money_in) : T(''), n(t.money_out) ? M(t.money_out) : T(''), M(bal)]);
         });
-        var inn = bank.reduce(function (s, t) { return s + bkNum(t.money_in); }, 0);
-        var out = bank.reduce(function (s, t) { return s + bkNum(t.money_out); }, 0);
-        K.push([]);
-        K.push(['Total', '', '', '', money(inn), money(out), money(inn - out)]);
+        var inn = bank.reduce(function (s, t) { return s + n(t.money_in); }, 0);
+        var out = bank.reduce(function (s, t) { return s + n(t.money_out); }, 0);
+        K.push([TOT('Total'), TOT(''), TOT(''), TOT(inn, 'money'), TOT(out, 'money'), TOT(inn - out, 'money')]);
+        var bkIn = {}, bkOut = {};
+        bank.forEach(function (t) {
+            var c = t.category || 'Uncategorized';
+            if (n(t.money_in)) bkIn[c] = (bkIn[c] || 0) + n(t.money_in);
+            if (n(t.money_out)) bkOut[c] = (bkOut[c] || 0) + n(t.money_out);
+        });
+        K.push(blank);
+        K.push([{ v: 'Money out by category', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
+        Object.keys(bkOut).sort(function (a, b) { return bkOut[b] - bkOut[a]; }).forEach(function (c) { K.push([T(c), M(bkOut[c])]); });
+        K.push(blank);
+        K.push([{ v: 'Money in by category', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
+        Object.keys(bkIn).sort(function (a, b) { return bkIn[b] - bkIn[a]; }).forEach(function (c) { K.push([T(c), M(bkIn[c])]); });
 
         // ── Subscriptions ──
-        var U = [['Tool', 'Purpose', 'Monthly cost', 'Billing', 'Paid with', 'Status', 'Notes']];
-        B.subscriptions.slice().sort(function (a, b) { return bkNum(b.monthly_cost) - bkNum(a.monthly_cost); })
+        var U = [
+            [{ v: 'Recurring tools', s: BK_XS.title }],
+            [{ v: 'Monthly software and services. Not scoped by period.', s: BK_XS.sub }],
+            blank,
+            [H('Tool'), H('Purpose'), H('Per month', true), H('Billing'), H('Paid with'), H('Status'), H('Notes')]
+        ];
+        B.subscriptions.slice().sort(function (a, b) { return (a.status === 'Cancel') - (b.status === 'Cancel') || n(b.monthly_cost) - n(a.monthly_cost); })
             .forEach(function (x) {
-                U.push([x.name, x.purpose, money(x.monthly_cost), x.billing, x.payment,
-                        x.status === 'Cancel' ? 'Cancelled' : 'Active', x.notes]);
+                U.push([T(x.name), T(x.purpose), M(x.monthly_cost), T(x.billing), T(x.payment), T(x.status === 'Cancel' ? 'Cancelled' : 'Active'), T(x.notes)]);
             });
-        U.push([]); U.push(['Active per month', '', money(burn)]);
+        U.push([TOT('Active per month'), TOT(''), TOT(burn, 'money'), TOT(''), TOT(''), TOT(''), TOT('')]);
 
         // ── Capital ──
-        var C = [['Date', 'Direction', 'Amount', 'Description', 'Notes']];
+        var C = [
+            [{ v: 'Capital', s: BK_XS.title }],
+            [{ v: 'Money put into or taken out of the business by owners and backers.', s: BK_XS.sub }],
+            blank,
+            [H('Date'), H('Direction'), H('Amount', true), H('What'), H('Notes')]
+        ];
         (B.capital || []).slice().sort(function (a, b) { return a.moved_on < b.moved_on ? -1 : 1; })
-            .forEach(function (c) { C.push([c.moved_on, c.direction, money(c.amount), c.description, c.notes]); });
+            .forEach(function (c) { C.push([T(c.moved_on), T(c.direction), M(c.amount), T(c.description), T(c.notes)]); });
+        C.push([TOT('Net contributed'), TOT(''), TOT(capIn, 'money'), TOT(''), TOT('')]);
 
         var wb = XLSX.utils.book_new();
-        var add = function (name, rows, widths) {
+        var add = function (name, rows, widths, headerRow) {
             var ws = XLSX.utils.aoa_to_sheet(rows);
+            // Styled cells are passed as objects; make sure every one carries a
+            // type, or Excel treats the text ones as empty.
+            Object.keys(ws).forEach(function (k) {
+                var c = ws[k];
+                if (k[0] === '!' || !c || typeof c !== 'object') return;
+                if (!c.t) c.t = typeof c.v === 'number' ? 'n' : 's';
+                if (c.v == null) c.v = '';
+            });
             ws['!cols'] = widths.map(function (w) { return { wch: w }; });
+            ws['!rows'] = [{ hpt: 24 }];
+            if (headerRow != null) {
+                ws['!freeze'] = { xSplit: 0, ySplit: headerRow + 1 };
+                ws['!views'] = [{ state: 'frozen', ySplit: headerRow + 1 }];
+                var ref = XLSX.utils.decode_range(ws['!ref']);
+                ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: headerRow, c: 0 }, e: { r: ref.e.r, c: ref.e.c } }) };
+            }
             XLSX.utils.book_append_sheet(wb, ws, name);
         };
-        add('Summary', S, [30, 16, 14, 14, 14, 14, 12]);
-        add('Deals', D, [13, 10, 16, 18, 14, 7, 12, 6, 7, 11, 11, 9, 18, 18, 14, 12, 14, 14, 9, 12, 12, 30]);
-        add('Expenses', E, [12, 18, 34, 20, 14, 12, 12, 10, 12, 30]);
-        add('Bank', K, [12, 44, 18, 10, 14, 14, 16]);
-        add('Subscriptions', U, [22, 28, 14, 10, 14, 10, 30]);
-        add('Capital', C, [12, 10, 14, 34, 30]);
+        add('Summary', S, [30, 18, 34]);
+        add('P&L by month', PL, [14, 8, 14, 14, 14, 9, 14, 14], 3);
+        add('Deals', D, [13, 9, 32, 12, 11, 6, 10, 11, 11, 6, 13, 12, 13, 13, 8, 26, 26, 50], 3);
+        add('Overhead', E, [14, 24, 48, 22, 13, 11, 13, 10, 40]);
+        add('Bank', K, [12, 52, 24, 13, 13, 14], 3);
+        add('Subscriptions', U, [24, 26, 12, 10, 12, 10, 36], 3);
+        add('Capital', C, [12, 10, 13, 44, 32], 3);
         return wb;
     }
 

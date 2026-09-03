@@ -1,3 +1,22 @@
+// Retry an <img> that failed to load, up to four times with growing delays.
+// Storage rate-limits (429) and flaky mobile radios both clear within seconds;
+// a permanent 404 gives up quietly after the last attempt.
+window.dbhImgRetry = function (el) {
+  var n = Number(el.dataset.retry || 0);
+  if (n >= 4) { el.onerror = null; el.style.opacity = '0'; return; }
+  el.dataset.retry = n + 1;
+  var wait = [1200, 3000, 7000, 15000][n] + Math.random() * 800;
+  setTimeout(function () {
+    var src = el.getAttribute('src'), ss = el.getAttribute('srcset');
+    var bust = (src.indexOf('?') > -1 ? '&' : '?') + 'r=' + (n + 1);
+    if (ss) el.setAttribute('srcset', ss.split(',').map(function (part) {
+      var bits = part.trim().split(/\s+/);
+      return bits[0] + (bits[0].indexOf('?') > -1 ? '&' : '?') + 'r=' + (n + 1) + (bits[1] ? ' ' + bits[1] : '');
+    }).join(', '));
+    el.setAttribute('src', src + bust);
+  }, wait);
+};
+
 /* Prime Time Miami — Buy page: functional facet filters (dealer-style:
    Brand / Model / Case Material / Price Range / Year / Condition),
    asymmetric grid render, and scroll parallax on cards.
@@ -506,10 +525,13 @@
         ? ' srcset="' + escf(abs(w.imageThumb)) + ' 300w, ' + escf(abs(w.imageMedium)) + ' 600w, ' + escf(imgSrc) + ' 900w"' +
           ' sizes="(max-width: 640px) 45vw, (max-width: 1100px) 30vw, 300px"'
         : '';
+      // Supabase storage answers a burst of thumbnail requests with the odd
+      // 429, which the browser renders as a broken-image glyph. A refused
+      // image is not a missing image, so retry it with backoff (see dbhImgRetry).
       var img = imgSrc
         ? '<img src="' + escf(w.imageThumb ? abs(w.imageThumb) : imgSrc) + '"' + srcset +
           ' data-full="' + escf(imgSrc) + '"' +
-          ' width="300" height="300" alt=""' + eager + '>'
+          ' width="300" height="300" alt="" decoding="async" onerror="dbhImgRetry(this)"' + eager + '>'
         : '<span class="ph">DIALED BY H</span>';
       art.innerHTML =
         '<a href="/watch/' + (w.slug || '') + '" aria-label="' + title.replace(/"/g, '') + '">' +

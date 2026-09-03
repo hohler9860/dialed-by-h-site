@@ -80,6 +80,70 @@
     {
       "source": "/sitemap.xml",
       "destination": "/api/get-inventory?sitemap=1"
+    },
+    {
+      "source": "/rolex",
+      "destination": "/api/get-inventory?brand=rolex"
+    },
+    {
+      "source": "/rolex/",
+      "destination": "/api/get-inventory?brand=rolex"
+    },
+    {
+      "source": "/patek-philippe",
+      "destination": "/api/get-inventory?brand=patek-philippe"
+    },
+    {
+      "source": "/patek-philippe/",
+      "destination": "/api/get-inventory?brand=patek-philippe"
+    },
+    {
+      "source": "/audemars-piguet",
+      "destination": "/api/get-inventory?brand=audemars-piguet"
+    },
+    {
+      "source": "/audemars-piguet/",
+      "destination": "/api/get-inventory?brand=audemars-piguet"
+    },
+    {
+      "source": "/richard-mille",
+      "destination": "/api/get-inventory?brand=richard-mille"
+    },
+    {
+      "source": "/richard-mille/",
+      "destination": "/api/get-inventory?brand=richard-mille"
+    },
+    {
+      "source": "/vacheron-constantin",
+      "destination": "/api/get-inventory?brand=vacheron-constantin"
+    },
+    {
+      "source": "/vacheron-constantin/",
+      "destination": "/api/get-inventory?brand=vacheron-constantin"
+    },
+    {
+      "source": "/cartier",
+      "destination": "/api/get-inventory?brand=cartier"
+    },
+    {
+      "source": "/cartier/",
+      "destination": "/api/get-inventory?brand=cartier"
+    },
+    {
+      "source": "/fp-journe",
+      "destination": "/api/get-inventory?brand=fp-journe"
+    },
+    {
+      "source": "/fp-journe/",
+      "destination": "/api/get-inventory?brand=fp-journe"
+    },
+    {
+      "source": "/a-lange-sohne",
+      "destination": "/api/get-inventory?brand=a-lange-sohne"
+    },
+    {
+      "source": "/a-lange-sohne/",
+      "destination": "/api/get-inventory?brand=a-lange-sohne"
     }
   ],
   "redirects": [

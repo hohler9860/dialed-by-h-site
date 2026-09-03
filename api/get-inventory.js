@@ -13,6 +13,7 @@ const {
 } = require('./_pieces');
 const { renderWatchPage, renderSitemap, fourOhFour } = require('./_render');
 const { processWatchImage, variantPath } = require('../lib/watch-image');
+const { renderBrandPage, BRAND_SLUGS } = require('./_brand-render');
 
 const BUCKET = 'pieces';
 
@@ -278,6 +279,21 @@ module.exports = async (req, res) => {
             console.error('[get-inventory:sitemap] error:', err && err.message);
             res.setHeader('Content-Type', 'application/xml; charset=utf-8');
             return res.status(200).send(renderSitemap([]));
+        }
+    }
+
+    // ── Brand landing page (HTML): /rolex, /patek-philippe, ... ──
+    if (q.brand) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        try {
+            const pieces = await fetchAllPieces();
+            const html = renderBrandPage(String(q.brand).toLowerCase(), pieces);
+            if (!html) return res.status(404).send(fourOhFour());
+            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
+            return res.status(200).send(html);
+        } catch (err) {
+            console.error('[get-inventory:brand] error:', err && err.message);
+            return res.status(500).send(fourOhFour());
         }
     }
 

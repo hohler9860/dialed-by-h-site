@@ -487,6 +487,18 @@ function renderSitemap(pieces) {
         { loc: '/about/', changefreq: 'monthly', priority: '0.8' },
         { loc: '/process/', changefreq: 'monthly', priority: '0.7' },
         { loc: '/boston', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/rolex', changefreq: 'daily', priority: '0.8' },
+        { loc: '/patek-philippe', changefreq: 'daily', priority: '0.8' },
+        { loc: '/audemars-piguet', changefreq: 'daily', priority: '0.8' },
+        { loc: '/richard-mille', changefreq: 'daily', priority: '0.8' },
+        { loc: '/vacheron-constantin', changefreq: 'daily', priority: '0.8' },
+        { loc: '/cartier', changefreq: 'daily', priority: '0.8' },
+        { loc: '/fp-journe', changefreq: 'daily', priority: '0.8' },
+        { loc: '/a-lange-sohne', changefreq: 'daily', priority: '0.8' },
+        { loc: '/sell-rolex-boston', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/rolex-dealer-boston', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/buy-rolex-boston', changefreq: 'monthly', priority: '0.7' },
+        { loc: '/patek-philippe-boston', changefreq: 'monthly', priority: '0.7' },
         { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
     ];
     const tag = ({ loc, changefreq, priority }) =>

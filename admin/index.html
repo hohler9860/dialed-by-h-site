@@ -953,9 +953,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var opex = BOOKS.expenses.filter(function (e) { return inRange(e.spent_on); })
             .reduce(function (s, e) { return s + bkNum(e.amount); }, 0);
         var net = gp - opex;
-        var avgDays = sold.length
-            ? Math.round(sold.reduce(function (s, d) { return s + bkDays(d.date_bought, d.date_sold); }, 0) / sold.length)
-            : null;
+        // Median, not mean: one piece that sat for months would otherwise
+        // swamp five that flipped in a week.
+        var avgDays = bkMedianDays(sold);
         var stock = held.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
 
         // Tile colour is the one rule of the page: green in, red out.
@@ -1014,7 +1014,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 kpi('Net profit', 'net', money0, cur.net < 0 ? 'neg' : 'pos', cur.net < 0 ? 'overhead ahead of margin' : 'after overhead') +
                 '<div class="kpi"><div class="k">Cash on hand</div><div class="v ' + (BOOKS.cash < 0 ? 'neg' : 'flat') + '">' + bkMoney(BOOKS.cash) + '</div>' +
                     '<div class="cmp"><span><b>' + (held.length ? bkMoney(stock) : '—') + '</b>' + (held.length ? held.length + ' in stock at cost' : 'nothing in stock') + '</span></div></div>' +
-                '<div class="kpi"><div class="k">Avg days to sell</div><div class="v flat">' + (avgDays == null ? '—' : avgDays) + '</div>' +
+                '<div class="kpi"><div class="k">Median days to sell</div><div class="v flat">' + (avgDays == null ? '—' : avgDays) + '</div>' +
                     '<div class="cmp"><span><b>' + (sold.length ? bkPct(gp / (rev || 1)) : '—') + '</b>blended margin</span></div></div>' +
             '</div>' +
 
@@ -1154,6 +1154,14 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     // ── metrics for the KPI cards ──
+    function bkMedianDays(sold) {
+        var v = sold.filter(function (d) { return d.date_bought && d.date_sold; })
+            .map(function (d) { return bkDays(d.date_bought, d.date_sold); })
+            .sort(function (a, b) { return a - b; });
+        if (!v.length) return null;
+        var m = v.length >> 1;
+        return v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2);
+    }
     function bkMetrics(inR) {
         var sold = BOOKS.deals.filter(function (d) { return d.sell_total != null && inR(d.date_sold); });
         var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
@@ -2061,9 +2069,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var opex = exp.reduce(function (s, e) { return s + n(e.amount); }, 0);
         var net = gp - opex;
         var stock = held.reduce(function (s, d) { return s + n(d.buy_total) + n(d.other_costs); }, 0);
-        var avgDays = sold.length
-            ? Math.round(sold.reduce(function (s, d) { return s + bkDays(d.date_bought, d.date_sold); }, 0) / sold.length)
-            : null;
+        // Median, not mean: one piece that sat for months would otherwise
+        // swamp five that flipped in a week.
+        var avgDays = bkMedianDays(sold);
         var liveSubs = B.subscriptions.filter(function (x) { return x.status !== 'Cancel'; });
         var burn = liveSubs.reduce(function (s, x) { return s + n(x.monthly_cost); }, 0);
         var capIn = (B.capital || []).reduce(function (s, c) { return s + (String(c.direction).toLowerCase() === 'in' ? n(c.amount) : -n(c.amount)); }, 0);
@@ -2087,7 +2095,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             [{ v: 'Inventory at cost', s: BK_XS.label }, big(stock), { v: held.length + ' piece' + (held.length === 1 ? '' : 's') + ' held', s: BK_XS.sub }],
             [{ v: 'Capital contributed', s: BK_XS.label }, big(capIn), { v: 'owner and trust money in, net', s: BK_XS.sub }],
             [{ v: 'Recurring tools / month', s: BK_XS.label }, big(burn), { v: liveSubs.length + ' active subscriptions', s: BK_XS.sub }],
-            [{ v: 'Average days to sell', s: BK_XS.label }, { v: avgDays == null ? '—' : avgDays, s: Object.assign({}, BK_XS.big, { numFmt: '0' }) }, { v: 'bought to sold', s: BK_XS.sub }],
+            [{ v: 'Median days to sell', s: BK_XS.label }, { v: avgDays == null ? '—' : avgDays, s: Object.assign({}, BK_XS.big, { numFmt: '0' }) }, { v: 'bought to sold', s: BK_XS.sub }],
             blank,
             [{ v: 'Profit & loss', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }],
             [T('Watch sales'), M(rev)],

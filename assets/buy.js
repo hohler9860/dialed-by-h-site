@@ -449,6 +449,11 @@ window.dbhImgRetry = function (el) {
   // (its lazy-load margin on a slow connection is 2500px) alongside the eight
   // that decide LCP. Chunks after the first are still built in one go.
   var FIRST = 12;
+  // Tiles fetched at high priority. The grid is two columns at 820px and
+  // under (see .pt-grid12), so the first viewport holds two rows at most;
+  // eight high-priority tiles there meant four off-screen images sharing the
+  // radio equally with the one that becomes LCP. Wider layouts keep eight.
+  var HIGH = window.matchMedia && window.matchMedia('(max-width: 820px)').matches ? 4 : 8;
   var renderList = [];
   var renderedCount = 0;
   var sentinel = null;
@@ -546,7 +551,7 @@ window.dbhImgRetry = function (el) {
       var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
       var abs = function (u) { return /^https?:\/\//i.test(u) || u.charAt(0) === '/' ? u : '/img?src=' + encodeURIComponent(u); };
       var imgSrc = w.image ? abs(w.image) : '';
-      var eager = i < 8 ? ' fetchpriority="high"' : ' loading="lazy"';
+      var eager = i < HIGH ? ' fetchpriority="high"' : ' loading="lazy"';
       // Tiles render around 300px, so serve the 300px variant and let the
       // browser step up to 600/900 only on wide or retina screens. Previously
       // every tile downloaded the full 900px file - the bulk of /buy/'s LCP.

@@ -443,28 +443,59 @@ window.dbhImgRetry = function (el) {
   // janks the page. Render in chunks and append the next chunk as you approach
   // the bottom (sentinel + IntersectionObserver).
   var CHUNK = 60;
+  // The first screen is a dozen tiles at most. Build those synchronously so
+  // their image requests go out at once, and hand the rest of the first chunk
+  // to an idle callback: the browser would otherwise queue ~30 lazy thumbnails
+  // (its lazy-load margin on a slow connection is 2500px) alongside the eight
+  // that decide LCP. Chunks after the first are still built in one go.
+  var FIRST = 12;
   var renderList = [];
   var renderedCount = 0;
   var sentinel = null;
+  var chunkToken = 0;
+  var later = window.requestIdleCallback
+    ? function (fn) { window.requestIdleCallback(fn, { timeout: 400 }); }
+    : function (fn) { setTimeout(fn, 0); };
 
   function appendChunk() {
-    var slice = renderList.slice(renderedCount, renderedCount + CHUNK);
+    var start = renderedCount;
+    var slice = renderList.slice(start, start + CHUNK);
     renderedCount += slice.length;
-    slice.forEach(function (w, k) { grid.appendChild(buildCard(w, renderedCount - slice.length + k)); });
-    if (sentinel) sentinel.remove();
-    if (renderedCount < renderList.length) {
-      sentinel = document.createElement('div');
-      sentinel.style.cssText = 'height:1px;grid-column:1/-1';
-      grid.appendChild(sentinel);
-      var io = new IntersectionObserver(function (es) {
-        if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); appendChunk(); }
-      }, { rootMargin: '1200px' });
-      io.observe(sentinel);
+    var token = ++chunkToken;
+    var place = function (from, to) {
+      for (var k = from; k < to; k++) grid.appendChild(buildCard(slice[k], start + k));
+    };
+    var finish = function () {
+      if (sentinel) sentinel.remove();
+      if (renderedCount < renderList.length) {
+        sentinel = document.createElement('div');
+        sentinel.style.cssText = 'height:1px;grid-column:1/-1';
+        grid.appendChild(sentinel);
+        var io = new IntersectionObserver(function (es) {
+          if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); appendChunk(); }
+        }, { rootMargin: '1200px' });
+        io.observe(sentinel);
+      }
+      revealCards();
+    };
+    var head = start === 0 ? Math.min(FIRST, slice.length) : slice.length;
+    place(0, head);
+    if (head < slice.length) {
+      revealCards();
+      later(function () {
+        // A filter or search re-rendered the grid in the meantime; this
+        // batch belongs to a list that is no longer on screen.
+        if (token !== chunkToken) return;
+        place(head, slice.length);
+        finish();
+      });
+    } else {
+      finish();
     }
-    revealCards();
   }
 
   function render() {
+    chunkToken++; // cancel any deferred batch from the previous render
     if (!celebsMode()) currentCeleb = null;
     if (celebsMode() && !currentCeleb) {
       // celebrity index: celeb cards live where the watches usually are
@@ -604,10 +635,29 @@ window.dbhImgRetry = function (el) {
   })();
 
   count.textContent = 'Loading inventory\u2026';
-  fetch('/api/get-inventory')
+  // buy/index.html kicks the request off from <head>, before the stylesheet
+  // and this file have even arrived, and parks the promise on window. Fall
+  // back to fetching here if that inline script is ever missing.
+  var INV_URL = '/api/get-inventory?grid=1';
+  (window.dbhInventory || fetch(INV_URL))
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      INV = (Array.isArray(data) ? data : (data.pieces || [])).filter(function (w) { return w.image; });
+      // ?grid=1 sends one short storage path per piece (i) plus a cutout hint
+      // (c) instead of five full URLs; rebuild the fields the grid reads from
+      // them. The plain array form is still accepted so the old payload works.
+      var base = (data && data.base) || '';
+      var variant = function (u, s) { return u.replace(/\.webp$/, '-' + s + '.webp'); };
+      var full = function (p) { return /^https?:\/\//i.test(p) ? p : base + p; };
+      var list = Array.isArray(data) ? data : ((data && data.pieces) || []);
+      list.forEach(function (w) {
+        if (!w.i) return;
+        var abs = full(w.i);
+        w.image = abs;
+        w.imageThumb = variant(abs, 'thumb');
+        w.imageMedium = variant(abs, 'medium');
+        w.imageCutout = w.c === 1 ? variant(abs, 'cutout') : (w.c ? full(w.c) : abs);
+      });
+      INV = list.filter(function (w) { return w.image; });
       // canonicalize case materials so the filter shows clean buckets
       INV.forEach(function (w) {
         var m = (w.caseMaterial || '').toLowerCase();

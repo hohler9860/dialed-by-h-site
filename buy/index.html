@@ -17,6 +17,15 @@
 <meta property="og:image" content="https://www.dialedbyhenry.com/images/og-share-v2.png">
 <meta property="og:site_name" content="Dialed By H">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin><link rel="dns-prefetch" href="https://untnrofsnmoyxdidxbdj.supabase.co">
+<script>
+// Start the inventory request now, before the stylesheet below can hold up
+// script execution and before buy.js has even been fetched. buy.js picks the
+// promise up from window; the no-op catch only keeps a network failure from
+// logging as unhandled before buy.js attaches its own handler.
+window.dbhInventory = fetch('/api/get-inventory?grid=1');
+window.dbhInventory.catch(function () {});
+</script>
 <link rel="stylesheet" href="/wp-content/themes/avw/public/index.css">
 <style id="primetime-overrides">
 :root{--pt-mono:"Tronica Mono",ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;--pt-serif:"Roslindale Display Condensed",Georgia,serif}
@@ -230,17 +239,23 @@ a.pt-cta{text-decoration:none;display:inline-block}
 </style>
 <script>
 if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
+// Meta pixel. The stub and its queue are set up now, exactly as the standard
+// snippet does, so fbq('init') / fbq('track') below are recorded immediately.
+// Only the 108KB fbevents.js download is held until the page has loaded (or
+// four seconds, whichever comes first): on a phone it was sharing the radio
+// with the inventory JSON and the first tile images that decide LCP.
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
+var go=function(){if(go.done)return;go.done=!0;t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)};
+f.addEventListener('load',go);setTimeout(go,4000)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '798516899968965');
 fbq('track', 'PageView');
 }
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
-<link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin><link rel="dns-prefetch" href="https://untnrofsnmoyxdidxbdj.supabase.co">
 </head>
 <body class="bg-beige" style="background:#fff">
 <header class="header sticky top-0 z-20 text-navy bg-beige"><div class="container"><nav class="header__bar w-full flex justify-between items-center text-10 relative">

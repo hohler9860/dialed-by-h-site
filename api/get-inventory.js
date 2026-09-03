@@ -464,6 +464,37 @@ module.exports = async (req, res) => {
             })));
         }
 
+        // ?grid=1 — the /buy/ grid, and nothing else.
+        //
+        // The default list is 2MB raw (145KB on the wire) for 1737 pieces, and
+        // over half of that is five copies of the same storage URL per piece
+        // (image, thumb, medium, cutout, cutout thumb). The grid cannot paint a
+        // single tile until that whole body has arrived, so it was 63% of the
+        // page's mobile LCP. Send one short path per piece instead and let the
+        // browser derive the variants by the same naming convention mapRow uses.
+        // Fields the grid never reads (id, addedAt, bracelet, set) are dropped,
+        // and empty values are omitted; buy.js already treats missing as empty.
+        if (q.grid) {
+            const BASE = `${PIECES_URL}/storage/v1/object/public/${BUCKET}/`;
+            const rel = (u) => (u && u.startsWith(BASE)) ? u.slice(BASE.length) : u;
+            const KEEP = ['slug', 'brand', 'model', 'name', 'nickname', 'ref', 'details',
+                'year', 'condition', 'caseMaterial', 'dialColor', 'caseSize'];
+            const out = pieces.filter(w => w.image).map(w => {
+                const o = {};
+                for (const k of KEEP) if (w[k]) o[k] = w[k];
+                if (w.collections && w.collections.length) o.collections = w.collections;
+                if (w.celebs && w.celebs.length) o.celebs = w.celebs;
+                o.i = rel(w.image);
+                // c: 1 means "the -cutout sibling of i"; a string is an explicit
+                // path; absent means the cutout is the standard image itself.
+                if (w.imageCutout && w.imageCutout !== w.image) {
+                    o.c = w.imageCutout === w.image.replace(/\.webp$/, '-cutout.webp') ? 1 : rel(w.imageCutout);
+                }
+                return o;
+            });
+            return res.status(200).json({ base: BASE, pieces: out });
+        }
+
         if (q.id) {
             const piece = pieces.find(w => w.id === q.id);
             if (!piece) return res.status(404).json({ error: 'Piece not found' });

@@ -269,6 +269,8 @@
     .io-go{margin-top:34px;width:100%}
     .io-hint{font-size:10px;letter-spacing:.1em;color:#6f6f6f;margin:12px 0 0;line-height:1.7}
     .io-err{font-size:11px;letter-spacing:.06em;color:#b3261e;margin:14px 0 0;min-height:1em}
+    /* the page-level .bos p rule paints paragraphs soft grey; inside the black panel they must be white */
+    .io-result p{color:#fff;max-width:none}
     /* result panel states */
     .io-result .io-meta{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.4);margin:0 0 22px}
     .io-result .io-num{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 120;letter-spacing:-.03em;font-size:clamp(46px,6vw,88px);line-height:.95;margin:0}
@@ -644,6 +646,15 @@
         }).catch(function(x){ le.textContent=x.message||'Could not save that. Text me instead.'; })
         .finally(function(){ $('io-lock-go').disabled=false; $('io-lock-go').textContent='Lock in this offer'; });
       });
+
+      /* Deep link: /instant-offer/?ref=126610LN&dial=black prefills and prices
+         straight away. Lets a text or an Instagram link land on a number. */
+      (function(){
+        var p=new URLSearchParams(location.search); var ref=p.get('ref'); if(!ref) return;
+        $('io-ref').value=ref; if(p.get('dial')) $('io-dial').value=p.get('dial');
+        if(p.get('brand')) $('io-brand').value=p.get('brand');
+        setTimeout(function(){ form.requestSubmit ? form.requestSubmit() : $('io-go').click(); }, 300);
+      })();
 
       /* Reveal on scroll, same observer as the other subpages. */
       var io=new IntersectionObserver(function(es){

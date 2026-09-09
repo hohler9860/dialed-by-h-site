@@ -211,6 +211,17 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: "Server misconfigured" });
   }
 
+  // Instant Offer rides on this function because the project is at Vercel's
+  // 12-function cap. It has its own rate limits and validation in lib/.
+  if (req.body && req.body.action === "instant-offer") {
+    try {
+      return await require("../lib/instant-offer.js").handle(req, res);
+    } catch (err) {
+      console.error("[instant-offer] UNHANDLED:", err.message);
+      return res.status(500).json({ error: "Could not price this right now. Text me and I will quote it by hand." });
+    }
+  }
+
   // Honeypot: real users never see or fill this field. Bots fill every input.
   // Return a fake success so the bot thinks it worked and moves on — no DB row,
   // no emails, nothing happens.

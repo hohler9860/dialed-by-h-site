@@ -266,6 +266,12 @@
     .io-thumbs div{width:56px;height:56px;border:1px solid rgba(10,10,10,.14);background-size:cover;background-position:center;position:relative}
     .io-thumbs div.is-up::after{content:"";position:absolute;right:3px;bottom:3px;width:8px;height:8px;background:#0a0a0a;border-radius:50%}
     .io-thumbs div.is-err{opacity:.35}
+    /* photo check strip: what the photos read as, and whether it matches the typed reference */
+    .io-photo{margin:14px 0 0;padding:12px 14px;border:1px solid rgba(10,10,10,.14);font-size:11px;letter-spacing:.04em;line-height:1.75;color:#0a0a0a;max-width:none}
+    .io-photo.is-warn{border-color:#b3261e;color:#b3261e}
+    .io-photo.is-busy{color:#6f6f6f}
+    .io-photo b{font-weight:700}
+    .io-photo button{background:none;border:none;border-bottom:1px solid currentColor;color:inherit;font:inherit;letter-spacing:.1em;text-transform:uppercase;font-size:10px;padding:0 0 1px;margin-left:8px;cursor:pointer}
     .io-go{margin-top:34px;width:100%}
     .io-hint{font-size:10px;letter-spacing:.1em;color:#6f6f6f;margin:12px 0 0;line-height:1.7}
     .io-err{font-size:11px;letter-spacing:.06em;color:#b3261e;margin:14px 0 0;min-height:1em}
@@ -371,6 +377,7 @@
                                     <input id="io-files" type="file" accept="image/*" multiple>
                                 </div>
                                 <div class="io-thumbs" id="io-thumbs"></div>
+                                <p class="io-photo" id="io-photo" hidden aria-live="polite"></p>
                             </div>
                             <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
                             <button type="submit" class="dbh-btn dbh-btn--solid io-go" id="io-go">Get my instant offer</button>
@@ -561,12 +568,87 @@
         };
       }
 
+      /* ---- photo check ----
+         Runs once every upload has settled. Reads the photos with the same
+         model the pipeline uses on dealer listings, confirms or corrects the
+         reference, and fills dial and brand from what it sees. */
+      var photoStrip=$('io-photo'), photoRead=null, uploading=0, photoTimer=null, photoBusy=null;
+      function label(r){
+        var dial=r.dial_color?String(r.dial_color).toLowerCase()+' dial':null;
+        var bits=[r.brand,r.model,r.reference,dial,r.bezel?String(r.bezel).toLowerCase()+' bezel':null,r.bracelet?String(r.bracelet).toLowerCase():null,r.case_metal?String(r.case_metal).toLowerCase().replace(/_/g,' '):null].filter(Boolean);
+        return bits.join(', ');
+      }
+      function schedulePhotoCheck(){ clearTimeout(photoTimer); photoTimer=setTimeout(function(){ if(!uploading && photos.length) photoCheck(); }, 700); }
+      function photoCheck(){
+        if(photoBusy) return photoBusy;
+        photoStrip.hidden=false; photoStrip.className='io-photo is-busy'; photoStrip.textContent='Reading your photos...';
+        photoBusy=post({op:'photo-read',photos:photos,reference:$('io-ref').value.trim()}).then(function(r){
+          photoRead=r; renderPhoto(r); return r;
+        }).catch(function(x){ photoStrip.className='io-photo'; photoStrip.textContent='Could not read the photos this time. The number still works off the reference.'; return null; })
+        .finally(function(){ photoBusy=null; });
+        return photoBusy;
+      }
+      function renderPhoto(r){
+        var rd=r.read||{}; photoStrip.className='io-photo'; photoStrip.textContent='';
+        var typed=$('io-ref').value.trim();
+        if(r.status==='not_a_watch'){ photoStrip.classList.add('is-warn'); photoStrip.textContent='Those photos do not look like a wristwatch. Add a clear shot of the dial and the warranty card.'; return; }
+        if(r.status==='error'||r.status==='none'){ photoStrip.hidden=true; return; }
+        // fill what the seller left blank
+        if(!$('io-dial').value.trim() && rd.dial_color){ $('io-dial').value=String(rd.dial_color).toLowerCase(); }
+        if(!$('io-brand').value && rd.brand){ var o=[].slice.call($('io-brand').options).find(function(o){return o.text.toLowerCase()===String(rd.brand).toLowerCase()}); if(o) $('io-brand').value=o.value; }
+        var seen=label(rd)||'a watch';
+        function money(n){return '$'+Math.round(Number(n)).toLocaleString('en-US')}
+        function candidateButtons(list, prefix){
+          photoStrip.appendChild(document.createTextNode(' '+prefix+' '));
+          (list||[]).forEach(function(c){
+            var b=document.createElement('button'); b.type='button';
+            b.textContent=c.ref_core+' ('+c.n+' listings, ~'+money(c.median)+')';
+            b.addEventListener('click',function(){ $('io-ref').value=c.ref_core; photoRead=null; err.textContent=''; photoStrip.hidden=true; form.requestSubmit ? form.requestSubmit() : $('io-go').click(); });
+            photoStrip.appendChild(b);
+          });
+        }
+        if(r.status==='candidates'){
+          photoStrip.innerHTML='<b>Photos read as</b> '+esc(seen)+'. No reference visible, so here is what the dealer market calls a watch that looks like this. Pick yours:';
+          candidateButtons(r.candidates,''); return;
+        }
+        if(r.status==='mismatch_attributes'){
+          photoStrip.classList.add('is-warn');
+          photoStrip.innerHTML='<b>Check the reference.</b> You typed '+esc(typed)+', but the photos do not look like one: '+esc((r.conflicts||[]).join('; '))+'.';
+          if(r.candidates&&r.candidates.length) candidateButtons(r.candidates,'Closer matches:');
+          return;
+        }
+        if(r.status==='consistent'){
+          photoStrip.innerHTML='<b>Photos line up.</b> They read as '+esc(seen)+', which is what the dealer market lists under '+esc(typed)+'. No reference was visible in the photos themselves.'+(rd.condition_notes?' Noted: '+esc(rd.condition_notes):'');
+          return;
+        }
+        if(r.status==='match'){
+          photoStrip.innerHTML='<b>Photos match.</b> They read as '+esc(seen)+(rd.confidence?' ('+rd.confidence+'% sure)':'')+'.'+(rd.condition_notes?' Noted: '+esc(rd.condition_notes):'');
+        } else if(r.status==='read'){
+          $('io-ref').value=rd.reference||'';
+          photoStrip.innerHTML='<b>Read from your photos:</b> '+esc(seen)+'. Reference filled in for you. Change it if that is wrong.';
+        } else if(r.status==='mismatch'){
+          photoStrip.classList.add('is-warn');
+          photoStrip.innerHTML='<b>Check the reference.</b> You typed '+esc(typed)+' but the photos read as '+esc(seen)+'.';
+          var b=document.createElement('button'); b.type='button'; b.textContent='Use '+rd.reference; b.addEventListener('click',function(){ $('io-ref').value=rd.reference; photoRead.status='match'; renderPhoto(photoRead); if(!$('io-offer').hidden) form.requestSubmit ? form.requestSubmit() : $('io-go').click(); });
+          photoStrip.appendChild(b);
+        } else {
+          photoStrip.innerHTML='<b>Photos read as</b> '+esc(seen)+', but no reference was visible. Add a shot of the warranty card or the engraving between the lugs to confirm.';
+        }
+      }
+      function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+
       /* ---- quote ---- */
       form.addEventListener('submit',function(e){
         e.preventDefault(); err.textContent='';
         if(form.website.value) return;                       // honeypot
         var f=fields();
-        if(f.reference.length<3){err.textContent='Enter the reference number to get a number.';$('io-ref').focus();return}
+        if(f.reference.length<3 && photos.length && !photoRead){
+          // photos but no reference yet: read them first, then price
+          $('io-go').disabled=true; $('io-go').textContent='Reading photos...';
+          photoCheck().then(function(){ $('io-go').disabled=false; $('io-go').textContent='Get my instant offer'; if($('io-ref').value.trim().length>=3) form.requestSubmit ? form.requestSubmit() : $('io-go').click(); else err.textContent='No reference visible in the photos. Type it in, it is on the warranty card or between the lugs.'; });
+          return;
+        }
+        if(f.reference.length<3){err.textContent='Enter the reference number, or add a photo of the warranty card.';$('io-ref').focus();return}
         $('io-go').disabled=true; $('io-go').textContent='Pricing...'; result.classList.add('is-busy');
         post(Object.assign({op:'quote'},f)).then(function(q){
           lastQuote=q; render(q, f);
@@ -619,13 +701,17 @@
         if(!/^image\//.test(file.type)) return;
         var t=document.createElement('div'); thumbs.appendChild(t);
         var rd=new FileReader(); rd.onload=function(){t.style.backgroundImage='url('+rd.result+')'}; rd.readAsDataURL(file);
+        uploading++; photoRead=null;
         post({op:'sign-upload',filename:file.name,mime:file.type||'image/jpeg',session:session}).then(function(s){
           return fetch(s.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type||'application/octet-stream'},body:file}).then(function(r){
             if(!r.ok) throw new Error('upload '+r.status);
             photos.push(s.path); t.classList.add('is-up');
           });
-        }).catch(function(x){ t.classList.add('is-err'); err.textContent='One photo did not upload. You can still get the number.'; });
+        }).catch(function(x){ t.classList.add('is-err'); err.textContent='One photo did not upload. You can still get the number.'; })
+        .finally(function(){ uploading--; schedulePhotoCheck(); });
       }
+      // Typing a different reference after a photo read: re-check against it.
+      $('io-ref').addEventListener('change',function(){ if(photos.length){ photoRead=null; schedulePhotoCheck(); } });
 
       /* ---- lock in ---- */
       $('io-lock').addEventListener('submit',function(e){

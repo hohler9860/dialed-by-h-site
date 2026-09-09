@@ -247,235 +247,371 @@
             </header>
 
         <style id="io-css">
-    /* ===== Instant Offer tool. White theme, hairlines, mono. ===== */
-    .io-tool{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,6fr);gap:0;border:1px solid rgba(10,10,10,.14);margin-top:38px}
-    .io-form{padding:38px 40px 42px;border-right:1px solid rgba(10,10,10,.14)}
-    .io-result{padding:38px 40px 42px;background:#0a0a0a;color:#fff;display:flex;flex-direction:column;min-height:520px}
-    .io-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:30px}
-    .io-full{grid-column:1/-1}
-    .io-form label,.io-lock label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#6f6f6f;margin:20px 0 0}
-    .io-form input,.io-form select,.io-form textarea,.io-lock input,.io-lock textarea{width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(10,10,10,.25);color:#0a0a0a;padding:10px 0;font-size:14px;font-family:var(--pt-mono);border-radius:0;-webkit-appearance:none;appearance:none;transition:border-color .25s ease}
-    .io-form select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='black' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 2px center;padding-right:20px}
-    .io-form input:focus,.io-form select:focus,.io-lock input:focus,.io-lock textarea:focus{outline:none;border-bottom-color:#0a0a0a}
-    .io-form input::placeholder{color:rgba(10,10,10,.3);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
-    .io-photos{margin-top:22px}
-    .io-drop{border:1px dashed rgba(10,10,10,.3);padding:18px;text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6f6f6f;cursor:pointer;transition:border-color .25s ease,color .25s ease}
-    .io-drop:hover,.io-drop.is-over{border-color:#0a0a0a;color:#0a0a0a}
+    /* ===== Sell flow. DBH tokens only: white, hairline, Archivo for reading, mono for labels. ===== */
+    .io-page{--io-line:rgba(10,10,10,.14);--io-soft:#6f6f6f;--io-fill:#f5f5f3;--io-ok:#1f8a4c;--io-bad:#b3261e}
+    .io-page .wrap{max-width:1180px;margin:0 auto}
+    /* hero: one line of condensed type across the page */
+    .io-hero{padding:120px 24px 60px;background:linear-gradient(180deg,#fff 0%,#f2f2f0 100%);overflow:hidden}
+    .io-hero__type{font-family:var(--pt-serif);font-weight:800;font-variation-settings:"wdth" 62,"wght" 800;font-size:clamp(56px,12.6vw,240px);line-height:.86;letter-spacing:-.015em;text-transform:uppercase;white-space:nowrap;text-align:center;color:#0a0a0a;padding:0 12px}
+    .io-hero__sub{max-width:none;font-family:var(--pt-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--io-soft);text-align:center;margin:28px 0 0}
+    /* reading text inside the flow: Archivo, sentence case */
+    .io-flowtext p,.io-flowtext li,.io-flowtext label,.io-flowtext summary,.io-flowtext input,.io-flowtext select,.io-flowtext textarea,.io-flowtext button.io-plain{font-family:var(--pt-serif);font-size:15px;line-height:1.6;letter-spacing:0;text-transform:none;color:#0a0a0a;max-width:none}
+    .io-flowtext .lead{font-size:17px;color:#0a0a0a;max-width:70ch;margin:0 0 34px}
+    .io-eyebrow{font-family:var(--pt-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--io-soft)}
+    /* option cards */
+    .io-options{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:10px}
+    .io-opt{border:1px solid var(--io-line);background:var(--io-fill);padding:34px 34px 30px;position:relative}
+    .io-opt.is-rec{border:2px solid #0a0a0a;background:#fff}
+    .io-opt__top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+    .io-pill{font-family:var(--pt-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:#0a0a0a;color:#fff;padding:7px 12px}
+    .io-opt h3{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 110;font-size:38px;line-height:1;letter-spacing:-.02em;margin:0 0 12px}
+    .io-opt__tag{display:flex;align-items:center;gap:10px;font-size:19px!important;margin:0 0 24px!important}
+    .io-opt__tag svg{width:20px;height:20px}
+    .io-opt .dbh-btn{width:100%;padding:18px 0}
+    .io-tabs{display:grid;grid-template-columns:1fr 1fr;margin:30px 0 22px;border-bottom:1px solid var(--io-line)}
+    .io-tabs button{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 0;font-family:var(--pt-serif);font-size:16px;font-weight:600;color:var(--io-soft);cursor:pointer}
+    .io-tabs button.is-on{color:#0a0a0a;border-bottom-color:#0a0a0a}
+    .io-checks{list-style:none;padding:0;margin:18px 0 0}
+    .io-checks li{display:flex;gap:12px;align-items:flex-start;margin:0 0 12px}
+    .io-checks li::before{content:"";flex:0 0 20px;width:20px;height:20px;border:1.5px solid #0a0a0a;border-radius:50%;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/14px no-repeat;margin-top:2px}
+    .io-hows{list-style:none;padding:0;margin:18px 0 0;counter-reset:h}
+    .io-hows li{position:relative;padding:0 0 12px 34px;counter-increment:h}
+    .io-hows li::before{content:counter(h);position:absolute;left:0;top:2px;width:22px;height:22px;border:1.5px solid #0a0a0a;border-radius:50%;font-family:var(--pt-mono);font-size:11px;display:flex;align-items:center;justify-content:center}
+    .io-opt__compare{display:block;text-align:center;margin-top:18px;font-family:var(--pt-serif);font-size:15px;color:#0a0a0a;text-decoration:underline;text-underline-offset:4px}
+    /* stepper */
+    .io-steps{display:flex;align-items:center;list-style:none;padding:0;margin:26px 0 30px;gap:18px}
+    .io-steps li{display:flex;align-items:center;gap:12px;font-family:var(--pt-serif);font-weight:600;font-size:16px;color:var(--io-soft);white-space:nowrap}
+    .io-steps li i{width:30px;height:30px;border:1.5px solid var(--io-line);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--pt-mono);font-size:12px;color:var(--io-soft)}
+    .io-steps li.is-on{color:#0a0a0a}.io-steps li.is-on i{border-color:#0a0a0a;color:#0a0a0a}
+    .io-steps li.is-done{color:#0a0a0a}.io-steps li.is-done i{border-color:var(--io-ok);color:var(--io-ok);font-size:0}
+    .io-steps li.is-done i::after{content:"";width:14px;height:14px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M4 10.5l4 4L16 6' fill='none' stroke='%231f8a4c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat}
+    .io-steps li+li::before{content:"";flex:1;min-width:40px;height:1px;background:var(--io-line);margin-right:18px}
+    .io-steps li+li{flex:1}
+    /* form card */
+    .io-card{border:1.5px solid #0a0a0a;padding:38px 44px 44px;margin:0;min-width:0}
+    .io-card>*:not(legend){clear:both}
+    .io-card__h{float:left;display:flex;align-items:center;gap:14px;box-sizing:border-box;font-family:var(--pt-mono);font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:#0a0a0a;padding:0 0 22px;border-bottom:1px solid var(--io-line);margin:0 0 30px;width:100%}
+    .io-card__h i{width:34px;height:34px;border:1.5px solid #0a0a0a;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;letter-spacing:0}
+    .io-q{font-weight:700!important;font-size:17px!important;margin:26px 0 12px!important}
+    .io-q small{font-weight:400;color:var(--io-soft);font-size:14px;margin-left:8px}
+    .io-subq{color:var(--io-soft)!important;margin:-6px 0 18px!important}
+    .io-hr{border:none;border-top:1px solid var(--io-line);margin:30px 0 6px}
+    .io-radios{background:var(--io-fill);padding:22px;display:grid;gap:12px}
+    .io-radio{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1.5px solid var(--io-line);padding:20px 24px;cursor:pointer;transition:border-color .2s ease}
+    .io-radio input{position:absolute;opacity:0;pointer-events:none}
+    .io-radio span b{display:block;font-size:19px;font-weight:700;letter-spacing:-.01em}
+    .io-radio span small{display:flex;align-items:center;gap:8px;font-size:15px;color:#0a0a0a;margin-top:6px}
+    .io-radio span small svg{width:16px;height:16px}
+    .io-radio i{flex:0 0 26px;width:26px;height:26px;border:1.5px solid var(--io-line);border-radius:50%}
+    .io-radio:has(input:checked){border-color:#0a0a0a}
+    .io-radio:has(input:checked) i{border-color:#0a0a0a;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/16px no-repeat}
+    .io-select,.io-input,.io-textarea{width:100%;box-sizing:border-box;background:#fff;border:1.5px solid var(--io-line);padding:18px 20px;font-family:var(--pt-serif);font-size:16px;color:#0a0a0a;border-radius:0;-webkit-appearance:none;appearance:none;transition:border-color .2s ease}
+    .io-select:focus,.io-input:focus,.io-textarea:focus{outline:none;border-color:#0a0a0a}
+    .io-select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' stroke='black' stroke-width='1.5' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 20px center;padding-right:48px}
+    .io-select:invalid,.io-select option[value=""]{color:var(--io-soft)}
+    .io-input::placeholder,.io-textarea::placeholder{color:#9a9a97}
+    .io-textarea{min-height:96px;resize:vertical}
+    /* typeahead */
+    .io-search{position:relative}
+    .io-results{position:absolute;left:0;right:0;top:100%;z-index:5;background:#fff;border:1.5px solid #0a0a0a;border-top:none;max-height:420px;overflow:auto}
+    .io-hit{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:14px 16px;border-bottom:1px solid var(--io-line);cursor:pointer;align-items:center;text-align:left;width:100%;background:#fff;border-left:none;border-right:none;border-top:none}
+    .io-hit:hover,.io-hit.is-hi{background:var(--io-fill)}
+    .io-hit figure{margin:0;width:96px;height:96px;background:var(--io-fill);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .io-hit figure img{width:100%;height:100%;object-fit:contain}
+    .io-hit figure svg{width:40px;height:40px;opacity:.35}
+    .io-hit .b{font-family:var(--pt-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--io-soft)}
+    .io-hit .m{font-size:16px;font-weight:600;margin:3px 0 2px}
+    .io-hit .r{font-family:var(--pt-mono);font-size:12px;letter-spacing:.06em;color:var(--io-soft)}
+    .io-hit .d{font-size:13px;color:var(--io-soft);margin-top:2px}
+    .io-hit--manual{display:block;text-align:center;padding:20px;font-size:15px;color:#0a0a0a}
+    .io-hit--manual b{display:block;font-weight:600}
+    .io-chosen{display:none;align-items:center;gap:16px;margin-top:12px;border:1.5px solid #0a0a0a;padding:12px 16px}
+    .io-chosen.is-on{display:flex}
+    .io-chosen figure{margin:0;width:64px;height:64px;background:var(--io-fill);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .io-chosen figure img{width:100%;height:100%;object-fit:contain}
+    .io-chosen .t{flex:1}
+    .io-chosen .t b{display:block;font-weight:600}
+    .io-chosen .t span{font-family:var(--pt-mono);font-size:11px;letter-spacing:.08em;color:var(--io-soft)}
+    .io-chosen button{background:none;border:none;font-family:var(--pt-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;cursor:pointer;color:#0a0a0a}
+    .io-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .io-chips button{font-family:var(--pt-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:9px 14px;border:1.5px solid var(--io-line);background:#fff;cursor:pointer;color:#0a0a0a}
+    .io-chips button.is-on{border-color:#0a0a0a;background:#0a0a0a;color:#fff}
+    .io-manual{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:12px}
+    /* yes / no */
+    .io-yn{display:flex;gap:28px;margin-top:6px}
+    .io-yn label{display:flex;align-items:center;gap:10px;cursor:pointer}
+    .io-yn input{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:1.5px solid var(--io-line);border-radius:50%;margin:0;cursor:pointer}
+    .io-yn input:checked{border-color:#0a0a0a;box-shadow:inset 0 0 0 5px #fff;background:#0a0a0a}
+    .io-check{display:flex;align-items:flex-start;gap:12px;margin:26px 0 0;cursor:pointer}
+    .io-check input{appearance:none;-webkit-appearance:none;flex:0 0 22px;width:22px;height:22px;border:1.5px solid var(--io-line);margin:2px 0 0;cursor:pointer;background:#fff}
+    .io-check input:checked{background:#0a0a0a url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/16px no-repeat;border-color:#0a0a0a}
+    .io-check a{color:#0a0a0a}
+    .io-nav{display:grid;gap:18px;margin-top:34px}
+    .io-nav.two{grid-template-columns:1fr 1fr}
+    .io-nav .dbh-btn{padding:20px 0;width:100%}
+    .io-err{font-family:var(--pt-mono)!important;font-size:11px!important;letter-spacing:.06em;color:var(--io-bad)!important;margin:14px 0 0!important;min-height:1em}
+    /* photo guide */
+    .io-guide{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin:8px 0 6px}
+    .io-guide figure{margin:0}
+    .io-guide .box{aspect-ratio:1;border:1px solid var(--io-line);display:flex;align-items:center;justify-content:center;background:#fff}
+    .io-guide svg{width:72%;height:72%;fill:none;stroke:#0a0a0a;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+    .io-guide figcaption{font-family:var(--pt-serif);font-size:13px;color:var(--io-soft);margin-top:8px}
+    .io-guide figure.is-got .box{border-color:var(--io-ok);background:#f2faf5}
+    .io-tips{border-top:1px solid var(--io-line);border-bottom:1px solid var(--io-line);padding:18px 0;margin:26px 0}
+    .io-tips summary{font-weight:700;font-size:17px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+    .io-tips summary::-webkit-details-marker{display:none}
+    .io-tips summary::after{content:"";width:12px;height:12px;border-right:1.5px solid #0a0a0a;border-bottom:1.5px solid #0a0a0a;transform:rotate(45deg);transition:transform .2s ease;margin-right:6px}
+    .io-tips[open] summary::after{transform:rotate(-135deg)}
+    .io-tipgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:18px}
+    .io-tipgrid div{background:var(--io-fill);padding:22px;font-size:15px;font-weight:600}
+    .io-tipgrid div span{display:block;font-weight:400;color:var(--io-soft);font-size:14px;margin-top:6px}
+    .io-drop{border:1.5px dashed rgba(10,10,10,.4);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .2s ease,background .2s ease;background:#fff}
+    .io-drop:hover,.io-drop.is-over{border-color:#0a0a0a;background:var(--io-fill)}
     .io-drop input{display:none}
-    .io-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .io-thumbs div{width:56px;height:56px;border:1px solid rgba(10,10,10,.14);background-size:cover;background-position:center;position:relative}
-    .io-thumbs div.is-up::after{content:"";position:absolute;right:3px;bottom:3px;width:8px;height:8px;background:#0a0a0a;border-radius:50%}
+    .io-drop svg{width:30px;height:30px;stroke:#0a0a0a;fill:none;stroke-width:1.3;margin-bottom:12px}
+    .io-drop b{display:block;font-size:17px;font-weight:600}
+    .io-drop span{display:block;font-size:13px;color:var(--io-soft);margin-top:6px}
+    .io-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .io-thumbs div{width:88px;height:88px;border:1px solid var(--io-line);background-size:cover;background-position:center;position:relative}
+    .io-thumbs div.is-up::after{content:"";position:absolute;right:5px;bottom:5px;width:18px;height:18px;border-radius:50%;background:var(--io-ok) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/12px no-repeat}
     .io-thumbs div.is-err{opacity:.35}
-    /* photo check strip: what the photos read as, and whether it matches the typed reference */
-    .io-photo{margin:14px 0 0;padding:12px 14px;border:1px solid rgba(10,10,10,.14);font-size:11px;letter-spacing:.04em;line-height:1.75;color:#0a0a0a;max-width:none}
-    .io-photo.is-warn{border-color:#b3261e;color:#b3261e}
-    .io-photo.is-busy{color:#6f6f6f}
+    .io-photo{margin:16px 0 0;padding:16px 18px;border:1.5px solid var(--io-line);background:var(--io-fill);font-size:15px!important;line-height:1.6}
+    .io-photo.is-warn{border-color:var(--io-bad);background:#fff5f4}
+    .io-photo.is-busy{color:var(--io-soft)!important}
     .io-photo b{font-weight:700}
-    .io-photo button{background:none;border:none;border-bottom:1px solid currentColor;color:inherit;font:inherit;letter-spacing:.1em;text-transform:uppercase;font-size:10px;padding:0 0 1px;margin-left:8px;cursor:pointer}
-    .io-go{margin-top:34px;width:100%}
-    .io-hint{font-size:10px;letter-spacing:.1em;color:#6f6f6f;margin:12px 0 0;line-height:1.7}
-    .io-err{font-size:11px;letter-spacing:.06em;color:#b3261e;margin:14px 0 0;min-height:1em}
-    /* the page-level .bos p rule paints paragraphs soft grey; inside the black panel they must be white */
-    .io-result p{color:#fff;max-width:none}
-    /* result panel states */
-    .io-result .io-meta{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.4);margin:0 0 22px}
-    .io-result .io-num{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 120;letter-spacing:-.03em;font-size:clamp(46px,6vw,88px);line-height:.95;margin:0}
-    .io-result .io-sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin:18px 0 0;line-height:1.9}
+    .io-photo button{background:#fff;border:1.5px solid #0a0a0a;color:#0a0a0a;font-family:var(--pt-mono);letter-spacing:.1em;text-transform:uppercase;font-size:10px;padding:8px 12px;margin:8px 8px 0 0;cursor:pointer}
+    .io-photo button:hover{background:#0a0a0a;color:#fff}
+    .io-summary{display:flex;align-items:center;gap:14px;background:var(--io-fill);padding:14px 18px;margin:-6px 0 24px}
+    .io-summary figure{margin:0;width:54px;height:54px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .io-summary figure img{width:100%;height:100%;object-fit:contain}
+    .io-summary b{display:block;font-weight:600}
+    .io-summary span{font-family:var(--pt-mono);font-size:11px;letter-spacing:.08em;color:var(--io-soft)}
+    /* details */
+    .io-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;background:var(--io-fill);padding:22px}
+    .io-grid2 .full{grid-column:1/-1}
+    .io-field{position:relative;background:#fff;border:1.5px solid var(--io-line)}
+    .io-field label{position:absolute;left:18px;top:10px;font-size:12px!important;color:var(--io-soft)!important;pointer-events:none}
+    .io-field input{width:100%;box-sizing:border-box;border:none;background:transparent;padding:30px 18px 12px;font-size:17px;font-family:var(--pt-serif);color:#0a0a0a}
+    .io-field input:focus{outline:none}
+    .io-field:focus-within{border-color:#0a0a0a}
+    .io-phone{display:grid;grid-template-columns:110px 1fr;gap:12px}
+    .io-phone .cc{display:flex;align-items:center;justify-content:center;font-size:17px;border:1.5px solid var(--io-line);background:#fff}
+    /* result */
+    .io-result{border:1.5px solid #0a0a0a;background:#0a0a0a;color:#fff;padding:44px 48px 48px;margin-top:0}
+    .io-result p{color:#fff;max-width:none;font-family:var(--pt-serif);text-transform:none;letter-spacing:0}
+    .io-result .io-meta{font-family:var(--pt-mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.45);margin:0 0 22px}
+    .io-result .io-num{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 120;letter-spacing:-.03em;font-size:clamp(52px,7vw,104px);line-height:.95;margin:0}
+    .io-result .io-sub{font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin:18px 0 0;line-height:1.9}
     .io-result .io-band{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:30px 0 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.14)}
-    .io-result .io-band span{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px}
-    .io-result .io-band b{font-family:var(--pt-mono);font-weight:400;font-size:15px}
-    .io-result .io-note{font-size:11px;line-height:1.85;color:rgba(255,255,255,.62);margin:24px 0 0}
-    .io-wait{display:flex;flex-direction:column;justify-content:center;flex:1}
-    .io-wait ol{list-style:none;padding:0;margin:26px 0 0;counter-reset:s}
-    .io-wait li{position:relative;padding:14px 0 14px 44px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;line-height:1.75;color:rgba(255,255,255,.7);counter-increment:s}
-    .io-wait li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:15px;font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.4)}
-    .io-lock{margin-top:auto;padding-top:26px}
-    .io-lock label{color:rgba(255,255,255,.45)}
-    .io-lock input,.io-lock textarea{color:#fff;border-bottom-color:rgba(255,255,255,.25)}
-    .io-lock input:focus,.io-lock textarea:focus{border-bottom-color:#fff}
-    .io-lock input::placeholder{color:rgba(255,255,255,.25);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
-    .io-lock .dbh-btn{width:100%;margin-top:28px;border-color:#fff;color:#fff}
-    .io-lock .dbh-btn:hover{background:#fff;color:#0a0a0a}
-    .io-lock .io-err{color:#ff8a80}
-    .io-done{display:flex;flex-direction:column;justify-content:center;flex:1}
-    .io-done .io-num{font-size:clamp(40px,5vw,72px)}
-    .io-done .pt-dm{display:flex;flex-direction:column;gap:12px;margin-top:30px}
-    .io-done .pt-dm a{display:flex;align-items:center;justify-content:center;padding:16px;border:1px solid rgba(255,255,255,.35);color:#fff;text-decoration:none;font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .3s ease,color .3s ease}
-    .io-done .pt-dm a:hover{background:#fff;color:#000}
-    .io-result.is-busy{opacity:.55;pointer-events:none}
-    .io-shine{background:#fff;color:#000;height:1px;width:0;transition:width .8s cubic-bezier(.19,1,.22,1)}
+    .io-result .io-band span{display:block;font-family:var(--pt-mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:6px}
+    .io-result .io-band b{font-family:var(--pt-mono);font-weight:400;font-size:16px}
+    .io-result .io-note{font-size:15px;line-height:1.7;color:rgba(255,255,255,.7);margin:26px 0 0;max-width:62ch}
+    .io-result .pt-dm{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}
+    .io-result .pt-dm a{display:flex;align-items:center;justify-content:center;padding:18px;border:1px solid rgba(255,255,255,.35);color:#fff;text-decoration:none;font-family:var(--pt-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .3s ease,color .3s ease}
+    .io-result .pt-dm a:hover{background:#fff;color:#000}
+    .io-shine{background:#fff;height:1px;width:0;transition:width .8s cubic-bezier(.19,1,.22,1);margin-top:18px}
     .io-result.is-fresh .io-shine{width:100%}
     [hidden]{display:none!important}
-    @media(max-width:900px){.io-tool{grid-template-columns:1fr}.io-form{border-right:none;border-bottom:1px solid rgba(10,10,10,.14)}.io-form,.io-result{padding:28px 22px 34px}.io-result{min-height:0}}
-    @media(max-width:600px){.io-grid{grid-template-columns:1fr}}
+    @media(max-width:900px){.io-options{grid-template-columns:1fr}.io-steps{gap:10px}.io-steps li{font-size:13px}.io-steps li+li::before{min-width:16px;margin-right:10px}.io-card{padding:26px 20px 30px}.io-guide{grid-template-columns:repeat(3,1fr)}.io-tipgrid{grid-template-columns:1fr}.io-manual{grid-template-columns:1fr}.io-result{padding:30px 22px 34px}.io-hero{padding:100px 12px 40px}}
+    @media(max-width:600px){.io-grid2{grid-template-columns:1fr}.io-nav.two{grid-template-columns:1fr}.io-steps li span{display:none}.io-steps li+li{flex:0}.io-steps li+li::before{min-width:24px}.io-result .io-band{grid-template-columns:1fr}.io-hit{grid-template-columns:72px 1fr}.io-hit figure{width:72px;height:72px}}
 </style>
 
-        <main class="bos">
-            <section class="hero">
+        <main class="bos io-page">
+            <section class="io-hero">
+                <div class="io-hero__type" aria-hidden="true">Sell your watch</div>
+                <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Sell your watch to Dialed by H</h1>
+                <p class="io-hero__sub pt-reveal">Instant offer or consignment. Boston, New York, Miami, and by insured post.</p>
+            </section>
+
+            <section class="io-choose io-flowtext">
                 <div class="wrap">
-                    <p class="eyebrow pt-reveal">Instant Offer</p>
-                    <h1 class="dbh-display pt-reveal">Know what your watch is worth. Right now.</h1>
-                    <p class="lead pt-reveal">Enter the reference, tell me the condition, and get a real number priced off what dealers are paying today. Not a form that emails someone. A number, on this page, in seconds. Lock it in for 48 hours and I verify the piece and wire the money.</p>
-                    <div class="actions pt-reveal">
-                        <a href="#offer" class="dbh-btn dbh-btn--solid">Get my number</a>
-                        <a href="#how" class="dbh-btn">How it works</a>
+                    <h2 class="dbh-display pt-reveal">Choose how to sell</h2>
+                    <p class="lead pt-reveal">Sell your watch your way. Two ways to do it, built for speed or for return, and I handle the rest. No listing fees, no waiting weeks for a callback, and every piece authenticated before a dollar moves. Instant offers sit 15% under the live dealer median. Consignment is 8% of the sale.</p>
+                    <div class="io-options">
+                        <article class="io-opt is-rec pt-reveal" data-option="instant">
+                            <div class="io-opt__top"><span class="io-eyebrow">Option 1</span><span class="io-pill">Recommended</span></div>
+                            <h3>Instant Offer</h3>
+                            <p class="io-opt__tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>Sell fastest</p>
+                            <button type="button" class="dbh-btn dbh-btn--solid js-start" data-option="instant">Get started</button>
+                            <div class="io-tabs"><button type="button" class="is-on" data-tab="get">What you get</button><button type="button" data-tab="how">How it works</button></div>
+                            <div class="io-tab" data-tab="get">
+                                <p>If speed matters more than squeezing the last dollar, you get a real number on this page in seconds, priced off what dealers are paying today, and I wire it the day the watch checks out.</p>
+                                <ul class="io-checks"><li>A real number on screen, not a callback</li><li>Priced off live dealer market data, not a guess</li><li>Paid by wire the day it authenticates</li></ul>
+                            </div>
+                            <div class="io-tab" data-tab="how" hidden>
+                                <ol class="io-hows"><li>Tell me the watch. Search it, or let the photos identify it.</li><li>Upload photos. I read the reference and variant from them and check it against the market.</li><li>Your number appears. It holds for 48 hours while I authenticate the piece.</li><li>Meet me in Boston, NYC or Miami, or ship insured on my label. Wire lands, watch changes hands.</li></ol>
+                            </div>
+                            <a class="io-opt__compare" href="#compare">Compare</a>
+                        </article>
+                        <article class="io-opt pt-reveal" data-option="consign">
+                            <div class="io-opt__top"><span class="io-eyebrow">Option 2</span></div>
+                            <h3>Consign</h3>
+                            <p class="io-opt__tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>Earn the most</p>
+                            <button type="button" class="dbh-btn dbh-btn--solid js-start" data-option="consign">Get started</button>
+                            <div class="io-tabs"><button type="button" class="is-on" data-tab="get">What you get</button><button type="button" data-tab="how">How it works</button></div>
+                            <div class="io-tab" data-tab="get">
+                                <p>I take the piece, shoot it, and put it in front of my clients and the dealer network I trade with every day. You set the floor, I bring the offers, you pick the one you like.</p>
+                                <ul class="io-checks"><li>I handle everything end to end</li><li>Reaches private clients and 13 dealer groups</li><li>The best possible return, 8% fee on the sale</li></ul>
+                            </div>
+                            <div class="io-tab" data-tab="how" hidden>
+                                <ol class="io-hows"><li>Tell me the watch and upload photos.</li><li>I come back within a day with a market read and a suggested ask.</li><li>Hand over or ship insured. I photograph, list and shop it.</li><li>You approve the sale. Wire lands, less 8%, within two business days of the buyer's funds clearing.</li></ol>
+                            </div>
+                            <a class="io-opt__compare" href="#compare">Compare</a>
+                        </article>
                     </div>
                 </div>
             </section>
 
-            <section id="offer">
+            <section id="sell" class="io-flow io-flowtext">
                 <div class="wrap">
-                    <h2 class="dbh-display pt-reveal">Your watch, priced off the live dealer market</h2>
-                    <p class="pt-reveal">I read every listing from the wholesale dealer groups I trade in, all day, every day. The number below is a median of what dealers are asking for your exact reference in the last 45 days, less my margin. It is the same data I quote from myself.</p>
+                    <h2 class="dbh-display pt-reveal">Start selling</h2>
+                    <ol class="io-steps" id="io-steps">
+                        <li class="is-on" data-step="1"><i>1</i><span>Choose selling option</span></li>
+                        <li data-step="2"><i>2</i><span>Upload photos</span></li>
+                        <li data-step="3"><i>3</i><span>Your details</span></li>
+                    </ol>
 
-                    <div class="io-tool pt-reveal">
-                        <form class="io-form" id="io-form" autocomplete="on" novalidate>
-                            <div class="io-grid">
-                                <div>
-                                    <label for="io-brand">Brand</label>
-                                    <select id="io-brand" name="brand">
-                                        <option value="">Select brand</option>
-                                        <option>Rolex</option><option>Patek Philippe</option><option>Audemars Piguet</option><option>Omega</option><option>Cartier</option><option>Tudor</option><option>Vacheron Constantin</option><option>Richard Mille</option><option>A. Lange &amp; S&ouml;hne</option><option>F.P. Journe</option><option>IWC</option><option>Breguet</option><option>Jaeger-LeCoultre</option><option>Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="io-ref">Reference number</label>
-                                    <input id="io-ref" name="reference" type="text" placeholder="e.g. 126610LN" required inputmode="text" autocapitalize="characters">
-                                </div>
-                                <div>
-                                    <label for="io-dial">Dial colour</label>
-                                    <input id="io-dial" name="dial" type="text" placeholder="Black, blue, silver...">
-                                </div>
-                                <div>
-                                    <label for="io-year">Year</label>
-                                    <input id="io-year" name="year" type="text" placeholder="e.g. 2022" inputmode="numeric">
-                                </div>
-                                <div>
-                                    <label for="io-cond">Condition</label>
-                                    <select id="io-cond" name="condition">
-                                        <option value="excellent">Excellent, light or no wear</option>
-                                        <option value="unworn">Unworn, stickers on</option>
-                                        <option value="good">Good, visible wear</option>
-                                        <option value="fair">Fair, needs polish or service</option>
-                                        <option value="poor">Poor, damaged</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="io-set">Box and papers</label>
-                                    <select id="io-set" name="set">
-                                        <option value="full">Full set, box and papers</option>
-                                        <option value="papers">Papers only</option>
-                                        <option value="box">Box only</option>
-                                        <option value="naked">Watch only</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="io-photos">
-                                <label>Photos, optional but they speed everything up</label>
-                                <div class="io-drop" id="io-drop" style="margin-top:10px">
-                                    Tap to add up to 6 photos: dial, caseback, clasp, card
-                                    <input id="io-files" type="file" accept="image/*" multiple>
-                                </div>
-                                <div class="io-thumbs" id="io-thumbs"></div>
-                                <p class="io-photo" id="io-photo" hidden aria-live="polite"></p>
-                            </div>
-                            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
-                            <button type="submit" class="dbh-btn dbh-btn--solid io-go" id="io-go">Get my instant offer</button>
-                            <p class="io-hint">The reference is on your warranty card, the caseback between the lugs, or the box label. No reference, no problem: text me a photo and I quote by hand.</p>
-                            <p class="io-err" id="io-err" aria-live="polite"></p>
-                        </form>
+                    <form id="io-form" novalidate autocomplete="on">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
 
-                        <div class="io-result" id="io-result" aria-live="polite">
-                            <div class="io-wait" id="io-wait">
-                                <p class="io-meta">Your number appears here</p>
-                                <p class="io-num" style="font-size:clamp(28px,3vw,44px)">Priced in seconds, not days</p>
-                                <ol>
-                                    <li>Enter the reference and the basics. Photos help but are not required for the number.</li>
-                                    <li>I show the offer and the market behind it: how many dealer listings, over how many days, and the band they sit in.</li>
-                                    <li>Lock it in with your details. The number holds for 48 hours while I authenticate the piece. Boston clients meet me in person and watch the wire land.</li>
-                                </ol>
+                        <!-- STEP 1 -->
+                        <fieldset class="io-card" data-panel="1">
+                            <legend class="io-card__h"><i>1</i>Watch information</legend>
+                            <p class="io-q" style="margin-top:0">How would you like to sell your watch?</p>
+                            <div class="io-radios">
+                                <label class="io-radio"><input type="radio" name="option" value="instant" checked><span><b>Option 1, Instant Offer</b><small><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>Sell fastest</small></span><i></i></label>
+                                <label class="io-radio"><input type="radio" name="option" value="consign"><span><b>Option 2, Consign</b><small><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>Earn the most</small></span><i></i></label>
                             </div>
 
-                            <div id="io-offer" hidden>
-                                <p class="io-meta" id="io-offer-meta">Instant offer</p>
-                                <p class="io-num" id="io-offer-num">$0</p>
-                                <div class="io-shine"></div>
-                                <p class="io-sub" id="io-offer-sub"></p>
-                                <div class="io-band">
-                                    <div><span>Dealer median</span><b id="io-b-med"></b></div>
-                                    <div><span>Listings</span><b id="io-b-n"></b></div>
-                                    <div><span>Offer band</span><b id="io-b-band"></b></div>
-                                </div>
-                                <p class="io-note" id="io-offer-note"></p>
-                                <form class="io-lock" id="io-lock" novalidate>
-                                    <p class="io-meta" style="margin:0">Lock this number for 48 hours</p>
-                                    <div class="io-grid">
-                                        <div><label for="io-name">Full name</label><input id="io-name" name="fullName" type="text" autocomplete="name"></div>
-                                        <div><label for="io-email">Email</label><input id="io-email" name="email" type="email" autocomplete="email" required></div>
-                                        <div><label for="io-phone">Mobile / WhatsApp</label><input id="io-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 ..." required></div>
-                                        <div><label for="io-loc">Where are you based?</label><input id="io-loc" name="location" type="text" autocomplete="address-level2" placeholder="City, or city and state" required></div>
-                                        <div class="io-full"><label for="io-notes">Anything I should know</label><input id="io-notes" name="notes" type="text" placeholder="Service history, aftermarket parts, timeline"></div>
-                                    </div>
-                                    <button type="submit" class="dbh-btn" id="io-lock-go">Lock in this offer</button>
-                                    <p class="io-err" id="io-lock-err" aria-live="polite"></p>
-                                </form>
-                            </div>
+                            <p class="io-q">Where is your watch? <small>*</small></p>
+                            <select class="io-select" name="location" id="io-loc" required>
+                                <option value="">Select</option>
+                                <option>Boston, MA</option><option>New York, NY</option><option>Miami, FL</option><option>Elsewhere in the US</option><option>Outside the US</option>
+                            </select>
 
-                            <div id="io-thin" hidden>
-                                <p class="io-meta">No instant number for this one</p>
-                                <p class="io-num" style="font-size:clamp(28px,3vw,44px)" id="io-thin-title">Too few recent listings to price it blind</p>
-                                <p class="io-note" id="io-thin-note">I only show an instant number when I have at least three recent dealer listings for the exact reference. Send it over and I quote by hand, usually within the hour.</p>
-                                <div class="io-done"><div class="pt-dm">
-                                    <a id="io-thin-sms" href="sms:+19146211848">Text me the details</a>
-                                    <a id="io-thin-wa" href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                                </div></div>
+                            <hr class="io-hr">
+                            <p class="io-q">Tell me about your watch</p>
+                            <div class="io-search">
+                                <input class="io-input" type="text" id="io-q" placeholder="Search by brand, model, or reference number" autocomplete="off" spellcheck="false">
+                                <div class="io-results" id="io-results" hidden></div>
                             </div>
+                            <div class="io-chosen" id="io-chosen">
+                                <figure id="io-chosen-img"></figure>
+                                <div class="t"><b id="io-chosen-name"></b><span id="io-chosen-ref"></span></div>
+                                <button type="button" id="io-chosen-clear">Change</button>
+                            </div>
+                            <div class="io-chips" id="io-dials" hidden></div>
+                            <div class="io-manual" id="io-manual" hidden>
+                                <select class="io-select" id="io-brand"><option value="">Brand</option><option>Rolex</option><option>Patek Philippe</option><option>Audemars Piguet</option><option>Omega</option><option>Cartier</option><option>Tudor</option><option>Vacheron Constantin</option><option>Richard Mille</option><option>A. Lange &amp; S&ouml;hne</option><option>F.P. Journe</option><option>IWC</option><option>Breguet</option><option>Jaeger-LeCoultre</option><option>Other</option></select>
+                                <input class="io-input" type="text" id="io-ref-manual" placeholder="Reference, e.g. 126610LN" autocapitalize="characters">
+                                <input class="io-input" type="text" id="io-dial-manual" placeholder="Dial colour">
+                            </div>
+                            <p class="io-subq" style="margin-top:12px">No reference to hand? Skip this, the photos in the next step will identify it.</p>
 
-                            <div id="io-done" class="io-done" hidden>
-                                <p class="io-meta">Locked in</p>
-                                <p class="io-num" id="io-done-num">$0</p>
-                                <p class="io-sub" id="io-done-sub"></p>
-                                <p class="io-note">I have the details and your photos. I will message you shortly to confirm the piece and set up the handover. Boston, NYC and Miami clients can meet me in person; everyone else ships insured on my label, and the wire goes out the day the watch checks out.</p>
-                                <div class="pt-dm">
-                                    <a href="sms:+19146211848">Text me</a>
-                                    <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                                </div>
+                            <p class="io-q">Does your watch come with its original box? <small>*</small></p>
+                            <div class="io-yn"><label><input type="radio" name="hasBox" value="yes">Yes</label><label><input type="radio" name="hasBox" value="no">No</label></div>
+                            <p class="io-q">Does your watch come with its original papers? <small>*</small></p>
+                            <div class="io-yn"><label><input type="radio" name="hasPapers" value="yes">Yes</label><label><input type="radio" name="hasPapers" value="no">No</label></div>
+                            <p class="io-q">To your knowledge, has the watch been worn before? <small>*</small></p>
+                            <div class="io-yn"><label><input type="radio" name="worn" value="yes">Yes</label><label><input type="radio" name="worn" value="no">No</label></div>
+                            <p class="io-q">To your knowledge, has it been serviced or polished by a third party?</p>
+                            <div class="io-yn"><label><input type="radio" name="polished" value="yes">Yes</label><label><input type="radio" name="polished" value="no">No</label></div>
+
+                            <p class="io-q">Any additional notes about selling your watch</p>
+                            <textarea class="io-textarea" name="notes" placeholder="E.g. what you are hoping to get, physical or functional condition, accessories, limited edition, timeline."></textarea>
+
+                            <label class="io-check"><input type="checkbox" name="ack"> I acknowledge that my watch will be authenticated by Dialed by H before any sale is finalised.</label>
+                            <div class="io-nav"><button type="button" class="dbh-btn dbh-btn--solid js-next">Next</button></div>
+                            <p class="io-err" id="io-err1" aria-live="polite"></p>
+                        </fieldset>
+
+                        <!-- STEP 2 -->
+                        <fieldset class="io-card" data-panel="2" hidden>
+                            <legend class="io-card__h"><i>2</i>Upload photos</legend>
+                            <div class="io-summary" id="io-summary" hidden><figure id="io-summary-img"></figure><div><b id="io-summary-name"></b><span id="io-summary-ref"></span></div></div>
+                            <p class="io-q" style="margin-top:0">Upload at least 3 photos of your watch <small>*</small></p>
+                            <p class="io-subq">I use these to confirm the reference, read the variant, and assess condition. A phone is fine.</p>
+                            <div class="io-guide" id="io-guide">
+                                <figure data-slot="front"><div class="box"><svg viewBox="0 0 64 64"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="14"/><path d="M32 22v10l6 4"/><rect x="50" y="29" width="4" height="6" rx="1"/></svg></div><figcaption>Front</figcaption></figure>
+                                <figure data-slot="dial"><div class="box"><svg viewBox="0 0 64 64"><path d="M20 8h18l6 6v36l-6 6H20l-6-6V14z"/><ellipse cx="29" cy="32" rx="12" ry="17"/><ellipse cx="29" cy="32" rx="9" ry="13"/><path d="M29 21v11l4 3"/></svg></div><figcaption>Dial, 45&deg; angle</figcaption></figure>
+                                <figure data-slot="side"><div class="box"><svg viewBox="0 0 64 64"><path d="M22 6h20v52H22z"/><path d="M18 22c-3 4-3 16 0 20M46 22c3 4 3 16 0 20"/><path d="M22 18h20M22 46h20"/><rect x="47" y="29" width="4" height="6" rx="1"/></svg></div><figcaption>Side, both sides</figcaption></figure>
+                                <figure data-slot="clasp"><div class="box"><svg viewBox="0 0 64 64"><rect x="14" y="20" width="36" height="24" rx="4"/><path d="M14 26h36M14 38h36"/><path d="M22 20v24M42 20v24"/><path d="M6 32h8M50 32h8"/></svg></div><figcaption>Clasp</figcaption></figure>
+                                <figure data-slot="caseback"><div class="box"><svg viewBox="0 0 64 64"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="11"/><path d="M32 14v4M32 46v4M14 32h4M46 32h4M19 19l3 3M42 42l3 3M45 19l-3 3M22 42l-3 3"/></svg></div><figcaption>Caseback</figcaption></figure>
+                                <figure data-slot="box"><div class="box"><svg viewBox="0 0 64 64"><path d="M14 26h36v24H14z"/><path d="M14 26l6-10h24l6 10"/><path d="M20 16v10M44 16v10"/><path d="M20 58h24" /><rect x="26" y="52" width="12" height="6" rx="1"/></svg></div><figcaption>Box &amp; papers</figcaption></figure>
                             </div>
+                            <details class="io-tips">
+                                <summary>Tips for better photos</summary>
+                                <div class="io-tipgrid">
+                                    <div>Use a white background.<span>A sheet of paper on a table works.</span></div>
+                                    <div>Shoot in natural light.<span>Near a window, no flash, no lamp glare on the crystal.</span></div>
+                                    <div>Clean the lens and the watch.<span>Fingerprints on either read as scratches.</span></div>
+                                </div>
+                            </details>
+                            <div class="io-drop" id="io-drop">
+                                <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M12 10v6M9 13h6"/></svg>
+                                <b>Drag and drop or click to upload</b>
+                                <span>JPEG, PNG, WEBP, HEIC, up to 15MB each, six photos max</span>
+                                <input id="io-files" type="file" accept="image/*" multiple>
+                            </div>
+                            <div class="io-thumbs" id="io-thumbs"></div>
+                            <p class="io-photo" id="io-photo" hidden aria-live="polite"></p>
+                            <div class="io-nav two"><button type="button" class="dbh-btn js-back">Back</button><button type="button" class="dbh-btn dbh-btn--solid js-next">Next</button></div>
+                            <p class="io-err" id="io-err2" aria-live="polite"></p>
+                        </fieldset>
+
+                        <!-- STEP 3 -->
+                        <fieldset class="io-card" data-panel="3" hidden>
+                            <legend class="io-card__h"><i>3</i>Your contact details</legend>
+                            <div class="io-grid2">
+                                <div class="io-field"><label for="io-first">First name *</label><input id="io-first" name="firstName" type="text" autocomplete="given-name"></div>
+                                <div class="io-field"><label for="io-last">Last name *</label><input id="io-last" name="lastName" type="text" autocomplete="family-name"></div>
+                                <div class="io-field full"><label for="io-email">Email *</label><input id="io-email" name="email" type="email" autocomplete="email"></div>
+                                <div class="full io-phone"><div class="cc">+1</div><div class="io-field"><label for="io-phone">Phone number *</label><input id="io-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="tel"></div></div>
+                            </div>
+                            <label class="io-check"><input type="checkbox" name="contactOk"> I agree to be contacted by Henry about this watch by text, WhatsApp or email.</label>
+                            <label class="io-check" style="margin-top:14px"><input type="checkbox" name="terms"> I acknowledge and agree to the seller <a href="/privacy" target="_blank" rel="noopener">terms and privacy policy</a>.</label>
+                            <div class="io-nav two"><button type="button" class="dbh-btn js-back">Back</button><button type="submit" class="dbh-btn dbh-btn--solid" id="io-submit">Get my instant offer</button></div>
+                            <p class="io-err" id="io-err3" aria-live="polite"></p>
+                        </fieldset>
+                    </form>
+
+                    <!-- RESULT -->
+                    <div class="io-result" id="io-result" hidden aria-live="polite">
+                        <div id="io-offer" hidden>
+                            <p class="io-meta" id="io-offer-meta">Your instant offer</p>
+                            <p class="io-num" id="io-offer-num">$0</p>
+                            <div class="io-shine"></div>
+                            <p class="io-sub" id="io-offer-sub"></p>
+                            <div class="io-band">
+                                <div><span>Dealer median</span><b id="io-b-med"></b></div>
+                                <div><span>Listings</span><b id="io-b-n"></b></div>
+                                <div><span>Offer band</span><b id="io-b-band"></b></div>
+                            </div>
+                            <p class="io-note" id="io-offer-note"></p>
+                            <div class="pt-dm"><a href="sms:+19146211848">Text me</a><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>
+                        </div>
+                        <div id="io-thin" hidden>
+                            <p class="io-meta">Received. No instant number for this one</p>
+                            <p class="io-num" style="font-size:clamp(30px,3.6vw,52px)" id="io-thin-title">Too few recent listings to price it blind</p>
+                            <p class="io-note" id="io-thin-note">I only show an instant number when I have at least three recent dealer listings for the exact reference. I have your photos and details and will send a number myself, usually within the hour.</p>
+                            <div class="pt-dm"><a href="sms:+19146211848">Text me</a><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>
+                        </div>
+                        <div id="io-consigned" hidden>
+                            <p class="io-meta">Consignment request received</p>
+                            <p class="io-num" style="font-size:clamp(30px,3.6vw,52px)">I will be in touch within a day</p>
+                            <p class="io-note" id="io-consign-note"></p>
+                            <div class="pt-dm"><a href="sms:+19146211848">Text me</a><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="how">
+            <section id="compare" class="io-flowtext">
                 <div class="wrap">
-                    <h2 class="dbh-display pt-reveal">How the number is made</h2>
-                    <div class="grid3">
-                        <div class="card pt-reveal"><h3>The market, not a guess</h3><p>Dealers post what they will sell for in private wholesale groups all day. I read every one of those listings, structure them, and take the median for your exact reference over the last 45 days. When you tell me the dial colour, I price off that variant alone.</p></div>
-                        <div class="card pt-reveal"><h3>Minus my margin</h3><p>The offer sits 15% under that dealer median. That is what lets me pay you the same week and still make a living. Condition and a missing box or papers nudge it a few points. You see every input, nothing is hidden.</p></div>
-                        <div class="card pt-reveal"><h3>Then I verify</h3><p>The number holds for 48 hours. I authenticate the piece in person or on arrival. If it is what you described, the number is the number. If something is off, I tell you exactly what and why before anything changes.</p></div>
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <div class="wrap">
-                    <h2 class="dbh-display pt-reveal">The fine print, in plain words</h2>
+                    <h2 class="dbh-display pt-reveal">Instant Offer or consign?</h2>
                     <div class="grid2">
-                        <div class="card pt-reveal"><h3>What can change the number</h3><p>Aftermarket parts, a heavy polish, a service that needs doing, or a set that is not what was ticked. Those are the only reasons. Market moves inside the 48 hours do not touch your offer.</p></div>
-                        <div class="card pt-reveal"><h3>Which watches get an instant number</h3><p>Anything with at least three recent dealer listings for the exact reference. That covers nearly every modern Rolex, Patek, AP, Omega and Cartier. Rare or vintage pieces get a hand quote instead, usually within the hour.</p></div>
-                        <div class="card pt-reveal"><h3>How you get paid</h3><p>Bank wire, and in Boston you watch it land before the watch leaves your hand. Shipping clients get an insured label, and the wire goes out the day the piece checks out.</p></div>
-                        <div class="card pt-reveal"><h3>What I do with your photos</h3><p>They go into a private bucket only I can see, tied to your offer, and nowhere else. They are not used for marketing and are deleted once the deal closes or the offer expires.</p></div>
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <div class="wrap mid">
-                    <h2 class="dbh-display pt-reveal">Rather talk to a person?</h2>
-                    <p class="pt-reveal">Text me the reference and two photos and I will send a number back myself.</p>
-                    <div class="actions pt-reveal">
-                        <a href="sms:+19146211848" class="dbh-btn dbh-btn--solid">Text me</a>
-                        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="dbh-btn">WhatsApp</a>
+                        <div class="card pt-reveal"><h3>Instant Offer</h3><p style="font-family:var(--pt-mono);font-size:13px;color:#6f6f6f">Best when you want the money this week. The number is the dealer median for your exact reference over the last 45 days, less 15%. Holds 48 hours. Paid by wire the day it authenticates. Condition, a missing box or papers, and aftermarket parts are the only things that change it.</p></div>
+                        <div class="card pt-reveal"><h3>Consign</h3><p style="font-family:var(--pt-mono);font-size:13px;color:#6f6f6f">Best when you want the most and can wait two to six weeks. I list above the dealer market to private clients first, then the dealer network. You approve every sale. 8% of the sale price, nothing up front, insured the whole time it is with me.</p></div>
                     </div>
                 </div>
             </section>
@@ -544,149 +680,145 @@
     <div id="pt-modal-root"></div>
 
     <script>
-    /* Instant Offer. Everything goes through /api/submit-form with
+    /* Sell flow. Everything goes through /api/submit-form with
        action:"instant-offer". Photos upload straight to a signed URL in the
-       private bucket; only the storage paths travel with the submission. */
+       private bucket; only storage paths travel with the submission. The
+       number is always computed server-side at the end. */
     (function(){
       var API='/api/submit-form';
       var $=function(id){return document.getElementById(id)};
-      var form=$('io-form'), result=$('io-result'), err=$('io-err');
+      var form=$('io-form');
       var session=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
-      var photos=[];   // storage paths that finished uploading
-      var lastQuote=null;
+      var photos=[], uploading=0, photoRead=null, photoTimer=null, photoBusy=null;
+      var chosen=null;      // {ref_core, reference, brand, model, dials, image, dial}
+      var step=1;
 
       function money(n){return '$'+Math.round(Number(n)).toLocaleString('en-US')}
-      function show(id){['io-wait','io-offer','io-thin','io-done'].forEach(function(k){$(k).hidden=(k!==id)})}
+      function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
       function post(body){
         return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:'instant-offer'},body))})
           .then(function(r){return r.json().then(function(j){if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j})});
       }
-      function fields(){
-        return {
-          brand:$('io-brand').value, reference:$('io-ref').value.trim(), dial:$('io-dial').value.trim(),
-          year:$('io-year').value.trim(), condition:$('io-cond').value, set:$('io-set').value
-        };
-      }
+      function radio(name){var el=form.querySelector('input[name="'+name+'"]:checked');return el?el.value:''}
+      function option(){return radio('option')||'instant'}
+      function refValue(){ return chosen ? (chosen.reference||chosen.ref_core) : $('io-ref-manual').value.trim(); }
+      function dialValue(){ return chosen ? (chosen.dial||'') : $('io-dial-manual').value.trim(); }
+      function brandValue(){ return chosen ? (chosen.brand||'') : $('io-brand').value; }
+      function watchLabel(){ return chosen ? [chosen.brand,chosen.model,chosen.reference||chosen.ref_core].filter(Boolean).join(' ') : [brandValue(),refValue()].filter(Boolean).join(' '); }
+      function titleCase(s){return String(s||'').toLowerCase().replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()})}
 
-      /* ---- photo check ----
-         Runs once every upload has settled. Reads the photos with the same
-         model the pipeline uses on dealer listings, confirms or corrects the
-         reference, and fills dial and brand from what it sees. */
-      var photoStrip=$('io-photo'), photoRead=null, uploading=0, photoTimer=null, photoBusy=null;
-      function label(r){
-        var dial=r.dial_color?String(r.dial_color).toLowerCase()+' dial':null;
-        var bits=[r.brand,r.model,r.reference,dial,r.bezel?String(r.bezel).toLowerCase()+' bezel':null,r.bracelet?String(r.bracelet).toLowerCase():null,r.case_metal?String(r.case_metal).toLowerCase().replace(/_/g,' '):null].filter(Boolean);
-        return bits.join(', ');
-      }
-      function schedulePhotoCheck(){ clearTimeout(photoTimer); photoTimer=setTimeout(function(){ if(!uploading && photos.length) photoCheck(); }, 700); }
-      function photoCheck(){
-        if(photoBusy) return photoBusy;
-        photoStrip.hidden=false; photoStrip.className='io-photo is-busy'; photoStrip.textContent='Reading your photos...';
-        photoBusy=post({op:'photo-read',photos:photos,reference:$('io-ref').value.trim()}).then(function(r){
-          photoRead=r; renderPhoto(r); return r;
-        }).catch(function(x){ photoStrip.className='io-photo'; photoStrip.textContent='Could not read the photos this time. The number still works off the reference.'; return null; })
-        .finally(function(){ photoBusy=null; });
-        return photoBusy;
-      }
-      function renderPhoto(r){
-        var rd=r.read||{}; photoStrip.className='io-photo'; photoStrip.textContent='';
-        var typed=$('io-ref').value.trim();
-        if(r.status==='not_a_watch'){ photoStrip.classList.add('is-warn'); photoStrip.textContent='Those photos do not look like a wristwatch. Add a clear shot of the dial and the warranty card.'; return; }
-        if(r.status==='error'||r.status==='none'){ photoStrip.hidden=true; return; }
-        // fill what the seller left blank
-        if(!$('io-dial').value.trim() && rd.dial_color){ $('io-dial').value=String(rd.dial_color).toLowerCase(); }
-        if(!$('io-brand').value && rd.brand){ var o=[].slice.call($('io-brand').options).find(function(o){return o.text.toLowerCase()===String(rd.brand).toLowerCase()}); if(o) $('io-brand').value=o.value; }
-        var seen=label(rd)||'a watch';
-        function money(n){return '$'+Math.round(Number(n)).toLocaleString('en-US')}
-        function candidateButtons(list, prefix){
-          photoStrip.appendChild(document.createTextNode(' '+prefix+' '));
-          (list||[]).forEach(function(c){
-            var b=document.createElement('button'); b.type='button';
-            b.textContent=c.ref_core+' ('+c.n+' listings, ~'+money(c.median)+')';
-            b.addEventListener('click',function(){ $('io-ref').value=c.ref_core; photoRead=null; err.textContent=''; photoStrip.hidden=true; form.requestSubmit ? form.requestSubmit() : $('io-go').click(); });
-            photoStrip.appendChild(b);
+      /* ---- option cards ---- */
+      document.querySelectorAll('.io-opt').forEach(function(card){
+        card.querySelectorAll('.io-tabs button').forEach(function(b){
+          b.addEventListener('click',function(){
+            card.querySelectorAll('.io-tabs button').forEach(function(x){x.classList.toggle('is-on',x===b)});
+            card.querySelectorAll('.io-tab').forEach(function(t){t.hidden=t.getAttribute('data-tab')!==b.getAttribute('data-tab')});
           });
-        }
-        if(r.status==='candidates'){
-          photoStrip.innerHTML='<b>Photos read as</b> '+esc(seen)+'. No reference visible, so here is what the dealer market calls a watch that looks like this. Pick yours:';
-          candidateButtons(r.candidates,''); return;
-        }
-        if(r.status==='mismatch_attributes'){
-          photoStrip.classList.add('is-warn');
-          photoStrip.innerHTML='<b>Check the reference.</b> You typed '+esc(typed)+', but the photos do not look like one: '+esc((r.conflicts||[]).join('; '))+'.';
-          if(r.candidates&&r.candidates.length) candidateButtons(r.candidates,'Closer matches:');
-          return;
-        }
-        if(r.status==='consistent'){
-          photoStrip.innerHTML='<b>Photos line up.</b> They read as '+esc(seen)+', which is what the dealer market lists under '+esc(typed)+'. No reference was visible in the photos themselves.'+(rd.condition_notes?' Noted: '+esc(rd.condition_notes):'');
-          return;
-        }
-        if(r.status==='match'){
-          photoStrip.innerHTML='<b>Photos match.</b> They read as '+esc(seen)+(rd.confidence?' ('+rd.confidence+'% sure)':'')+'.'+(rd.condition_notes?' Noted: '+esc(rd.condition_notes):'');
-        } else if(r.status==='read'){
-          $('io-ref').value=rd.reference||'';
-          photoStrip.innerHTML='<b>Read from your photos:</b> '+esc(seen)+'. Reference filled in for you. Change it if that is wrong.';
-        } else if(r.status==='mismatch'){
-          photoStrip.classList.add('is-warn');
-          photoStrip.innerHTML='<b>Check the reference.</b> You typed '+esc(typed)+' but the photos read as '+esc(seen)+'.';
-          var b=document.createElement('button'); b.type='button'; b.textContent='Use '+rd.reference; b.addEventListener('click',function(){ $('io-ref').value=rd.reference; photoRead.status='match'; renderPhoto(photoRead); if(!$('io-offer').hidden) form.requestSubmit ? form.requestSubmit() : $('io-go').click(); });
-          photoStrip.appendChild(b);
-        } else {
-          photoStrip.innerHTML='<b>Photos read as</b> '+esc(seen)+', but no reference was visible. Add a shot of the warranty card or the engraving between the lugs to confirm.';
-        }
-      }
-      function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
-
-      /* ---- quote ---- */
-      form.addEventListener('submit',function(e){
-        e.preventDefault(); err.textContent='';
-        if(form.website.value) return;                       // honeypot
-        var f=fields();
-        if(f.reference.length<3 && photos.length && !photoRead){
-          // photos but no reference yet: read them first, then price
-          $('io-go').disabled=true; $('io-go').textContent='Reading photos...';
-          photoCheck().then(function(){ $('io-go').disabled=false; $('io-go').textContent='Get my instant offer'; if($('io-ref').value.trim().length>=3) form.requestSubmit ? form.requestSubmit() : $('io-go').click(); else err.textContent='No reference visible in the photos. Type it in, it is on the warranty card or between the lugs.'; });
-          return;
-        }
-        if(f.reference.length<3){err.textContent='Enter the reference number, or add a photo of the warranty card.';$('io-ref').focus();return}
-        $('io-go').disabled=true; $('io-go').textContent='Pricing...'; result.classList.add('is-busy');
-        post(Object.assign({op:'quote'},f)).then(function(q){
-          lastQuote=q; render(q, f);
-          if(window.innerWidth<=900) result.scrollIntoView({behavior:'smooth',block:'start'});
-        }).catch(function(x){ err.textContent=x.message||'Could not price this right now.'; })
-        .finally(function(){ $('io-go').disabled=false; $('io-go').textContent='Get my instant offer'; result.classList.remove('is-busy'); });
+        });
       });
+      document.querySelectorAll('.js-start').forEach(function(b){
+        b.addEventListener('click',function(){
+          var v=b.getAttribute('data-option'); var r=form.querySelector('input[name="option"][value="'+v+'"]'); if(r) r.checked=true;
+          syncOption(); goStep(1); document.getElementById('sell').scrollIntoView({behavior:'smooth',block:'start'});
+        });
+      });
+      function syncOption(){ $('io-submit').textContent = option()==='consign' ? 'Request consignment' : 'Get my instant offer'; }
+      form.querySelectorAll('input[name="option"]').forEach(function(r){r.addEventListener('change',syncOption)});
 
-      function render(q, f){
-        var m=q.market;
-        if(!q.ok){
-          $('io-thin-title').textContent = m&&m.n ? 'Only '+m.n+' recent listing'+(m.n===1?'':'s')+' for this reference' : 'Nothing recent for this reference';
-          var txt='Instant offer: '+[f.brand,f.reference,f.dial?f.dial+' dial':'',f.year,f.condition,f.set].filter(Boolean).join(', ');
-          $('io-thin-sms').href='sms:+19146211848&body='+encodeURIComponent(txt);
-          $('io-thin-wa').href='https://wa.me/19146211848?text='+encodeURIComponent(txt);
-          show('io-thin'); return;
-        }
-        var label=[f.brand||m.brand,f.reference.toUpperCase()].filter(Boolean).join(' ');
-        $('io-offer-meta').textContent='Instant offer for '+label+(m.dial_used?' , '+m.dial_used.toLowerCase().replace(/_/g,' ')+' dial':'');
-        $('io-offer-num').textContent = q.show_range ? money(q.low)+' to '+money(q.high) : money(q.amount);
-        $('io-offer-sub').textContent = (q.show_range?'Middle of the band '+money(q.amount)+'. ':'')+'Holds for 48 hours once locked. Subject to authentication.';
-        $('io-b-med').textContent=money(m.median);
-        $('io-b-n').textContent=m.n+' in '+m.days+' days';
-        $('io-b-band').textContent=money(q.low)+' to '+money(q.high);
-        var note='';
-        if(q.confidence==='HIGH') note='Strong read: '+m.n+' dealer listings agree on this reference'+(m.dial_used?' and dial':'')+'.';
-        else if(q.confidence==='MEDIUM') note='Solid read from '+m.n+' listings. The band shows how far dealers disagree.';
-        else if(q.confidence==='MEDIUM_WIDE') note='Dealers list several variants under this reference, so the band is wide. Tell me the dial colour and I narrow it.';
-        else note='Thin data, '+m.n+' listings. Lock it and I confirm the number by hand within the hour.';
-        if(q.adjustments&&(q.adjustments.condition||q.adjustments.set)) note+=' Adjusted '+Math.round((q.adjustments.condition+q.adjustments.set)*100)+'% for condition and set.';
-        if(q.needs_review) note+=' Offers this size get a personal confirmation from me before they are binding.';
-        $('io-offer-note').textContent=note;
-        result.classList.remove('is-fresh'); void result.offsetWidth; result.classList.add('is-fresh');
-        show('io-offer');
+      /* ---- typeahead ---- */
+      var q=$('io-q'), results=$('io-results'), qTimer=null, lastQ='';
+      q.addEventListener('input',function(){
+        clearTimeout(qTimer); var v=q.value.trim();
+        if(v.length<2){ results.hidden=true; results.innerHTML=''; return; }
+        qTimer=setTimeout(function(){ search(v); }, 220);
+      });
+      q.addEventListener('focus',function(){ if(results.innerHTML && q.value.trim().length>=2) results.hidden=false; });
+      document.addEventListener('click',function(e){ if(!e.target.closest('.io-search')) results.hidden=true; });
+      function search(v){
+        lastQ=v;
+        post({op:'search',q:v}).then(function(r){
+          if(v!==lastQ) return;
+          renderResults(r.results||[]);
+        }).catch(function(){ renderResults([]); });
       }
+      var watchIcon='<svg viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="1.5"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><path d="M32 22v10l6 4"/></svg>';
+      function renderResults(list){
+        results.innerHTML='';
+        list.forEach(function(h){
+          var b=document.createElement('button'); b.type='button'; b.className='io-hit';
+          var dials=(h.dials||[]).map(titleCase).join(' / ');
+          var meta=[h.size_mm?h.size_mm+'mm':null, h.metal?titleCase(h.metal):null, dials?dials+' dial':null].filter(Boolean).join(', ');
+          b.innerHTML='<figure>'+(h.image?'<img src="'+esc(h.image)+'" alt="">':watchIcon)+'</figure><div><div class="b">'+esc(h.brand||'')+'</div><div class="m">'+esc(h.model||'')+'</div><div class="r">'+esc(h.reference||h.ref_core)+'</div><div class="d">'+esc(meta)+'</div></div>';
+          b.addEventListener('click',function(){ choose(h); });
+          results.appendChild(b);
+        });
+        var m=document.createElement('button'); m.type='button'; m.className='io-hit io-hit--manual';
+        m.innerHTML='<b>'+(list.length?"Can't find your watch?":'Nothing in the market under that yet')+'</b>Click here to enter it manually';
+        m.addEventListener('click',function(){ chosen=null; $('io-chosen').classList.remove('is-on'); $('io-dials').hidden=true; $('io-manual').hidden=false; results.hidden=true; $('io-ref-manual').value=/^[a-z0-9\/.-]{4,}$/i.test(q.value.trim())?q.value.trim():''; $('io-ref-manual').focus(); });
+        results.appendChild(m);
+        results.hidden=false;
+      }
+      function choose(h){
+        chosen=Object.assign({},h,{dial:(h.dials&&h.dials.length===1)?h.dials[0]:''});
+        results.hidden=true; q.value=[h.brand,h.model,h.reference||h.ref_core].filter(Boolean).join(' ');
+        $('io-manual').hidden=true;
+        $('io-chosen-img').innerHTML=h.image?'<img src="'+esc(h.image)+'" alt="">':watchIcon;
+        $('io-chosen-name').textContent=[h.brand,h.model].filter(Boolean).join(' ');
+        $('io-chosen-ref').textContent=(h.reference||h.ref_core)+(h.n?' · '+h.n+' dealer listings in 60 days':'');
+        $('io-chosen').classList.add('is-on');
+        var chips=$('io-dials'); chips.innerHTML='';
+        if(h.dials&&h.dials.length>1){
+          var lab=document.createElement('span'); lab.className='io-eyebrow'; lab.style.alignSelf='center'; lab.textContent='Dial:'; chips.appendChild(lab);
+          h.dials.forEach(function(d){ var c=document.createElement('button'); c.type='button'; c.textContent=titleCase(d); c.addEventListener('click',function(){ chosen.dial=d; chips.querySelectorAll('button').forEach(function(x){x.classList.toggle('is-on',x===c)}); }); chips.appendChild(c); });
+          var o=document.createElement('button'); o.type='button'; o.textContent='Other'; o.addEventListener('click',function(){ chosen.dial=''; chips.querySelectorAll('button').forEach(function(x){x.classList.toggle('is-on',x===o)}); }); chips.appendChild(o);
+          chips.hidden=false;
+        } else chips.hidden=true;
+        $('io-err1').textContent='';
+      }
+      $('io-chosen-clear').addEventListener('click',function(){ chosen=null; $('io-chosen').classList.remove('is-on'); $('io-dials').hidden=true; q.value=''; q.focus(); });
+
+      /* ---- steps ---- */
+      function goStep(n){
+        step=n;
+        form.querySelectorAll('fieldset[data-panel]').forEach(function(f){ f.hidden=Number(f.getAttribute('data-panel'))!==n; });
+        document.querySelectorAll('#io-steps li').forEach(function(li){
+          var s=Number(li.getAttribute('data-step')); li.classList.toggle('is-on',s===n); li.classList.toggle('is-done',s<n);
+        });
+        if(n===2){ syncSummary(); }
+        $('io-result').hidden=true;
+      }
+      function syncSummary(){
+        var s=$('io-summary'); var label=watchLabel();
+        if(!label){ s.hidden=true; return; }
+        $('io-summary-img').innerHTML=(chosen&&chosen.image)?'<img src="'+esc(chosen.image)+'" alt="">':watchIcon;
+        $('io-summary-name').textContent=chosen?[chosen.brand,chosen.model].filter(Boolean).join(' '):label;
+        $('io-summary-ref').textContent=(refValue()||'')+(dialValue()?' · '+titleCase(dialValue())+' dial':'');
+        s.hidden=false;
+      }
+      function validate1(){
+        var e=$('io-err1'); e.textContent='';
+        if(!$('io-loc').value){ e.textContent='Tell me where the watch is.'; $('io-loc').focus(); return false; }
+        if(!refValue() && !$('io-manual').hidden && !$('io-brand').value){ e.textContent='Pick a brand, or search for the watch above.'; return false; }
+        if(!radio('hasBox')||!radio('hasPapers')||!radio('worn')){ e.textContent='Answer the box, papers and worn questions.'; return false; }
+        if(!form.ack.checked){ e.textContent='Please tick the authentication acknowledgement.'; return false; }
+        return true;
+      }
+      function validate2(){
+        var e=$('io-err2'); e.textContent='';
+        if(uploading){ e.textContent='Photos are still uploading, one moment.'; return false; }
+        if(photos.length<3){ e.textContent='Add at least 3 photos, ideally the front, the caseback and the card.'; return false; }
+        if(!refValue()){ e.textContent='I could not read a reference from the photos. Go back and search for the watch, or add a photo of the warranty card.'; return false; }
+        return true;
+      }
+      form.querySelectorAll('.js-next').forEach(function(b){ b.addEventListener('click',function(){
+        if(step===1 && validate1()){ goStep(2); scrollTo(); }
+        else if(step===2 && validate2()){ goStep(3); scrollTo(); }
+      })});
+      form.querySelectorAll('.js-back').forEach(function(b){ b.addEventListener('click',function(){ goStep(step-1); scrollTo(); })});
+      function scrollTo(){ $('io-steps').scrollIntoView({behavior:'smooth',block:'start'}); }
 
       /* ---- photos ---- */
-      var drop=$('io-drop'), files=$('io-files'), thumbs=$('io-thumbs');
+      var drop=$('io-drop'), files=$('io-files'), thumbs=$('io-thumbs'), photoStrip=$('io-photo');
       drop.addEventListener('click',function(){files.click()});
       ['dragenter','dragover'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('is-over')})});
       ['dragleave','drop'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('is-over')})});
@@ -695,69 +827,142 @@
       function addFiles(list){
         var room=6-thumbs.children.length;
         Array.prototype.slice.call(list,0,Math.max(0,room)).forEach(upload);
-        if(list.length>room) err.textContent='Six photos is the limit. The first six are in.';
+        if(list.length>room) $('io-err2').textContent='Six photos is the limit. The first six are in.';
       }
       function upload(file){
         if(!/^image\//.test(file.type)) return;
         var t=document.createElement('div'); thumbs.appendChild(t);
         var rd=new FileReader(); rd.onload=function(){t.style.backgroundImage='url('+rd.result+')'}; rd.readAsDataURL(file);
-        uploading++; photoRead=null;
+        uploading++; photoRead=null; $('io-err2').textContent='';
         post({op:'sign-upload',filename:file.name,mime:file.type||'image/jpeg',session:session}).then(function(s){
           return fetch(s.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type||'application/octet-stream'},body:file}).then(function(r){
             if(!r.ok) throw new Error('upload '+r.status);
-            photos.push(s.path); t.classList.add('is-up');
+            photos.push(s.path); t.classList.add('is-up'); markGuide();
           });
-        }).catch(function(x){ t.classList.add('is-err'); err.textContent='One photo did not upload. You can still get the number.'; })
+        }).catch(function(){ t.classList.add('is-err'); $('io-err2').textContent='One photo did not upload. Try that one again.'; })
         .finally(function(){ uploading--; schedulePhotoCheck(); });
       }
-      // Typing a different reference after a photo read: re-check against it.
-      $('io-ref').addEventListener('change',function(){ if(photos.length){ photoRead=null; schedulePhotoCheck(); } });
+      function markGuide(){ var got=photos.length; document.querySelectorAll('#io-guide figure').forEach(function(f,i){ f.classList.toggle('is-got', i<got); }); }
 
-      /* ---- lock in ---- */
-      $('io-lock').addEventListener('submit',function(e){
-        e.preventDefault(); var le=$('io-lock-err'); le.textContent='';
-        var f=fields();
-        var body=Object.assign({op:'submit'},f,{
-          fullName:$('io-name').value.trim(), email:$('io-email').value.trim(), phone:$('io-phone').value.trim(),
-          location:$('io-loc').value.trim(), notes:$('io-notes').value.trim(), photos:photos
+      /* ---- photo check: confirm or find the reference from the photos ---- */
+      function schedulePhotoCheck(){ clearTimeout(photoTimer); photoTimer=setTimeout(function(){ if(!uploading && photos.length) photoCheck(); }, 700); }
+      function photoCheck(){
+        if(photoBusy) return photoBusy;
+        photoStrip.hidden=false; photoStrip.className='io-photo is-busy'; photoStrip.textContent='Reading your photos...';
+        photoBusy=post({op:'photo-read',photos:photos,reference:refValue()}).then(function(r){ photoRead=r; renderPhoto(r); return r; })
+          .catch(function(){ photoStrip.className='io-photo'; photoStrip.textContent='Could not read the photos this time. The reference you gave still stands.'; return null; })
+          .finally(function(){ photoBusy=null; });
+        return photoBusy;
+      }
+      function label(r){
+        var dial=r.dial_color?String(r.dial_color).toLowerCase()+' dial':null;
+        return [r.brand?titleCase(r.brand):null, r.model?titleCase(r.model):null, r.reference, dial, r.bezel?String(r.bezel).toLowerCase()+' bezel':null, r.bracelet?titleCase(r.bracelet)+' bracelet':null, r.case_metal?titleCase(r.case_metal):null].filter(Boolean).join(', ');
+      }
+      function pickRef(ref, extra){
+        // a reference chosen from the photo read replaces whatever was typed
+        chosen=Object.assign({ref_core:ref, reference:ref, brand:extra&&extra.brand||brandValue(), model:extra&&extra.model||'', dials:[], image:null, dial:extra&&extra.dial||''}, {});
+        $('io-manual').hidden=true; $('io-chosen').classList.remove('is-on');
+        syncSummary();
+      }
+      function candidateButtons(list, prefix){
+        if(prefix) photoStrip.appendChild(document.createTextNode(' '+prefix+' '));
+        var wrap=document.createElement('div');
+        (list||[]).forEach(function(c){
+          var b=document.createElement('button'); b.type='button';
+          b.textContent=c.ref_core+(c.model?' · '+c.model:'')+' ('+c.n+' listings, ~'+money(c.median)+')';
+          b.addEventListener('click',function(){ pickRef(c.ref_core,{model:c.model,brand:photoRead&&photoRead.read&&photoRead.read.brand,dial:photoRead&&photoRead.read&&photoRead.read.dial_color||''}); photoStrip.className='io-photo'; photoStrip.innerHTML='<b>Set to '+esc(c.ref_core)+'.</b> '+esc(label(photoRead.read||{}))+'.'; $('io-err2').textContent=''; });
+          wrap.appendChild(b);
         });
-        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)){le.textContent='Enter a valid email.';return}
-        if(body.phone.replace(/\D/g,'').length<7){le.textContent='Enter a mobile number I can reach you on.';return}
-        if(!body.location){le.textContent='Tell me where you are based.';return}
-        $('io-lock-go').disabled=true; $('io-lock-go').textContent='Locking...';
-        post(body).then(function(r){
-          $('io-done-num').textContent = r.ok && r.amount!=null ? (r.show_range? money(r.low)+' to '+money(r.high) : money(r.amount)) : 'Quote by hand';
-          $('io-done-sub').textContent = r.expires_at ? 'Held until '+new Date(r.expires_at).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
-          show('io-done');
-        }).catch(function(x){ le.textContent=x.message||'Could not save that. Text me instead.'; })
-        .finally(function(){ $('io-lock-go').disabled=false; $('io-lock-go').textContent='Lock in this offer'; });
-      });
+        photoStrip.appendChild(wrap);
+      }
+      function renderPhoto(r){
+        var rd=r.read||{}; photoStrip.className='io-photo'; photoStrip.textContent='';
+        var typed=refValue();
+        if(r.status==='not_a_watch'){ photoStrip.classList.add('is-warn'); photoStrip.textContent='Those photos do not look like a wristwatch. Add a clear shot of the dial and the warranty card.'; return; }
+        if(r.status==='error'||r.status==='none'){ photoStrip.hidden=true; return; }
+        if(chosen && !chosen.dial && rd.dial_color) chosen.dial=String(rd.dial_color).toLowerCase();
+        if(!chosen && !$('io-dial-manual').value && rd.dial_color) $('io-dial-manual').value=String(rd.dial_color).toLowerCase();
+        var seen=label(rd)||'a watch';
+        if(r.status==='match'){ photoStrip.innerHTML='<b>Photos match.</b> They read as '+esc(seen)+(rd.confidence?' ('+rd.confidence+'% sure)':'')+'.'+(rd.condition_notes?' Noted: '+esc(rd.condition_notes):''); }
+        else if(r.status==='consistent'){ photoStrip.innerHTML='<b>Photos line up.</b> They read as '+esc(seen)+', which is what the dealer market lists under '+esc(typed)+'.'+(rd.condition_notes?' Noted: '+esc(rd.condition_notes):''); }
+        else if(r.status==='read'){ pickRef(rd.reference,{brand:rd.brand,model:rd.model,dial:rd.dial_color||''}); photoStrip.innerHTML='<b>Read from your photos:</b> '+esc(seen)+'. Reference set to '+esc(rd.reference)+'.'; }
+        else if(r.status==='mismatch'){ photoStrip.classList.add('is-warn'); photoStrip.innerHTML='<b>Check the reference.</b> You chose '+esc(typed)+' but the photos read as '+esc(seen)+'.'; var b=document.createElement('button'); b.type='button'; b.textContent='Use '+rd.reference; b.addEventListener('click',function(){ pickRef(rd.reference,{brand:rd.brand,model:rd.model,dial:rd.dial_color||''}); photoStrip.className='io-photo'; photoStrip.innerHTML='<b>Set to '+esc(rd.reference)+'.</b>'; }); photoStrip.appendChild(b); }
+        else if(r.status==='mismatch_attributes'){ photoStrip.classList.add('is-warn'); photoStrip.innerHTML='<b>Check the reference.</b> You chose '+esc(typed)+', but the photos do not look like one: '+esc((r.conflicts||[]).join('; '))+'.'; if(r.candidates&&r.candidates.length) candidateButtons(r.candidates,'Closer matches:'); }
+        else if(r.status==='candidates'){ photoStrip.innerHTML='<b>Photos read as</b> '+esc(seen)+'. No reference was visible, so here is what the dealer market calls a watch that looks like this. Pick yours:'; candidateButtons(r.candidates,''); }
+        else { photoStrip.innerHTML='<b>Photos read as</b> '+esc(seen)+', but no reference was visible.'+(typed?' Going with '+esc(typed)+'.':' Add a shot of the warranty card or the engraving between the lugs, or go back and search for the watch.'); }
+        syncSummary();
+      }
 
-      /* Deep link: /instant-offer/?ref=126610LN&dial=black prefills and prices
-         straight away. Lets a text or an Instagram link land on a number. */
+      /* ---- submit ---- */
+      form.addEventListener('submit',function(e){
+        e.preventDefault(); var er=$('io-err3'); er.textContent='';
+        if(form.website.value) return;                          // honeypot
+        var first=$('io-first').value.trim(), last=$('io-last').value.trim(), email=$('io-email').value.trim(), phone=$('io-phone').value.trim();
+        if(!first||!last){ er.textContent='Your name, please.'; return; }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ er.textContent='Enter a valid email.'; return; }
+        if(phone.replace(/\D/g,'').length<7){ er.textContent='Please enter a phone number.'; return; }
+        if(!form.contactOk.checked||!form.terms.checked){ er.textContent='Please tick both boxes.'; return; }
+        var worn=radio('worn'), pol=radio('polished'), box=radio('hasBox'), pap=radio('hasPapers');
+        var condition = worn==='no' ? 'unworn' : (pol==='yes' ? 'good' : 'excellent');
+        var set = (box==='yes'&&pap==='yes') ? 'full' : box==='yes' ? 'box' : pap==='yes' ? 'papers' : 'naked';
+        var body={ op:'submit', option:option(), brand:brandValue(), reference:refValue(), dial:dialValue(), condition:condition, set:set,
+          hasBox:box, hasPapers:pap, worn:worn, polished:pol||null, watchLabel:watchLabel(),
+          firstName:first, lastName:last, email:email, phone:(phone.startsWith('+')?phone:'+1 '+phone), location:$('io-loc').value,
+          notes:form.notes.value.trim(), photos:photos, agreedTerms:true };
+        var btn=$('io-submit'); btn.disabled=true; btn.textContent=option()==='consign'?'Sending...':'Pricing...';
+        post(body).then(function(r){ renderResult(r); })
+          .catch(function(x){ er.textContent=x.message||'Could not send that. Text me instead.'; })
+          .finally(function(){ btn.disabled=false; syncOption(); });
+      });
+      function renderResult(r){
+        var res=$('io-result'); form.hidden=true; res.hidden=false;
+        document.querySelectorAll('#io-steps li').forEach(function(li){ li.classList.add('is-done'); li.classList.remove('is-on'); });
+        ['io-offer','io-thin','io-consigned'].forEach(function(k){$(k).hidden=true});
+        var m=r.market;
+        if(option()==='consign'){
+          $('io-consign-note').textContent = (m&&m.n>=3) ? 'For reference, dealers are trading this reference at a median of '+money(m.median)+' across '+m.n+' listings in the last '+m.days+' days. On consignment I list above that and you approve the sale.' : 'I have your photos and details and will come back with a market read and a suggested ask.';
+          $('io-consigned').hidden=false;
+        } else if(!r.ok || r.amount==null){
+          if(m&&m.n) $('io-thin-title').textContent='Only '+m.n+' recent listing'+(m.n===1?'':'s')+' for this reference';
+          $('io-thin').hidden=false;
+        } else {
+          $('io-offer-meta').textContent='Your instant offer for '+watchLabel()+(m&&m.dial_used?', '+titleCase(m.dial_used)+' dial':'');
+          $('io-offer-num').textContent = r.show_range ? money(r.low)+' to '+money(r.high) : money(r.amount);
+          $('io-offer-sub').textContent = (r.show_range?'Middle of the band '+money(r.amount)+'. ':'')+'Held until '+new Date(r.expires_at).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'. Subject to authentication.';
+          $('io-b-med').textContent=money(m.median); $('io-b-n').textContent=m.n+' in '+m.days+' days'; $('io-b-band').textContent=money(r.low)+' to '+money(r.high);
+          var note='';
+          if(r.confidence==='HIGH') note='Strong read: '+m.n+' dealer listings agree on this reference'+(m.dial_used?' and dial':'')+'.';
+          else if(r.confidence==='MEDIUM') note='Solid read from '+m.n+' listings. The band shows how far dealers disagree.';
+          else if(r.confidence==='MEDIUM_WIDE') note='Dealers list several variants under this reference, so the band is wide. I confirm the exact number on inspection.';
+          else note='Thin data, '+m.n+' listings. I confirm the number by hand within the hour.';
+          if(r.adjustments&&(r.adjustments.condition||r.adjustments.set)) note+=' Adjusted '+Math.round((r.adjustments.condition+r.adjustments.set)*100)+'% for condition and set.';
+          if(r.needs_review) note+=' Offers this size, or where the photos and reference disagree, get a personal confirmation from me before they are binding.';
+          note+=' I will message you shortly to confirm the piece and set up the handover.';
+          $('io-offer-note').textContent=note;
+          res.classList.remove('is-fresh'); void res.offsetWidth; res.classList.add('is-fresh');
+          $('io-offer').hidden=false;
+        }
+        res.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+
+      /* Deep link: /instant-offer/?ref=126610LN picks the watch and jumps to the form. */
       (function(){
         var p=new URLSearchParams(location.search); var ref=p.get('ref'); if(!ref) return;
-        $('io-ref').value=ref; if(p.get('dial')) $('io-dial').value=p.get('dial');
-        if(p.get('brand')) $('io-brand').value=p.get('brand');
-        setTimeout(function(){ form.requestSubmit ? form.requestSubmit() : $('io-go').click(); }, 300);
+        post({op:'search',q:ref}).then(function(r){
+          var hit=(r.results||[]).find(function(h){return h.ref_core===ref.toUpperCase().replace(/[^A-Z0-9]/g,'')})||(r.results||[])[0];
+          if(hit){ choose(hit); if(p.get('dial')&&hit.dials){ var d=p.get('dial').toUpperCase(); if(hit.dials.indexOf(d)>=0){ chosen.dial=d; $('io-dials').querySelectorAll('button').forEach(function(x){x.classList.toggle('is-on',x.textContent.toUpperCase()===titleCase(d).toUpperCase())}); } } }
+          document.getElementById('sell').scrollIntoView({block:'start'});
+        }).catch(function(){});
       })();
+
+      syncOption();
 
       /* Reveal on scroll, same observer as the other subpages. */
       var io=new IntersectionObserver(function(es){
-        es.forEach(function(e){
-          if(!e.isIntersecting) return;
-          var el=e.target, sibs=[].slice.call(document.querySelectorAll('.pt-reveal'));
-          setTimeout(function(){el.classList.add('is-in')}, 70*(sibs.indexOf(el)%5));
-          io.unobserve(el);
-        });
+        es.forEach(function(e){ if(!e.isIntersecting) return; var el=e.target, sibs=[].slice.call(document.querySelectorAll('.pt-reveal')); setTimeout(function(){el.classList.add('is-in')}, 70*(sibs.indexOf(el)%5)); io.unobserve(el); });
       },{threshold:.12});
       document.querySelectorAll('.pt-reveal').forEach(function(el){io.observe(el)});
-      setTimeout(function(){
-        document.querySelectorAll('.pt-reveal').forEach(function(el){
-          var r=el.getBoundingClientRect();
-          if(r.top < innerHeight && r.bottom > 0) el.classList.add('is-in');
-        });
-      }, 1200);
+      setTimeout(function(){ document.querySelectorAll('.pt-reveal').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top < innerHeight && r.bottom > 0) el.classList.add('is-in'); }); }, 1200);
 
       window.app = {
         openModal: function(kind){ var map={BUY:'source',SELL:'sell',TRADE:'trade'}; var el=document.querySelector('[data-modal="'+(map[kind]||'source')+'"]'); if(el) el.click(); },

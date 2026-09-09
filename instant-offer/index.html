@@ -745,14 +745,25 @@
         }).catch(function(){ renderResults([]); });
       }
       var watchIcon='<svg viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="1.5"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><path d="M32 22v10l6 4"/></svg>';
+      // Brands where the classifier's metal / dial / size reads are not trustworthy
+      // (skeleton dials, carbon and titanium cases): show model and reference only.
+      var NO_ATTRS=/richard\s*mille|hublot|mb&f|urwerk/i;
+      function cleanModel(h){
+        var m=String(h.model||'').trim();
+        // drop a leading copy of the reference ("RM67-02 Ogier" -> "Ogier")
+        var rc=String(h.ref_core||''); if(rc && m.replace(/[^A-Za-z0-9]/g,'').toUpperCase().indexOf(rc)===0) m=m.replace(/^[A-Za-z0-9\-\/\.]+\s*/,'');
+        return m;
+      }
       function niceName(h){
         // "Submariner Steel Black Dial 41mm", like a catalog line
-        var bits=[h.model?titleCase(h.model):null];
-        if(h.metal) bits.push(titleCase(h.metal));
+        var bits=[cleanModel(h)||h.model];
         var nick=String(h.nickname||'').replace(/^"|"$/g,'').trim();
-        if(nick && (String(h.model||'')+' '+String(h.brand||'')).toLowerCase().indexOf(nick.toLowerCase())<0) bits.push('"'+nick+'"');
-        if(h.dials&&h.dials.length===1) bits.push(titleCase(h.dials[0])+' Dial');
-        if(h.size_mm) bits.push((Math.round(h.size_mm*10)/10)+'mm');
+        if(!NO_ATTRS.test(h.brand||'')){
+          if(h.metal) bits.push(titleCase(h.metal));
+          if(nick && (String(h.model||'')+' '+String(h.brand||'')).toLowerCase().indexOf(nick.toLowerCase())<0) bits.push('"'+nick+'"');
+          if(h.dials&&h.dials.length===1) bits.push(titleCase(h.dials[0])+' Dial');
+          if(h.size_mm) bits.push((Math.round(h.size_mm*10)/10)+'mm');
+        } else if(nick && (String(h.model||'')).toLowerCase().indexOf(nick.toLowerCase())<0) bits.push('"'+nick+'"');
         return bits.filter(Boolean).join(' ');
       }
       function renderResults(list){
@@ -760,7 +771,8 @@
         list.forEach(function(h){
           var b=document.createElement('button'); b.type='button'; b.className='io-hit';
           var dials=(h.dials||[]).map(titleCase);
-          var meta=[h.size_mm?(Math.round(h.size_mm*10)/10)+'mm':null, dials.length>1?('Dials: '+dials.join(', ')):null, h.n?h.n+' dealer listings':null].filter(Boolean).join(' · ');
+          var noAttrs=NO_ATTRS.test(h.brand||'');
+          var meta=[(!noAttrs&&h.size_mm)?(Math.round(h.size_mm*10)/10)+'mm':null, (!noAttrs&&dials.length>1)?('Dials: '+dials.join(', ')):null, h.n?h.n+' dealer listings':null].filter(Boolean).join(' · ');
           b.innerHTML='<figure>'+(h.image?'<img src="'+esc(h.image)+'" alt="">':watchIcon)+'</figure><div><div class="b">'+esc(h.brand||'')+'</div><div class="m">'+esc(niceName(h))+'</div><div class="r">'+esc(h.reference||h.ref_core)+'</div><div class="d">'+esc(meta)+'</div></div>';
           b.addEventListener('click',function(){ choose(h); });
           results.appendChild(b);

@@ -123,7 +123,7 @@ function renderWatchPage(w, all = []) {
 
     const thumbsHtml = imgs.length > 1
         ? `<div class="pt-thumbs">` + imgs.map((u, i) =>
-            `<button type="button" class="${i === 0 ? 'is-active' : ''}" data-src="${escAttr(variantUrl(u, 'medium'))}"><img src="${escAttr(variantUrl(u, 'thumb'))}" width="300" height="300" alt="${escAttr(displayName)} view ${i + 1}" loading="lazy"></button>`
+            `<button type="button" class="${i === 0 ? 'is-active' : ''}" data-src="${escAttr(variantUrl(u, 'medium'))}"><img src="${escAttr(variantUrl(u, 'thumb'))}" width="300" height="300" alt="${escAttr(displayName)} view ${i + 1}" loading="lazy" onerror="dbhImgRetry(this)"></button>`
           ).join('') + `</div>`
         : '';
 
@@ -334,6 +334,12 @@ body{background:#fff;color:#000;font-family:var(--pt-mono)}
 </style>
 
 <script>
+/* A refused image (storage rate limit, 429/ORB) is not a missing image. Retry
+   with backoff, then fall back to the full-size file, then leave the alt. Same
+   idea as dbhImgRetry on /buy. */
+window.dbhImgRetry=function(el){var n=Number(el.dataset.retry||0);if(n>=4){if(el.dataset.full&&!el.dataset.fullTried){el.dataset.fullTried='1';el.removeAttribute('srcset');el.setAttribute('src',el.dataset.full);return;}el.onerror=null;return;}el.dataset.retry=String(n+1);el.style.visibility='hidden';el.onload=function(){el.style.visibility='';el.onload=null;};var src=el.getAttribute('src');setTimeout(function(){el.setAttribute('src',src.split('#')[0]+'#r'+(n+1));},600*(n+1)+Math.random()*400);};
+</script>
+<script>
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -368,7 +374,7 @@ fbq('init', '798516899968965'); fbq('track', 'PageView');
 <a class="pt-back" href="/buy/">&larr; Back to all pieces</a>
 <div class="pt-detail">
 <div class="pt-media">
-<div class="pt-media__main"><img id="pt-main-img" src="${imgs[0] ? escAttr(variantUrl(imgs[0], 'medium')) : ''}"${imgs[0] ? ` srcset="${escAttr(variantUrl(imgs[0], 'medium'))} 600w, ${escAttr(normPath(imgs[0]))} 900w" sizes="(max-width: 900px) 92vw, 600px"` : ''} width="600" height="600" fetchpriority="high" alt="${escAttr(displayName)}"></div>
+<div class="pt-media__main"><img id="pt-main-img" src="${imgs[0] ? escAttr(variantUrl(imgs[0], 'medium')) : ''}"${imgs[0] ? ` srcset="${escAttr(variantUrl(imgs[0], 'medium'))} 600w, ${escAttr(normPath(imgs[0]))} 900w" sizes="(max-width: 900px) 92vw, 600px"` : ''} width="600" height="600" fetchpriority="high" alt="${escAttr(displayName)}"${imgs[0] ? ` data-full="${escAttr(normPath(imgs[0]))}"` : ''} onerror="dbhImgRetry(this)"></div>
 ${thumbsHtml}
 </div>
 <div class="pt-info">
@@ -400,7 +406,7 @@ ${related.length ? `
 </style>
 <div class="pt-relgrid">
 ${related.map(p => `<a href="/watch/${p.slug}" aria-label="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' ' + escAttr(p.ref) : ''}">
-<div class="rimg"><img src="${escAttr(normPath(p.image))}" alt="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy"></div>
+<div class="rimg"><img src="${escAttr(normPath(p.image))}" alt="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" onerror="dbhImgRetry(this)"></div>
 <span class="rname">${escHtml((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}</span>
 ${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
 </a>`).join('')}

@@ -26,6 +26,10 @@ window.dbhImgRetry = function (el) {
     return;
   }
   el.dataset.retry = n + 1;
+  // While a refused tile retries, keep the browser's broken-image glyph off
+  // screen: the dark tile reads as still loading, which is the truth.
+  el.style.visibility = 'hidden';
+  el.onload = function () { el.style.visibility = ''; el.onload = null; };
   var wait = [1200, 3000, 7000, 15000][n] + Math.random() * 800;
   setTimeout(function () {
     var src = el.getAttribute('src'), ss = el.getAttribute('srcset');

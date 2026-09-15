@@ -1,0 +1,42 @@
+# Dialed by H
+
+> Dialed by H is an independent luxury watch dealer and sourcing service run by Henry Ohler, operating in Boston, New York City and Miami and shipping insured across the US.
+
+Buyers can purchase from live inventory or submit a sourcing request for a specific watch; Henry locates it on their behalf and responds within 12 hours. Every watch is independently authenticated, with fully insured shipping anywhere in the US. Boston clients can meet in person.
+
+## Core Service
+
+- [Home](https://www.dialedbyhenry.com/): Overview of the dealer, sourcing service and current inventory.
+- [How It Works](https://www.dialedbyhenry.com/process): Step-by-step explanation of the sourcing and acquisition process.
+- [Buy a Watch](https://www.dialedbyhenry.com/buy): Browse watches currently available for direct purchase, filterable by brand and collection.
+- [Request to Source](https://www.dialedbyhenry.com/source): Submit a request for a specific reference.
+- [About](https://www.dialedbyhenry.com/about): Background on Henry and the business.
+
+## Shop by Brand
+
+- [Rolex](https://www.dialedbyhenry.com/rolex): Available Rolex inventory and sourcing for Rolex models.
+- [Patek Philippe](https://www.dialedbyhenry.com/patek-philippe): Available Patek Philippe inventory and sourcing.
+- [Audemars Piguet](https://www.dialedbyhenry.com/audemars-piguet): Available Audemars Piguet inventory and sourcing.
+- [Richard Mille](https://www.dialedbyhenry.com/richard-mille): Available Richard Mille inventory and sourcing.
+- [Vacheron Constantin](https://www.dialedbyhenry.com/vacheron-constantin): Available Vacheron Constantin inventory and sourcing.
+- [F.P. Journe](https://www.dialedbyhenry.com/fp-journe): Available F.P. Journe inventory and sourcing.
+- [A. Lange & Söhne](https://www.dialedbyhenry.com/a-lange-sohne): Available A. Lange & Söhne inventory and sourcing.
+- [Cartier](https://www.dialedbyhenry.com/cartier): Available Cartier inventory and sourcing.
+
+## Boston Local Pages
+
+- [Rolex Dealer Boston](https://www.dialedbyhenry.com/rolex-dealer-boston): Sourcing and buying Rolex watches in Boston.
+- [Buy Rolex Boston](https://www.dialedbyhenry.com/buy-rolex-boston): For buyers seeking Rolex purchases in the Boston area.
+- [Sell Rolex Boston](https://www.dialedbyhenry.com/sell-rolex-boston): For sellers looking to sell a Rolex in Boston, with a same-day number and in-person handover.
+- [Patek Philippe Boston](https://www.dialedbyhenry.com/patek-philippe-boston): Patek Philippe sourcing and sales in the Boston area.
+- [Boston](https://www.dialedbyhenry.com/boston): General Boston-area luxury watch dealer page.
+
+## Journal
+
+- [Journal](https://www.dialedbyhenry.com/journal): Articles and editorial content on luxury watches, plus a newsletter.
+
+## Optional
+
+- [Privacy Policy](https://www.dialedbyhenry.com/privacy): Site privacy policy and terms.
+- [Sitemap](https://www.dialedbyhenry.com/sitemap.xml): Full list of pages.
+- [All Watch Listings](https://www.dialedbyhenry.com/buy): 1,700+ individual watch pages at /watch/<slug>, spanning Rolex, Patek Philippe, Audemars Piguet, Richard Mille, Vacheron Constantin, F.P. Journe, A. Lange & Söhne, Cartier, Omega, Tudor and others, reachable from the brand pages or the buy page.

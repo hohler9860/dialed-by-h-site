@@ -68,33 +68,7 @@ function escHtml(s) {
         .replace(/'/g, "&#39;");
 }
 
-// Editor.js sends real HTML for inline formatting, so these fields cannot just
-// be escaped without losing bold, italics and links. Allow that short list and
-// strip everything else, including any tag that can execute and any attribute
-// that can carry a handler. Anything not on the list is neutered into text.
-const INLINE_OK = new Set(["b", "strong", "i", "em", "u", "s", "mark", "code", "br", "a"]);
-
-function sanitizeInline(html) {
-    if (html == null) return "";
-    let out = String(html);
-
-    // Kill whole elements that can execute, contents and all, before anything else.
-    out = out.replace(/<(script|style|iframe|object|embed|svg|math|template)\b[\s\S]*?<\/\1\s*>/gi, "");
-    out = out.replace(/<(script|style|iframe|object|embed|svg|math|template)\b[^>]*\/?>/gi, "");
-
-    return out.replace(/<\/?([a-zA-Z0-9-]+)([^>]*)>/g, (tag, name, attrs) => {
-        const n = String(name).toLowerCase();
-        if (!INLINE_OK.has(n)) return escHtml(tag);          // show it, never run it
-        if (tag.startsWith("</")) return `</${n}>`;
-        if (n !== "a") return `<${n}>`;                       // drop all attributes
-
-        // Links keep only an href, and only to somewhere harmless.
-        const href = /href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs || "");
-        const url = href ? (href[2] ?? href[3] ?? href[4] ?? "").trim() : "";
-        if (!/^(https?:\/\/|mailto:|\/|#)/i.test(url)) return "<a>";
-        return `<a href="${escHtml(url)}" rel="noopener nofollow" target="_blank">`;
-    });
-}
+const { sanitizeInline, sanitizeArticle } = require('../lib/safe-html');
 
 function renderBlock(block, fallbackAlt) {
     const { type, data } = block || {};
@@ -125,8 +99,12 @@ function renderBlock(block, fallbackAlt) {
             if (!url) return "";
             // Alt text: caption if written, else the article title — never empty (SEO/a11y).
             const alt = escHtml(data.caption || fallbackAlt || "");
-            const caption = data.caption ? `<figcaption>${data.caption}</figcaption>` : "";
-            return `<figure class="journal-figure"><img src="${escHtml(url)}" alt="${alt}" loading="lazy" />${caption}</figure>`;
+            const caption = data.caption ? `<figcaption>${sanitizeInline(data.caption)}</figcaption>` : "";
+            const imageClass = `journal-figure${data.carouselArtwork ? " journal-carousel" : ""}${data.imageFit === "contain" ? " journal-product" : ""}${data.imagePosition === "top" ? " journal-focus-top" : data.imagePosition === "bottom" ? " journal-focus-bottom" : ""}`;
+            if (data.watchFile && data.watchFile.url) {
+                return `<figure class="${imageClass}"><div class="journal-pair"><img src="${escHtml(url)}" alt="${alt}" loading="lazy" /><img src="${escHtml(data.watchFile.url)}" alt="${escHtml(data.watchAlt || 'Standalone watch photograph')}" loading="lazy" /></div>${caption}</figure>`;
+            }
+            return `<figure class="${imageClass}"><img src="${escHtml(url)}" alt="${alt}" loading="lazy" />${caption}</figure>`;
         }
         case "embed": {
             const url = data.embed || data.source || "";
@@ -148,7 +126,7 @@ function renderBlock(block, fallbackAlt) {
 
 function renderEditorJson(json, fallbackAlt) {
     if (!json || !Array.isArray(json.blocks)) return "";
-    return json.blocks.map((b) => renderBlock(b, fallbackAlt)).join("\n");
+    return sanitizeArticle(json.blocks.map((b) => renderBlock(b, fallbackAlt)).join("\n"));
 }
 
 function plainTextFromJson(json) {

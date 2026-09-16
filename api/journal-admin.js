@@ -68,7 +68,7 @@ function escHtml(s) {
         .replace(/'/g, "&#39;");
 }
 
-const { sanitizeInline, sanitizeArticle } = require('../lib/safe-html');
+const { sanitizeInline, sanitizeArticle } = require('../lib/safe-html-bundle.cjs');
 
 function renderBlock(block, fallbackAlt) {
     const { type, data } = block || {};

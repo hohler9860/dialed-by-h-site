@@ -1,4 +1,4 @@
-const { scriptJson, sanitizeArticle } = require('../lib/safe-html');
+const { scriptJson, sanitizeArticle } = require('../lib/safe-html-bundle.cjs');
 // Server-side renderer for individual Off-Catalog articles.
 // Routed via vercel.json: /journal/:slug -> /api/journal-article-render?slug=:slug
 // Returns full HTML (not JSON) so search engines get content in the initial response.

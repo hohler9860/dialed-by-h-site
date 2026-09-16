@@ -272,7 +272,7 @@ a.pa-crumb:hover{color:#000}
 .pa-body > * + *{margin-top:22px}
 .pa-body p{margin-top:0;margin-bottom:0}
 .pa-body p + p{margin-top:1.2em}
-.pa-body h2,.pa-body h3,.pa-body h4{font-family:var(--pt-serif);text-transform:uppercase;line-height:1.1;margin-top:46px;color:#000}
+.pa-body h2,.pa-body h3,.pa-body h4{font-family:var(--pt-serif);text-transform:uppercase;line-height:1.1;margin-top:46px;margin-left:auto;margin-right:auto;text-align:center;text-wrap:balance;color:#000}
 .pa-body h2{font-size:clamp(25px,2.1vw,40px);max-width:37.4ch}
 .pa-body h3{font-size:clamp(22px,1.7vw,32px)}
 .pa-body h4{font-size:16px}

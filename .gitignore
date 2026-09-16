@@ -20,3 +20,6 @@ inquiry-preview.html
 .vercel
 .env*
 logs/
+
+# Generated journal sanitizer bundle
+lib/safe-html-bundle.cjs

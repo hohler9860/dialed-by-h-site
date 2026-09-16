@@ -5,7 +5,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-only';
 process.env.ADMIN_PASSWORD = 'test-admin';
 const admin = require('../api/journal-admin');
 const article = require('../api/journal-article-render');
-const { sanitizeInline, sanitizeArticle, scriptJson } = require('../lib/safe-html');
+const { sanitizeInline, sanitizeArticle, scriptJson } = require('../lib/safe-html-bundle.cjs');
 function response(data, status = 200) { return { ok: status < 400, status, json: async () => data, text: async () => JSON.stringify(data) }; }
 async function invoke(handler, body = {}, query = {}, method = 'POST') {
   const res = { code: 200, headers: {}, setHeader(k,v) { this.headers[k] = v; }, status(n) { this.code = n; return this; }, json(v) { this.body = v; return this; }, send(v) { this.body = v; return this; }, redirect(n,v) { this.code = n; this.location = v; return this; }, end() {} };

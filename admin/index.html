@@ -3289,7 +3289,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // belongs to Buyers/Matches, parts to the Parts tab. This feed is supply.
     var WTILES = [
         { k: '',         l: 'For sale' },
-        { k: 'deals',    l: 'Under market' },
+        // 'Under market' tile removed 2026-09-20 (Henry): the baseline is not
+        // trustworthy enough to call anything a deal.
         { k: 'priced',   l: 'Priced' },
         { k: 'diamonds', l: 'Diamonds' },
         { k: 'mismatch', l: 'Photo ≠ text' },
@@ -3302,7 +3303,6 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var isDemand = l.listing_type === 'WTB' || l.listing_type === 'NTQ' || l.listing_type === 'ISO';
         var isParts = l.listing_type === 'PARTS';
         if (!k) return !isDemand && !isParts;
-        if (k === 'deals')    return l.delta_pct != null && l.delta_pct >= 10 && !isDemand && !isParts;
         if (k === 'priced')   return l.price_usd != null && !isDemand && !isParts;
         if (k === 'diamonds') return !!l.has_diamonds && !isDemand && !isParts;
         if (k === 'mismatch') return !!l.vision_mismatch;
@@ -3567,8 +3567,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<br>' + esc(WS.names[l.group_jid] || '') +
                     '<br>' + esc(fmtAgo(l.message_ts)) + ' · ' + esc(l.listing_type || '') +
                 '</div>';
-            var tag = l.listing_type === 'WTB' || l.listing_type === 'NTQ' ? l.listing_type
-                    : (l.delta_pct != null && l.delta_pct >= 10 ? 'DEAL' : '');
+            // No DEAL badge (Henry, 2026-09-20): we do not know the market well
+            // enough to label a listing a deal. Only demand types get a tag.
+            var tag = l.listing_type === 'WTB' || l.listing_type === 'NTQ' ? l.listing_type : '';
             return '<div class="wcard" data-wcard="' + esc(l.id) + '">' +
                 '<div class="wc-img">' +
                     (tag ? '<span class="wc-tag">' + esc(tag) + '</span>' : '') +

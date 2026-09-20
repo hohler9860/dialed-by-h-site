@@ -1352,8 +1352,11 @@ module.exports = async (req, res) => {
         if (action === "health") {
             const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
             const [rows, scorecard, errors] = await Promise.all([
-                wh("pipeline_health?select=*"),
-                wh("model_scorecard?select=*"),
+                // pipeline_health can hit the DB statement timeout when the
+                // jobs table is backed up; the tab must still render (the
+                // requeue controls live here) so a failed view = empty list.
+                wh("pipeline_health?select=*").catch(() => []),
+                wh("model_scorecard?select=*").catch(() => []),
                 wh("extraction_errors?select=*&limit=20").catch(() => []),
             ]);
             const list = Array.isArray(rows) ? rows : [];

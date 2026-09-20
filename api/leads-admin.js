@@ -1118,24 +1118,6 @@ module.exports = async (req, res) => {
             });
         }
 
-        if (action === "dealers") {
-            const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-            const dealers = await supabaseAll(
-                "dealers?select=lid,phone,wa_name,push_name,listings_count,first_seen,last_seen,groups" +
-                "&listings_count=gt.0&order=listings_count.desc",
-                { headers: { "Accept-Profile": "wholesale" } }
-            );
-            return res.status(200).json({
-                dealers,
-                counters: {
-                    total: dealers.length,
-                    with_phone: dealers.filter((d) => d.phone).length,
-                    active_7d: dealers.filter(
-                        (d) => d.last_seen && Date.now() - new Date(d.last_seen).getTime() < 7 * 864e5
-                    ).length,
-                },
-            });
-        }
 
         // What to charge, per reference. Every row carries the evidence behind it:
         // how many dealer quotes, how many comparable retail listings, how close
@@ -1162,56 +1144,6 @@ module.exports = async (req, res) => {
                     no_retail: by("NONE"),
                 },
             });
-        }
-
-        // ── NTQ board ──────────────────────────────────────────────────────
-        // Copy-paste dealer NTQ lines built from client requests scraped out of
-        // iMessage, WhatsApp, email and site submissions. The scrape itself runs
-        // locally on Henry's Mac (scripts/ntq/) because Vercel can't see the
-        // message databases; this endpoint only reads and updates the results.
-        if (action === "ntq") {
-            const rows = await supabaseAll("dbh_ntq?select=*&order=requested_at.desc.nullslast");
-            const by = (s) => rows.filter((r) => r.status === s).length;
-            return res.status(200).json({
-                rows,
-                counters: {
-                    total: rows.length,
-                    open: by("open"),
-                    quoted: by("quoted"),
-                    sourced: by("sourced"),
-                    dead: by("dead"),
-                    needs_detail: rows.filter((r) => r.confidence === "needs-detail" && r.status === "open").length,
-                },
-            });
-        }
-
-        if (action === "ntq-set-status") {
-            const { id, status } = body;
-            const NTQ_STATUSES = ["open", "quoted", "sourced", "dead"];
-            if (!id || !NTQ_STATUSES.includes(status)) {
-                return res.status(400).json({ error: "Missing id or bad status" });
-            }
-            await supabase(`dbh_ntq?id=eq.${encodeURIComponent(id)}`, {
-                method: "PATCH",
-                body: JSON.stringify({ status, updated_at: new Date().toISOString() }),
-            });
-            return res.status(200).json({ updated: true });
-        }
-
-        if (action === "ntq-save-text") {
-            const { id, ntq_text } = body;
-            if (!id || !ntq_text || typeof ntq_text !== "string") {
-                return res.status(400).json({ error: "Missing id or ntq_text" });
-            }
-            await supabase(`dbh_ntq?id=eq.${encodeURIComponent(id)}`, {
-                method: "PATCH",
-                body: JSON.stringify({
-                    ntq_text: ntq_text.slice(0, 500),
-                    confidence: "exact",
-                    updated_at: new Date().toISOString(),
-                }),
-            });
-            return res.status(200).json({ updated: true });
         }
 
         // ── Ask a dealer if a piece is still available ─────────────────────
@@ -1433,48 +1365,6 @@ module.exports = async (req, res) => {
                 stale: list.filter((s) => s.status === "STALE").length,
                 checked_at: new Date().toISOString(),
             });
-        }
-
-        // ── Parts feed ─────────────────────────────────────────────────────
-        // Everything from the RWB parts group plus anything the classifier
-        // typed as PARTS elsewhere. Parts posts are usually a sentence, not a
-        // spec, so the original message text rides along with each row.
-        if (action === "parts") {
-            const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
-            const rows = await supabaseAll(
-                "listings_with_image?select=id,message_pk,group_jid,listing_type,brand,model," +
-                "reference,price_usd,condition,seller_name,message_ts,image_path" +
-                `&or=(group_jid.eq.${PARTS_GROUP_JID},listing_type.eq.PARTS)` +
-                "&order=message_ts.desc",
-                { headers: { "Accept-Profile": "wholesale" } }, 500
-            );
-            const pks = [...new Set(rows.map((r) => r.message_pk).filter(Boolean))];
-            const bodyByPk = {};
-            for (let i = 0; i < pks.length; i += 200) {
-                const msgs = await wh(`messages?select=id,body&id=in.(${pks.slice(i, i + 200).join(",")})`);
-                for (const m of msgs || []) bodyByPk[m.id] = m.body;
-            }
-            const paths = [...new Set(rows.map((r) => r.image_path).filter(Boolean))].slice(0, 250);
-            const urlByPath = {};
-            if (paths.length) {
-                const r2 = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/wholesale-images`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        apikey: SUPABASE_KEY,
-                        Authorization: `Bearer ${SUPABASE_KEY}`,
-                    },
-                    body: JSON.stringify({ expiresIn: 3600, paths }),
-                }).then((r) => (r.ok ? r.json() : [])).catch(() => []);
-                for (const sg of r2 || []) {
-                    if (sg.signedURL) urlByPath[sg.path] = `${SUPABASE_URL}/storage/v1${sg.signedURL}`;
-                }
-            }
-            for (const r of rows) {
-                r.body = r.message_pk ? (bodyByPk[r.message_pk] || null) : null;
-                r.image_url = r.image_path ? urlByPath[r.image_path] || null : null;
-            }
-            return res.status(200).json({ rows, counters: { total: rows.length } });
         }
 
         // ── Jobs board ─────────────────────────────────────────────────────

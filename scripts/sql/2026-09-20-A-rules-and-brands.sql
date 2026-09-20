@@ -1,3 +1,4 @@
+-- STEP A (fast): rules table + brand spelling + model==reference cleanup.
 -- 2026-09-20: reference -> brand/model rules. The classifier keeps the reference
 -- right and the model name wrong (60% of "Daytona" rows are Datejusts, GMTs,
 -- Sky-Dwellers...). References are deterministic, so force brand/model from
@@ -5,7 +6,12 @@
 -- UPDATE at the bottom backfills what is already stored.
 -- Run in the Supabase SQL editor for the DBH project (untnrofsnmoyxdidxbdj).
 
-insert into wholesale.ref_rules (pattern, brand, model, note) values
+-- remove rules from the first version of this file that were wrong
+delete from wholesale.ref_rules where pattern in
+  ('^M?12[46][023]00', '^M?11[46][023]00', '^M?1400[0-9]', '^26[0-9]{3}(ST|OR|SO|IO|TI|CR|BC|IP|SR|NB)');
+
+insert into wholesale.ref_rules (pattern, brand, model, note)
+select v.* from (values
 -- Rolex, 6-digit (optional M prefix, optional -0001 suffix handled by ^ anchor only)
 ('^M?1165[0-9]{2}',        'Rolex', 'Daytona',        '116500-116529'),
 ('^M?1265[0-9]{2}',        'Rolex', 'Daytona',        '126500-126529'),
@@ -50,8 +56,6 @@ insert into wholesale.ref_rules (pattern, brand, model, note) values
 ('^M?1269[0-9]{2}',        'Rolex', 'Air-King',       '126900'),
 ('^M?1169[0-9]{2}',        'Rolex', 'Air-King',       '116900'),
 ('^M?1164[0-9]{2}',        'Rolex', 'Milgauss',       '116400'),
-('^M?12[46][023]00',       'Rolex', 'Oyster Perpetual','124200/124300/126000'),
-('^M?11[46][023]00',       'Rolex', 'Oyster Perpetual','114200/114300/116000'),
 ('^M?27[67]200',           'Rolex', 'Oyster Perpetual','276200/277200'),
 -- Rolex, 5-digit
 ('^M?165[23][0-9]',        'Rolex', 'Daytona',        '16520/16523/16528'),
@@ -60,7 +64,6 @@ insert into wholesale.ref_rules (pattern, brand, model, note) values
 ('^M?167[01][0-9]',        'Rolex', 'GMT-Master II',  '16700/16710/16713/16718'),
 ('^M?1675',                'Rolex', 'GMT-Master',     '1675'),
 ('^M?166[01][0-9]',        'Rolex', 'Submariner',     '16610/16613/16618/16619'),
-('^M?1400[0-9]',           'Rolex', 'Submariner',     '14060 no-date'),
 ('^M?1660[0-9]',           'Rolex', 'Sea-Dweller',    '16600'),
 ('^M?1666[0-9]',           'Rolex', 'Sea-Dweller',    '16660'),
 ('^M?166[2][0-9]',         'Rolex', 'Yacht-Master',   '16622/16623/16628'),
@@ -72,22 +75,60 @@ insert into wholesale.ref_rules (pattern, brand, model, note) values
 ('^(7128|5821)(/|$|[A-Z])',                                    'Patek Philippe', 'Cubitus',  'released 2024'),
 -- Audemars Piguet Royal Oak (15xxx / 77xxx / 67xxx + 2-letter metal code)
 ('^(15|77|67)[0-9]{3}[A-Z]{2}', 'Audemars Piguet', 'Royal Oak', '15202ST/15500ST/77350ST etc'),
-('^26[0-9]{3}(ST|OR|SO|IO|TI|CR|BC|IP|SR|NB)', 'Audemars Piguet', 'Royal Oak Offshore / Chrono', '26xxx is ambiguous between RO chrono and Offshore; review')
-on conflict do nothing;
+-- corrected / long tail (2026-09-20 second pass)
+('^M?(124200|124300|126000|114200|114300|116000|134300)', 'Rolex', 'Oyster Perpetual', 'exact OP refs; 126300 is a Datejust'),
+('^M?1406[0-9]',           'Rolex', 'Submariner',     '14060 no-date'),
+('^M?1166[8][0-9]',        'Rolex', 'Yacht-Master II','116680/116681/116688'),
+('^M?176[0-9]{3}',         'Rolex', 'Datejust',       'DJ26 176200/176234'),
+('^M?178[0-9]{3}',         'Rolex', 'Datejust',       'DJ31 178240/178271/178383'),
+('^M?179[0-9]{3}',         'Rolex', 'Datejust',       'DJ26 179173/179174'),
+('^M?27[89][0-9]{3}',      'Rolex', 'Datejust',       'DJ31/28 incl RBR diamond 278383/279383'),
+('^M?6[89][0-9]{3}',       'Rolex', 'Datejust',       'Lady DJ 68273/68278/69173/69174'),
+('^M?78[0-9]{3}',          'Rolex', 'Datejust',       'DJ31 78240/78273'),
+('^M?5250[0-9]',           'Rolex', '1908',           '52506/52508'),
+('^(5740|7008|7014|7010)(/|$|[A-Z])',            'Patek Philippe', 'Nautilus',  ''),
+('^(5267|5067|5968|5065|5066|5164|5167|5168)(/|$|[A-Z])', 'Patek Philippe', 'Aquanaut', ''),
+('^5326(/|$|[A-Z])',       'Patek Philippe', 'Annual Calendar Travel Time', ''),
+('^7234(/|$|[A-Z])',       'Patek Philippe', 'Calatrava Pilot Travel Time', ''),
+('^(5227|5226|6119|5196|5296)(/|$|[A-Z])', 'Patek Philippe', 'Calatrava', ''),
+('^5236(/|$|[A-Z])',       'Patek Philippe', 'In-line Perpetual Calendar', ''),
+('^5316(/|$|[A-Z])',       'Patek Philippe', 'Grand Complications', ''),
+('^(26470|26420|26405|26400|25940|26170|26703|26480|26238|26238)[A-Z]{2}', 'Audemars Piguet', 'Royal Oak Offshore', ''),
+('^(26331|26240|26320|26315|26300|26239|26715|26237)[A-Z]{2}',             'Audemars Piguet', 'Royal Oak', 'RO chronograph'),
+('^(15210|15211|26393|26600|26394|26397|41000)[A-Z]{2}',                   'Audemars Piguet', 'Code 11.59', ''),
+('^(4500V|4520V|5500V|7900V|4300V|6000V)', 'Vacheron Constantin', 'Overseas', ''),
+('^310\.',                 'Omega', 'Speedmaster', '310.xx incl Snoopy'),
+('^311\.',                 'Omega', 'Speedmaster', ''),
+('^210\.',                 'Omega', 'Seamaster Diver 300M', ''),
+('^220\.',                 'Omega', 'Seamaster Aqua Terra', ''),
+('^215\.',                 'Omega', 'Seamaster Planet Ocean', ''),
+('^7936[0-9]',             'Tudor', 'Black Bay Chrono', ''),
+('^7903[0-9]',             'Tudor', 'Black Bay 58', ''),
+('^7923[0-9]',             'Tudor', 'Black Bay', ''),
+('^2560[0-9]',             'Tudor', 'Pelagos', '')
+) as v(pattern, brand, model, note)
+where not exists (select 1 from wholesale.ref_rules r where r.pattern = v.pattern);
 
--- Backfill: force brand/model on stored rows whose reference matches a rule.
--- Skips rows Henry corrected by hand. Most specific (longest) pattern wins.
-update wholesale.listings l
-set brand = r.brand, model = r.model
-from lateral (
-  select brand, model from wholesale.ref_rules
-  where l.reference ~ pattern
-  order by length(pattern) desc limit 1
-) r
-where l.reference is not null
-  and (l.brand is distinct from r.brand or l.model is distinct from r.model)
-  and coalesce(l.corrected_fields::text, '') !~ '(brand|model)';
+-- Brand spelling normalisation (skip hand-corrected rows)
+update wholesale.listings set brand = v.canon
+from (values
+  ('AP','Audemars Piguet'), ('AUDEMARS PIGUET','Audemars Piguet'),
+  ('BULGARI','Bulgari'), ('BVLGARI','Bulgari'),
+  ('PATEK PHILIPPE','Patek Philippe'), ('Patek','Patek Philippe'),
+  ('Jaeger LeCoultre','Jaeger-LeCoultre'), ('JLC','Jaeger-LeCoultre'),
+  ('A.Lange & Söhne','A. Lange & Söhne'), ('A. Lange & Sohn','A. Lange & Söhne'),
+  ('A. Lange & Sohne','A. Lange & Söhne'), ('Lange','A. Lange & Söhne'),
+  ('ROLEX','Rolex'), ('Vacheron','Vacheron Constantin'), ('VC','Vacheron Constantin'),
+  ('RM','Richard Mille'), ('OMEGA','Omega'), ('CARTIER','Cartier'), ('TUDOR','Tudor')
+) as v(raw, canon)
+where listings.brand = v.raw
+  and coalesce(listings.corrected_fields::text, '') !~ 'brand';
 
--- Sanity check afterwards:
--- select reference, brand, model, count(*) from wholesale.listings
--- where reference ~ '^M?12(62|63|65|67)' group by 1,2,3 order by 1,4 desc;
+-- Model field that just repeats the reference is noise: blank it so the
+-- card shows the brand alone instead of the reference twice.
+update wholesale.listings
+set model = null
+where model is not null and reference is not null
+  and upper(regexp_replace(model, '[^A-Za-z0-9/.-]', '', 'g')) = upper(reference)
+  and coalesce(corrected_fields::text, '') !~ 'model';
+

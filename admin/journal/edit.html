@@ -123,7 +123,7 @@
             font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--l2);
             text-align: center; padding: 24px; max-width: 460px; text-transform: uppercase;
         }
-        .hero-upload img { display: none; width: 100%; height: 100%; object-fit: cover; }
+        .hero-upload img { display: none; width: 100%; height: 100%; object-fit: contain; }
         .hero-upload.has-image img { display: block; }
         .hero-upload.has-image .hero-placeholder { display: none; }
         .hero-upload .hero-remove {
@@ -513,6 +513,67 @@
         });
 
         // ─── Editor.js init ────────────────────────────────────
+        // Keep the existing image block format so older editors retain the main
+        // photograph, while this editor preserves its optional watch companion.
+        class JournalImageTool extends window.ImageTool {
+            constructor(args) {
+                super(args);
+                this.watchFile = args.data?.watchFile || null;
+                this.carouselArtwork = !!args.data?.carouselArtwork;
+                this.imageFit = args.data?.imageFit || "cover";
+                this.imagePosition = args.data?.imagePosition || "center";
+                this.watchAlt = args.data?.watchAlt || "Standalone watch photograph";
+            }
+            render() {
+                const wrapper = document.createElement("div");
+                const row = document.createElement("div");
+                const photo = super.render();
+                const companion = document.createElement("div");
+                const watch = document.createElement("img");
+                watch.style.cssText = "width:100%;height:auto;max-height:540px;object-fit:contain;display:block";
+                companion.appendChild(watch);
+                row.append(photo, companion);
+                const refresh = () => {
+                    row.style.cssText = this.watchFile?.url ? "display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:center" : "display:block";
+                    companion.hidden = !this.watchFile?.url;
+                    if (this.watchFile?.url) { watch.src = this.watchFile.url; watch.alt = this.watchAlt; }
+                    remove.hidden = !this.watchFile?.url;
+                };
+                const controls = document.createElement("div");
+                const fit = document.createElement("select");
+                fit.setAttribute("aria-label", "Image fit");
+                for (const [value, label] of [["cover", "Fill image area"], ["contain", "Show whole product"]]) {
+                    const option = new Option(label, value); fit.add(option);
+                }
+                fit.value = this.imageFit;
+                fit.onchange = () => { this.imageFit = fit.value; markDirty(); };
+                const position = document.createElement("select");
+                position.setAttribute("aria-label", "Crop focus");
+                for (const value of ["top", "center", "bottom"]) position.add(new Option("Crop: " + value, value));
+                position.value = this.imagePosition;
+                position.onchange = () => { this.imagePosition = position.value; markDirty(); };
+                controls.append(fit, position);
+                const add = document.createElement("button");
+                add.type = "button"; add.textContent = "Add / replace watch image";
+                const remove = document.createElement("button");
+                remove.type = "button"; remove.textContent = "Remove watch image";
+                const input = document.createElement("input");
+                input.type = "file"; input.accept = "image/*"; input.hidden = true;
+                add.onclick = () => input.click();
+                input.onchange = async () => {
+                    if (!input.files[0]) return;
+                    try { this.watchFile = { url: await uploadImage(input.files[0]) }; refresh(); markDirty(); }
+                    catch (e) { showToast("Upload failed: " + e.message, true); }
+                };
+                remove.onclick = () => { this.watchFile = null; refresh(); markDirty(); };
+                controls.append(add, remove, input); wrapper.append(row, controls); refresh();
+                return wrapper;
+            }
+            async save(block) {
+                const data = await super.save(block);
+                return { ...data, carouselArtwork: this.carouselArtwork, watchFile: this.watchFile, watchAlt: this.watchAlt, imageFit: this.imageFit, imagePosition: this.imagePosition };
+            }
+        }
         function initEditor(initialData) {
             editor = new EditorJS({
                 holder: "editor",
@@ -531,7 +592,7 @@
                         config: { defaultStyle: "unordered" },
                     },
                     image: {
-                        class: window.ImageTool,
+                        class: JournalImageTool,
                         config: {
                             uploader: {
                                 async uploadByFile(file) {

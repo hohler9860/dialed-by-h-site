@@ -1,3 +1,4 @@
+const { scriptJson } = require('../lib/safe-html');
 // Pure render helpers (underscore = not a serverless function, just an import).
 // Used by get-inventory to serve SSR watch pages and the dynamic sitemap without
 // adding new functions (Hobby plan caps at 12).
@@ -61,6 +62,10 @@ small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
 }
 
 function renderWatchPage(w, all = []) {
+    if (w.catalogReview === 'identity' || w.catalogReview === 'image') {
+        return fourOhFour().replaceAll('Piece not found', 'Details being checked')
+            .replace('This piece may no longer be available for sourcing.', 'We are checking the reference details and photographs for this piece. Please browse the catalog or contact Henry for help.');
+    }
     // Related pieces: same model family first, then same brand — server-rendered
     // links so crawlers index the internal mesh (and buyers keep browsing).
     const fam = m => String(m || '').replace(/\s\d{2}(\.\d)?$/, '');
@@ -69,7 +74,7 @@ function renderWatchPage(w, all = []) {
         ...pool.filter(p => p.brand === w.brand && fam(p.model) === fam(w.model)),
         ...pool.filter(p => p.brand === w.brand && fam(p.model) !== fam(w.model)),
     ].slice(0, 4);
-    const displayName = w.name + (w.nickname ? ` "${w.nickname}"` : '');
+    const displayName = w.displayName || w.name;
     const canonical = `${SITE_URL}/watch/${w.slug}`;
     const img = normUrl(w.image);
     const title = `${displayName}${w.ref ? ' ' + w.ref : ''} | Dialed By H`;
@@ -157,8 +162,8 @@ ${w.tags ? `<meta name="keywords" content="${escAttr(w.tags)}">` : ''}
 <meta name="twitter:description" content="${escAttr(description)}">
 <meta name="twitter:image" content="${escAttr(img)}">
 
-<script type="application/ld+json">${JSON.stringify(productLD)}</script>
-<script type="application/ld+json">${JSON.stringify(breadcrumbLD)}</script>
+<script type="application/ld+json">${scriptJson(productLD)}</script>
+<script type="application/ld+json">${scriptJson(breadcrumbLD)}</script>
 
 <link rel="stylesheet" href="/wp-content/themes/avw/public/index.css">
 <style id="primetime-overrides">
@@ -405,9 +410,9 @@ ${related.length ? `
 .pt-relgrid .rref{font-family:var(--pt-mono);font-size:10px;letter-spacing:.12em;color:rgba(0,0,0,.45);display:block;margin-top:3px}
 </style>
 <div class="pt-relgrid">
-${related.map(p => `<a href="/watch/${p.slug}" aria-label="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' ' + escAttr(p.ref) : ''}">
-<div class="rimg"><img src="${escAttr(normPath(p.image))}" alt="${escAttr((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" onerror="dbhImgRetry(this)"></div>
-<span class="rname">${escHtml((p.brand + ' ' + (p.nickname || p.model || p.name)).trim())}</span>
+${related.map(p => `<a href="/watch/${p.slug}" aria-label="${escAttr((p.brand + ' ' + (p.displayName || p.model || p.name)).trim())}${p.ref ? ' ' + escAttr(p.ref) : ''}">
+<div class="rimg"><img src="${escAttr(normPath(p.image))}" alt="${escAttr((p.brand + ' ' + (p.displayName || p.model || p.name)).trim())}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" onerror="dbhImgRetry(this)"></div>
+<span class="rname">${escHtml((p.brand + ' ' + (p.displayName || p.model || p.name)).trim())}</span>
 ${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
 </a>`).join('')}
 </div></section>` : ''}

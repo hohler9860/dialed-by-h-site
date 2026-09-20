@@ -8,7 +8,7 @@ const path = require("path");
 
 const root = path.join(__dirname, "..");
 const css = fs.readFileSync(path.join(root, "dist", "styles.css"), "utf8").trim();
-const file = path.join(root, "index.html");
+const file = process.argv[2] ? path.resolve(root, process.argv[2]) : path.join(root, "index.html");
 let html = fs.readFileSync(file, "utf8");
 
 const open = "<style id=\"tw-inline\">";

@@ -597,7 +597,7 @@ window.dbhImgRetry = function (el) {
       var art = document.createElement('article');
       art.className = 'pt-item pt-reveal';
       var escf = function (x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
-      var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
+      var title = escf((w.brand || '') + ' ' + (w.displayName || w.model || w.name || ''));
       var abs = function (u) { return /^https?:\/\//i.test(u) || u.charAt(0) === '/' ? u : '/img?src=' + encodeURIComponent(u); };
       var imgSrc = w.image ? abs(w.image) : '';
       var eager = i < HIGH ? ' fetchpriority="high"' : ' loading="lazy"';

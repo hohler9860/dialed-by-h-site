@@ -211,6 +211,14 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: "Server misconfigured" });
   }
 
+  // Honeypot: real users never see or fill this field. Bots fill every input.
+  // Return a fake success so the bot thinks it worked and moves on — no DB row,
+  // no emails, nothing happens.
+  if (req.body && (req.body.website || req.body.company_url)) {
+    console.warn("[submit-form] Honeypot tripped — silently dropping");
+    return res.status(200).json({ success: true });
+  }
+
   // Instant Offer rides on this function because the project is at Vercel's
   // 12-function cap. It has its own rate limits and validation in lib/.
   if (req.body && req.body.action === "instant-offer") {
@@ -218,16 +226,8 @@ module.exports = async (req, res) => {
       return await require("../lib/instant-offer.js").handle(req, res);
     } catch (err) {
       console.error("[instant-offer] UNHANDLED:", err.message);
-      return res.status(500).json({ error: "Could not price this right now. Text me and I will quote it by hand." });
+      return res.status(err.status || 500).json({ error: err.status ? err.message : "Could not price this right now. Text me and I will quote it by hand." });
     }
-  }
-
-  // Honeypot: real users never see or fill this field. Bots fill every input.
-  // Return a fake success so the bot thinks it worked and moves on — no DB row,
-  // no emails, nothing happens.
-  if (req.body && (req.body.website || req.body.company_url)) {
-    console.warn("[submit-form] Honeypot tripped — silently dropping");
-    return res.status(200).json({ success: true });
   }
 
   // Rate limit: 6 submissions / 10 min per IP, plus a 40 / 10 min global backstop

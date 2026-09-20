@@ -288,6 +288,50 @@ fbq('track', 'PageView');
   fetch('/api/journal-list').then(function(r){return r.json()}).then(function(d){
     var arts = Array.isArray(d) ? d : (d.articles || []);
     if (!arts.length) { wrap.innerHTML = '<p style="font-size:12px;color:rgba(0,0,0,.5)">No articles yet.</p>'; return; }
+    var ARTICLE_ICONS = {
+  "eaccf60e-aa60-4a5c-86e6-5aaf179ca045": {
+    "src": "/assets/dbh/sticker_img/serena-ap-26450cb.webp",
+    "alt": "Serena Williams white ceramic Audemars Piguet Royal Oak"
+  },
+  "c35ebb23-745b-4c65-9db8-6388917204a6": {
+    "src": "/assets/dbh/sticker_img/usopen-marta-patek.webp",
+    "alt": "Marta Kostyuk blue Patek Philippe Aquanaut"
+  },
+  "e9358ddd-16a9-4972-ac3e-76646f27aee4": {
+    "src": "/assets/dbh/sticker_img/travis-piece-unique.webp",
+    "alt": "Travis Scott gem-set Cactus Jack Audemars Piguet Royal Oak"
+  },
+  "98af0704-410f-4df8-a86f-c63d61cec476": {
+    "src": "/assets/dbh/sticker_img/geneva-daniel-roth.webp",
+    "alt": "Daniel Roth Extra Plat Rose Gold Gilt"
+  },
+  "52ef5949-629e-4e20-a084-d7f4799946da": {
+    "src": "/assets/dbh/sticker_img/rolex-padellone-platinum.webp",
+    "alt": "Platinum Rolex Perpetual Padellone"
+  }
+};
+    var ARTICLE_ICON_SLUGS = {
+  "serena-williams-just-made-the-royal-oak-her-own": {
+    "src": "/assets/dbh/sticker_img/serena-ap-26450cb.webp",
+    "alt": "Serena Williams white ceramic Audemars Piguet Royal Oak"
+  },
+  "the-watches-that-caught-our-eye-at-the-2026-us-open": {
+    "src": "/assets/dbh/sticker_img/usopen-marta-patek.webp",
+    "alt": "Marta Kostyuk blue Patek Philippe Aquanaut"
+  },
+  "travis-scotts-watches-go-well-beyond-the-obvious-flex": {
+    "src": "/assets/dbh/sticker_img/travis-piece-unique.webp",
+    "alt": "Travis Scott gem-set Cactus Jack Audemars Piguet Royal Oak"
+  },
+  "geneva-watch-days-2026-plus-the-recent-releases-worth-a-look": {
+    "src": "/assets/dbh/sticker_img/geneva-daniel-roth.webp",
+    "alt": "Daniel Roth Extra Plat Rose Gold Gilt"
+  },
+  "rolex-gets-complicated-the-three-new-perpetual-padellone-models": {
+    "src": "/assets/dbh/sticker_img/rolex-padellone-platinum.webp",
+    "alt": "Platinum Rolex Perpetual Padellone"
+  }
+};
     var usedStickers = [];
     // keyword-matched stickers: if the article is about a watch we have as a
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.
@@ -326,6 +370,10 @@ fbq('track', 'PageView');
       usedStickers.push(idx);
       var n = String(idx + 1); if (n.length < 2) n = '0' + n;
       var cover = '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
+      var articleIcon = ARTICLE_ICONS[a.id] || ARTICLE_ICON_SLUGS[a.slug];
+      if (articleIcon) {
+        cover = '<img class="jimg" src="' + articleIcon.src + '" alt="' + articleIcon.alt + '" width="240" height="192" loading="lazy">';
+      }
       return '<a class="pt-jitem" href="/journal/' + a.slug + '">' +
         cover +
         '<span class="jd">' + date + '</span>' +

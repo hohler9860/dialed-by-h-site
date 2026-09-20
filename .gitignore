@@ -20,3 +20,9 @@ inquiry-preview.html
 .vercel
 .env*
 logs/
+
+# Allowlisted static build output
+public-site/
+supabase/.temp/
+
+lib/safe-html-bundle.cjs

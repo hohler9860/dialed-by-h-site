@@ -308,6 +308,11 @@
     .io-select,.io-input,.io-textarea{width:100%;box-sizing:border-box;background:#fff;border:1.5px solid var(--io-line);padding:18px 20px;font-family:var(--pt-mono);font-size:13px;color:#0a0a0a;border-radius:0;-webkit-appearance:none;appearance:none;transition:border-color .2s ease}
     .io-select:focus,.io-input:focus,.io-textarea:focus{outline:none;border-color:#0a0a0a}
     .io-select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' stroke='black' stroke-width='1.5' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 20px center;padding-right:48px}
+    .io-country{position:relative}
+    .io-country-options{position:absolute;z-index:30;top:100%;left:0;right:0;max-height:300px;overflow-y:auto;background:#fff;border:1.5px solid var(--io-line);box-shadow:0 10px 24px #00000012}
+    .io-country-options [role="option"],.io-country-options [role="status"]{padding:14px 20px;font:13px var(--pt-mono)}
+    .io-country-options [role="option"]{cursor:pointer}
+    .io-country-options [role="option"]:hover,.io-country-options .is-active{background:#f0f1ed}
     .io-select:invalid,.io-select option[value=""]{color:var(--io-soft)}
     .io-input::placeholder,.io-textarea::placeholder{color:#9a9a97}
     .io-textarea{min-height:96px;resize:vertical}
@@ -319,7 +324,7 @@
     .io-hit:last-of-type{border-bottom:none}
     .io-hit:hover,.io-hit.is-hi{background:var(--io-fill)}
     .io-hit figure{margin:0;width:104px;height:104px;background:#f2f2f0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:16px;box-sizing:border-box}
-    .io-hit figure img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+    .io-hit figure img{width:100%;height:100%;object-fit:contain}
     .io-hit figure svg{width:36px;height:36px;opacity:.35}
     .io-hit .b{font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#0a0a0a;font-weight:400}
     .io-hit .m{font-family:var(--pt-mono);font-size:13px;font-weight:700;color:#0a0a0a;margin:6px 0 4px;line-height:1.3;letter-spacing:0;text-transform:none}
@@ -331,7 +336,7 @@
     .io-chosen{display:none;align-items:center;gap:16px;margin-top:12px;border:1.5px solid #0a0a0a;padding:12px 16px}
     .io-chosen.is-on{display:flex}
     .io-chosen figure{margin:0;width:64px;height:64px;background:#f2f2f0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:9px;box-sizing:border-box}
-    .io-chosen figure img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+    .io-chosen figure img{width:100%;height:100%;object-fit:contain}
     .io-chosen .t{flex:1}
     .io-chosen .t b{display:block;font-weight:600}
     .io-chosen .t span{font-family:var(--pt-mono);font-size:11px;letter-spacing:.08em;color:var(--io-soft)}
@@ -356,10 +361,13 @@
     /* photo guide */
     .io-guide{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin:8px 0 6px}
     .io-guide figure{margin:0}
-    .io-guide .box{aspect-ratio:1;border:1px solid var(--io-line);display:flex;align-items:center;justify-content:center;background:#fff}
+    .io-guide .box{position:relative;aspect-ratio:1;border:1px solid var(--io-line);display:flex;align-items:center;justify-content:center;background:#f5f6f3}
     .io-guide svg{width:72%;height:72%;fill:none;stroke:#0a0a0a;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
     .io-guide figcaption{font-family:var(--pt-mono);font-size:11.5px;color:var(--io-soft);margin-top:8px}
-    .io-guide figure.is-got .box{border-color:var(--io-ok);background:#f2faf5}
+    .io-guide .box img{width:100%;height:100%;object-fit:contain}
+    .io-guide-number{position:absolute;top:9px;left:10px;font-family:var(--pt-mono);font-size:10px;color:#959b92}
+    .io-guide figcaption{font-weight:600;color:#343b32;line-height:1.4}
+    .io-guide figcaption span{display:block;font-family:var(--pt-sans,Arial,sans-serif);font-weight:400;text-transform:none;font-size:12px;color:#757a70;line-height:1.5;margin-top:5px}
     .io-tips{border-top:1px solid var(--io-line);border-bottom:1px solid var(--io-line);padding:18px 0;margin:26px 0}
     .io-tips summary{font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
     .io-tips summary::-webkit-details-marker{display:none}
@@ -386,7 +394,7 @@
     .io-photo button:hover{background:#0a0a0a;color:#fff}
     .io-summary{display:flex;align-items:center;gap:14px;background:var(--io-fill);padding:14px 18px;margin:-6px 0 24px}
     .io-summary figure{margin:0;width:54px;height:54px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:7px;box-sizing:border-box}
-    .io-summary figure img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+    .io-summary figure img{width:100%;height:100%;object-fit:contain}
     .io-summary b{display:block;font-weight:600}
     .io-summary span{font-family:var(--pt-mono);font-size:11px;letter-spacing:.08em;color:var(--io-soft)}
     /* details */
@@ -399,37 +407,39 @@
     .io-field:focus-within{border-color:#0a0a0a}
     .io-phone{display:grid;grid-template-columns:110px 1fr;gap:12px}
     .io-phone .cc{display:flex;align-items:center;justify-content:center;font-size:13px;border:1.5px solid var(--io-line);background:#fff}
-    /* result */
-    .io-result{border:1.5px solid #0a0a0a;background:#0a0a0a;color:#fff;padding:44px 48px 48px;margin-top:0}
-    .io-result p{color:#fff;max-width:none;font-family:var(--pt-mono);text-transform:none;letter-spacing:0}
-    .io-result .io-meta{font-family:var(--pt-mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.45);margin:0 0 22px}
-    .io-result .io-num{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 120;letter-spacing:-.03em;font-size:clamp(52px,7vw,104px);line-height:.95;margin:0}
-    .io-result .io-sub{font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin:18px 0 0;line-height:1.9}
-    .io-result .io-band{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:30px 0 0;padding-top:22px;border-top:1px solid rgba(255,255,255,.14)}
-    .io-result .io-band span{display:block;font-family:var(--pt-mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:6px}
-    .io-result .io-band b{font-family:var(--pt-mono);font-weight:400;font-size:13px}
-    .io-result .io-note{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,.7);margin:26px 0 0;max-width:62ch}
+    /* Result uses the same light card and controls as the selling form. */
+    .io-result{border:1.5px solid #0a0a0a;background:#fff;color:#0a0a0a;padding:44px 48px 48px;margin-top:0}
+    .io-result p{color:#0a0a0a;max-width:none;font-family:var(--pt-mono);text-transform:none;letter-spacing:0}
+    .io-result .io-meta{font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6f6f6f;margin:0 0 26px;line-height:1.8}
+    .io-result .io-num{font-family:var(--pt-mono);font-weight:400;letter-spacing:-.03em;font-size:clamp(44px,6vw,88px);line-height:1.1;margin:0;overflow-wrap:anywhere}
+    .io-result .io-sub{font-family:var(--pt-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6f6f6f;margin:18px 0 0;line-height:1.9}
+    .io-result .io-band{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:30px 0 0;padding:22px;background:var(--io-fill,#f5f5f3);border:1px solid var(--io-line,#ddd)}
+    .io-result .io-band span{display:block;font-family:var(--pt-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6f6f6f;margin-bottom:8px}
+    .io-result .io-band b{font-family:var(--pt-mono);font-weight:400;font-size:13px;color:#0a0a0a}
+    .io-result .io-note{font-size:13px;line-height:1.8;color:#6f6f6f;margin:26px 0 0;max-width:78ch}
     .io-result .pt-dm{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}
-    .io-result .pt-dm a{display:flex;align-items:center;justify-content:center;padding:18px;border:1px solid rgba(255,255,255,.35);color:#fff;text-decoration:none;font-family:var(--pt-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .3s ease,color .3s ease}
-    .io-result .pt-dm a:hover{background:#fff;color:#000}
-    .io-shine{background:#fff;height:1px;width:0;transition:width .8s cubic-bezier(.19,1,.22,1);margin-top:18px}
-    .io-result.is-fresh .io-shine{width:100%}
+    .io-result .pt-dm a{display:flex;align-items:center;justify-content:center;padding:18px;border:1.5px solid #0a0a0a;background:#fff;color:#0a0a0a;text-decoration:none;font-family:var(--pt-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .2s ease,color .2s ease}
+    .io-result .pt-dm a:first-child{background:#0a0a0a;color:#fff}
+    .io-result .pt-dm a:hover{background:#333;color:#fff}
+    .io-result .pt-dm a:focus-visible{outline:2px solid #0a0a0a;outline-offset:4px}
+    .io-shine{background:var(--io-line,#ddd);height:1px;width:100%;margin-top:26px}
     [hidden]{display:none!important}
     @media(max-width:900px){.io-options{grid-template-columns:1fr}.io-steps{gap:10px}.io-steps li{font-size:11.5px}.io-steps li+li::before{min-width:16px;margin-right:10px}.io-card{padding:26px 20px 30px}.io-guide{grid-template-columns:repeat(3,1fr)}.io-tipgrid{grid-template-columns:1fr}.io-manual{grid-template-columns:1fr}.io-result{padding:30px 22px 34px}.io-hero{padding:100px 12px 40px}}
     @media(max-width:600px){.io-grid2{grid-template-columns:1fr}.io-nav.two{grid-template-columns:1fr}.io-steps li span{display:none}.io-steps li+li{flex:0}.io-steps li+li::before{min-width:24px}.io-result .io-band{grid-template-columns:1fr}.io-hit{grid-template-columns:72px 1fr}.io-hit figure{width:72px;height:72px}}
+        .io-thumbs>div{position:relative}
+        .io-thumbs button{position:relative;z-index:1;border:1px solid rgba(10,10,10,.3);background:#fff;color:#0a0a0a;padding:5px 7px;font:11px var(--pt-mono);cursor:pointer}
 </style>
 
         <main class="bos io-page">
             <section class="io-hero">
                 <div class="io-hero__type" aria-hidden="true">Sell your watch</div>
                 <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Sell your watch to Dialed by H</h1>
-                <p class="io-hero__sub pt-reveal">Instant offer or consignment. Boston, New York, Miami, and by insured post.</p>
             </section>
 
             <section class="io-choose io-flowtext">
                 <div class="wrap">
                     <h2 class="dbh-display pt-reveal">Choose how to sell</h2>
-                    <p class="lead pt-reveal">Sell your watch your way. Two ways to do it, built for speed or for return, and I handle the rest. No listing fees, no waiting weeks for a callback, and every piece authenticated before a dollar moves. Instant offers sit 15% under the live dealer median. Consignment is 8% of the sale.</p>
+                    <p class="lead pt-reveal">Sell your watch your way. Two ways to do it, built for speed or for return, and I handle the rest. No listing fees, no waiting weeks for a callback, and every piece authenticated before a dollar moves. Get an estimate for a direct sale, or choose consignment for an 8% fee.</p>
                     <div class="io-options">
                         <article class="io-opt is-rec pt-reveal" data-option="instant">
                             <div class="io-opt__top"><span class="io-eyebrow">Option 1</span><span class="io-pill">Recommended</span></div>
@@ -438,7 +448,7 @@
                             <button type="button" class="dbh-btn dbh-btn--solid js-start" data-option="instant">Get started</button>
                             <div class="io-tabs"><button type="button" class="is-on" data-tab="get">What you get</button><button type="button" data-tab="how">How it works</button></div>
                             <div class="io-tab" data-tab="get">
-                                <p>If speed matters more than squeezing the last dollar, you get a real number on this page in seconds, priced off what dealers are paying today, and I wire it the day the watch checks out.</p>
+                                <p>If speed matters more than squeezing the last dollar, you get a real number on this page in seconds, based on recent dealer asking prices, and I wire it the day the watch checks out.</p>
                                 <ul class="io-checks"><li>A real number on screen, not a callback</li><li>Priced off live dealer market data, not a guess</li><li>Paid by wire the day it authenticates</li></ul>
                             </div>
                             <div class="io-tab" data-tab="how" hidden>
@@ -486,10 +496,258 @@
                                 <label class="io-radio"><input type="radio" name="option" value="consign"><span><b>Option 2, Consign</b><small><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>Earn the most</small></span><i></i></label>
                             </div>
 
-                            <p class="io-q">Where is your watch? <small>*</small></p>
+                            <label class="io-q" for="io-loc" style="display:block">Where is your watch? <small>*</small></label>
                             <select class="io-select" name="location" id="io-loc" required>
-                                <option value="">Select</option>
-                                <option>Boston, MA</option><option>New York, NY</option><option>Miami, FL</option><option>Elsewhere in the US</option><option>Outside the US</option>
+                                <option value="">Select a country</option>
+                                <option value="Afghanistan" data-country-code="AF">🇦🇫 Afghanistan</option>
+                                <option value="Åland Islands" data-country-code="AX">🇦🇽 Åland Islands</option>
+                                <option value="Albania" data-country-code="AL">🇦🇱 Albania</option>
+                                <option value="Algeria" data-country-code="DZ">🇩🇿 Algeria</option>
+                                <option value="American Samoa" data-country-code="AS">🇦🇸 American Samoa</option>
+                                <option value="Andorra" data-country-code="AD">🇦🇩 Andorra</option>
+                                <option value="Angola" data-country-code="AO">🇦🇴 Angola</option>
+                                <option value="Anguilla" data-country-code="AI">🇦🇮 Anguilla</option>
+                                <option value="Antarctica" data-country-code="AQ">🇦🇶 Antarctica</option>
+                                <option value="Antigua &amp; Barbuda" data-country-code="AG">🇦🇬 Antigua &amp; Barbuda</option>
+                                <option value="Argentina" data-country-code="AR">🇦🇷 Argentina</option>
+                                <option value="Armenia" data-country-code="AM">🇦🇲 Armenia</option>
+                                <option value="Aruba" data-country-code="AW">🇦🇼 Aruba</option>
+                                <option value="Australia" data-country-code="AU">🇦🇺 Australia</option>
+                                <option value="Austria" data-country-code="AT">🇦🇹 Austria</option>
+                                <option value="Azerbaijan" data-country-code="AZ">🇦🇿 Azerbaijan</option>
+                                <option value="Bahamas" data-country-code="BS">🇧🇸 Bahamas</option>
+                                <option value="Bahrain" data-country-code="BH">🇧🇭 Bahrain</option>
+                                <option value="Bangladesh" data-country-code="BD">🇧🇩 Bangladesh</option>
+                                <option value="Barbados" data-country-code="BB">🇧🇧 Barbados</option>
+                                <option value="Belarus" data-country-code="BY">🇧🇾 Belarus</option>
+                                <option value="Belgium" data-country-code="BE">🇧🇪 Belgium</option>
+                                <option value="Belize" data-country-code="BZ">🇧🇿 Belize</option>
+                                <option value="Benin" data-country-code="BJ">🇧🇯 Benin</option>
+                                <option value="Bermuda" data-country-code="BM">🇧🇲 Bermuda</option>
+                                <option value="Bhutan" data-country-code="BT">🇧🇹 Bhutan</option>
+                                <option value="Bolivia" data-country-code="BO">🇧🇴 Bolivia</option>
+                                <option value="Bosnia &amp; Herzegovina" data-country-code="BA">🇧🇦 Bosnia &amp; Herzegovina</option>
+                                <option value="Botswana" data-country-code="BW">🇧🇼 Botswana</option>
+                                <option value="Bouvet Island" data-country-code="BV">🇧🇻 Bouvet Island</option>
+                                <option value="Brazil" data-country-code="BR">🇧🇷 Brazil</option>
+                                <option value="British Indian Ocean Territory" data-country-code="IO">🇮🇴 British Indian Ocean Territory</option>
+                                <option value="British Virgin Islands" data-country-code="VG">🇻🇬 British Virgin Islands</option>
+                                <option value="Brunei" data-country-code="BN">🇧🇳 Brunei</option>
+                                <option value="Bulgaria" data-country-code="BG">🇧🇬 Bulgaria</option>
+                                <option value="Burkina Faso" data-country-code="BF">🇧🇫 Burkina Faso</option>
+                                <option value="Burundi" data-country-code="BI">🇧🇮 Burundi</option>
+                                <option value="Cambodia" data-country-code="KH">🇰🇭 Cambodia</option>
+                                <option value="Cameroon" data-country-code="CM">🇨🇲 Cameroon</option>
+                                <option value="Canada" data-country-code="CA">🇨🇦 Canada</option>
+                                <option value="Cape Verde" data-country-code="CV">🇨🇻 Cape Verde</option>
+                                <option value="Caribbean Netherlands" data-country-code="BQ">🇧🇶 Caribbean Netherlands</option>
+                                <option value="Cayman Islands" data-country-code="KY">🇰🇾 Cayman Islands</option>
+                                <option value="Central African Republic" data-country-code="CF">🇨🇫 Central African Republic</option>
+                                <option value="Chad" data-country-code="TD">🇹🇩 Chad</option>
+                                <option value="Chile" data-country-code="CL">🇨🇱 Chile</option>
+                                <option value="China" data-country-code="CN">🇨🇳 China</option>
+                                <option value="Christmas Island" data-country-code="CX">🇨🇽 Christmas Island</option>
+                                <option value="Cocos (Keeling) Islands" data-country-code="CC">🇨🇨 Cocos (Keeling) Islands</option>
+                                <option value="Colombia" data-country-code="CO">🇨🇴 Colombia</option>
+                                <option value="Comoros" data-country-code="KM">🇰🇲 Comoros</option>
+                                <option value="Congo - Brazzaville" data-country-code="CG">🇨🇬 Congo - Brazzaville</option>
+                                <option value="Congo - Kinshasa" data-country-code="CD">🇨🇩 Congo - Kinshasa</option>
+                                <option value="Cook Islands" data-country-code="CK">🇨🇰 Cook Islands</option>
+                                <option value="Costa Rica" data-country-code="CR">🇨🇷 Costa Rica</option>
+                                <option value="Côte d’Ivoire" data-country-code="CI">🇨🇮 Côte d’Ivoire</option>
+                                <option value="Croatia" data-country-code="HR">🇭🇷 Croatia</option>
+                                <option value="Cuba" data-country-code="CU">🇨🇺 Cuba</option>
+                                <option value="Curaçao" data-country-code="CW">🇨🇼 Curaçao</option>
+                                <option value="Cyprus" data-country-code="CY">🇨🇾 Cyprus</option>
+                                <option value="Czechia" data-country-code="CZ">🇨🇿 Czechia</option>
+                                <option value="Denmark" data-country-code="DK">🇩🇰 Denmark</option>
+                                <option value="Djibouti" data-country-code="DJ">🇩🇯 Djibouti</option>
+                                <option value="Dominica" data-country-code="DM">🇩🇲 Dominica</option>
+                                <option value="Dominican Republic" data-country-code="DO">🇩🇴 Dominican Republic</option>
+                                <option value="Ecuador" data-country-code="EC">🇪🇨 Ecuador</option>
+                                <option value="Egypt" data-country-code="EG">🇪🇬 Egypt</option>
+                                <option value="El Salvador" data-country-code="SV">🇸🇻 El Salvador</option>
+                                <option value="Equatorial Guinea" data-country-code="GQ">🇬🇶 Equatorial Guinea</option>
+                                <option value="Eritrea" data-country-code="ER">🇪🇷 Eritrea</option>
+                                <option value="Estonia" data-country-code="EE">🇪🇪 Estonia</option>
+                                <option value="Eswatini" data-country-code="SZ">🇸🇿 Eswatini</option>
+                                <option value="Ethiopia" data-country-code="ET">🇪🇹 Ethiopia</option>
+                                <option value="Falkland Islands" data-country-code="FK">🇫🇰 Falkland Islands</option>
+                                <option value="Faroe Islands" data-country-code="FO">🇫🇴 Faroe Islands</option>
+                                <option value="Fiji" data-country-code="FJ">🇫🇯 Fiji</option>
+                                <option value="Finland" data-country-code="FI">🇫🇮 Finland</option>
+                                <option value="France" data-country-code="FR">🇫🇷 France</option>
+                                <option value="French Guiana" data-country-code="GF">🇬🇫 French Guiana</option>
+                                <option value="French Polynesia" data-country-code="PF">🇵🇫 French Polynesia</option>
+                                <option value="French Southern Territories" data-country-code="TF">🇹🇫 French Southern Territories</option>
+                                <option value="Gabon" data-country-code="GA">🇬🇦 Gabon</option>
+                                <option value="Gambia" data-country-code="GM">🇬🇲 Gambia</option>
+                                <option value="Georgia" data-country-code="GE">🇬🇪 Georgia</option>
+                                <option value="Germany" data-country-code="DE">🇩🇪 Germany</option>
+                                <option value="Ghana" data-country-code="GH">🇬🇭 Ghana</option>
+                                <option value="Gibraltar" data-country-code="GI">🇬🇮 Gibraltar</option>
+                                <option value="Greece" data-country-code="GR">🇬🇷 Greece</option>
+                                <option value="Greenland" data-country-code="GL">🇬🇱 Greenland</option>
+                                <option value="Grenada" data-country-code="GD">🇬🇩 Grenada</option>
+                                <option value="Guadeloupe" data-country-code="GP">🇬🇵 Guadeloupe</option>
+                                <option value="Guam" data-country-code="GU">🇬🇺 Guam</option>
+                                <option value="Guatemala" data-country-code="GT">🇬🇹 Guatemala</option>
+                                <option value="Guernsey" data-country-code="GG">🇬🇬 Guernsey</option>
+                                <option value="Guinea" data-country-code="GN">🇬🇳 Guinea</option>
+                                <option value="Guinea-Bissau" data-country-code="GW">🇬🇼 Guinea-Bissau</option>
+                                <option value="Guyana" data-country-code="GY">🇬🇾 Guyana</option>
+                                <option value="Haiti" data-country-code="HT">🇭🇹 Haiti</option>
+                                <option value="Heard &amp; McDonald Islands" data-country-code="HM">🇭🇲 Heard &amp; McDonald Islands</option>
+                                <option value="Honduras" data-country-code="HN">🇭🇳 Honduras</option>
+                                <option value="Hong Kong SAR China" data-country-code="HK">🇭🇰 Hong Kong SAR China</option>
+                                <option value="Hungary" data-country-code="HU">🇭🇺 Hungary</option>
+                                <option value="Iceland" data-country-code="IS">🇮🇸 Iceland</option>
+                                <option value="India" data-country-code="IN">🇮🇳 India</option>
+                                <option value="Indonesia" data-country-code="ID">🇮🇩 Indonesia</option>
+                                <option value="Iran" data-country-code="IR">🇮🇷 Iran</option>
+                                <option value="Iraq" data-country-code="IQ">🇮🇶 Iraq</option>
+                                <option value="Ireland" data-country-code="IE">🇮🇪 Ireland</option>
+                                <option value="Isle of Man" data-country-code="IM">🇮🇲 Isle of Man</option>
+                                <option value="Israel" data-country-code="IL">🇮🇱 Israel</option>
+                                <option value="Italy" data-country-code="IT">🇮🇹 Italy</option>
+                                <option value="Jamaica" data-country-code="JM">🇯🇲 Jamaica</option>
+                                <option value="Japan" data-country-code="JP">🇯🇵 Japan</option>
+                                <option value="Jersey" data-country-code="JE">🇯🇪 Jersey</option>
+                                <option value="Jordan" data-country-code="JO">🇯🇴 Jordan</option>
+                                <option value="Kazakhstan" data-country-code="KZ">🇰🇿 Kazakhstan</option>
+                                <option value="Kenya" data-country-code="KE">🇰🇪 Kenya</option>
+                                <option value="Kiribati" data-country-code="KI">🇰🇮 Kiribati</option>
+                                <option value="Kuwait" data-country-code="KW">🇰🇼 Kuwait</option>
+                                <option value="Kyrgyzstan" data-country-code="KG">🇰🇬 Kyrgyzstan</option>
+                                <option value="Laos" data-country-code="LA">🇱🇦 Laos</option>
+                                <option value="Latvia" data-country-code="LV">🇱🇻 Latvia</option>
+                                <option value="Lebanon" data-country-code="LB">🇱🇧 Lebanon</option>
+                                <option value="Lesotho" data-country-code="LS">🇱🇸 Lesotho</option>
+                                <option value="Liberia" data-country-code="LR">🇱🇷 Liberia</option>
+                                <option value="Libya" data-country-code="LY">🇱🇾 Libya</option>
+                                <option value="Liechtenstein" data-country-code="LI">🇱🇮 Liechtenstein</option>
+                                <option value="Lithuania" data-country-code="LT">🇱🇹 Lithuania</option>
+                                <option value="Luxembourg" data-country-code="LU">🇱🇺 Luxembourg</option>
+                                <option value="Macao SAR China" data-country-code="MO">🇲🇴 Macao SAR China</option>
+                                <option value="Madagascar" data-country-code="MG">🇲🇬 Madagascar</option>
+                                <option value="Malawi" data-country-code="MW">🇲🇼 Malawi</option>
+                                <option value="Malaysia" data-country-code="MY">🇲🇾 Malaysia</option>
+                                <option value="Maldives" data-country-code="MV">🇲🇻 Maldives</option>
+                                <option value="Mali" data-country-code="ML">🇲🇱 Mali</option>
+                                <option value="Malta" data-country-code="MT">🇲🇹 Malta</option>
+                                <option value="Marshall Islands" data-country-code="MH">🇲🇭 Marshall Islands</option>
+                                <option value="Martinique" data-country-code="MQ">🇲🇶 Martinique</option>
+                                <option value="Mauritania" data-country-code="MR">🇲🇷 Mauritania</option>
+                                <option value="Mauritius" data-country-code="MU">🇲🇺 Mauritius</option>
+                                <option value="Mayotte" data-country-code="YT">🇾🇹 Mayotte</option>
+                                <option value="Mexico" data-country-code="MX">🇲🇽 Mexico</option>
+                                <option value="Micronesia" data-country-code="FM">🇫🇲 Micronesia</option>
+                                <option value="Moldova" data-country-code="MD">🇲🇩 Moldova</option>
+                                <option value="Monaco" data-country-code="MC">🇲🇨 Monaco</option>
+                                <option value="Mongolia" data-country-code="MN">🇲🇳 Mongolia</option>
+                                <option value="Montenegro" data-country-code="ME">🇲🇪 Montenegro</option>
+                                <option value="Montserrat" data-country-code="MS">🇲🇸 Montserrat</option>
+                                <option value="Morocco" data-country-code="MA">🇲🇦 Morocco</option>
+                                <option value="Mozambique" data-country-code="MZ">🇲🇿 Mozambique</option>
+                                <option value="Myanmar (Burma)" data-country-code="MM">🇲🇲 Myanmar (Burma)</option>
+                                <option value="Namibia" data-country-code="NA">🇳🇦 Namibia</option>
+                                <option value="Nauru" data-country-code="NR">🇳🇷 Nauru</option>
+                                <option value="Nepal" data-country-code="NP">🇳🇵 Nepal</option>
+                                <option value="Netherlands" data-country-code="NL">🇳🇱 Netherlands</option>
+                                <option value="New Caledonia" data-country-code="NC">🇳🇨 New Caledonia</option>
+                                <option value="New Zealand" data-country-code="NZ">🇳🇿 New Zealand</option>
+                                <option value="Nicaragua" data-country-code="NI">🇳🇮 Nicaragua</option>
+                                <option value="Niger" data-country-code="NE">🇳🇪 Niger</option>
+                                <option value="Nigeria" data-country-code="NG">🇳🇬 Nigeria</option>
+                                <option value="Niue" data-country-code="NU">🇳🇺 Niue</option>
+                                <option value="Norfolk Island" data-country-code="NF">🇳🇫 Norfolk Island</option>
+                                <option value="North Korea" data-country-code="KP">🇰🇵 North Korea</option>
+                                <option value="North Macedonia" data-country-code="MK">🇲🇰 North Macedonia</option>
+                                <option value="Northern Mariana Islands" data-country-code="MP">🇲🇵 Northern Mariana Islands</option>
+                                <option value="Norway" data-country-code="NO">🇳🇴 Norway</option>
+                                <option value="Oman" data-country-code="OM">🇴🇲 Oman</option>
+                                <option value="Pakistan" data-country-code="PK">🇵🇰 Pakistan</option>
+                                <option value="Palau" data-country-code="PW">🇵🇼 Palau</option>
+                                <option value="Palestinian Territories" data-country-code="PS">🇵🇸 Palestinian Territories</option>
+                                <option value="Panama" data-country-code="PA">🇵🇦 Panama</option>
+                                <option value="Papua New Guinea" data-country-code="PG">🇵🇬 Papua New Guinea</option>
+                                <option value="Paraguay" data-country-code="PY">🇵🇾 Paraguay</option>
+                                <option value="Peru" data-country-code="PE">🇵🇪 Peru</option>
+                                <option value="Philippines" data-country-code="PH">🇵🇭 Philippines</option>
+                                <option value="Pitcairn Islands" data-country-code="PN">🇵🇳 Pitcairn Islands</option>
+                                <option value="Poland" data-country-code="PL">🇵🇱 Poland</option>
+                                <option value="Portugal" data-country-code="PT">🇵🇹 Portugal</option>
+                                <option value="Puerto Rico" data-country-code="PR">🇵🇷 Puerto Rico</option>
+                                <option value="Qatar" data-country-code="QA">🇶🇦 Qatar</option>
+                                <option value="Réunion" data-country-code="RE">🇷🇪 Réunion</option>
+                                <option value="Romania" data-country-code="RO">🇷🇴 Romania</option>
+                                <option value="Russia" data-country-code="RU">🇷🇺 Russia</option>
+                                <option value="Rwanda" data-country-code="RW">🇷🇼 Rwanda</option>
+                                <option value="Samoa" data-country-code="WS">🇼🇸 Samoa</option>
+                                <option value="San Marino" data-country-code="SM">🇸🇲 San Marino</option>
+                                <option value="São Tomé &amp; Príncipe" data-country-code="ST">🇸🇹 São Tomé &amp; Príncipe</option>
+                                <option value="Saudi Arabia" data-country-code="SA">🇸🇦 Saudi Arabia</option>
+                                <option value="Senegal" data-country-code="SN">🇸🇳 Senegal</option>
+                                <option value="Serbia" data-country-code="RS">🇷🇸 Serbia</option>
+                                <option value="Seychelles" data-country-code="SC">🇸🇨 Seychelles</option>
+                                <option value="Sierra Leone" data-country-code="SL">🇸🇱 Sierra Leone</option>
+                                <option value="Singapore" data-country-code="SG">🇸🇬 Singapore</option>
+                                <option value="Sint Maarten" data-country-code="SX">🇸🇽 Sint Maarten</option>
+                                <option value="Slovakia" data-country-code="SK">🇸🇰 Slovakia</option>
+                                <option value="Slovenia" data-country-code="SI">🇸🇮 Slovenia</option>
+                                <option value="Solomon Islands" data-country-code="SB">🇸🇧 Solomon Islands</option>
+                                <option value="Somalia" data-country-code="SO">🇸🇴 Somalia</option>
+                                <option value="South Africa" data-country-code="ZA">🇿🇦 South Africa</option>
+                                <option value="South Georgia &amp; South Sandwich Islands" data-country-code="GS">🇬🇸 South Georgia &amp; South Sandwich Islands</option>
+                                <option value="South Korea" data-country-code="KR">🇰🇷 South Korea</option>
+                                <option value="South Sudan" data-country-code="SS">🇸🇸 South Sudan</option>
+                                <option value="Spain" data-country-code="ES">🇪🇸 Spain</option>
+                                <option value="Sri Lanka" data-country-code="LK">🇱🇰 Sri Lanka</option>
+                                <option value="St. Barthélemy" data-country-code="BL">🇧🇱 St. Barthélemy</option>
+                                <option value="St. Helena" data-country-code="SH">🇸🇭 St. Helena</option>
+                                <option value="St. Kitts &amp; Nevis" data-country-code="KN">🇰🇳 St. Kitts &amp; Nevis</option>
+                                <option value="St. Lucia" data-country-code="LC">🇱🇨 St. Lucia</option>
+                                <option value="St. Martin" data-country-code="MF">🇲🇫 St. Martin</option>
+                                <option value="St. Pierre &amp; Miquelon" data-country-code="PM">🇵🇲 St. Pierre &amp; Miquelon</option>
+                                <option value="St. Vincent &amp; Grenadines" data-country-code="VC">🇻🇨 St. Vincent &amp; Grenadines</option>
+                                <option value="Sudan" data-country-code="SD">🇸🇩 Sudan</option>
+                                <option value="Suriname" data-country-code="SR">🇸🇷 Suriname</option>
+                                <option value="Svalbard &amp; Jan Mayen" data-country-code="SJ">🇸🇯 Svalbard &amp; Jan Mayen</option>
+                                <option value="Sweden" data-country-code="SE">🇸🇪 Sweden</option>
+                                <option value="Switzerland" data-country-code="CH">🇨🇭 Switzerland</option>
+                                <option value="Syria" data-country-code="SY">🇸🇾 Syria</option>
+                                <option value="Taiwan" data-country-code="TW">🇹🇼 Taiwan</option>
+                                <option value="Tajikistan" data-country-code="TJ">🇹🇯 Tajikistan</option>
+                                <option value="Tanzania" data-country-code="TZ">🇹🇿 Tanzania</option>
+                                <option value="Thailand" data-country-code="TH">🇹🇭 Thailand</option>
+                                <option value="Timor-Leste" data-country-code="TL">🇹🇱 Timor-Leste</option>
+                                <option value="Togo" data-country-code="TG">🇹🇬 Togo</option>
+                                <option value="Tokelau" data-country-code="TK">🇹🇰 Tokelau</option>
+                                <option value="Tonga" data-country-code="TO">🇹🇴 Tonga</option>
+                                <option value="Trinidad &amp; Tobago" data-country-code="TT">🇹🇹 Trinidad &amp; Tobago</option>
+                                <option value="Tunisia" data-country-code="TN">🇹🇳 Tunisia</option>
+                                <option value="Türkiye" data-country-code="TR">🇹🇷 Türkiye</option>
+                                <option value="Turkmenistan" data-country-code="TM">🇹🇲 Turkmenistan</option>
+                                <option value="Turks &amp; Caicos Islands" data-country-code="TC">🇹🇨 Turks &amp; Caicos Islands</option>
+                                <option value="Tuvalu" data-country-code="TV">🇹🇻 Tuvalu</option>
+                                <option value="U.S. Outlying Islands" data-country-code="UM">🇺🇲 U.S. Outlying Islands</option>
+                                <option value="U.S. Virgin Islands" data-country-code="VI">🇻🇮 U.S. Virgin Islands</option>
+                                <option value="Uganda" data-country-code="UG">🇺🇬 Uganda</option>
+                                <option value="Ukraine" data-country-code="UA">🇺🇦 Ukraine</option>
+                                <option value="United Arab Emirates" data-country-code="AE">🇦🇪 United Arab Emirates</option>
+                                <option value="United Kingdom" data-country-code="GB">🇬🇧 United Kingdom</option>
+                                <option value="United States" data-country-code="US">🇺🇸 United States</option>
+                                <option value="Uruguay" data-country-code="UY">🇺🇾 Uruguay</option>
+                                <option value="Uzbekistan" data-country-code="UZ">🇺🇿 Uzbekistan</option>
+                                <option value="Vanuatu" data-country-code="VU">🇻🇺 Vanuatu</option>
+                                <option value="Vatican City" data-country-code="VA">🇻🇦 Vatican City</option>
+                                <option value="Venezuela" data-country-code="VE">🇻🇪 Venezuela</option>
+                                <option value="Vietnam" data-country-code="VN">🇻🇳 Vietnam</option>
+                                <option value="Wallis &amp; Futuna" data-country-code="WF">🇼🇫 Wallis &amp; Futuna</option>
+                                <option value="Western Sahara" data-country-code="EH">🇪🇭 Western Sahara</option>
+                                <option value="Yemen" data-country-code="YE">🇾🇪 Yemen</option>
+                                <option value="Zambia" data-country-code="ZM">🇿🇲 Zambia</option>
+                                <option value="Zimbabwe" data-country-code="ZW">🇿🇼 Zimbabwe</option>
                             </select>
 
                             <hr class="io-hr">
@@ -504,6 +762,7 @@
                                 <button type="button" id="io-chosen-clear">Change</button>
                             </div>
                             <div class="io-chips" id="io-dials" hidden></div>
+                            <p id="io-pricing-status" role="status" style="padding:14px 0;line-height:1.5" hidden></p>
                             <div class="io-manual" id="io-manual" hidden>
                                 <select class="io-select" id="io-brand"><option value="">Brand</option><option>Rolex</option><option>Patek Philippe</option><option>Audemars Piguet</option><option>Omega</option><option>Cartier</option><option>Tudor</option><option>Vacheron Constantin</option><option>Richard Mille</option><option>A. Lange &amp; S&ouml;hne</option><option>F.P. Journe</option><option>IWC</option><option>Breguet</option><option>Jaeger-LeCoultre</option><option>Other</option></select>
                                 <input class="io-input" type="text" id="io-ref-manual" placeholder="Reference, e.g. 126610LN" autocapitalize="characters">
@@ -535,12 +794,12 @@
                             <p class="io-q" style="margin-top:0">Upload at least 3 photos of your watch <small>*</small></p>
                             <p class="io-subq">I use these to confirm the reference, read the variant, and assess condition. A phone is fine.</p>
                             <div class="io-guide" id="io-guide">
-                                <figure data-slot="front"><div class="box"><svg viewBox="0 0 64 64"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="14"/><path d="M32 22v10l6 4"/><rect x="50" y="29" width="4" height="6" rx="1"/></svg></div><figcaption>Front</figcaption></figure>
-                                <figure data-slot="dial"><div class="box"><svg viewBox="0 0 64 64"><path d="M20 8h18l6 6v36l-6 6H20l-6-6V14z"/><ellipse cx="29" cy="32" rx="12" ry="17"/><ellipse cx="29" cy="32" rx="9" ry="13"/><path d="M29 21v11l4 3"/></svg></div><figcaption>Dial, 45&deg; angle</figcaption></figure>
-                                <figure data-slot="side"><div class="box"><svg viewBox="0 0 64 64"><path d="M22 6h20v52H22z"/><path d="M18 22c-3 4-3 16 0 20M46 22c3 4 3 16 0 20"/><path d="M22 18h20M22 46h20"/><rect x="47" y="29" width="4" height="6" rx="1"/></svg></div><figcaption>Side, both sides</figcaption></figure>
-                                <figure data-slot="clasp"><div class="box"><svg viewBox="0 0 64 64"><rect x="14" y="20" width="36" height="24" rx="4"/><path d="M14 26h36M14 38h36"/><path d="M22 20v24M42 20v24"/><path d="M6 32h8M50 32h8"/></svg></div><figcaption>Clasp</figcaption></figure>
-                                <figure data-slot="caseback"><div class="box"><svg viewBox="0 0 64 64"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="11"/><path d="M32 14v4M32 46v4M14 32h4M46 32h4M19 19l3 3M42 42l3 3M45 19l-3 3M22 42l-3 3"/></svg></div><figcaption>Caseback</figcaption></figure>
-                                <figure data-slot="box"><div class="box"><svg viewBox="0 0 64 64"><path d="M14 26h36v24H14z"/><path d="M14 26l6-10h24l6 10"/><path d="M20 16v10M44 16v10"/><path d="M20 58h24" /><rect x="26" y="52" width="12" height="6" rx="1"/></svg></div><figcaption>Box &amp; papers</figcaption></figure>
+<figure data-slot="front"><div class="box"><span class="io-guide-number">01</span><img src="/assets/photo-guides/front-reference.svg" alt="" width="120" height="120"></div><figcaption>Straight-on front<span>Fill the frame. Keep the dial sharp.</span></figcaption></figure>
+<figure data-slot="dial"><div class="box"><span class="io-guide-number">02</span><img src="/assets/photo-guides/dial-reference.svg" alt="" width="120" height="120"></div><figcaption>Angled dial<span>Tilt 45° to show crystal and bezel.</span></figcaption></figure>
+<figure data-slot="side"><div class="box"><span class="io-guide-number">03</span><img src="/assets/photo-guides/side-reference.svg" alt="" width="120" height="120"></div><figcaption>Side (both sides)<span>Show both sides of the case.</span></figcaption></figure>
+<figure data-slot="clasp"><div class="box"><span class="io-guide-number">04</span><img src="/assets/photo-guides/clasp-reference.svg" alt="" width="120" height="120"></div><figcaption>Clasp<span>Show the fastening and its markings.</span></figcaption></figure>
+<figure data-slot="caseback"><div class="box"><span class="io-guide-number">05</span><img src="/assets/photo-guides/caseback-reference.svg" alt="" width="120" height="120"></div><figcaption>Watch back<span>Turn it over. Keep engravings legible.</span></figcaption></figure>
+<figure data-slot="box"><div class="box"><span class="io-guide-number">06</span><img src="/assets/photo-guides/box-reference.svg" alt="" width="120" height="120"></div><figcaption>Box & papers<span>Include the box and warranty card.</span></figcaption></figure>
                             </div>
                             <details class="io-tips">
                                 <summary>Tips for better photos</summary>
@@ -586,9 +845,9 @@
                             <div class="io-shine"></div>
                             <p class="io-sub" id="io-offer-sub"></p>
                             <div class="io-band">
-                                <div><span>Dealer median</span><b id="io-b-med"></b></div>
-                                <div><span>Listings</span><b id="io-b-n"></b></div>
-                                <div><span>Offer band</span><b id="io-b-band"></b></div>
+                                <div><span>01 · Personal review</span><b>I confirm your watch and photos.</b></div>
+                                <div><span>02 · Agree the details</span><b>We arrange the handover together.</b></div>
+                                <div><span>03 · Get paid</span><b>Payment by wire after authentication.</b></div>
                             </div>
                             <p class="io-note" id="io-offer-note"></p>
                             <div class="pt-dm"><a href="sms:+19146211848">Text me</a><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>
@@ -613,7 +872,7 @@
                 <div class="wrap">
                     <h2 class="dbh-display pt-reveal">Instant Offer or consign?</h2>
                     <div class="grid2">
-                        <div class="card pt-reveal"><h3>Instant Offer</h3><p style="font-family:var(--pt-mono);font-size:13px;color:#6f6f6f">Best when you want the money this week. The number is the dealer median for your exact reference over the last 45 days, less 15%. Holds 48 hours. Paid by wire the day it authenticates. Condition, a missing box or papers, and aftermarket parts are the only things that change it.</p></div>
+                        <div class="card pt-reveal"><h3>Instant Offer</h3><p style="font-family:var(--pt-mono);font-size:13px;color:#6f6f6f">Best when you want the money this week. Your estimate reflects recent market data for your reference, condition, box and papers. Holds 48 hours. Paid by wire the day it authenticates. The estimate depends on condition, box and papers, the exact configuration, and my review. I confirm the final amount after authentication.</p></div>
                         <div class="card pt-reveal"><h3>Consign</h3><p style="font-family:var(--pt-mono);font-size:13px;color:#6f6f6f">Best when you want the most and can wait two to six weeks. I list above the dealer market to private clients first, then the dealer network. You approve every sale. 8% of the sale price, nothing up front, insured the whole time it is with me.</p></div>
                     </div>
                 </div>
@@ -691,7 +950,12 @@
       var API='/api/submit-form';
       var $=function(id){return document.getElementById(id)};
       var form=$('io-form');
-      var session=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2);
+      var sessionToken=null, sessionPromise=null, photoRevision=0;
+      function ensureSession(){
+        if(sessionToken) return Promise.resolve(sessionToken);
+        if(!sessionPromise) sessionPromise=post({op:'upload-session'}).then(function(r){sessionToken=r.sessionToken;return sessionToken}).finally(function(){sessionPromise=null});
+        return sessionPromise;
+      }
       var photos=[], uploading=0, photoRead=null, photoTimer=null, photoBusy=null;
       var chosen=null;      // {ref_core, reference, brand, model, dials, image, dial}
       var step=1;
@@ -699,12 +963,12 @@
       function money(n){return '$'+Math.round(Number(n)).toLocaleString('en-US')}
       function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
       function post(body){
-        return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:'instant-offer'},body))})
+        return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:'instant-offer',sessionToken:sessionToken},body))})
           .then(function(r){return r.json().then(function(j){if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j})});
       }
       function radio(name){var el=form.querySelector('input[name="'+name+'"]:checked');return el?el.value:''}
       function option(){return radio('option')||'instant'}
-      function refValue(){ return chosen ? (chosen.reference||chosen.ref_core) : $('io-ref-manual').value.trim(); }
+      function refValue(){ return chosen ? (chosen.market_reference||chosen.reference||chosen.ref_core) : $('io-ref-manual').value.trim(); }
       function dialValue(){ return chosen ? (chosen.dial||'') : $('io-dial-manual').value.trim(); }
       function brandValue(){ return chosen ? (chosen.brand||'') : $('io-brand').value; }
       function watchLabel(){ return chosen ? [chosen.brand,chosen.model,chosen.reference||chosen.ref_core].filter(Boolean).join(' ') : [brandValue(),refValue()].filter(Boolean).join(' '); }
@@ -725,30 +989,79 @@
           syncOption(); goStep(1); document.getElementById('sell').scrollIntoView({behavior:'smooth',block:'start'});
         });
       });
-      function syncOption(){ $('io-submit').textContent = option()==='consign' ? 'Request consignment' : 'Get my instant offer'; }
-      form.querySelectorAll('input[name="option"]').forEach(function(r){r.addEventListener('change',syncOption)});
+      var pricingMode='personal', pricingKey='', pricingRequest=null, pricingRevision=0;
+      function syncOption(){ $('io-submit').textContent = option()==='consign' ? 'Request consignment' : pricingMode==='instant' ? 'Get my instant offer' : 'Request my personal quote'; }
+      function checkPricing(){
+        var ref=refValue(), key=ref+'|'+dialValue(), status=$('io-pricing-status');
+        if(option()==='consign'){ status.hidden=true; return Promise.resolve(); }
+        status.hidden=false;
+        if(key===pricingKey && pricingRequest) return pricingRequest;
+        pricingKey=key; var revision=++pricingRevision; pricingMode='personal'; syncOption();
+        status.hidden=false;
+        status.textContent=ref?'Checking instant-offer availability…':'Your watch needs a personal quote. Send photos and details for Henry to review.';
+        var request=ref ? post({op:'eligibility',reference:ref,dial:dialValue()}) : Promise.resolve({mode:'personal'});
+        pricingRequest=request.catch(function(){return {mode:'personal'};}).then(function(r){
+          if(revision!==pricingRevision) return;
+          pricingMode=r.mode==='instant'?'instant':'personal'; syncOption();
+          status.textContent=pricingMode==='instant'?'Instant offer available for this watch.':'Personal quote required — instant pricing is unavailable for this watch. Continue with photos and details, and Henry will review it and send you a quote.';
+          status.hidden=option()==='consign';
+        });
+        return pricingRequest;
+      }
+      ['io-ref-manual','io-dial-manual'].forEach(function(id){$(id).addEventListener('change',checkPricing);});
+      form.querySelectorAll('input[name="option"]').forEach(function(r){r.addEventListener('change',function(){syncOption();checkPricing();})});
 
       /* ---- typeahead ---- */
-      var q=$('io-q'), results=$('io-results'), qTimer=null, lastQ='';
-      q.addEventListener('input',function(){
-        clearTimeout(qTimer); var v=q.value.trim();
+      var q=$('io-q'), results=$('io-results'), qTimer=null, lastQ='', searchRevision=0, searchCache=new Map(), searchPending=new Map();
+      function scheduleSearch(){
+        clearTimeout(qTimer); var v=q.value.trim(); lastQ=v; searchRevision++;
+        if(v.length>=2){ results.innerHTML='<div role="status" style="padding:16px">Finding matching watches…</div>'; results.hidden=false; }
         if(v.length<2){ results.hidden=true; results.innerHTML=''; results.parentNode.classList.remove('is-open'); return; }
         qTimer=setTimeout(function(){ search(v); }, 220);
+      }
+      q.addEventListener('input',scheduleSearch);
+      q.addEventListener('change',scheduleSearch);
+      q.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){ e.preventDefault(); clearTimeout(qTimer); if(q.value.trim().length>=2) search(q.value.trim()); }
       });
-      q.addEventListener('focus',function(){ if(results.innerHTML && q.value.trim().length>=2) results.hidden=false; });
+      q.addEventListener('focus',function(){
+        if(q.value.trim().length<2 || chosen) return;
+        if(results.innerHTML && q.value.trim()===lastQ){ results.hidden=false; results.parentNode.classList.add('is-open'); }
+        else scheduleSearch();
+      });
+      window.addEventListener('pageshow',function(){ if(q.value.trim().length>=2 && !chosen) scheduleSearch(); });
       document.addEventListener('click',function(e){ if(!e.target.closest('.io-search')){ results.hidden=true; results.parentNode.classList.remove('is-open'); } });
       function search(v){
         lastQ=v;
-        post({op:'search',q:v}).then(function(r){
-          if(v!==lastQ) return;
+        var revision=++searchRevision, key=v.toLowerCase();
+        results.innerHTML='<div role="status" style="padding:16px">Finding matching watches…</div>';
+        results.hidden=false; results.parentNode.classList.add('is-open');
+        var cached=searchCache.get(key);
+        var request=cached && Date.now()-cached.time<60000 ? Promise.resolve(cached.data) : searchPending.get(key);
+        if(!request){
+          request=post({op:'search',q:v}).then(function(r){
+            searchCache.set(key,{time:Date.now(),data:r});
+            if(searchCache.size>30) searchCache.delete(searchCache.keys().next().value);
+            return r;
+          });
+          searchPending.set(key,request);
+          request.then(function(){searchPending.delete(key);},function(){searchPending.delete(key);});
+        }
+        request.then(function(r){
+          if(revision!==searchRevision || v!==q.value.trim()) return;
           renderResults(r.results||[]);
-        }).catch(function(){ renderResults([]); });
+        }).catch(function(error){
+          if(revision!==searchRevision || v!==q.value.trim()) return;
+          renderResults([]);
+          results.querySelector('b').textContent=error.message||'Search unavailable. Please try again.';
+        });
       }
       var watchIcon='<svg viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="1.5"><rect x="24" y="4" width="16" height="10" rx="2"/><rect x="24" y="50" width="16" height="10" rx="2"/><circle cx="32" cy="32" r="18"/><path d="M32 22v10l6 4"/></svg>';
       // Brands where the classifier's metal / dial / size reads are not trustworthy
       // (skeleton dials, carbon and titanium cases): show model and reference only.
       var NO_ATTRS=/richard\s*mille|hublot|mb&f|urwerk/i;
       function cleanModel(h){
+        if(h.image_source==='buy-catalog') return String(h.model||'').trim();
         var m=String(h.model||'').trim();
         // drop a leading copy of the reference ("RM67-02 Ogier" -> "Ogier")
         var rc=String(h.ref_core||''); if(rc && m.replace(/[^A-Za-z0-9]/g,'').toUpperCase().indexOf(rc)===0) m=m.replace(/^[A-Za-z0-9\-\/\.]+\s*/,'');
@@ -766,41 +1079,67 @@
         } else if(nick && (String(h.model||'')).toLowerCase().indexOf(nick.toLowerCase())<0) bits.push('"'+nick+'"');
         return bits.filter(Boolean).join(' ');
       }
-      function renderResults(list){
+      function renderResults(list, visibleCount){
+        visibleCount=visibleCount||18;
         results.innerHTML='';
-        list.forEach(function(h){
+        list=list.filter(function(h){ return typeof h.image==='string' && h.image.trim(); });
+        var pending=Math.min(list.length,visibleCount), loaded=0;
+        var loading=document.createElement('div'); loading.setAttribute('role','status'); loading.style.padding='16px'; loading.textContent='Loading watch photos…';
+        if(pending) results.appendChild(loading);
+        function settlePhoto(ok){
+          pending--; if(ok) loaded++;
+          if(!loading.isConnected) return;
+          if(loaded || !pending){
+            loading.hidden=true; m.hidden=false;
+            m.querySelector('b').textContent=loaded ? "Can't find your watch?" : 'No matching watch with an available photo.';
+          }
+        }
+        list.slice(0,visibleCount).forEach(function(h){
           var b=document.createElement('button'); b.type='button'; b.className='io-hit';
+          // Only reveal a selectable watch once its actual catalog photo loads.
+          b.style.display='none';
           var dials=(h.dials||[]).map(titleCase);
           var noAttrs=NO_ATTRS.test(h.brand||'');
-          var meta=[(!noAttrs&&h.size_mm)?(Math.round(h.size_mm*10)/10)+'mm':null, (!noAttrs&&dials.length>1)?('Dials: '+dials.join(', ')):null, h.n?h.n+' dealer listings':null].filter(Boolean).join(' · ');
-          b.innerHTML='<figure>'+(h.image?'<img src="'+esc(h.image)+'" alt="">':watchIcon)+'</figure><div><div class="b">'+esc(h.brand||'')+'</div><div class="m">'+esc(niceName(h))+'</div><div class="r">'+esc(h.reference||h.ref_core)+'</div><div class="d">'+esc(meta)+'</div></div>';
+          var meta=[h.bracelet||null, (!noAttrs&&dials.length>1)?('Dials: '+dials.join(', ')):null, h.n?h.n+' listings for this reference':null, h.image_source==='buy-catalog'?'Catalog example':null].filter(Boolean).join(' · ');
+          b.innerHTML='<figure><img alt=""></figure><div><div class="b">'+esc(h.brand||'')+'</div><div class="m">'+esc(niceName(h))+'</div><div class="r">'+esc(h.reference||h.ref_core)+'</div><div class="d">'+esc(meta)+'</div></div>';
+          var preview=b.querySelector('img');
+          preview.addEventListener('load',function(){
+            if(!preview.naturalWidth){ b.remove(); settlePhoto(false); return; }
+            b.style.removeProperty('display'); settlePhoto(true);
+          },{once:true});
+          preview.addEventListener('error',function(){ b.remove(); settlePhoto(false); },{once:true});
+          preview.decoding='async';
           b.addEventListener('click',function(){ choose(h); });
           results.appendChild(b);
+          preview.src=h.image;
         });
-        var m=document.createElement('button'); m.type='button'; m.className='io-hit io-hit--manual';
-        m.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 5h12l4 4v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z"/><path d="M7 15l3-3 2 2 3-4 3 5"/><circle cx="9" cy="9" r="1.2"/></svg><span><b>'+(list.length?"Can't find your watch?":'Nothing in the market under that yet.')+'</b>Click here to enter it manually.</span>';
-        m.addEventListener('click',function(){ chosen=null; $('io-chosen').classList.remove('is-on'); $('io-dials').hidden=true; $('io-manual').hidden=false; results.hidden=true; $('io-ref-manual').value=/^[a-z0-9\/.-]{4,}$/i.test(q.value.trim())?q.value.trim():''; $('io-ref-manual').focus(); });
+        if(list.length>visibleCount){
+          var more=document.createElement('button'); more.type='button'; more.className='io-hit io-hit--manual';
+          more.textContent='Show more watches ('+(list.length-visibleCount)+' remaining)';
+          more.addEventListener('click',function(){ var top=results.scrollTop; renderResults(list,visibleCount+18); results.scrollTop=top; });
+          results.appendChild(more);
+        }
+        var m=document.createElement('button'); m.type='button'; m.className='io-hit io-hit--manual'; m.hidden=pending>0;
+        m.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 5h12l4 4v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z"/><path d="M7 15l3-3 2 2 3-4 3 5"/><circle cx="9" cy="9" r="1.2"/></svg><span><b>'+(list.length?"Can't find your watch?":'No matching watch found.')+'</b>Click here to enter it manually.</span>';
+        m.addEventListener('click',function(){ chosen=null; $('io-chosen').classList.remove('is-on'); $('io-dials').hidden=true; $('io-manual').hidden=false; results.hidden=true; $('io-ref-manual').value=/^[a-z0-9\/.-]{4,}$/i.test(q.value.trim())?q.value.trim():''; $('io-ref-manual').focus(); checkPricing(); });
         results.appendChild(m);
         results.hidden=false; results.parentNode.classList.add('is-open');
       }
       function choose(h){
+        photoRevision++; photoRead=null; schedulePhotoCheck();
         chosen=Object.assign({},h,{dial:(h.dials&&h.dials.length===1)?h.dials[0]:''});
         results.hidden=true; results.parentNode.classList.remove('is-open'); q.value=[h.brand,h.model,h.reference||h.ref_core].filter(Boolean).join(' ');
         $('io-manual').hidden=true;
         $('io-chosen-img').innerHTML=h.image?'<img src="'+esc(h.image)+'" alt="">':watchIcon;
-        $('io-chosen-name').textContent=[h.brand,h.model].filter(Boolean).join(' ');
+        $('io-chosen-name').textContent=[h.brand,niceName(h)].filter(Boolean).join(' ');
         $('io-chosen-ref').textContent=(h.reference||h.ref_core)+(h.n?' · '+h.n+' dealer listings in 60 days':'');
         $('io-chosen').classList.add('is-on');
-        var chips=$('io-dials'); chips.innerHTML='';
-        if(h.dials&&h.dials.length>1){
-          var lab=document.createElement('span'); lab.className='io-eyebrow'; lab.style.alignSelf='center'; lab.textContent='Dial:'; chips.appendChild(lab);
-          h.dials.forEach(function(d){ var c=document.createElement('button'); c.type='button'; c.textContent=titleCase(d); c.addEventListener('click',function(){ chosen.dial=d; chips.querySelectorAll('button').forEach(function(x){x.classList.toggle('is-on',x===c)}); }); chips.appendChild(c); });
-          var o=document.createElement('button'); o.type='button'; o.textContent='Other'; o.addEventListener('click',function(){ chosen.dial=''; chips.querySelectorAll('button').forEach(function(x){x.classList.toggle('is-on',x===o)}); }); chips.appendChild(o);
-          chips.hidden=false;
-        } else chips.hidden=true;
+        // Catalog cards identify a specific configuration; never offer dealer dial variants.
+        var chips=$('io-dials'); chips.innerHTML=''; chips.hidden=true;
         $('io-err1').textContent='';
+        checkPricing();
       }
-      $('io-chosen-clear').addEventListener('click',function(){ chosen=null; $('io-chosen').classList.remove('is-on'); $('io-dials').hidden=true; q.value=''; q.focus(); });
+      $('io-chosen-clear').addEventListener('click',function(){ chosen=null; $('io-chosen').classList.remove('is-on'); $('io-dials').hidden=true; q.value=''; q.focus(); pricingKey=''; pricingRequest=null; pricingRevision++; pricingMode='personal'; $('io-pricing-status').hidden=true; syncOption(); });
 
       /* ---- steps ---- */
       function goStep(n){
@@ -816,13 +1155,13 @@
         var s=$('io-summary'); var label=watchLabel();
         if(!label){ s.hidden=true; return; }
         $('io-summary-img').innerHTML=(chosen&&chosen.image)?'<img src="'+esc(chosen.image)+'" alt="">':watchIcon;
-        $('io-summary-name').textContent=chosen?[chosen.brand,chosen.model].filter(Boolean).join(' '):label;
+        $('io-summary-name').textContent=chosen?[chosen.brand,niceName(chosen)].filter(Boolean).join(' '):label;
         $('io-summary-ref').textContent=(refValue()||'')+(dialValue()?' · '+titleCase(dialValue())+' dial':'');
         s.hidden=false;
       }
       function validate1(){
         var e=$('io-err1'); e.textContent='';
-        if(!$('io-loc').value){ e.textContent='Tell me where the watch is.'; $('io-loc').focus(); return false; }
+        if(!$('io-loc').value){ e.textContent='Tell me where the watch is.'; ($('io-country-search')||$('io-loc')).focus(); return false; }
         if(!refValue() && !$('io-manual').hidden && !$('io-brand').value){ e.textContent='Pick a brand, or search for the watch above.'; return false; }
         if(!radio('hasBox')||!radio('hasPapers')||!radio('worn')){ e.textContent='Answer the box, papers and worn questions.'; return false; }
         if(!form.ack.checked){ e.textContent='Please tick the authentication acknowledgement.'; return false; }
@@ -835,9 +1174,10 @@
         if(!refValue()){ e.textContent='I could not read a reference from the photos. Go back and search for the watch, or add a photo of the warranty card.'; return false; }
         return true;
       }
-      form.querySelectorAll('.js-next').forEach(function(b){ b.addEventListener('click',function(){
-        if(step===1 && validate1()){ goStep(2); scrollTo(); }
-        else if(step===2 && validate2()){ goStep(3); scrollTo(); }
+      form.querySelectorAll('.js-next').forEach(function(b){ b.addEventListener('click',async function(){
+        if((step===1 && validate1()) || (step===2 && validate2())){
+          b.disabled=true; var from=step; try { var pending=checkPricing(); await pending; if(option()!=='consign' && pending!==pricingRequest) return; if(step===from){ goStep(from+1); scrollTo(); } } finally { b.disabled=false; }
+        }
       })});
       form.querySelectorAll('.js-back').forEach(function(b){ b.addEventListener('click',function(){ goStep(step-1); scrollTo(); })});
       function scrollTo(){ $('io-steps').scrollIntoView({behavior:'smooth',block:'start'}); }
@@ -855,28 +1195,43 @@
         if(list.length>room) $('io-err2').textContent='Six photos is the limit. The first six are in.';
       }
       function upload(file){
-        if(!/^image\//.test(file.type)) return;
-        var t=document.createElement('div'); thumbs.appendChild(t);
-        var rd=new FileReader(); rd.onload=function(){t.style.backgroundImage='url('+rd.result+')'}; rd.readAsDataURL(file);
-        uploading++; photoRead=null; $('io-err2').textContent='';
-        post({op:'sign-upload',filename:file.name,mime:file.type||'image/jpeg',session:session}).then(function(s){
-          return fetch(s.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type||'application/octet-stream'},body:file}).then(function(r){
-            if(!r.ok) throw new Error('upload '+r.status);
-            photos.push(s.path); t.classList.add('is-up'); markGuide();
+        var ext=(file.name.split('.').pop()||'').toLowerCase();
+        var mime=file.type||({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif'}[ext]);
+        if(!/^image\/(jpeg|png|webp|heic|heif)$/.test(mime||'')){ $('io-err2').textContent='Choose JPG, PNG, WebP or HEIC photos.'; return; }
+        if(!file.size||file.size>15*1024*1024){ $('io-err2').textContent='Each photo must be 15MB or smaller.'; return; }
+        var t=document.createElement('div'), removed=false, receipt=null; thumbs.appendChild(t);
+        var preview=URL.createObjectURL(file); t.style.backgroundImage='url('+preview+')';
+        var remove=document.createElement('button'); remove.type='button'; remove.textContent='Remove'; remove.setAttribute('aria-label','Remove '+file.name); t.appendChild(remove);
+        function discard(){
+          removed=true; t.remove(); URL.revokeObjectURL(preview);
+          if(receipt) photos=photos.filter(function(p){return p!==receipt});
+          photoRevision++; photoRead=null; markGuide(); schedulePhotoCheck();
+        }
+        remove.addEventListener('click',discard);
+        uploading++; photoRevision++; photoRead=null; $('io-err2').textContent='';
+        ensureSession().then(function(){return post({op:'sign-upload',filename:file.name,mime:mime,size:file.size});}).then(function(s){
+          return fetch(s.uploadUrl,{method:'PUT',headers:{'Content-Type':mime},body:file}).then(function(r){
+            if(!r.ok) throw new Error('This photo did not upload. Retry it or remove it.');
+            if(!removed){receipt=s.photoToken; photos.push(receipt); t.classList.add('is-up'); markGuide();}
           });
-        }).catch(function(){ t.classList.add('is-err'); $('io-err2').textContent='One photo did not upload. Try that one again.'; })
-        .finally(function(){ uploading--; schedulePhotoCheck(); });
+        }).catch(function(error){
+          if(removed) return;
+          t.classList.add('is-err'); $('io-err2').textContent=error.message||'One photo did not upload. Retry it or remove it.';
+          var retry=document.createElement('button'); retry.type='button'; retry.textContent='Retry';
+          retry.addEventListener('click',function(){discard();upload(file)}); t.appendChild(retry);
+        }).finally(function(){ uploading--; photoRevision++; schedulePhotoCheck(); });
       }
-      function markGuide(){ var got=photos.length; document.querySelectorAll('#io-guide figure').forEach(function(f,i){ f.classList.toggle('is-got', i<got); }); }
+      function markGuide(){ /* Upload order does not prove which watch view was provided. */ }
 
       /* ---- photo check: confirm or find the reference from the photos ---- */
-      function schedulePhotoCheck(){ clearTimeout(photoTimer); photoTimer=setTimeout(function(){ if(!uploading && photos.length) photoCheck(); }, 700); }
+      function schedulePhotoCheck(){ clearTimeout(photoTimer); if(!photos.length){photoStrip.hidden=true;return;} photoTimer=setTimeout(function(){ if(!uploading && photos.length) photoCheck(); }, 700); }
       function photoCheck(){
         if(photoBusy) return photoBusy;
+        var revision=photoRevision;
         photoStrip.hidden=false; photoStrip.className='io-photo is-busy'; photoStrip.textContent='Reading your photos...';
-        photoBusy=post({op:'photo-read',photos:photos,reference:refValue()}).then(function(r){ photoRead=r; renderPhoto(r); return r; })
-          .catch(function(){ photoStrip.className='io-photo'; photoStrip.textContent='Could not read the photos this time. The reference you gave still stands.'; return null; })
-          .finally(function(){ photoBusy=null; });
+        photoBusy=post({op:'photo-read',photos:photos,reference:refValue()}).then(function(r){ if(revision===photoRevision){photoRead=r;renderPhoto(r)} return r; })
+          .catch(function(){ if(revision===photoRevision){photoStrip.className='io-photo is-warn'; photoStrip.textContent='Could not verify the photos. Henry will review them before confirming an offer.';} return null; })
+          .finally(function(){ photoBusy=null; if(revision!==photoRevision) schedulePhotoCheck(); });
         return photoBusy;
       }
       function label(r){
@@ -884,10 +1239,11 @@
         return [r.brand?titleCase(r.brand):null, r.model?titleCase(r.model):null, r.reference, dial, r.bezel?String(r.bezel).toLowerCase()+' bezel':null, r.bracelet?titleCase(r.bracelet)+' bracelet':null, r.case_metal?titleCase(r.case_metal):null].filter(Boolean).join(', ');
       }
       function pickRef(ref, extra){
+        photoRevision++;
         // a reference chosen from the photo read replaces whatever was typed
         chosen=Object.assign({ref_core:ref, reference:ref, brand:extra&&extra.brand||brandValue(), model:extra&&extra.model||'', dials:[], image:null, dial:extra&&extra.dial||''}, {});
         $('io-manual').hidden=true; $('io-chosen').classList.remove('is-on');
-        syncSummary();
+        syncSummary(); checkPricing();
       }
       function candidateButtons(list, prefix){
         if(prefix) photoStrip.appendChild(document.createTextNode(' '+prefix+' '));
@@ -904,7 +1260,7 @@
         var rd=r.read||{}; photoStrip.className='io-photo'; photoStrip.textContent='';
         var typed=refValue();
         if(r.status==='not_a_watch'){ photoStrip.classList.add('is-warn'); photoStrip.textContent='Those photos do not look like a wristwatch. Add a clear shot of the dial and the warranty card.'; return; }
-        if(r.status==='error'||r.status==='none'){ photoStrip.hidden=true; return; }
+        if(r.status==='error'||r.status==='none'){ photoStrip.classList.add('is-warn'); photoStrip.textContent='Photo verification is unavailable. Henry will review your watch before confirming an offer.'; return; }
         if(chosen && !chosen.dial && rd.dial_color) chosen.dial=String(rd.dial_color).toLowerCase();
         if(!chosen && !$('io-dial-manual').value && rd.dial_color) $('io-dial-manual').value=String(rd.dial_color).toLowerCase();
         var seen=label(rd)||'a watch';
@@ -919,7 +1275,7 @@
       }
 
       /* ---- submit ---- */
-      form.addEventListener('submit',function(e){
+      form.addEventListener('submit',async function(e){
         e.preventDefault(); var er=$('io-err3'); er.textContent='';
         if(form.website.value) return;                          // honeypot
         var first=$('io-first').value.trim(), last=$('io-last').value.trim(), email=$('io-email').value.trim(), phone=$('io-phone').value.trim();
@@ -927,14 +1283,15 @@
         if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ er.textContent='Enter a valid email.'; return; }
         if(phone.replace(/\D/g,'').length<7){ er.textContent='Please enter a phone number.'; return; }
         if(!form.contactOk.checked||!form.terms.checked){ er.textContent='Please tick both boxes.'; return; }
+        await checkPricing();
         var worn=radio('worn'), pol=radio('polished'), box=radio('hasBox'), pap=radio('hasPapers');
         var condition = worn==='no' ? 'unworn' : (pol==='yes' ? 'good' : 'excellent');
         var set = (box==='yes'&&pap==='yes') ? 'full' : box==='yes' ? 'box' : pap==='yes' ? 'papers' : 'naked';
-        var body={ op:'submit', option:option(), brand:brandValue(), reference:refValue(), dial:dialValue(), condition:condition, set:set,
+        var body={ op:'submit', option:option(), quoteMode:pricingMode, brand:brandValue(), reference:refValue(), dial:dialValue(), condition:condition, set:set,
           hasBox:box, hasPapers:pap, worn:worn, polished:pol||null, watchLabel:watchLabel(),
           firstName:first, lastName:last, email:email, phone:(phone.startsWith('+')?phone:'+1 '+phone), location:$('io-loc').value,
-          notes:form.notes.value.trim(), photos:photos, agreedTerms:true };
-        var btn=$('io-submit'); btn.disabled=true; btn.textContent=option()==='consign'?'Sending...':'Pricing...';
+          notes:form.notes.value.trim(), photos:photos, agreedTerms:form.terms.checked, contactOk:form.contactOk.checked, authenticationAcknowledged:form.ack.checked, policyVersion:'2026-09-09' };
+        var btn=$('io-submit'); btn.disabled=true; btn.textContent=option()==='consign'||pricingMode==='personal'?'Sending...':'Pricing...';
         post(body).then(function(r){ renderResult(r); })
           .catch(function(x){ er.textContent=x.message||'Could not send that. Text me instead.'; })
           .finally(function(){ btn.disabled=false; syncOption(); });
@@ -945,24 +1302,22 @@
         ['io-offer','io-thin','io-consigned'].forEach(function(k){$(k).hidden=true});
         var m=r.market;
         if(option()==='consign'){
-          $('io-consign-note').textContent = (m&&m.n>=3) ? 'For reference, dealers are trading this reference at a median of '+money(m.median)+' across '+m.n+' listings in the last '+m.days+' days. On consignment I list above that and you approve the sale.' : 'I have your photos and details and will come back with a market read and a suggested ask.';
+          $('io-consign-note').textContent = 'Your photos and details are received. I will contact you with a suggested asking price and discuss the consignment plan. You approve the sale before we proceed.';
           $('io-consigned').hidden=false;
-        } else if(!r.ok || r.amount==null){
-          if(m&&m.n) $('io-thin-title').textContent='Only '+m.n+' recent listing'+(m.n===1?'':'s')+' for this reference';
+        } else if(r.mode==='personal' || !r.ok || r.amount==null){
+          $('io-thin-title').textContent='Your quote request is received';
+          $('io-thin-note').textContent='Henry will review your photos and watch details, then contact you with a personal quote.';
+          if(r.mode!=='personal' && r.reason==='invalid_market'){
+            $('io-thin-title').textContent='I need to review the market data';
+            $('io-thin-note').textContent='I have your photos and details. The current market data needs checking before I can give you a reliable number, so I will review it and contact you directly.';
+          } else if(r.mode!=='personal' && m&&m.n) $('io-thin-title').textContent='Only '+m.n+' recent listing'+(m.n===1?'':'s')+' for this reference';
           $('io-thin').hidden=false;
         } else {
           $('io-offer-meta').textContent='Your instant offer for '+watchLabel()+(m&&m.dial_used?', '+titleCase(m.dial_used)+' dial':'');
           $('io-offer-num').textContent = r.show_range ? money(r.low)+' to '+money(r.high) : money(r.amount);
-          $('io-offer-sub').textContent = (r.show_range?'Middle of the band '+money(r.amount)+'. ':'')+'Held until '+new Date(r.expires_at).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'. Subject to authentication.';
-          $('io-b-med').textContent=money(m.median); $('io-b-n').textContent=m.n+' in '+m.days+' days'; $('io-b-band').textContent=money(r.low)+' to '+money(r.high);
-          var note='';
-          if(r.confidence==='HIGH') note='Strong read: '+m.n+' dealer listings agree on this reference'+(m.dial_used?' and dial':'')+'.';
-          else if(r.confidence==='MEDIUM') note='Solid read from '+m.n+' listings. The band shows how far dealers disagree.';
-          else if(r.confidence==='MEDIUM_WIDE') note='Dealers list several variants under this reference, so the band is wide. I confirm the exact number on inspection.';
-          else note='Thin data, '+m.n+' listings. I confirm the number by hand within the hour.';
-          if(r.adjustments&&(r.adjustments.condition||r.adjustments.set)) note+=' Adjusted '+Math.round((r.adjustments.condition+r.adjustments.set)*100)+'% for condition and set.';
-          if(r.needs_review) note+=' Offers this size, or where the photos and reference disagree, get a personal confirmation from me before they are binding.';
-          note+=' I will message you shortly to confirm the piece and set up the handover.';
+          $('io-offer-sub').textContent = (r.show_range?'Middle of the band '+money(r.amount)+'. ':'')+(r.needs_review?'Estimate valid until ':'Held until ')+new Date(r.expires_at).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'. Subject to authentication.';
+          var note='Your photos and details are received. I will contact you to confirm the watch and walk you through the next steps. The final amount is subject to condition and authentication.';
+          if(r.show_range) note='This is an estimated range. I will review your photos and confirm a specific amount with you before we arrange the handover. The final amount is subject to condition and authentication.';
           $('io-offer-note').textContent=note;
           res.classList.remove('is-fresh'); void res.offsetWidth; res.classList.add('is-fresh');
           $('io-offer').hidden=false;
@@ -1008,5 +1363,6 @@
       <a href="/journal/">Journal</a>
       <button type="button" onclick="location.href='/source'">Request to Source</button>
     </div>
+    <script src="/assets/country-picker.js"></script>
 </body>
 </html>

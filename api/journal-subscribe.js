@@ -34,15 +34,16 @@ function isValidEmail(s) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 }
 
-async function supabaseUpsertSubscriber(row) {
+async function supabaseEnsureSubscriber(row) {
     const url = `${SUPABASE_URL}/rest/v1/journal_subscribers?on_conflict=email`;
     const r = await fetch(url, {
         method: "POST",
+        signal: AbortSignal.timeout(8000),
         headers: {
             apikey: SUPABASE_KEY,
             Authorization: `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json",
-            Prefer: "return=representation,resolution=merge-duplicates",
+            Prefer: "return=representation,resolution=ignore-duplicates",
         },
         body: JSON.stringify(row),
     });
@@ -51,7 +52,29 @@ async function supabaseUpsertSubscriber(row) {
         throw new Error(`Supabase ${r.status}: ${text}`);
     }
     const data = await r.json();
-    return data[0];
+    if (data[0]) return data[0];
+    // ON CONFLICT DO NOTHING preserves confirmation and suppression state even
+    // when two subscriptions or a confirmation race with this request.
+    const lookup = `${SUPABASE_URL}/rest/v1/journal_subscribers?email=eq.${encodeURIComponent(row.email)}&select=id,confirmed,confirmation_token,unsubscribed_at&limit=1`;
+    const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+    const read = async () => {
+        const r = await fetch(lookup, { headers, signal: AbortSignal.timeout(8000) });
+        if (!r.ok) throw new Error('Subscriber lookup failed');
+        const rows = await r.json();
+        if (!rows[0]) throw new Error('Subscriber unavailable');
+        return rows[0];
+    };
+    let subscriber = await read();
+    if (!subscriber.confirmed && !subscriber.confirmation_token) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/journal_subscribers?id=eq.${encodeURIComponent(subscriber.id)}&confirmed=eq.false&confirmation_token=is.null`, {
+            method: 'PATCH', headers: { ...headers, 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(8000),
+            body: JSON.stringify({ confirmation_token: row.confirmation_token }),
+        });
+        if (!r.ok) throw new Error('Confirmation preparation failed');
+        subscriber = await read();
+    }
+    return subscriber;
 }
 
 function stickerFor(seed) {
@@ -98,6 +121,7 @@ function confirmEmailHtml({ confirmUrl, email }) {
 
 module.exports = async (req, res) => {
     setCors(req, res);
+    res.setHeader("Cache-Control", "no-store");
     if (req.method === "OPTIONS") return res.status(200).end();
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -114,7 +138,7 @@ module.exports = async (req, res) => {
 
     // Rate limit: 4 / 10 min per IP + 40 / 10 min global backstop.
     const rl = await guard({
-        req, name: "journal-subscribe",
+        req, name: "journal-subscribe", failClosed: true,
         perIp: { max: 4, windowSeconds: 600 },
         global: { max: 40, windowSeconds: 600 },
     });
@@ -127,7 +151,7 @@ module.exports = async (req, res) => {
         const { email: rawEmail, source } = req.body || {};
         const email = String(rawEmail || "").toLowerCase().trim();
 
-        if (!email || !isValidEmail(email)) {
+        if (!email || email.length > 254 || !isValidEmail(email)) {
             return res.status(400).json({ error: "Invalid email" });
         }
 
@@ -140,7 +164,7 @@ module.exports = async (req, res) => {
             source: source ? String(source).slice(0, 60) : "journal",
         };
 
-        const subscriber = await supabaseUpsertSubscriber(row);
+        const subscriber = await supabaseEnsureSubscriber(row);
 
         // If already confirmed, return success without re-sending email
         if (subscriber.confirmed) {
@@ -148,7 +172,8 @@ module.exports = async (req, res) => {
         }
 
         // Send confirmation email
-        const tokenToUse = subscriber.confirmation_token || confirmationToken;
+        const tokenToUse = subscriber.confirmation_token;
+        if (!tokenToUse) throw new Error("Confirmation token unavailable");
         const confirmUrl = `${SITE_URL}/api/journal-confirm?token=${encodeURIComponent(tokenToUse)}`;
 
         try {
@@ -160,11 +185,13 @@ module.exports = async (req, res) => {
             });
             if (sendRes.error) {
                 console.error("[journal-subscribe] Resend error:", JSON.stringify(sendRes.error));
+                return res.status(502).json({ error: "Confirmation email could not be sent. Please try again." });
             } else {
                 console.log("[journal-subscribe] Confirmation sent, id:", sendRes.data?.id);
             }
         } catch (e) {
             console.error("[journal-subscribe] Resend threw:", e.message);
+            return res.status(502).json({ error: "Confirmation email could not be sent. Please try again." });
         }
 
         return res.status(200).json({ success: true, alreadyConfirmed: false });

@@ -16,6 +16,7 @@ async function handleConfirm(token, res) {
     const lookupUrl = `${SUPABASE_URL}/rest/v1/journal_subscribers?confirmation_token=eq.${encodeURIComponent(token)}&limit=1`;
     const lookupRes = await fetch(lookupUrl, {
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        signal: AbortSignal.timeout(8000),
     });
     if (!lookupRes.ok) return res.redirect(302, `${SITE_URL}/journal/?confirmed=0&reason=server`);
 
@@ -29,22 +30,26 @@ async function handleConfirm(token, res) {
         return res.redirect(302, `${SITE_URL}/journal/?confirmed=1&already=1`);
     }
 
-    const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/journal_subscribers?id=eq.${subscriber.id}`, {
+    const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/journal_subscribers?id=eq.${encodeURIComponent(subscriber.id)}&confirmation_token=eq.${encodeURIComponent(token)}`, {
         method: "PATCH",
+        signal: AbortSignal.timeout(8000),
         headers: {
             apikey: SUPABASE_KEY,
             Authorization: `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json",
-            Prefer: "return=minimal",
+            Prefer: "return=representation",
         },
         body: JSON.stringify({
             confirmed: true,
             confirmed_at: new Date().toISOString(),
+            unsubscribed_at: null,
             confirmation_token: null,
         }),
     });
     if (!updateRes.ok) return res.redirect(302, `${SITE_URL}/journal/?confirmed=0&reason=server`);
 
+    const updated = await updateRes.json();
+    if (!updated.length) return res.redirect(302, `${SITE_URL}/journal/?confirmed=0&reason=expired`);
     return res.redirect(302, `${SITE_URL}/journal/?confirmed=1`);
 }
 
@@ -53,6 +58,7 @@ async function handleUnsubscribe(token, res) {
 
     const r = await fetch(`${SUPABASE_URL}/rest/v1/journal_subscribers?unsubscribe_token=eq.${encodeURIComponent(token)}`, {
         method: "PATCH",
+        signal: AbortSignal.timeout(8000),
         headers: {
             apikey: SUPABASE_KEY,
             Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -62,6 +68,7 @@ async function handleUnsubscribe(token, res) {
         body: JSON.stringify({
             unsubscribed_at: new Date().toISOString(),
             confirmed: false,
+            confirmation_token: null,
         }),
     });
     if (!r.ok) return res.redirect(302, `${SITE_URL}/journal/?unsubscribed=0&reason=server`);
@@ -74,6 +81,7 @@ async function handleUnsubscribe(token, res) {
 }
 
 module.exports = async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
     if (req.method !== "GET" && req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed" });
     }
@@ -92,8 +100,8 @@ module.exports = async (req, res) => {
     }
 
     try {
-        if (action === "unsubscribe") return handleUnsubscribe(token, res);
-        return handleConfirm(token, res);
+        if (action === "unsubscribe") return await handleUnsubscribe(token, res);
+        return await handleConfirm(token, res);
     } catch (err) {
         console.error("[journal-confirm] UNHANDLED:", err.message);
         return res.redirect(302, `${SITE_URL}/journal/?confirmed=0&reason=server`);

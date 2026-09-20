@@ -5,7 +5,8 @@
 -- UPDATE at the bottom backfills what is already stored.
 -- Run in the Supabase SQL editor for the DBH project (untnrofsnmoyxdidxbdj).
 
-insert into wholesale.ref_rules (pattern, brand, model, note) values
+insert into wholesale.ref_rules (pattern, brand, model, note)
+select v.* from (values
 -- Rolex, 6-digit (optional M prefix, optional -0001 suffix handled by ^ anchor only)
 ('^M?1165[0-9]{2}',        'Rolex', 'Daytona',        '116500-116529'),
 ('^M?1265[0-9]{2}',        'Rolex', 'Daytona',        '126500-126529'),
@@ -73,18 +74,24 @@ insert into wholesale.ref_rules (pattern, brand, model, note) values
 -- Audemars Piguet Royal Oak (15xxx / 77xxx / 67xxx + 2-letter metal code)
 ('^(15|77|67)[0-9]{3}[A-Z]{2}', 'Audemars Piguet', 'Royal Oak', '15202ST/15500ST/77350ST etc'),
 ('^26[0-9]{3}(ST|OR|SO|IO|TI|CR|BC|IP|SR|NB)', 'Audemars Piguet', 'Royal Oak Offshore / Chrono', '26xxx is ambiguous between RO chrono and Offshore; review')
-on conflict do nothing;
+) as v(pattern, brand, model, note)
+where not exists (select 1 from wholesale.ref_rules r where r.pattern = v.pattern);
 
 -- Backfill: force brand/model on stored rows whose reference matches a rule.
 -- Skips rows Henry corrected by hand. Most specific (longest) pattern wins.
 update wholesale.listings l
 set brand = r.brand, model = r.model
-from lateral (
-  select brand, model from wholesale.ref_rules
-  where l.reference ~ pattern
-  order by length(pattern) desc limit 1
+from (
+  select x.id,
+         (select rr.brand from wholesale.ref_rules rr where x.reference ~ rr.pattern
+            order by length(rr.pattern) desc limit 1) as brand,
+         (select rr.model from wholesale.ref_rules rr where x.reference ~ rr.pattern
+            order by length(rr.pattern) desc limit 1) as model
+  from wholesale.listings x
+  where x.reference is not null
 ) r
-where l.reference is not null
+where r.id = l.id
+  and r.brand is not null
   and (l.brand is distinct from r.brand or l.model is distinct from r.model)
   and coalesce(l.corrected_fields::text, '') !~ '(brand|model)';
 

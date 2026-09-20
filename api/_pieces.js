@@ -9,6 +9,8 @@
 //
 // Now: image URLs are permanent and public, stored on the row, served straight
 // from Supabase's CDN to the browser. No per-image lookup, no expiry, no quota.
+const { correctRow } = require('../lib/catalog-corrections');
+const { safeNickname, suspectReference } = require('../lib/catalog-identity');
 
 const PIECES_URL = (() => {
     let u = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
@@ -44,6 +46,8 @@ function pieceSlug(p) {
 // Row -> the piece shape the site has always consumed. Field names and derived
 // strings are unchanged from the Notion era so nothing downstream had to move.
 function mapRow(r) {
+    const originalSlug = pieceSlug(r);
+    r = correctRow(r);
     const caseSize = r.case_size_mm ? `${r.case_size_mm}mm` : '';
     const name = r.piece || `${r.brand || ''} ${r.model || ''}`.trim();
 
@@ -65,6 +69,7 @@ function mapRow(r) {
 
     const out = {
         id: r.id,
+        catalogReview: r.catalog_review || null,
         brand: r.brand || '',
         model: r.model || '',
         name,
@@ -101,7 +106,20 @@ function mapRow(r) {
         // new stock, which it cannot do from array position alone.
         addedAt: r.created_at || '',
     };
-    out.slug = pieceSlug(out);
+    out.nickname = safeNickname(out);
+    const label = out.model || out.name;
+    out.displayName = label + (out.nickname && !label.toLowerCase().includes(out.nickname.toLowerCase()) ? ` "${out.nickname}"` : '');
+    if (out.catalogReview === 'identity' || out.catalogReview === 'image') {
+        out.imageNeedsReview = out.image;
+        for (const key of ['image', 'imageThumb', 'imageMedium', 'imageCutout', 'imageCutoutThumb']) out[key] = '';
+        for (const key of ['images', 'imagesMedium', 'imagesCutout']) out[key] = [];
+    }
+    if (out.ref && suspectReference(out.brand, out.ref)) {
+        out.referenceNeedsReview = out.ref;
+        out.ref = '';
+        out.catalogReview = out.catalogReview || 'reference';
+    }
+    out.slug = originalSlug;
     return out;
 }
 

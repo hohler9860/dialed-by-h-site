@@ -1,3 +1,4 @@
+const { scriptJson } = require('../lib/safe-html');
 // Brand landing pages: /rolex, /patek-philippe, /audemars-piguet, ...
 //
 // One page per brand, server-rendered from the live catalogue, so Google gets
@@ -196,7 +197,7 @@ function renderBrandPage(slug, all = []) {
                 '@type': 'ItemList', numberOfItems: pieces.length,
                 itemListElement: shown.slice(0, 24).map((p, i) => ({
                     '@type': 'ListItem', position: i + 1, url: `${SITE_URL}/watch/${p.slug}`,
-                    name: `${p.brand} ${p.nickname || p.model || p.name}`.trim(),
+                    name: `${p.brand} ${p.displayName || p.model || p.name}`.trim(),
                 })),
             },
         },
@@ -225,7 +226,7 @@ function renderBrandPage(slug, all = []) {
         },
     ];
 
-    const name = p => `${p.brand} ${p.nickname || p.model || p.name}`.trim();
+    const name = p => `${p.brand} ${p.displayName || p.model || p.name}`.trim();
     const grid = shown.map(p => `<a href="/watch/${escAttr(p.slug)}" aria-label="${escAttr(name(p))}${p.ref ? ' ' + escAttr(p.ref) : ''}">
 <div class="rimg"><img src="${escAttr(p.imageThumb || p.image)}" alt="${escAttr(name(p))}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" width="300" height="300" decoding="async"></div>
 <span class="rname">${escHtml(name(p))}</span>
@@ -254,7 +255,7 @@ ${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
 ${shown[0] ? `<meta property="og:image" content="${escAttr(shown[0].imageMedium || shown[0].image)}">` : ''}
 <meta property="og:site_name" content="Dialed By H">
 <meta name="twitter:card" content="summary_large_image">
-${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
+${ld.map(o => `<script type="application/ld+json">${scriptJson(o)}</script>`).join('\n')}
 ${c.headAssets}
 <style>
 .bp{max-width:1360px;margin:0 auto;padding:28px 40px 90px}

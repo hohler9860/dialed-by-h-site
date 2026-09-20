@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=3600");
 
     try {
-        const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50);
+        const limit = Math.max(1, Math.min(parseInt(req.query.limit, 10) || 20, 50));
         const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
         const category = req.query.category ? String(req.query.category) : null;
 

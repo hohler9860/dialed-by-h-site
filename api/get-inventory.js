@@ -73,6 +73,7 @@ function timingSafeEq(a, b) {
 }
 
 async function handleAdmin(req, res) {
+    res.setHeader('Cache-Control', 'no-store');
     const expected = process.env.ADMIN_PASSWORD;
     const auth = req.headers.authorization || '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
@@ -80,7 +81,10 @@ async function handleAdmin(req, res) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    let body;
+    try { body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {}); }
+    catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return res.status(400).json({ error: 'Invalid request body' });
     const action = body.action;
 
     try {
@@ -331,6 +335,11 @@ module.exports = async (req, res) => {
         // Far cheaper than the Notion era, but still handy right after an edit.
         if (q.fresh) {
             res.setHeader('Cache-Control', 'no-store');
+            const expected = process.env.ADMIN_PASSWORD;
+            const auth = req.headers.authorization || '';
+            if (!expected || !auth.startsWith('Bearer ') || !timingSafeEq(auth.slice(7).trim(), expected)) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
             const fresh = await fetchAllPieces({ force: true });
             return res.status(200).json({ refreshed: true, pieces: fresh.length });
         }
@@ -477,7 +486,7 @@ module.exports = async (req, res) => {
         if (q.grid) {
             const BASE = `${PIECES_URL}/storage/v1/object/public/${BUCKET}/`;
             const rel = (u) => (u && u.startsWith(BASE)) ? u.slice(BASE.length) : u;
-            const KEEP = ['slug', 'brand', 'model', 'name', 'nickname', 'ref', 'details',
+            const KEEP = ['slug', 'brand', 'model', 'name', 'displayName', 'nickname', 'ref', 'details',
                 'year', 'condition', 'caseMaterial', 'dialColor', 'caseSize'];
             const out = pieces.filter(w => w.image).map(w => {
                 const o = {};

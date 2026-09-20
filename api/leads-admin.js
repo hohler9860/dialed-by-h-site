@@ -1377,12 +1377,15 @@ module.exports = async (req, res) => {
         // until requeued by hand.
         if (action === "jobs") {
             const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
+            // Any one of these hitting the DB statement timeout must not 500
+            // the whole Health tab (it renders alongside 'health' and holds the
+            // requeue controls); a failed read = empty list for that panel.
             const [failed, recent, types] = await Promise.all([
                 wh("jobs?select=id,listing_id,job_type,error,claimed_at,finished_at" +
-                   "&status=eq.failed&order=claimed_at.desc&limit=200"),
+                   "&status=eq.failed&order=claimed_at.desc&limit=200").catch(() => []),
                 wh("jobs?select=job_type,status&claimed_at=gte." +
-                   new Date(Date.now() - 86400000).toISOString()),
-                wh("job_types?select=key,description,entry_status,success_status,model,active"),
+                   new Date(Date.now() - 86400000).toISOString()).catch(() => []),
+                wh("job_types?select=key,description,entry_status,success_status,model,active").catch(() => []),
             ]);
             const counts = {};
             for (const j of recent) {

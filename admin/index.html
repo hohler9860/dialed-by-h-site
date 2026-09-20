@@ -3728,7 +3728,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<td>' + inp('contact_email', b.contact_email, '170px') + '</td>' +
                     '<td>' + inp('last_contact_at', b.last_contact_at, '110px', 'date') + '</td>' +
                     '<td>' + inp('follow_up_on', b.follow_up_on, '110px', 'date') + '</td>' +
-                    '<td>' + inp('notes', b.notes, '220px') + '</td>' +
+                    '<td><textarea class="ctl js-ww js-ww-notes" data-id="' + esc(b.id) + '" data-field="notes" rows="2" ' +
+                        'style="font-size:11px;padding:4px 6px;width:320px;min-width:320px;line-height:1.4;resize:vertical;white-space:pre-wrap;overflow:hidden">' +
+                        esc(b.notes == null ? '' : b.notes) + '</textarea></td>' +
                 '</tr>' + draftRow;
             }).join('') + '</tbody></table></div>';
 
@@ -3741,6 +3743,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         [].forEach.call(view.querySelectorAll('[data-ws]'), function (btn) {
             btn.addEventListener('click', function () { wwStatus = this.dataset.ws; paintWW(); });
+        });
+        // Notes grow to fit their text so nothing is clipped.
+        var growNotes = function (ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; };
+        [].forEach.call(view.querySelectorAll('.js-ww-notes'), function (ta) {
+            growNotes(ta);
+            ta.addEventListener('input', function () { growNotes(this); });
         });
         [].forEach.call(view.querySelectorAll('.js-ww'), function (el) {
             var evt = el.tagName === 'SELECT' ? 'change' : 'blur';

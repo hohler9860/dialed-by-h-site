@@ -1256,10 +1256,13 @@ module.exports = async (req, res) => {
 
             const [flows, scorecard, coverage, samples, benchModels, benchFields,
                    identity, disputes, leadDisputes, contested] = await Promise.all([
-                wh("flow_health?select=*&order=errors.desc"),
-                wh("model_scorecard?select=*"),
-                wh("field_coverage?select=*&order=pct.asc"),
-                wh(`extraction_samples?select=*${filter}&order=${sort}&limit=300`),
+                // Each of these is a full-table aggregate; when one trips the
+                // database statement timeout the tab must still render with
+                // whatever did come back, not die as a whole.
+                wh("flow_health?select=*&order=errors.desc").catch(() => []),
+                wh("model_scorecard?select=*").catch(() => []),
+                wh("field_coverage?select=*&order=pct.asc").catch(() => []),
+                wh(`extraction_samples?select=*${filter}&order=${sort}&limit=300`).catch(() => []),
                 // The head to head: which cheap model to trust, and which
                 // attributes no cheap model reads reliably.
                 wh("bench_models?select=*&order=answer_rate.desc").catch(() => []),

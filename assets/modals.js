@@ -248,11 +248,42 @@
   }
 
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  // Sell and Trade are the SAME card as Request to Source: the homepage
+  // renders all three from one template (app.openModal). On the homepage we
+  // call it directly; on any other page we go to /sell or /trade, which is
+  // the homepage with that form open. Nothing else gets a chance to drift.
+  // The homepage declares `const app` (a global lexical binding, not a
+  // window property), so look it up by name, not on window.
+  function homeApp() {
+    try { if (typeof app !== 'undefined' && app && typeof app.openModal === 'function') return app; } catch (e) {}
+    return (window.app && typeof window.app.openModal === 'function') ? window.app : null;
+  }
+  function openKind(kind, fromUrl) {
+    if (kind === 'sell' || kind === 'trade') {
+      if (homeApp()) {
+        homeApp().openModal(kind.toUpperCase());
+      } else if (fromUrl) {
+        // Arrived via /sell or /trade: the homepage app is still booting.
+        // Wait for it rather than reloading the page (that would loop).
+        var tries = 0;
+        var t = setInterval(function () {
+          tries += 1;
+          if (homeApp()) {
+            clearInterval(t); homeApp().openModal(kind.toUpperCase());
+          } else if (tries > 50) { clearInterval(t); open(kind); }
+        }, 100);
+      } else {
+        location.href = '/' + kind;
+      }
+      return;
+    }
+    open(kind);
+  }
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-modal]');
     if (!t) return;
     e.preventDefault();
-    open(t.getAttribute('data-modal'));
+    openKind(t.getAttribute('data-modal'));
   });
 
   // Own URL for each form: /sell and /trade load the page with that form
@@ -262,7 +293,7 @@
     var path = (location.pathname || '').replace(/\/+$/, '');
     var kind = (path === '/sell' || path === '/trade') ? path.slice(1)
       : (/^#(sell|trade)$/.test(location.hash) ? location.hash.slice(1) : null);
-    if (kind) open(kind);
+    if (kind) openKind(kind, true);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', deepLink);
   else deepLink();

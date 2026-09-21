@@ -1262,7 +1262,7 @@
                         </div>
                     `;
                 } else {
-                    const title = type === 'BUY' ? 'Request to Source' : `Request to ${type}`;
+                    const title = type === 'BUY' ? 'Request to Source' : ('Request to ' + type.charAt(0) + type.slice(1).toLowerCase());
                     html = `
                         <div id="form-view" class="p-5 sm:p-6">
                             <h2 class="dbh-display text-2xl font-space font-bold tracking-tight mb-2 js-modal-title">${title}</h2>
@@ -1315,12 +1315,6 @@
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reference Number (if known)</label>
                                         <input type="text" name="watchRef" placeholder="e.g. 126500LN" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
                                     </div>
-                                    ${(type === 'SELL' || type === 'TRADE') ? `
-                                    <div>
-                                        <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Reason for ${type === 'SELL' ? 'Selling' : 'Trading'}</label>
-                                        <input type="text" name="reason" placeholder="${type === 'SELL' ? 'Upgrading, funding a purchase, etc.' : 'Upgrading, switching styles, etc.'}" class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40">
-                                    </div>
-                                    ` : ''}
                                     <div>
                                         <label class="block text-[10px] font-bold tracking-widest text-muted mb-2">Additional Details</label>
                                         <textarea rows="2" name="watchDetails" placeholder="Condition, box & papers, etc." class="w-full bg-transparent border border-ivory/20 p-3 text-ivory focus:border-ivory outline-none transition-colors uppercase placeholder-muted/40"></textarea>

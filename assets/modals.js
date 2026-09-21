@@ -30,6 +30,8 @@
     '.dbh-lm__title{font-family:var(--pt-serif,"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif);font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;text-transform:uppercase;margin:0 40px 8px 0}',
     '.dbh-lm__sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(10,10,10,.55);margin:0 0 28px}',
     '.dbh-lm__field{margin:0 0 16px}',
+    '.dbh-lm__row{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}',
+    '@media (max-width:420px){.dbh-lm__row{grid-template-columns:1fr}}',
     '.dbh-lm label.dbh-lm__label{display:block;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(10,10,10,.6);margin:0 0 8px}',
     '.dbh-lm input[type=text],.dbh-lm input[type=email],.dbh-lm input[type=tel],.dbh-lm select,.dbh-lm textarea{width:100%;box-sizing:border-box;background:transparent;border:1px solid rgba(10,10,10,.22);border-radius:0;padding:12px;font-size:14px;font-family:inherit;color:#0a0a0a;text-transform:uppercase;-webkit-appearance:none;appearance:none;outline:none;transition:border-color .2s ease}',
     '.dbh-lm input:focus,.dbh-lm select:focus,.dbh-lm textarea:focus{border-color:#0a0a0a}',
@@ -90,14 +92,24 @@
       field('Where are you based?', text('location', { required: true, autocomplete: 'address-level2', placeholder: 'City, or city and state' })) +
       field('Brand', '<select name="brand" class="js-brand" required><option value="">Select Brand</option>' + brands + '</select>') +
       field('Model', '<select name="model" class="js-model" disabled><option value="">Select Brand First</option></select>') +
-      field('Reference Number (if known)', text('reference', { placeholder: 'e.g. 126500LN' }));
+      '';
+    // Sell and Trade must stay the exact height of the Source card (no
+    // scrolling on a laptop), so price shares a row with the reference and
+    // the reason lives in the details box instead of its own field.
     if (kind === 'sell' || kind === 'trade') {
       html +=
-        field('Asking Price', text('price', { placeholder: 'How much are you looking to get?' })) +
-        field(kind === 'sell' ? 'Reason for Selling' : 'Reason for Trading',
-          text('reason', { placeholder: kind === 'sell' ? 'Upgrading, funding a purchase, etc.' : 'Upgrading, switching styles, etc.' }));
+        '<div class="dbh-lm__row">' +
+          field('Reference (if known)', text('reference', { placeholder: 'e.g. 126500LN' })) +
+          field('Asking Price', text('price', { placeholder: 'e.g. $12,500' })) +
+        '</div>' +
+        field('Additional Details', '<textarea name="details" placeholder="' +
+          (kind === 'sell' ? 'Condition, box &amp; papers, why you\'re selling, etc.' : 'Condition, box &amp; papers, what you\'d trade toward, etc.') +
+          '"></textarea>');
+    } else {
+      html +=
+        field('Reference Number (if known)', text('reference', { placeholder: 'e.g. 126500LN' })) +
+        field('Additional Details', '<textarea name="details" placeholder="Condition, box &amp; papers, etc."></textarea>');
     }
-    html += field('Additional Details', '<textarea name="details" placeholder="Condition, box &amp; papers, etc."></textarea>');
     return html;
   }
 

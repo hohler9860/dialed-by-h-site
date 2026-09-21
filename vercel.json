@@ -144,6 +144,22 @@
     {
       "source": "/a-lange-sohne/",
       "destination": "/api/get-inventory?brand=a-lange-sohne"
+    },
+    {
+      "source": "/sell",
+      "destination": "/"
+    },
+    {
+      "source": "/sell/",
+      "destination": "/"
+    },
+    {
+      "source": "/trade",
+      "destination": "/"
+    },
+    {
+      "source": "/trade/",
+      "destination": "/"
     }
   ],
   "redirects": [

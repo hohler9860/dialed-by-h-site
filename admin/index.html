@@ -2257,6 +2257,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var btn = document.getElementById('bk-xlsx');
         btn.disabled = true; btn.textContent = 'Building…';
         try {
+            // Always export what the database holds NOW, not what the page
+            // loaded earlier: rows added outside this tab (statement imports,
+            // reconciliations) were missing from exports until a reload.
+            BOOKS = await A.adminFetchTo('/api/leads-admin', 'books');
+            if (typeof paintBooks === 'function') paintBooks();
             var XLSX = await bkLoadXlsx();
             var wb = bkBuildWorkbook(XLSX, BOOKS, bkPeriod);
             var tag = bkPeriod === 'all' ? 'all-time' : bkPeriod === '90' ? 'last-90-days' : 'this-month';

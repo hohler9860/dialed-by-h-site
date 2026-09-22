@@ -436,6 +436,13 @@ module.exports = async (req, res) => {
             // The wholesale tab is supply of whole watches, nothing else. Parts
             // live in the Parts tab; dealer demand (WTB/NTQ/ISO) feeds the
             // Buyers board and matching, never this feed.
+            const LISTING_COLS =
+                "id,message_pk,group_jid,listing_type,brand,model," +
+                "reference,price_usd,price_original,price_currency,condition,set_completeness,year,seller_name,dial_color," +
+                "dial_material,bracelet,bezel,case_material,case_size_mm,complications," +
+                "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
+                "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
+                "vision_mismatch,confidence,message_ts,image_path";
             const PARTS_EXCLUDE =
                 `&group_jid=neq.${PARTS_GROUP_JID}` +
                 `&listing_type=not.in.(PARTS,WTB,NTQ,ISO)` +
@@ -475,6 +482,29 @@ module.exports = async (req, res) => {
                 catch (e) { await new Promise((r) => setTimeout(r, 1200)); return fn(); }
             };
             const soft = (p) => p.catch(() => []);
+            // A search used to run five wildcard matches through the image
+            // view (a join) sorted over the whole table, which took 9s on a
+            // reference like 126334 and tripped the statement timeout. Now it
+            // matches ids on the plain listings table first (no join, 500
+            // rows), then pulls those rows from the view by id, which is
+            // indexed. ~1s instead of a server error.
+            const SEARCH_CAP = 500;
+            const searchListings = async () => {
+                const ids = await withRetry(() => qAll(
+                    "listings?select=id" + listingFilter + PARTS_EXCLUDE.replace(
+                        "&or=(image_path.not.is.null,media_type.is.null)", "") +
+                    "&order=message_ts.desc", {}, SEARCH_CAP, 0));
+                const rows = [];
+                for (let i = 0; i < ids.length; i += 200) {
+                    const chunk = ids.slice(i, i + 200).map((r) => r.id).join(",");
+                    rows.push(...await q(
+                        "listings_with_image?select=" + LISTING_COLS +
+                        "&id=in.(" + chunk + ")" +
+                        "&or=(image_path.not.is.null,media_type.is.null)"));
+                }
+                rows.sort((a, b) => String(b.message_ts).localeCompare(String(a.message_ts)));
+                return rows;
+            };
             const [listings, stats, variants, alerts, groups] = await Promise.all([
                 // The view carries the stored photo path alongside the listing.
                 // Vercel refuses to return a response over 4.5MB, and select=*
@@ -482,13 +512,8 @@ module.exports = async (req, res) => {
                 // rather than truncating. Ask only for the columns the console
                 // actually renders, and cap the rows with the true total sent
                 // alongside so the tab can say what it is not showing.
-                withRetry(() => qAll(
-                    "listings_with_image?select=id,message_pk,group_jid,listing_type,brand,model," +
-                    "reference,price_usd,price_original,price_currency,condition,set_completeness,year,seller_name,dial_color," +
-                    "dial_material,bracelet,bezel,case_material,case_size_mm,complications," +
-                    "has_diamonds,diamonds_factory,nickname,variant_key,model_used,trust_score," +
-                    "trust_why,corrected_fields,vision_brand,vision_model,vision_reference," +
-                    "vision_mismatch,confidence,message_ts,image_path" +
+                term ? searchListings() : withRetry(() => qAll(
+                    "listings_with_image?select=" + LISTING_COLS +
                     listingFilter + PARTS_EXCLUDE + "&order=message_ts.desc",
                     // A search scans the whole table with five wildcard
                     // matches; a second offset page repeats that scan and can

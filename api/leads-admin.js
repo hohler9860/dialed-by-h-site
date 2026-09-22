@@ -212,9 +212,10 @@ async function upsert(table, id, row) {
 // would break the register's to-the-penny reconciliation — they arrive via
 // CSV import instead. The importer absorbs these auto rows when the real
 // bank row posts, so nothing doubles.
-// 2026-09-22: Canva and Captions.AI removed (Henry cancelled them).
+// 2026-09-22: Canva, Captions.AI and DocuSign removed (Henry cancelled them).
+// Only subscriptions Henry actually pays belong here; when one is cancelled,
+// delete its line, or it keeps posting phantom charges to the register.
 const AUTO_SUBS = [
-    { vendor: "DocuSign",     match: "docusign",     amount: 48.77, day: 3,  category: "Software — DocuSign" },
     { vendor: "Amazon Prime", match: "amazon prime", amount: 7.49,  day: 30, category: "Subscription — Amazon Prime" },
     { vendor: "Coolify",      match: "coollabs",     amount: 5.00,  day: 4,  category: "Software — Coolify" },
 ];

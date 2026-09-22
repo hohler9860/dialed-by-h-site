@@ -212,11 +212,10 @@ async function upsert(table, id, row) {
 // would break the register's to-the-penny reconciliation — they arrive via
 // CSV import instead. The importer absorbs these auto rows when the real
 // bank row posts, so nothing doubles.
+// 2026-09-22: Canva and Captions.AI removed (Henry cancelled them).
 const AUTO_SUBS = [
-    { vendor: "Canva",        match: "canva",        amount: 16.26, day: 13, category: "Software — Canva" },
     { vendor: "DocuSign",     match: "docusign",     amount: 48.77, day: 3,  category: "Software — DocuSign" },
     { vendor: "Amazon Prime", match: "amazon prime", amount: 7.49,  day: 30, category: "Subscription — Amazon Prime" },
-    { vendor: "Captions.AI",  match: "captions",     amount: 10.83, day: 8,  category: "Software — Captions" },
     { vendor: "Coolify",      match: "coollabs",     amount: 5.00,  day: 4,  category: "Software — Coolify" },
 ];
 
@@ -229,9 +228,15 @@ async function runAutoSubs() {
     const logged = [];
     for (const s of AUTO_SUBS) {
         if (now.getUTCDate() < s.day) continue;               // not due yet this month
-        const seen = existing.some((r) =>
-            String(r.description || "").toLowerCase().includes(s.match) &&
-            Math.abs(Number(r.money_out || 0) - s.amount) < 0.01);
+        // "Seen" means either the real bank row (matched on the bank's own
+        // wording, e.g. "coollabs") OR our own earlier auto row, which is
+        // named after the vendor. The Coolify row only matched the former,
+        // so it was re-logged every day of the month. Match both.
+        const seen = existing.some((r) => {
+            const d = String(r.description || "").toLowerCase();
+            return (d.includes(s.match) || d.includes(s.vendor.toLowerCase())) &&
+                Math.abs(Number(r.money_out || 0) - s.amount) < 0.01;
+        });
         if (seen) continue;                                    // real row or earlier auto row
         const posted = new Date(Date.UTC(y, m, s.day)).toISOString().slice(0, 10);
         await supabase("dbh_bank_txns", {

@@ -460,6 +460,15 @@ module.exports = async (req, res) => {
             const qAll = (path, _o, cap, start) =>
                 supabaseAll(path, { headers: { "Accept-Profile": "wholesale" } }, cap, start);
 
+            // One slow moment on the database (another tab's 8s aggregate,
+            // a cron refresh) must not take the whole feed down. The listing
+            // fetch gets one retry; the side tables degrade to empty so the
+            // cards still paint without a market baseline.
+            const withRetry = async (fn) => {
+                try { return await fn(); }
+                catch (e) { await new Promise((r) => setTimeout(r, 1200)); return fn(); }
+            };
+            const soft = (p) => p.catch(() => []);
             const [listings, stats, variants, alerts, groups] = await Promise.all([
                 // The view carries the stored photo path alongside the listing.
                 // Vercel refuses to return a response over 4.5MB, and select=*
@@ -467,7 +476,7 @@ module.exports = async (req, res) => {
                 // rather than truncating. Ask only for the columns the console
                 // actually renders, and cap the rows with the true total sent
                 // alongside so the tab can say what it is not showing.
-                qAll(
+                withRetry(() => qAll(
                     "listings_with_image?select=id,message_pk,group_jid,listing_type,brand,model," +
                     "reference,price_usd,price_original,price_currency,condition,set_completeness,year,seller_name,dial_color," +
                     "dial_material,bracelet,bezel,case_material,case_size_mm,complications," +
@@ -480,16 +489,16 @@ module.exports = async (req, res) => {
                     // trip the database's statement timeout. One page is
                     // plenty — the tab already says when results are capped.
                     {}, term ? 1000 : LISTING_CAP, offset
-                ),
+                )),
                 // Both stats tables grew past what one response can carry once
                 // the RWB groups joined (4.4k variants and climbing). The tab
                 // only ever surfaces the head of these lists, so cap them by
                 // volume rather than shipping the tail into a 4.5MB wall.
-                qAll("reference_stats?select=*&order=n.desc", {}, 800),
-                qAll("variant_stats?select=*&order=n.desc", {}, 1200),
+                soft(qAll("reference_stats?select=*&order=n.desc", {}, 800)),
+                soft(qAll("variant_stats?select=*&order=n.desc", {}, 1200)),
                 // Join through to the listing so the UI can show what was on offer.
-                q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200"),
-                q("groups?select=jid,name,is_price_baseline,active"),
+                soft(q("deal_alerts?select=*,listing:listings(brand,model,reference,price_usd,condition,set_completeness,year,seller_name,group_jid,message_ts)&order=created_at.desc&limit=200")),
+                soft(q("groups?select=jid,name,is_price_baseline,active")),
             ]);
 
             // The real number held, so the tab never implies it is showing all.

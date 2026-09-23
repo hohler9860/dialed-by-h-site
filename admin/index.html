@@ -2228,11 +2228,20 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (n(t.money_out)) bkOut[c] = (bkOut[c] || 0) + n(t.money_out);
         });
         K.push(blank);
-        K.push([{ v: 'Money out by category', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
-        Object.keys(bkOut).sort(function (a, b) { return bkOut[b] - bkOut[a]; }).forEach(function (c) { K.push([T(c), { v: bkOut[c], t: 'n', s: BK_XS.moneyOut }]); });
+        // Roll-ups sit in the wide Description column with the amount under
+        // the matching Money column, so five-figure totals never show as ####.
+        var sec = function (t) { return [{ v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: t, s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }]; };
+        K.push(sec('Money out by category'));
+        Object.keys(bkOut).sort(function (a, b) { return bkOut[b] - bkOut[a]; }).forEach(function (c) {
+            K.push([T(''), T(''), T(c), T(''), T(''), { v: bkOut[c], t: 'n', s: BK_XS.moneyOut }]);
+        });
+        K.push([TOT(''), TOT(''), TOT('Total out'), TOT(''), TOT(''), TOT(out, 'money')]);
         K.push(blank);
-        K.push([{ v: 'Money in by category', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
-        Object.keys(bkIn).sort(function (a, b) { return bkIn[b] - bkIn[a]; }).forEach(function (c) { K.push([T(c), { v: bkIn[c], t: 'n', s: BK_XS.moneyIn }]); });
+        K.push(sec('Money in by category'));
+        Object.keys(bkIn).sort(function (a, b) { return bkIn[b] - bkIn[a]; }).forEach(function (c) {
+            K.push([T(''), T(''), T(c), T(''), { v: bkIn[c], t: 'n', s: BK_XS.moneyIn }]);
+        });
+        K.push([TOT(''), TOT(''), TOT('Total in'), TOT(''), TOT(inn, 'money')]);
 
         // ── Subscriptions ──
         var U = [

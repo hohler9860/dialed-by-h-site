@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./dist/styles.css --minify && node scripts/inline-css.js",
+    "build": "esbuild lib/safe-html.js --bundle --platform=node --format=cjs --outfile=lib/safe-html-bundle.cjs && npx @tailwindcss/cli -i ./src/input.css -o ./dist/styles.css --minify && node scripts/inline-css.js",
     "dev": "vercel dev",
     "build:scene": "npx esbuild assets/dbh-scene.js --bundle --minify --format=esm --outfile=assets/dbh-scene.bundle.js"
   },
@@ -16,11 +16,13 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "resend": "^6.17.1",
+    "sanitize-html": "2.17.7",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@react-email/preview-server": "^5.2.8",
     "@tailwindcss/cli": "^4.1.18",
+    "esbuild": "0.25.12",
     "imapflow": "^1.7.0",
     "mailparser": "^3.9.15",
     "react-email": "^5.2.8",

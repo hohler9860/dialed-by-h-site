@@ -1,3 +1,4 @@
+const { scriptJson, sanitizeArticle } = require('../lib/safe-html-bundle.cjs');
 // Server-side renderer for individual Off-Catalog articles.
 // Routed via vercel.json: /journal/:slug -> /api/journal-article-render?slug=:slug
 // Returns full HTML (not JSON) so search engines get content in the initial response.
@@ -67,7 +68,7 @@ function renderArticleHtml(a) {
     const pubDateText = formatPubDate(pubDate);
     const readingTime = a.reading_time_minutes || null;
     const category    = a.category || null;
-    const contentHtml = a.content_html || "";
+    const contentHtml = sanitizeArticle(a.content_html || "");
 
     const jsonLdArticle = {
         "@context": "https://schema.org",
@@ -127,8 +128,8 @@ ${category ? `<meta property="article:section" content="${escAttr(category)}">` 
 <meta name="twitter:description" content="${escAttr(description)}">
 <meta name="twitter:image" content="${escAttr(heroUrl)}">
 
-<script type="application/ld+json">${JSON.stringify(jsonLdArticle)}</script>
-<script type="application/ld+json">${JSON.stringify(jsonLdBreadcrumb)}</script>
+<script type="application/ld+json">${scriptJson(jsonLdArticle)}</script>
+<script type="application/ld+json">${scriptJson(jsonLdBreadcrumb)}</script>
 
 <link rel="stylesheet" href="/wp-content/themes/avw/public/index.css">
 <style id="primetime-overrides">
@@ -258,30 +259,41 @@ a.pt-cta{text-decoration:none;display:inline-block}
 </style>
 <style>
 .pa-page{padding:120px 0 110px;font-family:var(--pt-mono);background:#fff;color:#000}
-.pa-page .container{max-width:820px;margin:0 auto;padding:0 24px}
+.pa-page .container{width:calc(100% - clamp(32px,8vw,160px));max-width:clamp(960px,76vw,1600px);margin:0 auto;padding:0;box-sizing:border-box;min-width:0}
 a.pa-crumb{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.45);display:inline-block;margin-bottom:26px;text-decoration:none}
 a.pa-crumb:hover{color:#000}
 .pa-meta{display:flex;flex-wrap:wrap;gap:14px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.45);margin:0 0 18px}
-.pa-title{font-family:var(--pt-serif);font-size:clamp(34px,5vw,60px);line-height:1.04;text-transform:uppercase;margin:0 0 16px}
-.pa-sub{font-size:14px;line-height:1.7;color:rgba(0,0,0,.55);margin:0 0 34px;max-width:640px}
-.pa-hero{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;margin:0 0 14px;background:rgba(0,0,0,.04)}
+.pa-title{font-family:var(--pt-serif);font-size:clamp(32px,4.5vw,80px);max-width:24ch;line-height:1.08;text-transform:uppercase;margin:0 0 16px}
+.pa-sub{font-size:clamp(16px,1.05vw,22px);line-height:1.7;color:rgba(0,0,0,.55);margin:0 0 34px;max-width:65ch}
+.pa-hero{width:100%;height:auto;max-height:none;aspect-ratio:16/9;object-fit:cover;object-position:center 35%;display:block;margin:0 0 14px;background:rgba(0,0,0,.04)}
 .pa-heroline{display:flex;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,.12);padding:0 0 14px;margin:0 0 40px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.45)}
-.pa-body{font-size:14.5px;line-height:1.85;color:#222}
+.pa-body{font-size:clamp(16px,1.05vw,22px);line-height:1.8;color:#222;overflow-wrap:anywhere}
+.pa-body > :not(figure):not(.journal-embed){width:100%;max-width:68ch;margin-left:auto;margin-right:auto;box-sizing:border-box;min-width:0}
 .pa-body > * + *{margin-top:22px}
-.pa-body p{margin:0}
-.pa-body h2,.pa-body h3,.pa-body h4{font-family:var(--pt-serif);text-transform:uppercase;line-height:1.1;margin-top:46px;color:#000}
-.pa-body h2{font-size:26px}
-.pa-body h3{font-size:20px}
+.pa-body p{margin-top:0;margin-bottom:0}
+.pa-body p + p{margin-top:1.2em}
+.pa-body h2,.pa-body h3,.pa-body h4{font-family:var(--pt-serif);text-transform:uppercase;line-height:1.1;margin-top:46px;margin-left:auto;margin-right:auto;text-align:center;text-wrap:balance;color:#000}
+.pa-body h2{font-size:clamp(25px,2.1vw,40px);max-width:37.4ch}
+.pa-body h3{font-size:clamp(22px,1.7vw,32px)}
 .pa-body h4{font-size:16px}
 .pa-body a{color:#000;text-underline-offset:4px}
 .pa-body strong{color:#000}
 .pa-body ul,.pa-body ol{padding-left:22px}
 .pa-body li{margin:6px 0}
-.pa-body blockquote{border-left:2px solid #000;margin:34px 0;padding:4px 0 4px 22px;font-size:16px;color:#000}
+.pa-body blockquote{border-left:2px solid #000;margin-top:34px;margin-bottom:34px;padding:4px 0 4px 22px;font-size:16px;color:#000}
 .pa-body blockquote footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(0,0,0,.45);margin-top:8px}
-.pa-body figure.journal-figure{margin:34px 0}
-.pa-body figure img{width:100%;display:block}
-.pa-body figcaption{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.45);margin-top:10px}
+.pa-body figure.journal-figure{width:100%;max-width:none;margin:clamp(28px,3vw,56px) 0;height:auto;aspect-ratio:auto;display:block;overflow:visible}
+.pa-body figure img{width:100%;height:auto;max-height:none;aspect-ratio:4/3;object-fit:cover;object-position:center;position:static;display:block;background:#f7f7f5}
+.pa-body figure.journal-carousel{max-width:960px;margin-left:auto;margin-right:auto}
+.pa-body figure.journal-carousel > img{aspect-ratio:auto;height:auto;object-fit:contain;padding:0}
+.pa-body .journal-product > img{object-fit:contain;padding:24px;box-sizing:border-box}
+.pa-body .journal-focus-top img:first-child{object-position:center top}
+.pa-body .journal-focus-bottom img:first-child{object-position:center bottom}
+.pa-body figcaption{position:static;display:block;clear:both;font-size:clamp(11px,.75vw,14px);line-height:1.6;letter-spacing:.04em;text-transform:none;color:rgba(0,0,0,.6);margin:12px 0 0;padding:0;height:auto}
+.pa-body .journal-pair{display:grid;grid-template-columns:3fr 2fr;grid-template-rows:minmax(0,1fr);gap:20px;align-items:center;background:#f7f7f5;padding:16px;aspect-ratio:4/3;box-sizing:border-box}
+.pa-body .journal-pair img{width:100%;height:100%;min-height:0;min-width:0;max-height:100%;aspect-ratio:auto;object-fit:contain}
+.pa-body .journal-pair img:first-child{object-fit:cover}
+@media(max-width:600px){.pa-body .journal-pair{gap:10px;padding:10px}}
 .pa-body pre.journal-code{background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.1);padding:16px;overflow-x:auto;font-size:13px}
 .pa-body hr.journal-delimiter{border:none;height:1px;background:rgba(0,0,0,.14);margin:40px 0}
 .pa-body .journal-embed iframe{width:100%;aspect-ratio:16/9;border:0}
@@ -296,7 +308,7 @@ a.pa-crumb:hover{color:#000}
 .oc-end-msg{width:100%;font-size:12px;margin-top:10px;color:#1a7f37;text-transform:none}
 .oc-end-msg.error{color:#b42318}
 .pa-title,.pa-body h2,.pa-body h3,.pa-body h4,.pa-cta h3{font-weight:700!important;font-variation-settings:"wdth" 120;letter-spacing:-.02em!important;word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important}
-@media(max-width:640px){.pa-page{padding:100px 0 80px}}
+@media(max-width:640px){.pa-page{padding:92px 0 64px}.pa-heroline{font-size:9px;letter-spacing:.08em;gap:16px}.pa-body h2{font-size:25px}.pa-title{overflow-wrap:anywhere!important}.pa-cta input{min-width:0;width:100%}}
 </style>
 
 <!-- Meta Pixel -->

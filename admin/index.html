@@ -2029,7 +2029,34 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         big:     { font: { name: 'Arial', sz: 14, bold: true, color: { rgb: '111111' } },
                    alignment: { horizontal: 'right' }, numFmt: '"$"#,##0;[Red]-"$"#,##0' },
         bigNeg:  { font: { name: 'Arial', sz: 14, bold: true, color: { rgb: 'B00020' } },
-                   alignment: { horizontal: 'right' }, numFmt: '"$"#,##0;[Red]-"$"#,##0' }
+                   alignment: { horizontal: 'right' }, numFmt: '"$"#,##0;[Red]-"$"#,##0' },
+        // Bank register: money in reads green, money out reads red, and the
+        // whole row carries a faint tint so a scan down the sheet shows the
+        // direction of every transaction without reading the numbers.
+        moneyIn:  { font: { name: 'Arial', sz: 10, bold: true, color: { rgb: '15803D' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: 'F0FDF4' } },
+                    alignment: { horizontal: 'right' },
+                    border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } },
+                    numFmt: '"$"#,##0.00' },
+        moneyOut: { font: { name: 'Arial', sz: 10, bold: true, color: { rgb: 'B00020' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: 'FEF2F2' } },
+                    alignment: { horizontal: 'right' },
+                    border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } },
+                    numFmt: '"$"#,##0.00' },
+        cellIn:   { font: { name: 'Arial', sz: 10, color: { rgb: '111111' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: 'F0FDF4' } },
+                    border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } } },
+        cellOut:  { font: { name: 'Arial', sz: 10, color: { rgb: '111111' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: 'FEF2F2' } },
+                    border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } } },
+        tagIn:    { font: { name: 'Arial', sz: 9, bold: true, color: { rgb: '15803D' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: 'F0FDF4' } },
+                    alignment: { horizontal: 'center' },
+                    border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } } },
+        tagOut:   { font: { name: 'Arial', sz: 9, bold: true, color: { rgb: 'B00020' } },
+                    fill: { patternType: 'solid', fgColor: { rgb: 'FEF2F2' } },
+                    alignment: { horizontal: 'center' },
+                    border: { bottom: { style: 'hair', color: { rgb: 'DDDDDD' } } } }
     };
     BK_XS.headR = Object.assign({}, BK_XS.head, { alignment: { horizontal: 'right', vertical: 'center' } });
 
@@ -2175,16 +2202,25 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             [{ v: 'Bank register', s: BK_XS.title }],
             [{ v: 'Chase ·1791  ·  ' + label + '  ·  every transaction with a running balance', s: BK_XS.sub }],
             blank,
-            [H('Date'), H('Description'), H('Category'), H('Money in', true), H('Money out', true), H('Balance', true)]
+            [H('Date'), H('In / Out'), H('Description'), H('Category'), H('Money in', true), H('Money out', true), H('Balance', true)]
         ];
         bank.forEach(function (t) {
             bal += n(t.money_in) - n(t.money_out);
-            K.push([T(t.posted_on), T(t.logged_as || t.description), T(t.category || 'Uncategorized'),
-                    n(t.money_in) ? M(t.money_in) : T(''), n(t.money_out) ? M(t.money_out) : T(''), M(bal)]);
+            var isIn = n(t.money_in) > 0;
+            var C = function (v) { return { v: v == null ? '' : v, s: isIn ? BK_XS.cellIn : BK_XS.cellOut }; };
+            K.push([
+                C(t.posted_on),
+                { v: isIn ? 'IN' : 'OUT', s: isIn ? BK_XS.tagIn : BK_XS.tagOut },
+                C(t.logged_as || t.description),
+                C(t.category || 'Uncategorized'),
+                isIn ? { v: n(t.money_in), t: 'n', s: BK_XS.moneyIn } : C(''),
+                isIn ? C('') : { v: n(t.money_out), t: 'n', s: BK_XS.moneyOut },
+                M(bal)
+            ]);
         });
         var inn = bank.reduce(function (s, t) { return s + n(t.money_in); }, 0);
         var out = bank.reduce(function (s, t) { return s + n(t.money_out); }, 0);
-        K.push([TOT('Total'), TOT(''), TOT(''), TOT(inn, 'money'), TOT(out, 'money'), TOT(inn - out, 'money')]);
+        K.push([TOT('Total'), TOT(''), TOT(''), TOT(''), TOT(inn, 'money'), TOT(out, 'money'), TOT(inn - out, 'money')]);
         var bkIn = {}, bkOut = {};
         bank.forEach(function (t) {
             var c = t.category || 'Uncategorized';
@@ -2193,10 +2229,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         K.push(blank);
         K.push([{ v: 'Money out by category', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
-        Object.keys(bkOut).sort(function (a, b) { return bkOut[b] - bkOut[a]; }).forEach(function (c) { K.push([T(c), M(bkOut[c])]); });
+        Object.keys(bkOut).sort(function (a, b) { return bkOut[b] - bkOut[a]; }).forEach(function (c) { K.push([T(c), { v: bkOut[c], t: 'n', s: BK_XS.moneyOut }]); });
         K.push(blank);
         K.push([{ v: 'Money in by category', s: BK_XS.section }, { v: '', s: BK_XS.section }]);
-        Object.keys(bkIn).sort(function (a, b) { return bkIn[b] - bkIn[a]; }).forEach(function (c) { K.push([T(c), M(bkIn[c])]); });
+        Object.keys(bkIn).sort(function (a, b) { return bkIn[b] - bkIn[a]; }).forEach(function (c) { K.push([T(c), { v: bkIn[c], t: 'n', s: BK_XS.moneyIn }]); });
 
         // ── Subscriptions ──
         var U = [
@@ -2247,7 +2283,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         add('P&L by month', PL, [14, 8, 14, 14, 14, 9, 14, 14], 3);
         add('Deals', D, [13, 9, 32, 12, 11, 6, 10, 11, 11, 6, 13, 12, 13, 13, 8, 26, 26, 50], 3);
         add('Overhead', E, [14, 24, 48, 22, 13, 11, 13, 10, 40]);
-        add('Bank', K, [12, 52, 24, 13, 13, 14], 3);
+        add('Bank', K, [12, 8, 52, 24, 13, 13, 14], 3);
         add('Subscriptions', U, [24, 26, 12, 10, 12, 10, 36], 3);
         add('Capital', C, [12, 10, 13, 44, 32], 3);
         return wb;

@@ -150,8 +150,8 @@ a.pt-cta{text-decoration:none;display:inline-block}
 <style>
 .pt-jgrid{display:flex;flex-direction:column}
 .pt-jitem{display:grid;grid-template-columns:132px 150px 1fr auto;gap:26px;align-items:center;border-top:1px solid rgba(0,0,0,.14);padding:22px 2px;text-decoration:none;color:#000}
-.pt-jitem .jimg{width:120px;height:96px;object-fit:contain;display:block;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
-.pt-jitem:hover .jimg{transform:scale(1.12) rotate(0deg)!important}
+.pt-jitem .jimg{width:120px;height:96px;object-fit:cover;object-position:center;border-radius:6px;background:#f2f2f0;display:block;transition:transform .45s cubic-bezier(.19,1,.22,1)}
+.pt-jitem:hover .jimg{transform:scale(1.04)}
 .pt-jitem:last-child{border-bottom:1px solid rgba(0,0,0,.14)}
 .pt-jitem .jd{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.4);font-variant-numeric:tabular-nums}
 .pt-jitem .jt{font-family:var(--pt-serif);font-size:24px;line-height:1.2}
@@ -288,44 +288,30 @@ fbq('track', 'PageView');
   fetch('/api/journal-list').then(function(r){return r.json()}).then(function(d){
     var arts = Array.isArray(d) ? d : (d.articles || []);
     if (!arts.length) { wrap.innerHTML = '<p style="font-size:12px;color:rgba(0,0,0,.5)">No articles yet.</p>'; return; }
-    var usedStickers = [];
-    // keyword-matched stickers: if the article is about a watch we have as a
-    // sticker, use that exact sticker; otherwise fall back to the hashed pick.
-    // Add new rules here as new stickers land.
-    var SPECIALS = [
-      { re: /launch\s*was\s*a\s*mess/i, pool: [130] },                // w_131 - Swatch #2 (Henry's pick for the mess piece)
-      { re: /royal\s*pop|moon\s*swatch|moonswatch/i, pool: [126] },   // w_127 - Swatch (Henry's shot)
-      { re: /offshore/i, pool: [129] },                                // w_130 - AP Offshore 42 chrono (Henry's pick)
-      { re: /tudor|black\s*bay|bumblebee/i, pool: [127] },            // w_128 - Bumblebee BB Chrono (inventory cutout)
-      { re: /kruk|watch roll/i, pool: [133] },                          // w_134 - RM 72-01 Lifestyle (catalog cutout)
-      { re: /journe|r[eé]sonance|phillips/i, pool: [131] },              // w_132 - FPJ Resonance salmon (catalog cutout)
-      { re: /nautilus|patek/i, pool: [28] },                           // w_29 - Patek
-      { re: /\(probably\)\s*dropping/i, pool: [123] },                // w_124 - OP jubilee-motif dial (2026 novelty)
-      { re: /just\s*dropped/i, pool: [124] },                         // w_125 - Day-Date 40 Jubilee Gold aventurine
-      { re: /my\s*day\s*at\s*watches/i, pool: [125] },                // w_126 - Patek Nautilus 50th 5810/1G
-      { re: /rolex|watches\s*(and|&)\s*wonders|daytona|submariner|gmt|datejust|day[-\s]*date|oyster/i, pool: [4, 17, 60] } // w_05, w_18, w_61 - Rolex
-    ];
+    // Journal thumbnails are real photographs from the article itself, never
+    // sticker cutouts (Henry, 2026-09-23). Default = the article's hero image,
+    // so a new article needs nothing extra. PICK overrides that with a specific
+    // watch shot from the body where the hero is a person or a scene.
+    var PICK = {
+      "the-watches-that-caught-our-eye-at-the-2026-us-open": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-09-16/ff700c98dca6-carousel-federer.webp",
+      "travis-scotts-watches-go-well-beyond-the-obvious-flex": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-09-16/b30f8dcf2def-carousel-travis-ap.webp",
+      "geneva-watch-days-2026-plus-the-recent-releases-worth-a-look": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-09-16/7efb03fa35f0-daniel.webp",
+      "rolex-gets-complicated-the-three-new-perpetual-padellone-models": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-09-16/c87d850313ba-cover-v2-rolex.webp",
+      "serena-williams-just-made-the-royal-oak-her-own": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-09-16/d838a5583dd7-serena-detail.webp",
+      "kruk-designs-luxury-watch-rolls-leather-goods": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-08-03/2c1b273ff359-Screenshot-2026-08-02-at-10.51.34-PM.jpg",
+      "fp-journe-14-million-phillips-auction-independents": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-08-03/b48370a39602-https---hypebeast.avif",
+      "tudor-black-bay-chrono-39-bumblebee": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-06-04/bf96e4ce63b4-TudorBlackBayChrono39bumblebee2.jpg",
+      "ap-royal-oak-offshore-summer-chronographs": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-06-04/f43cffe198dd-ROO-26238ST-OO-A001VE-01-closeup-GP26.jpg.avif",
+      "royal-pop-launch-was-a-mess": "https://untnrofsnmoyxdidxbdj.supabase.co/storage/v1/object/public/journal-images/2026-05-20/328ee9639850-wales-getty-2.jpg.avif",
+      "the-royal-pop-is-going-to-be-louder-than-the-moonswatch": "https://substackcdn.com/image/fetch/$s_!baW0!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe5fb357e-f57d-4a37-afac-a197c20e1e30_3584x4800.png",
+      "my-day-at-watches-and-wonders-2026": "https://substackcdn.com/image/fetch/$s_!iEf1!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F64646f2b-3745-4f7a-8908-0b570c0bb1dc_1920x1080.png",
+      "rolex-just-dropped-at-watches-and-wonders-2026": "https://substackcdn.com/image/fetch/$s_!0aFL!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b0ffd65-d2f2-4524-8185-2b329eeae957_2400x1601.avif",
+      "what-rolex-is-probably-dropping-at-watches-and-wonders-2026": "https://substackcdn.com/image/fetch/$s_!X8Rr!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F0bee0b03-5476-4dbc-a3e4-a9548f7c6d45_2100x1400.heic"
+};
     wrap.innerHTML = arts.map(function(a){
       var date = a.published_at ? new Date(a.published_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
-      var txt = (a.title || '') + ' ' + (a.subtitle || '');
-      var h = 0;
-      for (var i = 0; i < a.slug.length; i++) { h = (h * 31 + a.slug.charCodeAt(i)) >>> 0; }
-      var idx = -1;
-      for (var si = 0; si < SPECIALS.length; si++) {
-        if (SPECIALS[si].re.test(txt)) {
-          var pool = SPECIALS[si].pool;
-          idx = pool[h % pool.length];
-          for (var pi = 0; pi < pool.length && usedStickers.indexOf(idx) !== -1; pi++) idx = pool[(h + pi + 1) % pool.length];
-          break;
-        }
-      }
-      if (idx === -1) {
-        idx = h % 121;
-        while (usedStickers.indexOf(idx) !== -1) idx = (idx + 7) % 121;
-      }
-      usedStickers.push(idx);
-      var n = String(idx + 1); if (n.length < 2) n = '0' + n;
-      var cover = '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
+      var src = PICK[a.slug] || a.hero_image_url || '';
+      var cover = src ? '<img class="jimg jimg--photo" src="' + src.replace(/"/g, '&quot;') + '" alt="" loading="lazy">' : '<span class="jimg jimg--photo"></span>';
       return '<a class="pt-jitem" href="/journal/' + a.slug + '">' +
         cover +
         '<span class="jd">' + date + '</span>' +

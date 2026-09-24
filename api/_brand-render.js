@@ -226,13 +226,12 @@ function renderBrandPage(slug, all = []) {
     ];
 
     const name = p => `${p.brand} ${p.nickname || p.model || p.name}`.trim();
-    const grid = shown.map(p => `<a href="/watch/${escAttr(p.slug)}" aria-label="${escAttr(name(p))}${p.ref ? ' ' + escAttr(p.ref) : ''}">
-<div class="rimg"><img src="${escAttr(p.imageThumb || p.image)}" alt="${escAttr(name(p))}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" width="300" height="300" decoding="async"></div>
-<span class="rname">${escHtml(name(p))}</span>
-${p.ref ? `<span class="rref">Ref. ${escHtml(p.ref)}</span>` : ''}
-</a>`).join('');
+    const grid = shown.map(p => `<article class="pt-item"><a href="/watch/${escAttr(p.slug)}" aria-label="${escAttr(name(p))}${p.ref ? ' ' + escAttr(p.ref) : ''}">
+<div class="pt-item__media"><img src="${escAttr(p.imageThumb || p.image)}"${p.imageMedium ? ` srcset="${escAttr(p.imageThumb || p.image)} 300w, ${escAttr(p.imageMedium)} 600w" sizes="(max-width:820px) 45vw, 240px"` : ''} alt="${escAttr(name(p))}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" width="300" height="300" decoding="async"></div>
+<div class="pt-item__row"><span>${escHtml(name(p))}</span><span class="pt-item__meta">${escHtml(p.year || '')}</span></div>
+</a></article>`).join('');
 
-    const others = BRAND_SLUGS.filter(s => s !== slug).map(s => `<a href="/${s}">${escHtml(BRANDS[s].name)}</a>`).join('');
+    const others = BRAND_SLUGS.filter(s => s !== slug).map(s => `<a href="/${s}">${escHtml(BRANDS[s].name)}</a>`).join(' &middot; ');
 
     const head = `<!DOCTYPE html>
 <html lang="en">
@@ -257,71 +256,64 @@ ${shown[0] ? `<meta property="og:image" content="${escAttr(shown[0].imageMedium 
 ${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
 ${c.headAssets}
 <style>
-.bp{max-width:1360px;margin:0 auto;padding:28px 40px 90px}
-@media(max-width:820px){.bp{padding:18px 20px 60px}}
-.bp-crumb{font-family:var(--pt-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(0,0,0,.45)}
-.bp-crumb a{color:inherit;text-decoration:none}
-.bp h1{font-family:var(--pt-serif);font-size:clamp(40px,6vw,84px);line-height:.98;font-weight:400;text-transform:uppercase;letter-spacing:.01em;margin:18px 0 22px;max-width:14ch}
-.bp-intro{max-width:720px;font-family:var(--pt-mono);font-size:13px;line-height:1.8;color:#000}
-.bp-intro p+p{margin-top:14px}
-.bp-cta{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0}
-.bp-cta .pt-btn{font-family:var(--pt-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 22px;border:1px solid #000;background:#000;color:#fff;cursor:pointer;text-decoration:none}
-.bp-cta .pt-btn--ghost{background:transparent;color:#000}
-.bp-sec{margin-top:64px}
-.bp-sec h2{font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.45);padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.14)}
-.bp-count{font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.45);margin-top:12px}
-.pt-relgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
-@media(max-width:820px){.pt-relgrid{grid-template-columns:repeat(2,1fr);gap:12px}}
-.pt-relgrid a{text-decoration:none;color:#000;display:block}
-.pt-relgrid .rimg{aspect-ratio:1/1;overflow:hidden;background:#0d0d0d}
-.pt-relgrid img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.19,1,.22,1)}
-.pt-relgrid a:hover img{transform:scale(1.04)}
-.pt-relgrid .rname{font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-top:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pt-relgrid .rref{font-family:var(--pt-mono);font-size:10px;letter-spacing:.12em;color:rgba(0,0,0,.45);display:block;margin-top:3px}
-.bp-sell{margin-top:64px;border-top:1px solid rgba(0,0,0,.14);border-bottom:1px solid rgba(0,0,0,.14);padding:34px 0;display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-between}
-.bp-sell p{font-family:var(--pt-serif);font-size:clamp(24px,3vw,40px);line-height:1.05;text-transform:uppercase;max-width:22ch}
-.bp-faq{max-width:820px}
-.bp-faq details{border-top:1px solid rgba(0,0,0,.14);padding:18px 0}
-.bp-faq details:last-child{border-bottom:1px solid rgba(0,0,0,.14)}
-.bp-faq summary{cursor:pointer;font-family:var(--pt-mono);font-size:14px;list-style:none;display:flex;justify-content:space-between;gap:20px}
+/* Brand pages are the Buy page scoped to one brand: same type, same rails,
+   same cards. Anything that only exists here (FAQ, cities) uses the same
+   mono/hairline language, nothing heavier. */
+.pt-buy{padding:120px 0 110px;font-family:var(--pt-mono);background:#fff;color:#000}
+.pt-buy .container{max-width:1360px;margin:0 auto;padding:0 40px}
+@media(max-width:820px){.pt-buy{padding:96px 0 70px}.pt-buy .container{padding:0 20px}}
+.pt-crumb{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.45);display:block;margin-bottom:16px}
+.pt-crumb a{color:inherit;text-decoration:none}
+.pt-buy h1{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 120;font-size:clamp(48px,6vw,88px);text-transform:uppercase;letter-spacing:-.01em;line-height:1;margin:0 0 16px;max-width:16ch}
+.pt-dmline{font-size:12px;color:rgba(0,0,0,.5);margin:0 0 42px;max-width:900px;line-height:1.7}
+.pt-dmline a{color:#000;text-decoration:underline;text-underline-offset:3px}
+.pt-fbar{display:flex;flex-wrap:wrap;gap:8px 26px;border-top:1px solid rgba(0,0,0,.14);border-bottom:1px solid rgba(0,0,0,.14);padding:15px 2px;align-items:center}
+.pt-fbtn{background:none;border:none;padding:0;font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#000;cursor:pointer;display:inline-flex;gap:8px;align-items:center;text-decoration:none}
+.pt-fbtn .n{color:rgba(0,0,0,.35)}
+.pt-fbtn:hover{text-decoration:underline;text-underline-offset:4px}
+.pt-count{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.4);padding:18px 2px 46px;display:block}
+.pt-count a{color:inherit}
+.pt-grid12{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:34px 18px}
+.pt-item a{display:block;text-decoration:none;color:inherit}
+.pt-item__media{position:relative;width:100%;aspect-ratio:1/1;background:#0d0d0d;overflow:hidden}
+.pt-item__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0d0d0d}
+.pt-item__row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;min-width:0}
+.pt-item__row span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-item__meta{color:rgba(0,0,0,.4);font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
+.pt-item a:hover .pt-item__row span:first-child{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:820px){.pt-grid12{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px}.pt-item{min-width:0}}
+.bp-sec{margin-top:84px}
+.bp-sec h2{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.4);padding-bottom:14px;border-bottom:1px solid rgba(0,0,0,.14);margin:0;font-weight:400}
+.bp-copy{font-size:12px;line-height:1.8;color:rgba(0,0,0,.6);max-width:760px;margin-top:18px}
+.bp-copy p+p{margin-top:12px}
+.bp-copy a{color:#000;text-decoration:underline;text-underline-offset:3px}
+.bp-faq details{border-bottom:1px solid rgba(0,0,0,.14);padding:16px 2px}
+.bp-faq summary{cursor:pointer;font-size:11px;letter-spacing:.12em;text-transform:uppercase;list-style:none;display:flex;justify-content:space-between;gap:20px}
 .bp-faq summary::-webkit-details-marker{display:none}
-.bp-faq summary:after{content:'+';color:rgba(0,0,0,.4)}
+.bp-faq summary:after{content:'+';color:rgba(0,0,0,.35)}
 .bp-faq details[open] summary:after{content:'\\2013'}
-.bp-faq p{font-family:var(--pt-mono);font-size:12.5px;line-height:1.75;margin-top:12px;max-width:68ch;color:rgba(0,0,0,.8)}
-.bp-brands{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-family:var(--pt-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-.bp-brands a{color:#000;text-decoration:none;border-bottom:1px solid rgba(0,0,0,.25);padding-bottom:2px}
-.bp-brands a:hover{border-color:#000}
-.bp-cities{font-family:var(--pt-mono);font-size:12.5px;line-height:1.8;max-width:720px;margin-top:14px}
-.bp-cities a{color:#000}
-</style>
+.bp-faq p{font-size:12px;line-height:1.8;margin:12px 0 4px;max-width:70ch;color:rgba(0,0,0,.6)}
+</style></style>
 </head>
 `;
 
-    const main = `<main class="pt-page">
-<div class="bp">
-<div class="bp-crumb"><a href="/">Home</a> &nbsp;/&nbsp; <a href="/buy/">Buy</a> &nbsp;/&nbsp; ${escHtml(b.name)}</div>
-<h1>${escHtml(b.h1)}</h1>
-<div class="bp-intro">${b.intro.map(p => `<p>${escHtml(p)}</p>`).join('')}</div>
-<div class="bp-cta">
-<a class="pt-btn" href="https://wa.me/19146211848?text=${encodeURIComponent(`Hi Henry, I'm looking for a ${b.name}.`)}" target="_blank" rel="noopener">Message on WhatsApp</a>
-<button type="button" class="pt-btn pt-btn--ghost" onclick="location.href='/source'">Request to source a ${escHtml(b.name)}</button>
-<button type="button" class="pt-btn pt-btn--ghost" data-modal="sell">Sell my ${escHtml(b.name)}</button>
+    const wa = `https://wa.me/19146211848?text=${encodeURIComponent(`Hi Henry, I'm looking for a ${b.name}.`)}`;
+    const main = `<main class="pt-buy">
+<div class="container">
+<span class="pt-crumb"><a href="/">Home</a> / <a href="/buy/">Buy</a> / ${escHtml(b.name)}</span>
+<h1 data-hsst>${escHtml(b.h1)}</h1>
+<p class="pt-dmline">${escHtml(b.intro[0] || '')} See something you like? Fastest way is a DM &mdash; <a href="${wa}" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the ${escHtml(b.name)} you're hunting isn't here, I can find it.</p>
+<div class="pt-fbar">
+<a class="pt-fbtn" href="/buy/">All brands <i>&rarr;</i></a>
+<a class="pt-fbtn" href="/source">Request to source <span class="n">+</span></a>
+<a class="pt-fbtn" href="/sell" data-modal="sell">Sell my ${escHtml(b.name)} <span class="n">+</span></a>
 </div>
+<span class="pt-count">${pieces.length} ${escHtml(b.name)} piece${pieces.length === 1 ? '' : 's'} in the network${pieces.length > shown.length ? ', newest ' + shown.length + ' shown' : ''} &middot; <a href="/buy/">full catalogue</a></span>
+<div class="pt-grid12">${grid}</div>
 
 <section class="bp-sec">
-<h2>${escHtml(b.name)} available now</h2>
-<div class="bp-count">${pieces.length} piece${pieces.length === 1 ? '' : 's'} in the network${pieces.length > shown.length ? ', newest ' + shown.length + ' shown' : ''}. <a href="/buy/" style="color:#000">See the full catalogue</a>.</div>
-<div class="pt-relgrid">${grid}</div>
-</section>
-
-<section class="bp-sell">
-<p>${escHtml(b.sellLine)}</p>
-<button type="button" class="pt-btn" style="font-family:var(--pt-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:15px 22px;border:1px solid #000;background:#000;color:#fff;cursor:pointer" data-modal="sell">Get a number today</button>
-</section>
-
-<section class="bp-sec">
-<h2>Boston, New York, Miami</h2>
-<p class="bp-cities">I am based in Boston and hand over in person across Greater Boston, from Back Bay and the Seaport to Wellesley, Newton, Brookline and the North Shore. I am in New York and Miami every month. Everywhere else in the US ships fully insured. Read more about <a href="/boston">buying and selling watches in Boston</a>, <a href="/buy-rolex-boston">buying a Rolex in Boston</a>, <a href="/sell-rolex-boston">selling a Rolex in Boston</a>, <a href="/patek-philippe-boston">Patek Philippe in Boston</a>, or <a href="/process/">how the process works</a>.</p>
+<h2>About ${escHtml(b.name)} at Dialed By H</h2>
+<div class="bp-copy">${b.intro.slice(1).map(p => `<p>${escHtml(p)}</p>`).join('')}<p>${escHtml(b.sellLine)} <a href="/sell" data-modal="sell">Get a number today</a>.</p></div>
 </section>
 
 <section class="bp-sec">
@@ -330,9 +322,11 @@ ${c.headAssets}
 </section>
 
 <section class="bp-sec">
-<h2>Other brands</h2>
-<div class="bp-brands">${others}</div>
+<h2>Boston, New York, Miami</h2>
+<div class="bp-copy"><p>I am based in Boston and hand over in person across Greater Boston, from Back Bay and the Seaport to Wellesley, Newton, Brookline and the North Shore. I am in New York and Miami every month. Everywhere else in the US ships fully insured. Read more about <a href="/boston">buying and selling watches in Boston</a>, <a href="/buy-rolex-boston">buying a Rolex in Boston</a>, <a href="/sell-rolex-boston">selling a Rolex in Boston</a>, <a href="/patek-philippe-boston">Patek Philippe in Boston</a>, or <a href="/process/">how the process works</a>.</p></div>
 </section>
+
+<p class="pt-dmline" style="margin:72px 0 0">Browse by brand: ${others}</p>
 </div>
 </main>`;
 

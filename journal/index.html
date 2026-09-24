@@ -293,6 +293,21 @@ fbq('track', 'PageView');
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.
     // Add new rules here as new stickers land.
     var SPECIALS = [
+      // Dedicated clean cutouts for all 14 published articles (2026-09-23).
+      { re: /The\ Watches\ That\ Caught\ My\ Eye\ at\ the\ 2026\ US\ Open/i, pool: [144] }, // Marta Kostyuk Patek Philippe Aquanaut — w_145
+      { re: /Travis\ Scott’s\ Watches\ Go\ Well\ Beyond\ the\ Obvious\ Flex/i, pool: [145] }, // Travis AP Cactus Jack piece unique — w_146
+      { re: /Geneva\ Watch\ Days\ 2026\ \+\ Recent\ Releases/i, pool: [146] }, // Daniel Roth Extra Plat — w_147
+      { re: /Rolex\ Gets\ Complicated:\ The\ Three\ New\ Perpetual\ Padellone\ Models/i, pool: [147] }, // Rolex Padellone platinum — w_148
+      { re: /Serena\ Williams\ Just\ Made\ the\ Royal\ Oak\ Her\ Own/i, pool: [148] }, // Serena Royal Oak — w_149
+      { re: /Kruk\ Designs:\ The\ Watch\ Roll\ Your\ Watches\ Deserve/i, pool: [149] }, // Richard Mille RM 72-01 — w_150
+      { re: /A\ Journe\ Just\ Sold\ for\ \$14\ Million\.\ Pay\ Attention\./i, pool: [150] }, // F.P. Journe Resonance — w_151
+      { re: /Tudor\ Finally\ Shrank\ the\ Black\ Bay\ Chrono,\ and\ Made\ It\ Yellow/i, pool: [151] }, // Tudor Bumblebee Chronograph — w_152
+      { re: /AP\ Brought\ the\ Offshore\ Back\ for\ Summer,\ and\ Shrank\ It\ to\ 37mm/i, pool: [152] }, // AP Offshore Chronograph — w_153
+      { re: /The\ Royal\ Pop\ Launch\ Was\ a\ Mess\.\ Here\ Is\ What\ Actually\ Happened\./i, pool: [153] }, // Royal Pop launch — w_154
+      { re: /The\ Royal\ Pop\ is\ going\ to\ be\ louder\ than\ the\ MoonSwatch/i, pool: [154] }, // Royal Pop — w_155
+      { re: /My\ Day\ at\ Watches\ and\ Wonders\ 2026/i, pool: [155] }, // Patek Nautilus 5810 — w_156
+      { re: /Rolex\ Just\ Dropped\ at\ Watches\ \&\ Wonders\ 2026\.\ Here's\ What\ I\ Actually\ Think\./i, pool: [156] }, // Rolex Day-Date Jubilee Gold — w_157
+      { re: /What\ Rolex\ Is\ \(Probably\)\ Dropping\ at\ Watches\ and\ Wonders\ 2026/i, pool: [157] }, // Rolex Oyster Perpetual jubilee motif — w_158
       // 2026-09-23: one clean cutout per September article, cut from the
       // article's own photos (the random pool below is low-res; never let a
       // new article fall through to it — add a rule + sticker here instead).

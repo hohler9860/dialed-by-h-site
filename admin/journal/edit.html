@@ -191,6 +191,11 @@
         h4.ce-header { font-size: 19px; }
         .ce-header[data-placeholder]:empty::before { color: var(--l3); }
         .cdx-input { border: 1px solid var(--line); background: transparent; color: var(--l1); }
+        /* Image caption: always visible, in flow under the photo, mono like the site. */
+        .image-tool__caption { visibility: visible !important; position: static !important; margin: 10px 0 0 !important;
+            font-family: var(--mono); font-size: 12px; letter-spacing: .04em; color: var(--l1); padding: 10px 12px; }
+        .image-tool { padding-bottom: 0 !important; }
+        .image-tool__caption[data-placeholder]:empty:before { color: var(--l3); opacity: 1; }
         .cdx-quote { border-left: 2px solid var(--l1); padding-left: 18px; }
         .cdx-quote__caption { font-family: var(--mono); font-size: 12px; color: var(--l2); }
         .ce-code__textarea {
@@ -533,6 +538,12 @@
                     image: {
                         class: window.ImageTool,
                         config: {
+                            // The caption box is always shown (the tool hides it
+                            // behind a per-image "With caption" toggle by default,
+                            // which is why nobody could find it). It doubles as the
+                            // photo's alt text on the live page.
+                            features: { caption: true, border: false, background: false, stretch: false },
+                            captionPlaceholder: "Label this photo (shown under it on the site)",
                             uploader: {
                                 async uploadByFile(file) {
                                     try {

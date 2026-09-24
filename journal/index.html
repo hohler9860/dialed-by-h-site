@@ -293,6 +293,14 @@ fbq('track', 'PageView');
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.
     // Add new rules here as new stickers land.
     var SPECIALS = [
+      // 2026-09-23: one clean cutout per September article, cut from the
+      // article's own photos (the random pool below is low-res; never let a
+      // new article fall through to it — add a rule + sticker here instead).
+      { re: /us\s*open/i, pool: [139] },                                // w_140 - Federer's Oyster Perpetual (US Open)
+      { re: /travis\s*scott/i, pool: [140] },                           // w_141 - Cactus Jack Royal Oak
+      { re: /geneva\s*watch\s*days/i, pool: [141] },                   // w_142 - Daniel Roth Extra Plat
+      { re: /padellone|perpetual\s*pad/i, pool: [142] },                // w_143 - Perpetual Padellone Everose
+      { re: /serena/i, pool: [143] },                                    // w_144 - Serena's pink Royal Oak
       { re: /launch\s*was\s*a\s*mess/i, pool: [130] },                // w_131 - Swatch #2 (Henry's pick for the mess piece)
       { re: /royal\s*pop|moon\s*swatch|moonswatch/i, pool: [126] },   // w_127 - Swatch (Henry's shot)
       { re: /offshore/i, pool: [129] },                                // w_130 - AP Offshore 42 chrono (Henry's pick)

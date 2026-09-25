@@ -42,3 +42,5 @@
 .social-code{font-family:var(--mono);font-size:12px!important;overflow-wrap:anywhere}.social-copy{font-size:16px}
 .social-form-actions{margin-top:24px}.social-job{padding:12px;border:1px solid var(--line)}
 @media(max-width:600px){.social-row{flex-direction:column;gap:8px}.social-times{grid-template-columns:repeat(2,minmax(0,1fr))}.social-subnav .btn{font-size:11px;padding:10px}.social .bar{gap:8px}.social h2{font-size:24px}}
+
+.social-setup-steps{margin:24px 0;padding-left:24px;max-width:850px}.social-setup-steps li{padding:0 0 24px 12px}.social-setup-steps li::marker{font-family:var(--mono);font-size:13px}.social-setup-steps code{overflow-wrap:anywhere}.social-setup-steps h3{margin-top:0}

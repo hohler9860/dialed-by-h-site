@@ -32,3 +32,12 @@ test('Workspace proxy allows native controls and rejects arbitrary operations be
     assert.equal(calls,0);
     await socialAdmin({action:'social-workspace',operation:'settings',payload:{autoGenerate:false}},options);assert.equal(calls,1);
 });
+
+test('Setup reports only missing variable names without exposing configured values', async()=>{
+    const partial=await socialAdmin({action:'social-status'},{env:{SOCIAL_POSTER_URL:'https://private-worker.example'}});
+    assert.deepEqual(partial.setup.missing,['SOCIAL_POSTER_SECRET']);
+    assert.equal(JSON.stringify(partial).includes('private-worker.example'),false);
+    const secretOnly=await socialAdmin({action:'social-status'},{env:{SOCIAL_POSTER_SECRET:'do-not-return-this-secret'}});
+    assert.deepEqual(secretOnly.setup.missing,['SOCIAL_POSTER_URL']);
+    assert.equal(JSON.stringify(secretOnly).includes('do-not-return-this-secret'),false);
+});

@@ -1,0 +1,44 @@
+/* Extend the existing admin tokens and controls. No independent theme. */
+.social h2{font-size:30px;font-weight:700;line-height:1.1;text-transform:uppercase;letter-spacing:-.02em;font-variation-settings:'wdth' 120}
+.social h3{font-size:18px;font-weight:600;margin:8px 0 12px}
+.social p{font-size:14px;line-height:1.6;margin:8px 0 14px}
+.social .count{font-size:11px}
+.social-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:24px}
+.social-grid.social-two{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.social-panel{padding:20px;border:1px solid var(--line);margin-bottom:24px;min-width:0;background:transparent}
+.social-grid>.social-panel{margin-bottom:0}
+.social-grid:not(.social-two)>.social-panel{padding:16px}
+.social-grid:not(.social-two) h3{font-family:var(--mono);font-size:18px;font-weight:400;line-height:1.5;overflow-wrap:anywhere}
+.social a{text-decoration:underline;text-underline-offset:3px}
+.social-table-wrap{overflow-x:auto;border-top:1px solid var(--line)}
+.social-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.social-table th{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;padding:10px 10px 10px 0;border-bottom:1px solid var(--line);color:var(--l2);white-space:nowrap;background:var(--b1)}
+.social-table td{vertical-align:top;padding:11px 10px 11px 0;border-bottom:1px solid var(--line);min-width:120px}
+.social-table tbody tr:hover td{background:rgba(var(--label-d),.04)}
+.social-table td:first-child{width:40%;min-width:260px}
+.social .social-post{white-space:pre-wrap;font-size:15px;overflow-wrap:anywhere}
+.social .social-note{font-size:12px;color:var(--l2)}
+.social-actions{display:flex;gap:8px;flex-wrap:wrap;min-width:180px}
+.social-actions .btn{font-size:11px;padding:7px 9px}
+.social-event{border-top:1px solid var(--line);padding:12px 0}
+.social-event p{margin:4px 0;font-size:13px}
+.social label{display:block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--l2);margin:18px 0 8px}
+.social textarea{width:100%;display:block;resize:vertical;line-height:1.6}
+.social .err{font-size:13px;overflow-wrap:anywhere}
+.social .btn:focus-visible,.social a:focus-visible{outline:2px dotted var(--l1);outline-offset:3px}
+.social .social-panel:last-child{margin-bottom:0}
+@media(max-width:850px){.social-grid,.social-grid.social-two{grid-template-columns:1fr}.social-grid.social-two{gap:16px}.social-panel{padding:16px}.social h2{font-size:26px}.social .bar .grow{min-width:0}}
+
+.social-subnav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.social .btn[aria-pressed="true"]{background:var(--l1,#000);color:var(--b1);border-color:var(--l1,#000)}
+.social-preview{border-left:3px solid currentColor;padding:8px 12px;background:var(--be)}
+.social-row{display:flex;align-items:flex-start;gap:20px;justify-content:space-between;padding:18px 0;border-top:1px solid var(--line)}
+.social-row>div{min-width:0;overflow-wrap:anywhere}.social-row>.btn{flex-shrink:0}
+.social-editor{max-width:940px}.social form .ctl{width:100%;min-width:0;box-sizing:border-box}
+.social-times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.social label.social-check{display:flex;align-items:flex-start;gap:10px;font-family:inherit;font-size:13px;text-transform:none;letter-spacing:0;line-height:1.5;color:var(--l1)}
+.social-check input{width:16px;height:16px;margin:2px 0 0;flex-shrink:0;accent-color:#000}
+.social-sources{max-height:240px;overflow:auto;padding:0 14px;border:1px solid var(--line)}
+.social-code{font-family:var(--mono);font-size:12px!important;overflow-wrap:anywhere}.social-copy{font-size:16px}
+.social-form-actions{margin-top:24px}.social-job{padding:12px;border:1px solid var(--line)}
+@media(max-width:600px){.social-row{flex-direction:column;gap:8px}.social-times{grid-template-columns:repeat(2,minmax(0,1fr))}.social-subnav .btn{font-size:11px;padding:10px}.social .bar{gap:8px}.social h2{font-size:24px}}

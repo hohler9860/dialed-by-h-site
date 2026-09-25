@@ -4,7 +4,7 @@ The separate `Social: daily watch drafts and schedule` workflow reuses the exist
 
 Drafts use GPT-5.4 Mini and independent review uses GPT-5.4 Nano through OpenRouter. The cheaper Gemma/Gemini trial failed the accuracy benchmark; Nano correctly held unsupported specifications and sourcing promises.
 
-It runs at 18:05 America/New_York (DST aware), reserving tomorrow's batch before any model call. The manual trigger uses the same duplicate checks. The website assigns its configured five daily slots. The website remains the only X publisher; n8n never receives X credentials.
+It runs at 18:05 America/New_York (DST aware), reserving tomorrow's batch before any model call. The manual trigger uses the same duplicate checks. An optional `day` on the reserve request can target a date within the next seven days for a controlled test or advance batch; omitting it always means tomorrow. The website assigns its configured five daily slots. The website remains the only X publisher; n8n never receives X credentials.
 
 ## Data and credentials
 

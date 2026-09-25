@@ -8,6 +8,7 @@
 
 const crypto = require("crypto");
 const taxCal = require("../lib/tax-calendar.js");
+const socialAdmin = require("../lib/social-admin.js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -333,6 +334,11 @@ module.exports = async (req, res) => {
     const { action } = body;
 
     try {
+        if (typeof action === "string" && action.startsWith("social-")) {
+            res.setHeader("Cache-Control", "no-store");
+            try { return res.status(200).json(await socialAdmin(body)); }
+            catch (error) { return res.status(502).json({ error: error.message || "Social service request failed." }); }
+        }
         if (action === "list") {
             const [leads, drafts, stages] = await Promise.all([
                 supabase(`${TABLE}?select=*&order=created_at.desc&limit=${MAX_ROWS}`),

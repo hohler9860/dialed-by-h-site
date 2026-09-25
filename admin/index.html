@@ -559,6 +559,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 }
 #gate input:focus { border-bottom-color: var(--l1); }
 </style>
+<link rel="stylesheet" href="/assets/social-admin.css">
 </head>
 <body>
 
@@ -601,6 +602,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="buyers"  aria-selected="false">Buyers</button>
             <button data-tab="accuracy" aria-selected="false">Accuracy</button>
             <button data-tab="health"  aria-selected="false">Health</button>
+            <button data-tab="social"  aria-selected="false">Social</button>
             <button data-tab="ww"      aria-selected="false">W&amp;W 2027</button>
         </nav>
 
@@ -612,6 +614,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 <div id="sheet" class="sheet hidden"><div class="sheet-inner" id="sheet-inner"></div></div>
 
 <script src="/scripts/admin-auth.js"></script>
+<script src="/scripts/social-admin.js"></script>
 <script>
 (function () {
     'use strict';
@@ -656,7 +659,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, pipeline: renderPipeline, matches: renderMatches, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth, ww: renderWW };
+    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, pipeline: renderPipeline, matches: renderMatches, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth, social: renderSocial, ww: renderWW };
+    function renderSocial() { return window.dialedSocial.render(view, A); }
 
     document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-tab]');
@@ -664,6 +668,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     function show(tab) {
+        if (tab !== 'social') window.dialedSocial.stop();
         [].forEach.call(document.querySelectorAll('#tabs button'), function (b) {
             b.setAttribute('aria-selected', String(b.dataset.tab === tab));
         });

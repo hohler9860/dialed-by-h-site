@@ -28,7 +28,7 @@ Website status refreshes every 30 seconds while visible. The hosted publisher ru
 - Existing sourcing-form attribution is not changed by this branch. The publisher includes an attribution adapter example; automatic website lead attribution still needs integration.
 - Reddit is an honest setup-status panel. Reddit API approval, commercial-use approval, account selection, and community permissions remain prerequisites; a Reddit API connector has not been implemented or tested.
 - Live OAuth, publishing, AI drafting, hosted callback/TLS, and a live website-to-worker connection have not been tested without credentials/hosting.
-- Browser visual review remains incomplete because automatic approval review blocked further desktop browser checks. Static JavaScript validation and automated backend tests are separate completed checks.
+- The standalone publisher has now been visually reviewed at desktop and phone widths using the same brand assets. The Social tab inherits this admin’s existing design tokens; its deployed integration still needs visual verification after connection.
 
 ## Validation
 
@@ -39,3 +39,9 @@ node --check api/leads-admin.js
 ```
 
 Publisher validation: `npm test` and `npm run check` in its checkout. Tests use synthetic accounts and mocked upstream responses; they do not publish external content.
+
+## Design reference
+
+`admin/index.html` is the authoritative admin theme: cream `#FBFAF4`, TikTok Sans, Departure Mono, black selected tabs, square buttons and fields, thin dividers, and compact tables. `assets/social-admin.css` extends those shared tokens and existing `.btn`, `.ctl`, `.count`, and `.pill` classes. It does not load the public website’s global uppercase stylesheet. Public homepage appearance was inspected live; its Archivo display type is separate from the admin’s TikTok Sans and is intentionally not substituted into existing admin screens.
+
+Postiz can be integrated server-side while these native admin components remain the user interface. This branch does not embed or restyle Postiz itself, and a Postiz connector is not yet configured.

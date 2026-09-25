@@ -3794,7 +3794,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     var INV_FORM = [
         ['title', 'Document title', '', 'Invoice / Receipt / Deposit invoice'], ['number', 'Invoice number', '', 'blank = next in sequence'],
-        ['issued_on', 'Invoice date', '', 'YYYY-MM-DD'], ['due_on', 'Due date', '', 'YYYY-MM-DD'],
+        ['issued_on', 'Invoice date', '', 'YYYY-MM-DD'],
         ['company_name', 'Company (optional)'], ['client_name', 'Client name'],
         ['email', 'Email'], ['deal_ref', 'Linked deal ref'],
         ['address_1', 'Address line 1', 'wide'], ['address_2', 'Address line 2', 'wide'],
@@ -3886,6 +3886,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<h2>' + (isNew ? 'New invoice' : esc(v.number)) + '</h2>' +
             '<p class="note">' + (isNew ? 'Leave the number blank to continue the sequence, or type your own. ' : '') + 'Totals are worked out from the lines.</p>' +
             bkFields(INV_FORM, v) +
+            '<div class="fields" style="margin-top:18px"><div class="field">' +
+                '<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="inv-due-on"' + (v.due_on ? ' checked' : '') + ' style="width:auto"> Add a due date</label>' +
+                '<input id="f-due_on" value="' + esc(v.due_on || '') + '" placeholder="YYYY-MM-DD" class="' + (v.due_on ? '' : 'hidden') + '">' +
+            '</div></div>' +
             '<h3 style="margin:28px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em">Line items</h3>' +
             '<div id="inv-items"></div>' +
             '<div id="inv-totals" style="margin-top:18px;text-align:right"></div>' +
@@ -3896,6 +3900,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         paintInvItems();
         paintInvTotals();
         ['f-tax_rate', 'f-shipping'].forEach(function (id) { document.getElementById(id).addEventListener('input', paintInvTotals); });
+        document.getElementById('inv-due-on').addEventListener('change', function () {
+            var f = document.getElementById('f-due_on');
+            f.classList.toggle('hidden', !this.checked);
+            if (this.checked) { if (!f.value) f.value = bkToday(); f.focus(); } else f.value = '';
+        });
         document.getElementById('s-close').addEventListener('click', closeSheet);
         document.getElementById('s-save').addEventListener('click', function () { saveInvoice(inv); });
         var del = document.getElementById('s-del');
@@ -3911,6 +3920,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         btn.disabled = true;
         try {
             var payload = bkRead(INV_FORM);
+            payload.due_on = document.getElementById('inv-due-on').checked ? document.getElementById('f-due_on').value : '';
             payload.items = invItems;
             payload.status = inv ? inv.status : 'sent';
             if (!payload.items.some(function (i) { return i.description || Number(i.rate); })) throw new Error('Add at least one line item');
@@ -4020,7 +4030,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         dt(ml, infoY, s.website || '', 10, BLUE); infoY += 15;
 
         var ry = topY;
-        [[String(inv.title || 'Invoice').toUpperCase(), inv.number], ['DATE', invDate(inv.issued_on)], ['BALANCE DUE', 'USD ' + invMoney(inv.total)]].forEach(function (m) {
+        [[String(inv.title || 'Invoice').toUpperCase(), inv.number], ['DATE', invDate(inv.issued_on)]].concat(inv.due_on ? [['DUE DATE', invDate(inv.due_on)]] : []).concat([['BALANCE DUE', 'USD ' + invMoney(inv.total)]]).forEach(function (m) {
             dt(rx, ry, m[0], 8, GREY, true, 'right'); ry += 16;
             dt(rx, ry, m[1], 11, BLACK, false, 'right'); ry += 24;
         });
@@ -4093,7 +4103,6 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         String(inv.payment_instructions || s.payment_instructions || '').split('\n').forEach(function (line) {
             dt(ml, py, line, 10, GREY); py += 14;
         });
-        if (inv.due_on) { py += 8; dt(ml, py, 'Due ' + invDate(inv.due_on), 10, LIGHT); }
 
         doc.save(String(inv.title || 'Invoice').replace(/[^\w]+/g, '-') + '-' + inv.number + '.pdf');
     }

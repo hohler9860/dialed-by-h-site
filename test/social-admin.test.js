@@ -25,3 +25,10 @@ test('Unknown actions, insecure origins, service auth failures and outages fail 
     await assert.rejects(()=>socialAdmin({action:'social-status'},{env,fetch:async()=>new Response('{}',{status:401})}),/authentication failed/);
     await assert.rejects(()=>socialAdmin({action:'social-status'},{env,fetch:async()=>{throw new Error('network');}}),/No success was assumed/);
 });
+test('Workspace proxy allows native controls and rejects arbitrary operations before calling the service',async()=>{
+    let calls=0;
+    const options={env,fetch:async(url,request)=>{calls++;assert.deepEqual(JSON.parse(request.body),{action:'workspace',operation:'settings',payload:{autoGenerate:false}});return new Response('{"ok":true}');}};
+    await assert.rejects(()=>socialAdmin({action:'social-workspace',operation:'fetch-url',payload:{url:'https://attacker.invalid'}},options),/Unknown workspace/);
+    assert.equal(calls,0);
+    await socialAdmin({action:'social-workspace',operation:'settings',payload:{autoGenerate:false}},options);assert.equal(calls,1);
+});

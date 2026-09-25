@@ -42,3 +42,15 @@ Run `npm run test:social` with Node 24. Tests cover OAuth tickets and PKCE acros
 Production checks must separately confirm authenticated status/state, unauthorized rejection, cron heartbeat, and paused state. X posting is not proven until the user authorizes the account and an approved live post is accepted and read back.
 
 The standalone private repository remains an earlier implementation and local preview source. Production runs the engine under `lib/social-runtime` in this website repository. `scripts/preview-social.mjs` is an optional read-only view of that earlier local data, not the production scheduler.
+
+### Website catalogue photographs
+
+The draft editor searches the website's `pieces` catalogue by brand, model and reference, 24 watches per page. The library currently includes 1,723 watches with photos across 18 brands. Counts refresh from the database; new catalogue entries need no separate upload. One primary photograph per watch is offered.
+
+`catalog` is an authenticated read-only workspace operation. `catalog-import` accepts a catalogue piece ID, never an arbitrary image URL. Only this project's public `pieces` storage URLs qualify; downloads send no credentials and reject redirects. The server bounds download size, duration and decoded pixels, converts still WebP/JPEG/PNG to PNG, and keeps a private copy in `social-publisher-media`. Selected media is deduplicated by source URL. Bytes are stored before any durable state references them, including error checkpoints.
+
+The automatic image setting defaults on. Before editorial review, one untouched AI draft per worker run can receive a photograph only if its text contains the brand and complete reference of exactly one catalogue entry. Generic posts, ambiguous variants and photographs used or reserved during the previous 14 days remain text-only. Human edits are excluded. A lookup failure is recorded for review rather than repeatedly retrying or blocking the publishing queue. Manual selection remains available for every draft. Catalogue photographs are illustrations, not evidence of availability, a transaction, or a particular offered watch's condition.
+
+Metadata and decisions live in the snapshot's `media_catalog` and `post_image_checks` tables. They contain URLs and labels, not image bytes or credentials. A rollback must preserve these tables in snapshot restore/save; older code that does not know about them will drop that metadata on its next state save.
+
+Image conversion and private storage tests do not publish an X post. Publishing remains subject to account identity checks, editorial approval and the pause switch.

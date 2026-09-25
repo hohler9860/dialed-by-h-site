@@ -603,6 +603,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             <button data-tab="accuracy" aria-selected="false">Accuracy</button>
             <button data-tab="health"  aria-selected="false">Health</button>
             <button data-tab="social"  aria-selected="false">Social</button>
+            <button data-tab="invoices" aria-selected="false">Invoices</button>
             <button data-tab="ww"      aria-selected="false">W&amp;W 2027</button>
         </nav>
 
@@ -659,7 +660,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     });
 
     // ── tabs ────────────────────────────────────────────────
-    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, pipeline: renderPipeline, matches: renderMatches, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth, social: renderSocial, ww: renderWW };
+    var TABS = { today: renderToday, books: renderBooks, deals: renderDeals, pieces: renderPieces, journal: renderJournal, leads: renderLeads, wholesale: renderWholesale, pipeline: renderPipeline, matches: renderMatches, retail: renderRetail, buyers: renderBuyers, accuracy: renderAccuracy, health: renderHealth, social: renderSocial, invoices: renderInvoices, ww: renderWW };
     function renderSocial() { return window.dialedSocial.render(view, A); }
 
     document.getElementById('tabs').addEventListener('click', function (e) {
@@ -3716,6 +3717,358 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             (l.image_url ? '<img class="wshot" src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">' : '') +
             (l.vision_mismatch ? '<p class="note">The photo does not match the reference in the caption. Worth a look before quoting.</p>' : '') +
             '</td></tr>';
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // INVOICES — the old desktop invoice generator, now in the console
+    // ══════════════════════════════════════════════════════════
+    // The record (number, client, lines, totals) lives in dbh_invoices; the PDF
+    // is drawn in the browser with jsPDF to the same layout the Python tool
+    // used, so old and new invoices look identical.
+    var INV = null;        // { rows, settings }
+    var invItems = [];     // line items of the invoice currently being edited
+
+    async function renderInvoices() {
+        INV = await A.adminFetchTo('/api/leads-admin', 'invoices');
+        paintInvoices();
+    }
+
+    function paintInvoices() {
+        var rows = INV.rows || [];
+        var out = rows.reduce(function (s, r) { return s + Number(r.total || 0); }, 0);
+        view.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+                '<p class="count" style="margin:0">' + rows.length + ' invoices · ' + bkMoney(out) + ' billed</p>' +
+                '<div style="display:flex;gap:8px">' +
+                    '<button class="btn ghost" id="inv-settings">Business &amp; wire details</button>' +
+                    '<button class="btn" id="inv-new">+ New invoice</button>' +
+                '</div>' +
+            '</div>' +
+            (rows.length
+                ? '<div style="overflow-x:auto"><table class="leads"><thead><tr>' +
+                    '<th>#</th><th>Date</th><th>Bill to</th><th>Items</th><th>Total</th><th>Status</th><th></th>' +
+                  '</tr></thead><tbody>' +
+                  rows.map(function (r) {
+                      var who = r.company_name || r.client_name || '';
+                      var sub = r.company_name && r.client_name ? r.client_name : (r.email || '');
+                      var items = (r.items || []).map(function (i) { return i.description; }).join(', ');
+                      return '<tr>' +
+                          '<td><span class="tname">' + esc(r.number) + '</span></td>' +
+                          '<td>' + esc(r.issued_on || '') + '</td>' +
+                          '<td><span class="tname">' + esc(who) + '</span><div class="tsub">' + esc(sub) + '</div></td>' +
+                          '<td style="max-width:320px"><span class="tsub">' + esc(items) + '</span></td>' +
+                          '<td>' + bkMoney(Number(r.total || 0), 2) + '</td>' +
+                          '<td><select class="ctl js-inv-status" data-id="' + esc(r.id) + '" style="font-size:11px;padding:4px">' +
+                              ['sent', 'paid', 'void'].map(function (s) { return '<option value="' + s + '"' + (r.status === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
+                          '</select></td>' +
+                          '<td style="white-space:nowrap">' +
+                              '<button class="btn ghost js-inv-pdf" data-id="' + esc(r.id) + '" style="font-size:10px;padding:3px 8px">PDF</button> ' +
+                              '<button class="btn ghost js-inv-edit" data-id="' + esc(r.id) + '" style="font-size:10px;padding:3px 8px">Edit</button>' +
+                          '</td>' +
+                      '</tr>';
+                  }).join('') + '</tbody></table></div>'
+                : '<p class="note">No invoices yet. Hit New invoice.</p>');
+
+        var byId = function (id) { return rows.filter(function (r) { return r.id === id; })[0]; };
+        document.getElementById('inv-new').addEventListener('click', function () { editInvoice(null); });
+        document.getElementById('inv-settings').addEventListener('click', editInvoiceSettings);
+        [].forEach.call(view.querySelectorAll('.js-inv-edit'), function (b) {
+            b.addEventListener('click', function () { editInvoice(byId(this.dataset.id)); });
+        });
+        [].forEach.call(view.querySelectorAll('.js-inv-pdf'), function (b) {
+            b.addEventListener('click', function () {
+                var self = this; self.disabled = true;
+                invoicePdf(byId(self.dataset.id), INV.settings).catch(function (e) { alert(e.message); })
+                    .then(function () { self.disabled = false; });
+            });
+        });
+        [].forEach.call(view.querySelectorAll('.js-inv-status'), function (sel) {
+            sel.addEventListener('change', async function () {
+                var r = byId(this.dataset.id);
+                var inv = Object.assign({}, r, { status: this.value });
+                await A.adminFetchTo('/api/leads-admin', 'invoice-save', { id: r.id, invoice: inv });
+                r.status = this.value;
+            });
+        });
+    }
+
+    var INV_FORM = [
+        ['issued_on', 'Invoice date', '', 'YYYY-MM-DD'], ['due_on', 'Due date', '', 'YYYY-MM-DD'],
+        ['company_name', 'Company (optional)'], ['client_name', 'Client name'],
+        ['email', 'Email'], ['deal_ref', 'Linked deal ref'],
+        ['address_1', 'Address line 1', 'wide'], ['address_2', 'Address line 2', 'wide'],
+        ['city_state_zip', 'City, State ZIP', 'wide'],
+        ['tax_rate', 'Tax rate %', '', '0'], ['shipping', 'Shipping $', '', '0'],
+        ['payment_instructions', 'Payment instructions (prints on the invoice)', 'wide', 'area'],
+    ];
+
+    function invMoney(n) { return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+    function invTotals() {
+        var sub = invItems.reduce(function (s, i) { return s + (Number(i.rate) || 0) * (Math.max(1, parseInt(i.qty, 10) || 1)); }, 0);
+        var rate = Number(document.getElementById('f-tax_rate').value) || 0;
+        var ship = Number(document.getElementById('f-shipping').value) || 0;
+        var tax = Math.round(sub * rate) / 100;
+        return { subtotal: sub, tax_rate: rate, tax_amount: tax, shipping: ship, total: sub + tax + ship };
+    }
+
+    function paintInvItems() {
+        var host = document.getElementById('inv-items');
+        host.innerHTML =
+            '<table class="leads"><thead><tr><th style="width:55%">Description</th><th>Rate</th><th>Qty</th><th>Amount</th><th></th></tr></thead><tbody>' +
+            invItems.map(function (it, i) {
+                return '<tr>' +
+                    '<td><input class="ctl js-it" data-i="' + i + '" data-k="description" value="' + esc(it.description) + '" placeholder="Rolex Submariner 126610LN, 2023, full set" style="width:100%"></td>' +
+                    '<td><input class="ctl js-it" data-i="' + i + '" data-k="rate" value="' + esc(it.rate) + '" inputmode="decimal" style="width:110px"></td>' +
+                    '<td><input class="ctl js-it" data-i="' + i + '" data-k="qty" value="' + esc(it.qty) + '" inputmode="numeric" style="width:50px"></td>' +
+                    '<td class="js-amt" style="white-space:nowrap">' + invMoney((Number(it.rate) || 0) * (parseInt(it.qty, 10) || 1)) + '</td>' +
+                    '<td><button class="btn ghost js-it-del" data-i="' + i + '" style="font-size:10px;padding:3px 8px">×</button></td>' +
+                '</tr>';
+            }).join('') + '</tbody></table>' +
+            '<button class="btn ghost" id="inv-add" style="margin-top:10px">+ Add line</button>';
+        [].forEach.call(host.querySelectorAll('.js-it'), function (inp) {
+            inp.addEventListener('input', function () {
+                invItems[+this.dataset.i][this.dataset.k] = this.value;
+                var tr = this.closest('tr'), it = invItems[+this.dataset.i];
+                tr.querySelector('.js-amt').textContent = invMoney((Number(it.rate) || 0) * (parseInt(it.qty, 10) || 1));
+                paintInvTotals();
+            });
+        });
+        [].forEach.call(host.querySelectorAll('.js-it-del'), function (b) {
+            b.addEventListener('click', function () { invItems.splice(+this.dataset.i, 1); paintInvItems(); paintInvTotals(); });
+        });
+        document.getElementById('inv-add').addEventListener('click', function () {
+            invItems.push({ description: '', rate: '', qty: 1 }); paintInvItems();
+            var last = host.querySelectorAll('.js-it[data-k="description"]'); last[last.length - 1].focus();
+        });
+    }
+
+    function paintInvTotals() {
+        var t = invTotals();
+        document.getElementById('inv-totals').innerHTML =
+            '<div class="tsub">Subtotal ' + invMoney(t.subtotal) +
+            (t.tax_amount ? ' · Tax (' + t.tax_rate + '%) ' + invMoney(t.tax_amount) : '') +
+            (t.shipping ? ' · Shipping ' + invMoney(t.shipping) : '') + '</div>' +
+            '<div class="tname" style="font-size:18px;margin-top:4px">Balance due USD ' + invMoney(t.total) + '</div>';
+    }
+
+    function editInvoice(inv) {
+        var isNew = !inv;
+        var s = INV.settings || {};
+        var v = inv || { issued_on: bkToday(), tax_rate: 0, shipping: 0, payment_instructions: s.payment_instructions || '' };
+        invItems = (inv && inv.items && inv.items.length ? inv.items : [{ description: '', rate: '', qty: 1 }])
+            .map(function (i) { return { description: i.description || '', rate: i.rate == null ? '' : i.rate, qty: i.qty || 1 }; });
+
+        sheetInner.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+              '<button class="btn ghost" id="s-close">← Back</button>' +
+              '<div style="display:flex;gap:8px">' +
+                (isNew ? '' : '<button class="btn danger" id="s-del">Delete</button>') +
+                '<button class="btn" id="s-save">' + (isNew ? 'Save & download PDF' : 'Save & download PDF') + '</button>' +
+              '</div>' +
+            '</div>' +
+            '<h2>' + (isNew ? 'New invoice' : esc(v.number)) + '</h2>' +
+            '<p class="note">' + (isNew ? 'The INV number is minted when you save. ' : '') + 'Totals are worked out from the lines.</p>' +
+            bkFields(INV_FORM, v) +
+            '<h3 style="margin:28px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em">Line items</h3>' +
+            '<div id="inv-items"></div>' +
+            '<div id="inv-totals" style="margin-top:18px;text-align:right"></div>' +
+            '<p class="err hidden" id="s-err"></p>';
+
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        paintInvItems();
+        paintInvTotals();
+        ['f-tax_rate', 'f-shipping'].forEach(function (id) { document.getElementById(id).addEventListener('input', paintInvTotals); });
+        document.getElementById('s-close').addEventListener('click', closeSheet);
+        document.getElementById('s-save').addEventListener('click', function () { saveInvoice(inv); });
+        var del = document.getElementById('s-del');
+        if (del) del.addEventListener('click', async function () {
+            if (!confirm('Delete ' + inv.number + '? The number will not be reused.')) return;
+            await A.adminFetchTo('/api/leads-admin', 'invoice-delete', { id: inv.id });
+            closeSheet(); renderInvoices();
+        });
+    }
+
+    async function saveInvoice(inv) {
+        var btn = document.getElementById('s-save');
+        btn.disabled = true;
+        try {
+            var payload = bkRead(INV_FORM);
+            payload.items = invItems;
+            payload.status = inv ? inv.status : 'sent';
+            if (!payload.items.some(function (i) { return i.description || Number(i.rate); })) throw new Error('Add at least one line item');
+            var r = await A.adminFetchTo('/api/leads-admin', 'invoice-save', { id: inv ? inv.id : null, invoice: payload });
+            await invoicePdf(r.invoice, INV.settings);
+            closeSheet();
+            await renderInvoices();
+        } catch (e) {
+            sheetErr(e.message || 'Save failed');
+            btn.disabled = false;
+        }
+    }
+
+    var INV_SETTINGS_FORM = [
+        ['business_name', 'Business name'], ['phone', 'Phone'],
+        ['address', 'Street address'], ['city_state', 'City, State ZIP'],
+        ['website', 'Website', 'wide'],
+        ['payment_instructions', 'Default payment instructions (wire details)', 'wide', 'area'],
+    ];
+
+    function editInvoiceSettings() {
+        sheetInner.innerHTML =
+            '<div class="bar" style="justify-content:space-between">' +
+              '<button class="btn ghost" id="s-close">← Back</button>' +
+              '<button class="btn" id="s-save">Save</button>' +
+            '</div>' +
+            '<h2>Invoice details</h2>' +
+            '<p class="note">Printed at the top of every invoice. Wire details pre-fill each new invoice and can be edited per invoice.</p>' +
+            bkFields(INV_SETTINGS_FORM, INV.settings || {}) +
+            '<p class="err hidden" id="s-err"></p>';
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('s-close').addEventListener('click', closeSheet);
+        document.getElementById('s-save').addEventListener('click', async function () {
+            this.disabled = true;
+            try {
+                var r = await A.adminFetchTo('/api/leads-admin', 'invoice-settings-save', { settings: bkRead(INV_SETTINGS_FORM) });
+                INV.settings = r.settings;
+                closeSheet();
+            } catch (e) { sheetErr(e.message); this.disabled = false; }
+        });
+    }
+
+    // ── PDF ──────────────────────────────────────────────────
+    function invLoadPdfLib() {
+        if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+        return new Promise(function (ok, bad) {
+            var el = document.createElement('script');
+            el.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+            el.onload = function () { ok(window.jspdf.jsPDF); };
+            el.onerror = function () { bad(new Error('Could not load the PDF library')); };
+            document.head.appendChild(el);
+        });
+    }
+    var invLogoCache = null;
+    function invLoadLogo() {
+        if (invLogoCache) return Promise.resolve(invLogoCache);
+        return fetch('/assets/dbh/invoice-logo.png').then(function (r) { return r.blob(); }).then(function (b) {
+            return new Promise(function (ok) {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    var img = new Image();
+                    img.onload = function () { invLogoCache = { data: fr.result, w: img.width, h: img.height }; ok(invLogoCache); };
+                    img.src = fr.result;
+                };
+                fr.readAsDataURL(b);
+            });
+        }).catch(function () { return null; });
+    }
+    function invDate(iso) {
+        var p = String(iso || '').split('-');
+        return p.length === 3 ? p[1] + '/' + p[2] + '/' + p[0] : (iso || '');
+    }
+
+    // Same geometry as the Python/reportlab version: US Letter, 60pt margins,
+    // logo + business block left, INVOICE/DATE/BALANCE right, dark header bar
+    // on the line table, payment info bottom-left, totals bottom-right.
+    async function invoicePdf(inv, s) {
+        var jsPDF = await invLoadPdfLib();
+        var logo = await invLoadLogo();
+        s = s || {};
+        var doc = new jsPDF({ unit: 'pt', format: 'letter' });
+        var W = 612, ml = 60, mr = 60, rx = W - mr, usable = W - ml - mr;
+        var GREY = '#666666', LIGHT = '#999999', BLACK = '#222222', LINE = '#CCCCCC', BLUE = '#2D6CA2';
+        var dt = function (x, y, text, size, color, bold, align) {
+            doc.setFont('helvetica', bold ? 'bold' : 'normal');
+            doc.setFontSize(size || 10);
+            doc.setTextColor(color || BLACK);
+            doc.text(String(text == null ? '' : text), x, y, { align: align || 'left' });
+        };
+        var hline = function (y, x1, x2) {
+            doc.setDrawColor(LINE); doc.setLineWidth(0.5); doc.line(x1 == null ? ml : x1, y, x2 == null ? rx : x2, y);
+        };
+
+        var topY = 65, infoY;
+        if (logo) {
+            var lw = 200, lh = logo.h * (lw / logo.w);
+            doc.addImage(logo.data, 'PNG', ml, topY - 5, lw, lh);
+            infoY = topY + lh + 8;
+        } else {
+            dt(ml, topY, s.business_name || 'Dialed by H', 22, BLACK, true);
+            infoY = topY + 28;
+        }
+        dt(ml, infoY, s.address || '', 10, GREY); infoY += 15;
+        dt(ml, infoY, s.city_state || '', 10, GREY); infoY += 15;
+        dt(ml, infoY, s.phone || '', 10, GREY); infoY += 15;
+        dt(ml, infoY, s.website || '', 10, BLUE); infoY += 15;
+
+        var ry = topY;
+        [['INVOICE', inv.number], ['DATE', invDate(inv.issued_on)], ['BALANCE DUE', 'USD ' + invMoney(inv.total)]].forEach(function (m) {
+            dt(rx, ry, m[0], 8, GREY, true, 'right'); ry += 16;
+            dt(rx, ry, m[1], 11, BLACK, false, 'right'); ry += 24;
+        });
+
+        var y = Math.max(infoY, ry) + 8;
+        hline(y); y += 22;
+        dt(ml, y, 'BILL TO', 8, GREY, true); y += 22;
+        if (inv.company_name) { dt(ml, y, inv.company_name, 16, BLACK, true); y += 22; }
+        [inv.client_name, inv.address_1, inv.address_2, inv.city_state_zip, inv.email].forEach(function (line) {
+            if (line) { dt(ml, y, line, 11); y += 16; }
+        });
+        y += 14;
+
+        var headerH = 26, pad = 10;
+        var colRateR = rx - 165, colQtyC = rx - 110, colAmtR = rx - pad;
+        doc.setFillColor('#333333'); doc.rect(ml, y, usable, headerH, 'F');
+        var hy = y + headerH - 8;
+        dt(ml + pad, hy, 'DESCRIPTION', 8, '#FFFFFF', true);
+        dt(colRateR, hy, 'RATE', 8, '#FFFFFF', true, 'right');
+        dt(colQtyC, hy, 'QTY', 8, '#FFFFFF', true, 'center');
+        dt(colAmtR, hy, 'AMOUNT', 8, '#FFFFFF', true, 'right');
+        y += headerH;
+
+        var maxDescW = (colRateR - 60) - (ml + pad);
+        (inv.items || []).forEach(function (it) {
+            y += 8;
+            var rowY = y + 12;
+            var rate = Number(it.rate) || 0, qty = parseInt(it.qty, 10) || 1;
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+            var lines = doc.splitTextToSize(String(it.description || ''), maxDescW);
+            lines.forEach(function (t, i) { dt(ml + pad, rowY + i * 15, t, 10); });
+            dt(colRateR, rowY, invMoney(rate), 10, BLACK, false, 'right');
+            dt(colQtyC, rowY, String(qty), 10, BLACK, false, 'center');
+            dt(colAmtR, rowY, invMoney(rate * qty), 10, BLACK, false, 'right');
+            y = rowY + Math.max(lines.length - 1, 0) * 15 + 10;
+        });
+        y += 6; hline(y); y += 26;
+
+        var totLX = W / 2 + 10, ty = y;
+        hline(ty - 4, totLX, rx);
+        dt(totLX, ty + 12, 'TOTAL', 10, GREY, true); dt(colAmtR, ty + 12, invMoney(inv.subtotal), 10, BLACK, false, 'right'); ty += 28;
+        if (Number(inv.tax_amount) > 0) {
+            hline(ty - 4, totLX, rx);
+            dt(totLX, ty + 12, 'TAX (' + Number(inv.tax_rate) + '%)', 10, GREY, true);
+            dt(colAmtR, ty + 12, invMoney(inv.tax_amount), 10, BLACK, false, 'right'); ty += 28;
+        }
+        if (Number(inv.shipping) > 0) {
+            hline(ty - 4, totLX, rx);
+            dt(totLX, ty + 12, 'SHIPPING', 10, GREY, true);
+            dt(colAmtR, ty + 12, invMoney(inv.shipping), 10, BLACK, false, 'right'); ty += 28;
+        }
+        hline(ty - 4, totLX, rx);
+        dt(totLX, ty + 14, 'BALANCE DUE', 14, BLACK, true);
+        dt(colAmtR, ty + 14, 'USD ' + invMoney(inv.total), 14, BLACK, true, 'right');
+
+        var py = y;
+        dt(ml, py, 'Payment Info', 14, BLACK, true); py += 22;
+        dt(ml, py, 'PAYMENT INSTRUCTIONS', 9, GREY, true); py += 16;
+        String(inv.payment_instructions || s.payment_instructions || '').split('\n').forEach(function (line) {
+            dt(ml, py, line, 10, GREY); py += 14;
+        });
+        if (inv.due_on) { py += 8; dt(ml, py, 'Due ' + invDate(inv.due_on), 10, LIGHT); }
+
+        doc.save(inv.number + '.pdf');
     }
 
     // ── Watches & Wonders 2027 outreach tracker ──────────────────────────

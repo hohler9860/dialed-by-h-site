@@ -934,6 +934,62 @@ module.exports = async (req, res) => {
         // A want stays open until closed, so supply arriving weeks later still
         // finds the client who asked for it.
         // ── Watches & Wonders 2027 outreach tracker ────────────────────────
+        // ── Invoices ───────────────────────────────────────────────────────
+        // The old desktop invoice tool, moved into the console. The PDF itself
+        // is drawn in the browser; this only keeps the numbered record and the
+        // business/wire settings that print on every invoice.
+        if (action === "invoices") {
+            const [rows, settings] = await Promise.all([
+                supabaseAll("dbh_invoices?select=*&order=seq.desc"),
+                supabase("dbh_invoice_settings?select=*&id=eq.1"),
+            ]);
+            return res.status(200).json({ rows, settings: (settings && settings[0]) || {} });
+        }
+        if (action === "invoice-save") {
+            const INV_FIELDS = {
+                issued_on: "date", due_on: "date", company_name: "text", client_name: "text",
+                address_1: "text", address_2: "text", city_state_zip: "text", email: "text",
+                tax_rate: "num", shipping: "num", payment_instructions: "text", notes: "text",
+                deal_ref: "text", status: "text",
+            };
+            const row = pick(body.invoice || {}, INV_FIELDS);
+            const items = Array.isArray((body.invoice || {}).items) ? body.invoice.items : [];
+            row.items = items.map((it) => ({
+                description: String(it.description || "").slice(0, 500),
+                rate: Number(it.rate) || 0,
+                qty: Math.max(1, parseInt(it.qty, 10) || 1),
+            })).filter((it) => it.description || it.rate);
+            // Totals are recomputed here so the stored number can never
+            // disagree with what the PDF printed.
+            const subtotal = row.items.reduce((s, it) => s + it.rate * it.qty, 0);
+            row.tax_rate = row.tax_rate || 0;
+            row.shipping = row.shipping || 0;
+            row.subtotal = Math.round(subtotal * 100) / 100;
+            row.tax_amount = Math.round(subtotal * row.tax_rate) / 100;
+            row.total = Math.round((row.subtotal + row.tax_amount + row.shipping) * 100) / 100;
+            if (!row.issued_on) row.issued_on = new Date().toISOString().slice(0, 10);
+            if (!row.status) row.status = "sent";
+            row.updated_at = new Date().toISOString();
+            if (!body.id) {
+                // Mint the next INV number server-side so two tabs cannot collide.
+                const last = await supabase("dbh_invoices?select=seq&order=seq.desc&limit=1");
+                const seq = ((last && last[0] && last[0].seq) || 0) + 1;
+                row.seq = seq;
+                row.number = "INV" + String(seq).padStart(5, "0");
+            }
+            return res.status(200).json({ invoice: await upsert("dbh_invoices", body.id, row) });
+        }
+        if (action === "invoice-delete") {
+            if (!body.id) return res.status(400).json({ error: "Missing id" });
+            await supabase(`dbh_invoices?id=eq.${encodeURIComponent(body.id)}`, { method: "DELETE" });
+            return res.status(200).json({ ok: true });
+        }
+        if (action === "invoice-settings-save") {
+            const row = pick(body.settings || {}, ["business_name", "address", "city_state", "phone", "website", "payment_instructions"]);
+            row.updated_at = new Date().toISOString();
+            return res.status(200).json({ settings: await upsert("dbh_invoice_settings", 1, row) });
+        }
+
         if (action === "ww") {
             const rows = await supabase(
                 "dbh_ww_outreach?select=*&order=priority.asc,brand.asc");

@@ -950,9 +950,10 @@ module.exports = async (req, res) => {
                 issued_on: "date", due_on: "date", company_name: "text", client_name: "text",
                 address_1: "text", address_2: "text", city_state_zip: "text", email: "text",
                 tax_rate: "num", shipping: "num", payment_instructions: "text", notes: "text",
-                deal_ref: "text", status: "text",
+                deal_ref: "text", status: "text", title: "text", number: "text",
             };
             const row = pick(body.invoice || {}, INV_FIELDS);
+            if (!row.title) row.title = "Invoice";
             const items = Array.isArray((body.invoice || {}).items) ? body.invoice.items : [];
             const txt = (v) => String(v == null ? "" : v).trim().slice(0, 200);
             row.items = items.map((it) => ({
@@ -974,12 +975,28 @@ module.exports = async (req, res) => {
             if (!row.issued_on) row.issued_on = new Date().toISOString().slice(0, 10);
             if (!row.status) row.status = "sent";
             row.updated_at = new Date().toISOString();
-            if (!body.id) {
-                // Mint the next INV number server-side so two tabs cannot collide.
-                const last = await supabase("dbh_invoices?select=seq&order=seq.desc&limit=1");
-                const seq = ((last && last[0] && last[0].seq) || 0) + 1;
-                row.seq = seq;
-                row.number = "INV" + String(seq).padStart(5, "0");
+            // Numbering: the number is Henry's to type. Left blank on a new
+            // invoice, it continues from the last one (same prefix, +1, same
+            // digit width); the very first defaults to INV-1001. Typed numbers
+            // move the sequence forward so the next auto number follows on.
+            const last = await supabase("dbh_invoices?select=seq,number&order=seq.desc&limit=1");
+            const lastSeq = (last && last[0] && last[0].seq) || 0;
+            if (row.number) {
+                const m = /(\d+)\s*$/.exec(row.number);
+                const typed = m ? parseInt(m[1], 10) : 0;
+                if (!body.id) row.seq = typed > lastSeq ? typed : lastSeq + 1;
+                else if (typed > 0) row.seq = typed;
+            } else if (!body.id) {
+                if (last && last[0] && last[0].number) {
+                    const m = /^(.*?)(\d+)\s*$/.exec(last[0].number);
+                    row.seq = lastSeq + 1;
+                    row.number = m ? m[1] + String(row.seq).padStart(m[2].length, "0") : "INV-" + row.seq;
+                } else {
+                    row.seq = 1001;
+                    row.number = "INV-1001";
+                }
+            } else {
+                delete row.number;
             }
             return res.status(200).json({ invoice: await upsert("dbh_invoices", body.id, row) });
         }

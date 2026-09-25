@@ -3753,7 +3753,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                       var sub = r.company_name && r.client_name ? r.client_name : (r.email || '');
                       var items = (r.items || []).map(function (i) { return [i.description, i.reference, i.serial, i.set].filter(Boolean).join(' · '); }).join(', ');
                       return '<tr>' +
-                          '<td><span class="tname">' + esc(r.number) + '</span></td>' +
+                          '<td><span class="tname">' + esc(r.number) + '</span>' + (r.title && r.title !== 'Invoice' ? '<div class="tsub">' + esc(r.title) + '</div>' : '') + '</td>' +
                           '<td>' + esc(r.issued_on || '') + '</td>' +
                           '<td><span class="tname">' + esc(who) + '</span><div class="tsub">' + esc(sub) + '</div></td>' +
                           '<td style="max-width:320px"><span class="tsub">' + esc(items) + '</span></td>' +
@@ -3793,6 +3793,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     var INV_FORM = [
+        ['title', 'Document title', '', 'Invoice / Receipt / Deposit invoice'], ['number', 'Invoice number', '', 'blank = next in sequence'],
         ['issued_on', 'Invoice date', '', 'YYYY-MM-DD'], ['due_on', 'Due date', '', 'YYYY-MM-DD'],
         ['company_name', 'Company (optional)'], ['client_name', 'Client name'],
         ['email', 'Email'], ['deal_ref', 'Linked deal ref'],
@@ -3870,7 +3871,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     function editInvoice(inv) {
         var isNew = !inv;
         var s = INV.settings || {};
-        var v = inv || { issued_on: bkToday(), tax_rate: 0, shipping: 0, payment_instructions: s.payment_instructions || '' };
+        var v = inv || { title: 'Invoice', issued_on: bkToday(), tax_rate: 0, shipping: 0, payment_instructions: s.payment_instructions || '' };
         invItems = (inv && inv.items && inv.items.length ? inv.items : [{ description: '', rate: '', qty: 1 }])
             .map(function (i) { return { description: i.description || '', reference: i.reference || '', serial: i.serial || '', year: i.year || '', condition: i.condition || '', set: i.set || '', rate: i.rate == null ? '' : i.rate, qty: i.qty || 1 }; });
 
@@ -3883,7 +3884,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '</div>' +
             '</div>' +
             '<h2>' + (isNew ? 'New invoice' : esc(v.number)) + '</h2>' +
-            '<p class="note">' + (isNew ? 'The INV number is minted when you save. ' : '') + 'Totals are worked out from the lines.</p>' +
+            '<p class="note">' + (isNew ? 'Leave the number blank to continue the sequence, or type your own. ' : '') + 'Totals are worked out from the lines.</p>' +
             bkFields(INV_FORM, v) +
             '<h3 style="margin:28px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em">Line items</h3>' +
             '<div id="inv-items"></div>' +
@@ -4019,7 +4020,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         dt(ml, infoY, s.website || '', 10, BLUE); infoY += 15;
 
         var ry = topY;
-        [['INVOICE', inv.number], ['DATE', invDate(inv.issued_on)], ['BALANCE DUE', 'USD ' + invMoney(inv.total)]].forEach(function (m) {
+        [[String(inv.title || 'Invoice').toUpperCase(), inv.number], ['DATE', invDate(inv.issued_on)], ['BALANCE DUE', 'USD ' + invMoney(inv.total)]].forEach(function (m) {
             dt(rx, ry, m[0], 8, GREY, true, 'right'); ry += 16;
             dt(rx, ry, m[1], 11, BLACK, false, 'right'); ry += 24;
         });
@@ -4094,7 +4095,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         if (inv.due_on) { py += 8; dt(ml, py, 'Due ' + invDate(inv.due_on), 10, LIGHT); }
 
-        doc.save(inv.number + '.pdf');
+        doc.save(String(inv.title || 'Invoice').replace(/[^\w]+/g, '-') + '-' + inv.number + '.pdf');
     }
 
     // ── Watches & Wonders 2027 outreach tracker ──────────────────────────

@@ -302,11 +302,11 @@ module.exports = async (req, res) => {
     const socialQuery = req.query || {};
     const socialBody = typeof req.body === "string" ? (() => { try { return JSON.parse(req.body); } catch { return {}; } })() : (req.body || {});
     if ((req.method === "GET" && ["social-x-start", "social-x-callback"].includes(socialQuery.action)) ||
-        (req.method === "POST" && socialBody.action === "social-tick")) {
+        (req.method === "POST" && ["social-tick", "social-workflow"].includes(socialBody.action))) {
         res.setHeader("Cache-Control", "no-store");
         try {
             const native = await import("../lib/social-runtime/native.mjs");
-            if (req.method === "POST") return res.status(200).json(await native.tick(req.headers.authorization));
+            if (req.method === "POST") return res.status(200).json(socialBody.action === "social-workflow" ? await native.workflow(req.headers.authorization, socialBody) : await native.tick(req.headers.authorization));
             const result = await native.oauth(socialQuery.action, socialQuery, req.headers.cookie);
             for (const [key, value] of Object.entries(result.headers)) res.setHeader(key, value);
             return res.status(result.status).end(result.body);

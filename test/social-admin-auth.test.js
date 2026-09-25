@@ -12,3 +12,6 @@ test('Native social actions remain behind website admin authentication',async()=
 test('Scheduler rejects an admin credential and ordinary unauthenticated calls',async()=>{
   for(const auth of ['', 'Bearer synthetic-admin-password']){const res=response();await handler({method:'POST',headers:{authorization:auth},query:{},body:{action:'social-tick'}},res);assert.equal(res.code,401);}
 });
+test('Draft workflow rejects admin and unauthenticated credentials before database reads',async()=>{
+  for(const auth of ['', 'Bearer synthetic-admin-password']){const res=response();await handler({method:'POST',headers:{authorization:auth},query:{},body:{action:'social-workflow',operation:'begin'}},res);assert.equal(res.code,401);}
+});

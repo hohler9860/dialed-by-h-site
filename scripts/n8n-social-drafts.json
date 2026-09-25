@@ -1,0 +1,393 @@
+{
+  "name": "Social: daily watch drafts and schedule",
+  "nodes": [
+    {
+      "id": "daily-at-18-05-eastern",
+      "name": "Daily at 18:05 Eastern",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5 18 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "run-manually",
+      "name": "Run manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "reserve-tomorrow",
+      "name": "Reserve tomorrow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.dialedbyhenry.com/api/leads-admin",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"action\":\"social-workflow\",\"operation\":\"begin\"}",
+        "options": {
+          "timeout": 55000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "DBH_SOCIAL_CREDENTIAL_ID",
+          "name": "Dialed Social drafting"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "skip-existing-or-disabled-batch",
+      "name": "Skip existing or disabled batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const r=$input.first().json; if(r.skip)return []; if(!r.runId||!r.draftPayload)throw new Error('Invalid drafting context.'); return [{json:{payload:r.draftPayload}}];"
+      }
+    },
+    {
+      "id": "write-five-drafts",
+      "name": "Write five drafts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "credentials": {
+        "openRouterApi": {
+          "id": "XScb47cLfmEaHaH3",
+          "name": "OpenRouter funded"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "prepare-independent-review",
+      "name": "Prepare independent review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const r=$input.first().json;\nif(r.error||r.choices?.[0]?.finish_reason!=='stop')throw new Error('Draft model failed or was truncated.');\nconst posts=JSON.parse(r.choices[0].message.content).posts;\nif(!Array.isArray(posts)||posts.length!==5)throw new Error('Expected five drafts.');\nconst run=$('Reserve tomorrow').first().json;\nconst payload=run.reviewTemplate;\npayload.messages[1].content=JSON.stringify({posts,voice:run.context.voice,sources:run.context.sources,recent:run.context.recent});\nreturn [{json:{payload,posts,writerUsage:{model:r.model,cost:r.usage?.cost}}}];"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "independent-editorial-check",
+      "name": "Independent editorial check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "credentials": {
+        "openRouterApi": {
+          "id": "XScb47cLfmEaHaH3",
+          "name": "OpenRouter funded"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "prepare-batch-import",
+      "name": "Prepare batch import",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const r=$input.first().json;\nif(r.error||r.choices?.[0]?.finish_reason!=='stop')throw new Error('Editorial model failed or was truncated.');\nconst reviews=JSON.parse(r.choices[0].message.content).reviews;\nif(!Array.isArray(reviews)||reviews.length!==5)throw new Error('Expected five editorial verdicts.');\nconst draft=$('Prepare independent review').first().json;\nreturn [{json:{action:'social-workflow',operation:'commit',runId:$('Reserve tomorrow').first().json.runId,posts:draft.posts,reviews,usage:[draft.writerUsage,{model:r.model,cost:r.usage?.cost}]}}];"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "save-drafts-and-planned-times",
+      "name": "Save drafts and planned times",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.dialedbyhenry.com/api/leads-admin",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 55000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "DBH_SOCIAL_CREDENTIAL_ID",
+          "name": "Dialed Social drafting"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "record-failure",
+      "name": "Record failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        280
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.dialedbyhenry.com/api/leads-admin",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({action:'social-workflow',operation:'fail',runId:$('Reserve tomorrow').first().json.runId}) }}",
+        "options": {
+          "timeout": 55000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "DBH_SOCIAL_CREDENTIAL_ID",
+          "name": "Dialed Social drafting"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "stop-failed-run",
+      "name": "Stop failed run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        280
+      ],
+      "parameters": {
+        "jsCode": "throw new Error('Draft batch failed. Review the failed node above. Website publishing settings were not changed.');"
+      }
+    }
+  ],
+  "connections": {
+    "Daily at 18:05 Eastern": {
+      "main": [
+        [
+          {
+            "node": "Reserve tomorrow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run manually": {
+      "main": [
+        [
+          {
+            "node": "Reserve tomorrow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserve tomorrow": {
+      "main": [
+        [
+          {
+            "node": "Skip existing or disabled batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip existing or disabled batch": {
+      "main": [
+        [
+          {
+            "node": "Write five drafts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write five drafts": {
+      "main": [
+        [
+          {
+            "node": "Prepare independent review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare independent review": {
+      "main": [
+        [
+          {
+            "node": "Independent editorial check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Independent editorial check": {
+      "main": [
+        [
+          {
+            "node": "Prepare batch import",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare batch import": {
+      "main": [
+        [
+          {
+            "node": "Save drafts and planned times",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record failure": {
+      "main": [
+        [
+          {
+            "node": "Stop failed run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save drafts and planned times": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Record failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/New_York",
+    "executionOrder": "v1",
+    "executionTimeout": 360,
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  }
+}

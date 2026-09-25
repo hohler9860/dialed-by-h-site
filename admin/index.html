@@ -3271,7 +3271,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         wView = localStorage.getItem('w-view') === 'cards' ? 'cards' : 'table';
     } catch (e) {}
     var wq = '';
-    var wfilter = { tile: '', brand: '', group: '', days: '' };
+    var wfilter = { tile: '', brand: '', group: '', days: '', year: '' };
     var wsort = 'message_ts';
     var wdir = -1;
     var wopen = null;
@@ -3283,7 +3283,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // outgrew what one response can carry: over 6,000 listings and climbing
         // by about 5,000 a day.
         var r = await A.adminFetchTo('/api/leads-admin', 'wholesale',
-            { days: wfilter.days || 1, q: wq || '' });
+            { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', brand: wfilter.brand || '' });
         // An ingest outage empties the default 1-day window, which reads as
         // "everything is gone". Widen automatically until something shows,
         // and say so, rather than presenting a blank page.
@@ -3293,7 +3293,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             for (var fi = 0; fi < tries.length; fi++) {
                 if (Number(wfilter.days || 1) >= tries[fi]) continue;
                 var rf = await A.adminFetchTo('/api/leads-admin', 'wholesale',
-                    { days: tries[fi], q: '' });
+                    { days: tries[fi], q: '', year: wfilter.year || '', brand: wfilter.brand || '' });
                 if ((rf.listings || []).length) { r = rf; WS.fallbackDays = tries[fi]; break; }
             }
         }
@@ -3306,6 +3306,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         WS.held     = r.listings_held;
         WS.windowDays = r.window_days;
         WS.searched = r.searched;
+        WS.yearFilter = r.year_filter;
         WS.capped   = r.listings_capped;
         WS.loadedAt = new Date().toISOString();
         paintWholesale();
@@ -3328,7 +3329,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             // Respect an active empty-window fallback, or the poll would
             // overwrite the widened view with the same empty result.
             A.adminFetchTo('/api/leads-admin', 'wholesale',
-                { days: WS.fallbackDays || wfilter.days || 1 }).then(function (r) {
+                { days: WS.fallbackDays || wfilter.days || 1, year: wfilter.year || '', brand: wfilter.brand || '' }).then(function (r) {
                 WS.listings = r.listings || [];
                 WS.stats    = r.stats || [];
                 WS.variants = r.variants || [];
@@ -3376,10 +3377,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         return WS.listings.filter(function (l) {
             if (!matchWTile(l, tile)) return false;
             if (brand && (l.brand || '') !== brand) return false;
+            if (wfilter.year && String(l.year || '') !== String(wfilter.year)) return false;
             if (group && l.group_jid !== group) return false;
             if (cutoff && new Date(l.message_ts).getTime() < cutoff) return false;
             if (needle) {
-                var hay = [l.brand, l.model, l.reference, l.nickname, l.seller_name,
+                var hay = [l.brand, l.model, l.reference, l.nickname, l.seller_name, l.year,
                            l.dial_material, l.case_material, l.bracelet].filter(Boolean).join(' ').toLowerCase();
                 if (hay.indexOf(needle) < 0) return false;
             }
@@ -3502,6 +3504,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 brands.map(function (b) {
                     return '<option value="' + esc(b) + '"' + (wfilter.brand === b ? ' selected' : '') + '>' + esc(b.toUpperCase()) + '</option>';
                 }).join('') + '</select>' +
+              '<input id="w-year" class="ctl" type="number" inputmode="numeric" placeholder="YEAR" min="1900" max="2100" value="' + esc(wfilter.year || '') + '" style="width:92px">' +
               '<select id="w-group" class="ctl"><option value="">ANY GROUP</option>' +
                 Object.keys(WS.names).map(function (j) {
                     return '<option value="' + esc(j) + '"' + (wfilter.group === j ? ' selected' : '') + '>' + esc((WS.names[j] || '').toUpperCase()) + '</option>';
@@ -3520,8 +3523,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             // Newest listing age is the real health signal: the ingest runs every
             // minute, so anything older than a few minutes means it has stalled.
             '<p class="count">' +
-              (WS.searched
-                ? 'Searching all ' + (WS.held || 0).toLocaleString() + ' listings for "' + esc(WS.searched) + '" · ' +
+              (WS.yearFilter && !WS.searched
+                ? 'Year ' + esc(WS.yearFilter) + ' across all ' + (WS.held || 0).toLocaleString() + ' listings · ' +
+                  WS.listings.length + ' found' + (WS.capped ? ' · <button class="btn ghost" id="w-more" style="vertical-align:baseline">Load more</button>' : '') +
+                  ' · listings with no year stated are not included. '
+                : WS.searched
+                ? 'Searching all ' + (WS.held || 0).toLocaleString() + ' listings for "' + esc(WS.searched) + '"' + (WS.yearFilter ? ' in ' + esc(WS.yearFilter) : '') + ' · ' +
                   WS.listings.length + ' found' + (WS.capped ? ', showing the first batch' : '') + ' · press Enter to search again. '
                 : (WS.fallbackDays
                     ? '<span class="tag warm">No listings in the selected window</span> — nothing new has arrived recently, so showing the last ' +
@@ -3601,7 +3608,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') + '</div>';
     }
 
-    var WCARD_CAP = 400;
+    var WCARD_CAP = 1000;
     function wsCards(list) {
         var shown = list.slice(0, WCARD_CAP);
         if (!shown.length) return '<p class="count" style="padding:28px 0">Nothing matches those filters.</p>';
@@ -3713,7 +3720,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               rows.map(function (r) {
                   return '<div><div class="dk">' + esc(r[0]) + '</div><div class="dv">' + esc(String(r[1])) + '</div></div>';
               }).join('') +
-            '</div>' + editHtml +
+            '</div>' +
+            '<div class="dealer-panel" data-dealerfor="' + esc(l.id) + '" style="margin:10px 0"><span class="tsub">Looking up the dealer…</span></div>' +
+            editHtml +
             (l.image_url ? '<img class="wshot" src="' + esc(l.image_url) + '" alt="" loading="lazy" decoding="async">' : '') +
             (l.vision_mismatch ? '<p class="note">The photo does not match the reference in the caption. Worth a look before quoting.</p>' : '') +
             '</td></tr>';
@@ -4274,6 +4283,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (el) el.addEventListener('change', function () { wfilter[pair[1]] = this.value; paintWholesale(); });
         });
         // The window is applied by the database now, so changing it refetches.
+        var wy = document.getElementById('w-year');
+        if (wy) wy.addEventListener('change', function () {
+            var v = String(this.value || '').trim();
+            wfilter.year = /^(19|20)\d{2}$/.test(v) ? v : '';
+            view.innerHTML = '<p class="count">Loading ' + (wfilter.year ? 'every ' + esc(wfilter.year) + ' listing' : '') + '…</p>';
+            renderWholesale().catch(function (e) {
+                view.innerHTML = '<p class="err">Could not load: ' + esc(e.message || e) + '</p>';
+            });
+        });
         var wd = document.getElementById('w-days');
         if (wd) wd.addEventListener('change', function () {
             wfilter.days = this.value;
@@ -4296,7 +4314,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var self = this;
             self.disabled = true; self.textContent = 'Loading…';
             A.adminFetchTo('/api/leads-admin', 'wholesale',
-                { days: wfilter.days || 1, q: wq || '', offset: WS.listings.length })
+                { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', brand: wfilter.brand || '', offset: WS.listings.length })
                 .then(function (r) {
                     var seen = {};
                     WS.listings.forEach(function (l) { seen[l.id] = 1; });
@@ -4364,6 +4382,45 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 paintWholesale();
             });
         });
+        if (wopen) wsLoadDealer(wopen);
+    }
+
+    // Trace a listing back to the person who posted it. Cached per listing so
+    // the 60s repaint does not re-ask.
+    var wsDealerCache = {};
+    function wsLoadDealer(id) {
+        var host = document.querySelector('.dealer-panel[data-dealerfor="' + id + '"]');
+        if (!host) return;
+        var paint = function (d) {
+            var name = d.dealer_name || d.seller_name || 'unknown dealer';
+            var phone = d.phone ? String(d.phone).replace(/\D/g, '') : '';
+            host.innerHTML =
+                '<div class="dgrid" style="margin-bottom:8px">' +
+                    '<div><div class="dk">Dealer</div><div class="dv">' + esc(name) +
+                        (d.seller_name && d.dealer_name && d.seller_name !== d.dealer_name ? '<div class="tsub">signed as ' + esc(d.seller_name) + '</div>' : '') + '</div></div>' +
+                    '<div><div class="dk">Phone</div><div class="dv">' + (phone ? '+' + esc(phone) : 'not on the roster yet') + '</div></div>' +
+                    (d.asked ? '<div><div class="dk">Asked</div><div class="dv">' + esc(fmtAgo(d.asked.sent_at)) + (d.asked.status && d.asked.status !== 'sent' ? ' (' + esc(d.asked.status) + ')' : '') + '</div></div>' : '') +
+                '</div>' +
+                '<div class="row" style="gap:8px">' +
+                    (phone ? '<a class="btn ghost" href="https://wa.me/' + esc(phone) + '" target="_blank" rel="noopener">Open dealer chat</a>' : '') +
+                    (phone && !d.asked ? '<button class="btn ghost js-ws-ask" data-listing="' + esc(id) + '">Ask if available</button>' : '') +
+                    (!phone ? '<span class="tsub">Search the group in WhatsApp for the message; the roster fills in as dealers post.</span>' : '') +
+                '</div>';
+            var ask = host.querySelector('.js-ws-ask');
+            if (ask) ask.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (!confirm('Send "is this still available?" to ' + name + ' from your WhatsApp?')) return;
+                var self = this; self.disabled = true;
+                A.adminFetchTo('/api/leads-admin', 'ask-dealer', { listing_id: Number(id) })
+                    .then(function () { delete wsDealerCache[id]; wsLoadDealer(id); })
+                    .catch(function (err) { alert(err.message); self.disabled = false; });
+            });
+            host.addEventListener('click', function (e) { if (e.target.closest('a,button')) e.stopPropagation(); });
+        };
+        if (wsDealerCache[id]) return paint(wsDealerCache[id]);
+        A.adminFetchTo('/api/leads-admin', 'listing-dealer', { listing_id: id })
+            .then(function (d) { wsDealerCache[id] = d; paint(d); })
+            .catch(function (e) { host.innerHTML = '<span class="tsub">Could not trace the dealer: ' + esc(e.message) + '</span>'; });
     }
 
     function exportWholesale() {

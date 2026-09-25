@@ -448,7 +448,15 @@ module.exports = async (req, res) => {
             // overflows one response. Default to the most recent window and let
             // search reach everything else.
             const days = Number(body.days) > 0 ? Math.min(Number(body.days), 365) : 1;
-            const term = String(body.q || "").trim().slice(0, 60);
+            let term = String(body.q || "").trim().slice(0, 60);
+            // Year is its own filter on the integer column. Typing "2019" into
+            // the search box used to wildcard-match references and seller
+            // names containing 2019, which is why "scattered years" came back.
+            let year = parseInt(body.year, 10);
+            if (!(year >= 1900 && year <= 2100) && /^(19|20)\d{2}$/.test(term)) { year = parseInt(term, 10); term = ""; }
+            const yearFilter = (year >= 1900 && year <= 2100) ? `&year=eq.${year}` : "";
+            const brandPick = String(body.brand || "").trim().slice(0, 60);
+            const brandFilter = brandPick ? `&brand=eq.${encodeURIComponent(brandPick)}` : "";
             const since = new Date(Date.now() - days * 86400000).toISOString();
             // Paging: "Load more" passes the number of rows already shown and
             // receives the next window, so the whole feed is reachable without
@@ -479,13 +487,15 @@ module.exports = async (req, res) => {
                 // nothing to wait for.
                 `&or=(image_path.not.is.null,media_type.is.null)`;
 
-            let listingFilter = `&message_ts=gte.${since}`;
+            // A year filter, like a search, reaches every listing held: the
+            // point is to find the piece, not the piece posted this week.
+            let listingFilter = yearFilter ? yearFilter + brandFilter : `&message_ts=gte.${since}` + brandFilter;
             if (term) {
                 // Searching means searching everything, not just the window.
                 const safe = term.replace(/[(),*]/g, " ").trim();
                 if (safe) {
                     const like = `*${safe}*`;
-                    listingFilter =
+                    listingFilter = yearFilter + brandFilter +
                         `&or=(brand.ilike.${like},model.ilike.${like},reference.ilike.${like},` +
                         `nickname.ilike.${like},seller_name.ilike.${like})`;
                 }
@@ -661,6 +671,7 @@ module.exports = async (req, res) => {
                 listings_capped: listings.length >= LISTING_CAP,
                 window_days: term ? null : days,
                 searched: term || null,
+                year_filter: yearFilter ? year : null,
                 listings_held: totalHeld,
                 counters: {
                     listings: listings.length,
@@ -1608,6 +1619,38 @@ module.exports = async (req, res) => {
                 wh("model_scorecard?select=*"),
             ]);
             return res.status(200).json({ errors, scorecard });
+        }
+
+        // Who posted a listing: message sender -> dealers roster -> phone.
+        // Same chain ask-dealer uses, exposed so the Wholesale detail can
+        // show the dealer and open their chat.
+        if (action === "listing-dealer") {
+            const { listing_id } = body;
+            if (!listing_id) return res.status(400).json({ error: "Missing listing_id" });
+            const wh = { headers: { "Accept-Profile": "wholesale" } };
+            const rows = await supabase(
+                `listings?select=message_pk,group_jid,seller_name&id=eq.${encodeURIComponent(listing_id)}&limit=1`, wh);
+            const l = rows && rows[0];
+            if (!l) return res.status(404).json({ error: "Listing not found" });
+            const msg = l.message_pk ? await supabase(
+                `messages?select=sender_jid,sender_name&id=eq.${encodeURIComponent(l.message_pk)}&limit=1`, wh)
+                .catch(() => []) : [];
+            const sender = msg && msg[0];
+            const lid = sender && sender.sender_jid;
+            const dealer = lid ? await supabase(
+                `dealers?select=phone,wa_name,push_name,lid&lid=eq.${encodeURIComponent(lid)}&limit=1`, wh)
+                .catch(() => []) : [];
+            const d = dealer && dealer[0];
+            const asked = await supabase(
+                `dealer_messages?select=sent_at,status&listing_id=eq.${encodeURIComponent(listing_id)}&limit=1`, wh)
+                .catch(() => []);
+            return res.status(200).json({
+                seller_name: l.seller_name || null,
+                dealer_name: (d && (d.wa_name || d.push_name)) || (sender && sender.sender_name) || null,
+                phone: (d && d.phone) || null,
+                sender_jid: lid || null,
+                asked: (asked && asked[0]) || null,
+            });
         }
 
         if (action === "ask-dealer") {

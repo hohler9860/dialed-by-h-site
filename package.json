@@ -5,7 +5,8 @@
   "scripts": {
     "build": "npx @tailwindcss/cli -i ./src/input.css -o ./dist/styles.css --minify && node scripts/inline-css.js",
     "dev": "vercel dev",
-    "build:scene": "npx esbuild assets/dbh-scene.js --bundle --minify --format=esm --outfile=assets/dbh-scene.bundle.js"
+    "build:scene": "npx esbuild assets/dbh-scene.js --bundle --minify --format=esm --outfile=assets/dbh-scene.bundle.js",
+    "test:social": "node --test test/social-admin*.test.js lib/social-runtime/test/*.test.js"
   },
   "dependencies": {
     "@notionhq/client": "^5.22.0",
@@ -13,10 +14,15 @@
     "@react-email/render": "^2.0.4",
     "@supabase/supabase-js": "^2.39.0",
     "@vercel/analytics": "^2.0.1",
+    "entities": "6.0.1",
+    "fast-xml-parser": "5.11.1",
+    "ipaddr.js": "2.5.0",
+    "luxon": "3.7.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "resend": "^6.17.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "twitter-text": "3.1.0"
   },
   "devDependencies": {
     "@react-email/preview-server": "^5.2.8",
@@ -25,5 +31,8 @@
     "mailparser": "^3.9.15",
     "react-email": "^5.2.8",
     "tailwindcss": "^4.1.18"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

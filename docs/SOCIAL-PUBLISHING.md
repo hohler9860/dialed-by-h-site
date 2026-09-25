@@ -2,7 +2,7 @@
 
 This branch adds **Social** to the existing website admin. It uses the existing admin password and `/api/leads-admin` endpoint. It does not add a Vercel function, change Supabase data, or run a long-lived worker inside a serverless request.
 
-The publisher source is in `/Users/henryohler/Desktop/Dialedbyh/dialed-x-poster`. Its README contains account setup, deployment, backups, operational limits, and autonomous editorial behavior. This branch and the publisher have been tested locally; neither has been deployed for this integration, and no live post has been sent.
+The publisher source is in the private repository [hohler9860/dialed-x-poster](https://github.com/hohler9860/dialed-x-poster). Begin with its [SETUP.md](https://github.com/hohler9860/dialed-x-poster/blob/main/SETUP.md) for the hosting variables and X connection sequence. Its README covers backups, operational limits and editorial behavior. The local checkout is `/Users/henryohler/Desktop/Dialedbyh/dialed-x-poster`. This branch and the publisher have been tested locally; neither has been deployed for this integration, and no live post has been sent.
 
 ## Hosting configuration
 

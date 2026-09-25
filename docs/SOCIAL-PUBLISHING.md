@@ -54,3 +54,7 @@ The automatic image setting defaults on. Before editorial review, one untouched 
 Metadata and decisions live in the snapshot's `media_catalog` and `post_image_checks` tables. They contain URLs and labels, not image bytes or credentials. A rollback must preserve these tables in snapshot restore/save; older code that does not know about them will drop that metadata on its next state save.
 
 Image conversion and private storage tests do not publish an X post. Publishing remains subject to account identity checks, editorial approval and the pause switch.
+
+### No links in post text
+
+Henry selected no-link publishing to avoid X's URL-post surcharge. Generation asks for URL-free text and optional reply/DM CTAs. The editorial gate and X send method reject URLs (including bare domains recognized by `twitter-text`), and the editor no longer offers a tracked-link button. Research/source URLs and image source metadata remain available internally. Pictures are still permitted. Existing linked drafts must be edited and reviewed again; this policy does not modify already-published posts or the account bio.

@@ -3751,7 +3751,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                   rows.map(function (r) {
                       var who = r.company_name || r.client_name || '';
                       var sub = r.company_name && r.client_name ? r.client_name : (r.email || '');
-                      var items = (r.items || []).map(function (i) { return i.description; }).join(', ');
+                      var items = (r.items || []).map(function (i) { return [i.description, i.reference, i.serial, i.set].filter(Boolean).join(' · '); }).join(', ');
                       return '<tr>' +
                           '<td><span class="tname">' + esc(r.number) + '</span></td>' +
                           '<td>' + esc(r.issued_on || '') + '</td>' +
@@ -3812,13 +3812,27 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         return { subtotal: sub, tax_rate: rate, tax_amount: tax, shipping: ship, total: sub + tax + ship };
     }
 
+    var INV_SETS = ['Full set', 'Box only', 'Papers only', 'Watch only'];
     function paintInvItems() {
         var host = document.getElementById('inv-items');
+        var sub = function (i, k, val, w, ph) {
+            return '<input class="ctl js-it" data-i="' + i + '" data-k="' + k + '" value="' + esc(val == null ? '' : val) + '" placeholder="' + ph + '" style="font-size:11px;padding:4px 6px;width:' + w + '">';
+        };
         host.innerHTML =
             '<table class="leads"><thead><tr><th style="width:55%">Description</th><th>Rate</th><th>Qty</th><th>Amount</th><th></th></tr></thead><tbody>' +
             invItems.map(function (it, i) {
                 return '<tr>' +
-                    '<td><input class="ctl js-it" data-i="' + i + '" data-k="description" value="' + esc(it.description) + '" placeholder="Rolex Submariner 126610LN, 2023, full set" style="width:100%"></td>' +
+                    '<td><input class="ctl js-it" data-i="' + i + '" data-k="description" value="' + esc(it.description) + '" placeholder="Rolex Submariner Date 126610LN" style="width:100%">' +
+                        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' +
+                            sub(i, 'reference', it.reference, '110px', 'Reference') +
+                            sub(i, 'serial', it.serial, '120px', 'Serial') +
+                            sub(i, 'year', it.year, '60px', 'Year') +
+                            sub(i, 'condition', it.condition, '110px', 'Condition') +
+                            '<select class="ctl js-it" data-i="' + i + '" data-k="set" style="font-size:11px;padding:4px 6px">' +
+                                '<option value="">Set…</option>' +
+                                INV_SETS.map(function (o) { return '<option value="' + o + '"' + (it.set === o ? ' selected' : '') + '>' + o + '</option>'; }).join('') +
+                            '</select>' +
+                        '</div></td>' +
                     '<td><input class="ctl js-it" data-i="' + i + '" data-k="rate" value="' + esc(it.rate) + '" inputmode="decimal" style="width:110px"></td>' +
                     '<td><input class="ctl js-it" data-i="' + i + '" data-k="qty" value="' + esc(it.qty) + '" inputmode="numeric" style="width:50px"></td>' +
                     '<td class="js-amt" style="white-space:nowrap">' + invMoney((Number(it.rate) || 0) * (parseInt(it.qty, 10) || 1)) + '</td>' +
@@ -3833,6 +3847,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 tr.querySelector('.js-amt').textContent = invMoney((Number(it.rate) || 0) * (parseInt(it.qty, 10) || 1));
                 paintInvTotals();
             });
+            inp.addEventListener('change', function () { invItems[+this.dataset.i][this.dataset.k] = this.value; });
         });
         [].forEach.call(host.querySelectorAll('.js-it-del'), function (b) {
             b.addEventListener('click', function () { invItems.splice(+this.dataset.i, 1); paintInvItems(); paintInvTotals(); });
@@ -3857,7 +3872,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var s = INV.settings || {};
         var v = inv || { issued_on: bkToday(), tax_rate: 0, shipping: 0, payment_instructions: s.payment_instructions || '' };
         invItems = (inv && inv.items && inv.items.length ? inv.items : [{ description: '', rate: '', qty: 1 }])
-            .map(function (i) { return { description: i.description || '', rate: i.rate == null ? '' : i.rate, qty: i.qty || 1 }; });
+            .map(function (i) { return { description: i.description || '', reference: i.reference || '', serial: i.serial || '', year: i.year || '', condition: i.condition || '', set: i.set || '', rate: i.rate == null ? '' : i.rate, qty: i.qty || 1 }; });
 
         sheetInner.innerHTML =
             '<div class="bar" style="justify-content:space-between">' +
@@ -4036,10 +4051,21 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
             var lines = doc.splitTextToSize(String(it.description || ''), maxDescW);
             lines.forEach(function (t, i) { dt(ml + pad, rowY + i * 15, t, 10); });
+            var details = [
+                it.reference ? 'Ref. ' + it.reference : '',
+                it.serial ? 'Serial ' + it.serial : '',
+                it.year, it.condition, it.set,
+            ].filter(Boolean).join('  ·  ');
+            var dLines = [];
+            if (details) {
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+                dLines = doc.splitTextToSize(details, maxDescW);
+                dLines.forEach(function (t, i) { dt(ml + pad, rowY + lines.length * 15 + i * 12 - 1, t, 8.5, GREY); });
+            }
             dt(colRateR, rowY, invMoney(rate), 10, BLACK, false, 'right');
             dt(colQtyC, rowY, String(qty), 10, BLACK, false, 'center');
             dt(colAmtR, rowY, invMoney(rate * qty), 10, BLACK, false, 'right');
-            y = rowY + Math.max(lines.length - 1, 0) * 15 + 10;
+            y = rowY + Math.max(lines.length - 1, 0) * 15 + dLines.length * 12 + 10;
         });
         y += 6; hline(y); y += 26;
 

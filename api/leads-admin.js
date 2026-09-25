@@ -954,8 +954,12 @@ module.exports = async (req, res) => {
             };
             const row = pick(body.invoice || {}, INV_FIELDS);
             const items = Array.isArray((body.invoice || {}).items) ? body.invoice.items : [];
+            const txt = (v) => String(v == null ? "" : v).trim().slice(0, 200);
             row.items = items.map((it) => ({
                 description: String(it.description || "").slice(0, 500),
+                // Watch details, printed in a grey line under the description.
+                reference: txt(it.reference), serial: txt(it.serial), year: txt(it.year),
+                condition: txt(it.condition), set: txt(it.set),
                 rate: Number(it.rate) || 0,
                 qty: Math.max(1, parseInt(it.qty, 10) || 1),
             })).filter((it) => it.description || it.rate);

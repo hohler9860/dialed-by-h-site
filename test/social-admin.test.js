@@ -1,43 +1,14 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const socialAdmin = require('../lib/social-admin');
-const env = {SOCIAL_POSTER_URL:'https://poster.example.com',SOCIAL_POSTER_SECRET:'private-bridge-secret'.repeat(3)};
-test('Missing configuration is reported honestly without a network request', async () => {
-    const result = await socialAdmin({action:'social-status'},{env:{}});
-    assert.equal(result.configured,false);
-    await assert.rejects(()=>socialAdmin({action:'social-resume'},{env:{}}),/Connect/);
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const socialAdmin=require('../lib/social-admin');
+test('Native adapter forwards only supported actions and fields',async()=>{
+  let received;
+  await socialAdmin({action:'social-edit',id:'post',version:2,body:'Draft',scheduledAt:'2099-01-01',url:'https://attacker.invalid',token:'browser-token'},{native:{admin:async input=>{received=input;return {ok:true};}}});
+  assert.deepEqual(received,{action:'edit',id:'post',version:2,body:'Draft',scheduledAt:'2099-01-01'});
+  await assert.rejects(()=>socialAdmin({action:'social-delete-account'}),/Unknown/);
+  await assert.rejects(()=>socialAdmin({action:'social-workspace',operation:'fetch-url'}),/Unknown workspace/);
 });
-test('Proxy fixes the destination and forwards only allowed fields', async () => {
-    let called = false;
-    const result=await socialAdmin({action:'social-edit',id:'post',version:2,body:'Draft',scheduledAt:'2099-01-01',url:'https://attacker.invalid',token:'browser-token'}, {env,fetch:async(url,options)=>{
-        called=true;assert.equal(url,'https://poster.example.com/api/admin-bridge');assert.equal(options.redirect,'error');
-        assert.equal(options.headers.Authorization,'Bearer '+env.SOCIAL_POSTER_SECRET);
-        assert.deepEqual(JSON.parse(options.body),{action:'edit',id:'post',version:2,body:'Draft',scheduledAt:'2099-01-01'});
-        return new Response(JSON.stringify({ok:true}));
-    }});
-    assert.equal(called,true);assert.deepEqual(result,{ok:true});
-});
-test('Unknown actions, insecure origins, service auth failures and outages fail closed', async () => {
-    await assert.rejects(()=>socialAdmin({action:'social-delete-account'},{env}),/Unknown/);
-    for(const url of ['http://poster.example.com','https://user:pass@poster.example.com','https://poster.example.com/elsewhere']) {
-        await assert.rejects(()=>socialAdmin({action:'social-status'},{env:{...env,SOCIAL_POSTER_URL:url}}),/HTTPS origin/);
-    }
-    await assert.rejects(()=>socialAdmin({action:'social-status'},{env,fetch:async()=>new Response('{}',{status:401})}),/authentication failed/);
-    await assert.rejects(()=>socialAdmin({action:'social-status'},{env,fetch:async()=>{throw new Error('network');}}),/No success was assumed/);
-});
-test('Workspace proxy allows native controls and rejects arbitrary operations before calling the service',async()=>{
-    let calls=0;
-    const options={env,fetch:async(url,request)=>{calls++;assert.deepEqual(JSON.parse(request.body),{action:'workspace',operation:'settings',payload:{autoGenerate:false}});return new Response('{"ok":true}');}};
-    await assert.rejects(()=>socialAdmin({action:'social-workspace',operation:'fetch-url',payload:{url:'https://attacker.invalid'}},options),/Unknown workspace/);
-    assert.equal(calls,0);
-    await socialAdmin({action:'social-workspace',operation:'settings',payload:{autoGenerate:false}},options);assert.equal(calls,1);
-});
-
-test('Setup reports only missing variable names without exposing configured values', async()=>{
-    const partial=await socialAdmin({action:'social-status'},{env:{SOCIAL_POSTER_URL:'https://private-worker.example'}});
-    assert.deepEqual(partial.setup.missing,['SOCIAL_POSTER_SECRET']);
-    assert.equal(JSON.stringify(partial).includes('private-worker.example'),false);
-    const secretOnly=await socialAdmin({action:'social-status'},{env:{SOCIAL_POSTER_SECRET:'do-not-return-this-secret'}});
-    assert.deepEqual(secretOnly.setup.missing,['SOCIAL_POSTER_URL']);
-    assert.equal(JSON.stringify(secretOnly).includes('do-not-return-this-secret'),false);
+test('Missing migration is reported without inventing a connected worker',async()=>{
+  const result=await socialAdmin({action:'social-status'},{native:{admin:async()=>{throw Object.assign(new Error('missing'),{setup:true});}}});
+  assert.equal(result.configured,false);assert.match(result.reason,/migration/);assert.equal(JSON.stringify(result).includes('SOCIAL_POSTER_SECRET'),false);
 });

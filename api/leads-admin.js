@@ -297,6 +297,22 @@ module.exports = async (req, res) => {
 
     if (req.method === "OPTIONS") return res.status(200).end();
 
+    // OAuth uses a one-use admin-issued ticket, PKCE state, and a scoped browser cookie.
+    // The minute scheduler has its own Vault credential; it never accepts the admin password.
+    const socialQuery = req.query || {};
+    const socialBody = typeof req.body === "string" ? (() => { try { return JSON.parse(req.body); } catch { return {}; } })() : (req.body || {});
+    if ((req.method === "GET" && ["social-x-start", "social-x-callback"].includes(socialQuery.action)) ||
+        (req.method === "POST" && socialBody.action === "social-tick")) {
+        res.setHeader("Cache-Control", "no-store");
+        try {
+            const native = await import("../lib/social-runtime/native.mjs");
+            if (req.method === "POST") return res.status(200).json(await native.tick(req.headers.authorization));
+            const result = await native.oauth(socialQuery.action, socialQuery, req.headers.cookie);
+            for (const [key, value] of Object.entries(result.headers)) res.setHeader(key, value);
+            return res.status(result.status).end(result.body);
+        } catch (error) { return res.status(error.status || 503).json({error:error.message || "Publishing request failed."}); }
+    }
+
     // Vercel cron fires a GET with the CRON_SECRET bearer. Everything else
     // stays POST + admin password.
     if (req.method === "GET") {

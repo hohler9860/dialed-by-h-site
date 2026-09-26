@@ -452,9 +452,18 @@ module.exports = async (req, res) => {
             // Year is its own filter on the integer column. Typing "2019" into
             // the search box used to wildcard-match references and seller
             // names containing 2019, which is why "scattered years" came back.
+            // Single year, or a range (either end open). A bare 4-digit search
+            // term is read as a year too.
+            const okYear = (n) => n >= 1900 && n <= 2100;
             let year = parseInt(body.year, 10);
-            if (!(year >= 1900 && year <= 2100) && /^(19|20)\d{2}$/.test(term)) { year = parseInt(term, 10); term = ""; }
-            const yearFilter = (year >= 1900 && year <= 2100) ? `&year=eq.${year}` : "";
+            let yFrom = parseInt(body.year_from, 10), yTo = parseInt(body.year_to, 10);
+            if (!okYear(year) && !okYear(yFrom) && !okYear(yTo) && /^(19|20)\d{2}$/.test(term)) { year = parseInt(term, 10); term = ""; }
+            if (okYear(yFrom) && okYear(yTo) && yFrom > yTo) { const t = yFrom; yFrom = yTo; yTo = t; }
+            const yearFilter = okYear(year) ? `&year=eq.${year}`
+                : (okYear(yFrom) ? `&year=gte.${yFrom}` : "") + (okYear(yTo) ? `&year=lte.${yTo}` : "");
+            const yearLabel = okYear(year) ? String(year)
+                : okYear(yFrom) && okYear(yTo) ? `${yFrom} to ${yTo}`
+                : okYear(yFrom) ? `${yFrom} and later` : okYear(yTo) ? `${yTo} and earlier` : null;
             const brandPick = String(body.brand || "").trim().slice(0, 60);
             const brandFilter = brandPick ? `&brand=eq.${encodeURIComponent(brandPick)}` : "";
             const since = new Date(Date.now() - days * 86400000).toISOString();
@@ -671,7 +680,7 @@ module.exports = async (req, res) => {
                 listings_capped: listings.length >= LISTING_CAP,
                 window_days: term ? null : days,
                 searched: term || null,
-                year_filter: yearFilter ? year : null,
+                year_filter: yearLabel,
                 listings_held: totalHeld,
                 counters: {
                     listings: listings.length,

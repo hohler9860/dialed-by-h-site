@@ -3271,7 +3271,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         wView = localStorage.getItem('w-view') === 'cards' ? 'cards' : 'table';
     } catch (e) {}
     var wq = '';
-    var wfilter = { tile: '', brand: '', group: '', days: '', year: '' };
+    var wfilter = { tile: '', brand: '', group: '', days: '', year: '', yearFrom: '', yearTo: '' };
     var wsort = 'message_ts';
     var wdir = -1;
     var wopen = null;
@@ -3283,7 +3283,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // outgrew what one response can carry: over 6,000 listings and climbing
         // by about 5,000 a day.
         var r = await A.adminFetchTo('/api/leads-admin', 'wholesale',
-            { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', brand: wfilter.brand || '' });
+            { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', year_from: wfilter.yearFrom || '', year_to: wfilter.yearTo || '', brand: wfilter.brand || '' });
         // An ingest outage empties the default 1-day window, which reads as
         // "everything is gone". Widen automatically until something shows,
         // and say so, rather than presenting a blank page.
@@ -3293,7 +3293,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             for (var fi = 0; fi < tries.length; fi++) {
                 if (Number(wfilter.days || 1) >= tries[fi]) continue;
                 var rf = await A.adminFetchTo('/api/leads-admin', 'wholesale',
-                    { days: tries[fi], q: '', year: wfilter.year || '', brand: wfilter.brand || '' });
+                    { days: tries[fi], q: '', year: wfilter.year || '', year_from: wfilter.yearFrom || '', year_to: wfilter.yearTo || '', brand: wfilter.brand || '' });
                 if ((rf.listings || []).length) { r = rf; WS.fallbackDays = tries[fi]; break; }
             }
         }
@@ -3329,7 +3329,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             // Respect an active empty-window fallback, or the poll would
             // overwrite the widened view with the same empty result.
             A.adminFetchTo('/api/leads-admin', 'wholesale',
-                { days: WS.fallbackDays || wfilter.days || 1, year: wfilter.year || '', brand: wfilter.brand || '' }).then(function (r) {
+                { days: WS.fallbackDays || wfilter.days || 1, year: wfilter.year || '', year_from: wfilter.yearFrom || '', year_to: wfilter.yearTo || '', brand: wfilter.brand || '' }).then(function (r) {
                 WS.listings = r.listings || [];
                 WS.stats    = r.stats || [];
                 WS.variants = r.variants || [];
@@ -3378,6 +3378,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (!matchWTile(l, tile)) return false;
             if (brand && (l.brand || '') !== brand) return false;
             if (wfilter.year && String(l.year || '') !== String(wfilter.year)) return false;
+            if (wfilter.yearFrom && !(Number(l.year) >= Number(wfilter.yearFrom))) return false;
+            if (wfilter.yearTo && !(Number(l.year) <= Number(wfilter.yearTo))) return false;
             if (group && l.group_jid !== group) return false;
             if (cutoff && new Date(l.message_ts).getTime() < cutoff) return false;
             if (needle) {
@@ -3504,7 +3506,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 brands.map(function (b) {
                     return '<option value="' + esc(b) + '"' + (wfilter.brand === b ? ' selected' : '') + '>' + esc(b.toUpperCase()) + '</option>';
                 }).join('') + '</select>' +
-              '<input id="w-year" class="ctl" type="number" inputmode="numeric" placeholder="YEAR" min="1900" max="2100" value="' + esc(wfilter.year || '') + '" style="width:92px">' +
+              '<input id="w-year" class="ctl" type="number" inputmode="numeric" placeholder="YEAR" min="1900" max="2100" value="' + esc(wfilter.year || '') + '" style="width:84px" title="Exact year">' +
+              '<input id="w-year-from" class="ctl" type="number" inputmode="numeric" placeholder="FROM" min="1900" max="2100" value="' + esc(wfilter.yearFrom || '') + '" style="width:80px" title="Year range start">' +
+              '<input id="w-year-to" class="ctl" type="number" inputmode="numeric" placeholder="TO" min="1900" max="2100" value="' + esc(wfilter.yearTo || '') + '" style="width:72px" title="Year range end">' +
               '<select id="w-group" class="ctl"><option value="">ANY GROUP</option>' +
                 Object.keys(WS.names).map(function (j) {
                     return '<option value="' + esc(j) + '"' + (wfilter.group === j ? ' selected' : '') + '>' + esc((WS.names[j] || '').toUpperCase()) + '</option>';
@@ -4283,14 +4287,22 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (el) el.addEventListener('change', function () { wfilter[pair[1]] = this.value; paintWholesale(); });
         });
         // The window is applied by the database now, so changing it refetches.
-        var wy = document.getElementById('w-year');
-        if (wy) wy.addEventListener('change', function () {
-            var v = String(this.value || '').trim();
-            wfilter.year = /^(19|20)\d{2}$/.test(v) ? v : '';
-            view.innerHTML = '<p class="count">Loading ' + (wfilter.year ? 'every ' + esc(wfilter.year) + ' listing' : '') + '…</p>';
+        var yr = function (v) { v = String(v || '').trim(); return /^(19|20)\d{2}$/.test(v) ? v : ''; };
+        var onYear = function () {
+            var y = document.getElementById('w-year'), f = document.getElementById('w-year-from'), t = document.getElementById('w-year-to');
+            // An exact year and a range cannot both apply; whichever was just
+            // typed wins and the other clears.
+            if (this.id === 'w-year' && yr(y.value)) { f.value = ''; t.value = ''; }
+            else if (this.id !== 'w-year' && (yr(f.value) || yr(t.value))) { y.value = ''; }
+            wfilter.year = yr(y.value); wfilter.yearFrom = yr(f.value); wfilter.yearTo = yr(t.value);
+            view.innerHTML = '<p class="count">Loading…</p>';
             renderWholesale().catch(function (e) {
                 view.innerHTML = '<p class="err">Could not load: ' + esc(e.message || e) + '</p>';
             });
+        };
+        ['w-year', 'w-year-from', 'w-year-to'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.addEventListener('change', onYear);
         });
         var wd = document.getElementById('w-days');
         if (wd) wd.addEventListener('change', function () {
@@ -4314,7 +4326,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var self = this;
             self.disabled = true; self.textContent = 'Loading…';
             A.adminFetchTo('/api/leads-admin', 'wholesale',
-                { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', brand: wfilter.brand || '', offset: WS.listings.length })
+                { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', year_from: wfilter.yearFrom || '', year_to: wfilter.yearTo || '', brand: wfilter.brand || '', offset: WS.listings.length })
                 .then(function (r) {
                     var seen = {};
                     WS.listings.forEach(function (l) { seen[l.id] = 1; });

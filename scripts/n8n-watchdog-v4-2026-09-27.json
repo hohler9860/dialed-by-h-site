@@ -1,0 +1,935 @@
+{
+ "name": "Ops: Evolution watchdog v4 (no email)",
+ "nodes": [
+  {
+   "name": "Every 10 min",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 10
+      }
+     ]
+    }
+   },
+   "id": "357d197c-67b1-4f37-b141-ff1eaf7110d1"
+  },
+  {
+   "name": "Coolify status",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    220,
+    0
+   ],
+   "parameters": {
+    "url": "https://app.coolify.io/api/v1/services/k6x1gy4eqpxfxdf2xd9t6ru1",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "httpHeaderAuth"
+   },
+   "onError": "continueRegularOutput",
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "vQ8MJdPacyND0flQ",
+     "name": "Coolify API"
+    }
+   },
+   "id": "27cc3759-319c-4e1a-b333-c779ac2d387a"
+  },
+  {
+   "name": "State",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    440,
+    0
+   ],
+   "parameters": {
+    "url": "http://evo-k6x1gy4eqpxfxdf2xd9t6ru1.66.135.7.116.sslip.io/instance/connectionState/dialedbyh",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "httpHeaderAuth"
+   },
+   "onError": "continueRegularOutput",
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "VcTG5513qngKMPJg",
+     "name": "Evolution API (dialedbyh)"
+    }
+   },
+   "id": "8a1cae07-804d-484d-80a2-eaa4ff567ba8"
+  },
+  {
+   "name": "Newest in DB",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    660,
+    0
+   ],
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/messages?select=message_ts&order=message_ts.desc&limit=1",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      }
+     ]
+    }
+   },
+   "onError": "continueRegularOutput",
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   },
+   "id": "97ceeadb-8352-4f4d-ad03-1bef8889f347"
+  },
+  {
+   "name": "Last restart",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    880,
+    0
+   ],
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/ops_state?select=at&key=eq.evolution_last_restart",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      }
+     ]
+    }
+   },
+   "onError": "continueRegularOutput",
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   },
+   "id": "40ec0a3a-fccc-4bda-9ce2-cab65c9d0b56"
+  },
+  {
+   "name": "Container unhealthy?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    1100,
+    0
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ /unhealthy|exited|degraded/.test(String($('Coolify status').first().json.status || '')) }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "68138adb-b6ff-4589-b88d-efc8c9f9db5a"
+  },
+  {
+   "name": "Cooldown 30m ok?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    1320,
+    -160
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ (Date.now() - new Date($('Last restart').first().json.at || 0).getTime()) > 30*60*1000 }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "19f212d7-7cb8-4df8-8098-f44a01d194bb"
+  },
+  {
+   "name": "Session open?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    1320,
+    120
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ $('State').first().json.instance?.state === 'open' }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "c45ed1eb-5cda-4b08-a7c9-7c26f817f5ff"
+  },
+  {
+   "name": "Fresh?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    1540,
+    60
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ (Date.now() - new Date($('Newest in DB').first().json.message_ts || 0).getTime()) < 90*60*1000 }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "6a4ac302-3555-4950-a377-d233268ea0a8"
+  },
+  {
+   "id": "9cdf419a-99f7-4301-affc-3fa0bab95dd8",
+   "name": "Stale cooldown 60m ok?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1500,
+    600
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ (Date.now() - new Date($('Last restart').first().json.at || 0).getTime()) > 60*60*1000 }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "0cbd4de4-3338-4a58-9847-539ac7ab5a0c",
+   "name": "Escalate to container?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2,
+   "position": [
+    1750,
+    600
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ /instance/.test(String($('Last restart').first().json.note || '')) && (Date.now() - new Date($('Last restart').first().json.at || 0).getTime()) < 4*60*60*1000 }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "76492d5c-862b-4a2e-b167-55d86da34041",
+   "name": "Reconnect instance",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2000,
+    700
+   ],
+   "onError": "continueRegularOutput",
+   "parameters": {
+    "url": "http://evo-k6x1gy4eqpxfxdf2xd9t6ru1.66.135.7.116.sslip.io/instance/restart/dialedbyh",
+    "method": "POST",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "httpHeaderAuth"
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "VcTG5513qngKMPJg",
+     "name": "Evolution API (dialedbyh)"
+    }
+   }
+  },
+  {
+   "id": "5b82b496-c6bf-4c3e-84e6-0c768ba6f118",
+   "name": "Mark instance restart",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2250,
+    700
+   ],
+   "onError": "continueRegularOutput",
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/ops_state?key=eq.evolution_last_restart",
+    "method": "PATCH",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Prefer",
+       "value": "return=minimal"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ at: new Date().toISOString(), note: 'watchdog v4 instance reconnect: ' + String($('Coolify status').first().json.status || '?') + ' / session ' + String($('State').first().json.instance?.state || '?') + ' / newest msg ' + String($('Newest in DB').first().json.message_ts || '?') }) }}"
+   },
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   }
+  },
+  {
+   "id": "9dd6b086-584d-4826-9cef-d1653ebd4259",
+   "name": "Log: instance reconnect",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2500,
+    700
+   ],
+   "onError": "continueRegularOutput",
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/ops_events",
+    "method": "POST",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Prefer",
+       "value": "return=minimal"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ kind: 'watchdog', message: 'WhatsApp went quiet for 90+ min while the session said open. Reconnected the instance; messages should catch up within the hour. ' + String($('Coolify status').first().json.status || '?') + ' / session ' + String($('State').first().json.instance?.state || '?') + ' / newest msg ' + String($('Newest in DB').first().json.message_ts || '?') }) }}"
+   },
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   }
+  },
+  {
+   "name": "Restart Evolution",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2000,
+    400
+   ],
+   "parameters": {
+    "url": "https://app.coolify.io/api/v1/services/k6x1gy4eqpxfxdf2xd9t6ru1/restart",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "method": "POST",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "httpHeaderAuth"
+   },
+   "onError": "continueRegularOutput",
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "vQ8MJdPacyND0flQ",
+     "name": "Coolify API"
+    }
+   },
+   "id": "47aaeca0-a672-43cd-8e63-5f2f8b7c9ca1"
+  },
+  {
+   "id": "c9b340e6-f61e-46b7-a5df-bfb92b6b0512",
+   "name": "Mark container restart",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2250,
+    400
+   ],
+   "onError": "continueRegularOutput",
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/ops_state?key=eq.evolution_last_restart",
+    "method": "PATCH",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Prefer",
+       "value": "return=minimal"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ at: new Date().toISOString(), note: 'watchdog v4 container restart: ' + String($('Coolify status').first().json.status || '?') + ' / session ' + String($('State').first().json.instance?.state || '?') + ' / newest msg ' + String($('Newest in DB').first().json.message_ts || '?') }) }}"
+   },
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   }
+  },
+  {
+   "id": "29d7b168-c27b-46bd-bb6d-801e225d2e80",
+   "name": "Log: container restart",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2500,
+    400
+   ],
+   "onError": "continueRegularOutput",
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/ops_events",
+    "method": "POST",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Prefer",
+       "value": "return=minimal"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ kind: 'watchdog', message: 'Restarted the WhatsApp connector container (about 9 min of downtime). If this repeats, the box needs resizing. ' + String($('Coolify status').first().json.status || '?') + ' / session ' + String($('State').first().json.instance?.state || '?') + ' / newest msg ' + String($('Newest in DB').first().json.message_ts || '?') }) }}"
+   },
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   }
+  },
+  {
+   "name": "Once an hour?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    1500,
+    900
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "c1",
+       "leftValue": "={{ $now.minute < 10 }}",
+       "rightValue": true,
+       "operator": {
+        "type": "boolean",
+        "operation": "true",
+        "singleValue": true
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   },
+   "id": "9ebaf820-37fc-498e-b127-229a395f51b5"
+  },
+  {
+   "id": "dda2aad6-5def-4163-8442-8044cf8cba14",
+   "name": "Log: pipeline down",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1750,
+    900
+   ],
+   "onError": "continueRegularOutput",
+   "parameters": {
+    "url": "https://untnrofsnmoyxdidxbdj.supabase.co/rest/v1/ops_events",
+    "method": "POST",
+    "options": {
+     "timeout": 20000,
+     "response": {
+      "response": {
+       "neverError": true
+      }
+     }
+    },
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "supabaseApi",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Accept-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Content-Profile",
+       "value": "wholesale"
+      },
+      {
+       "name": "Prefer",
+       "value": "return=minimal"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ kind: 'watchdog', message: (/unhealthy|exited|degraded/.test(String($('Coolify status').first().json.status||'')) ? 'Connector still unhealthy after a restart. ' : 'WhatsApp session is NOT linked; pipeline stopped. Re-link from the phone. ') + String($('Coolify status').first().json.status || '?') + ' / session ' + String($('State').first().json.instance?.state || '?') + ' / newest msg ' + String($('Newest in DB').first().json.message_ts || '?') }) }}"
+   },
+   "credentials": {
+    "supabaseApi": {
+     "id": "bq6VNkYpQKJRUAL3",
+     "name": "Supabase account"
+    }
+   }
+  }
+ ],
+ "connections": {
+  "Every 10 min": {
+   "main": [
+    [
+     {
+      "node": "Coolify status",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Coolify status": {
+   "main": [
+    [
+     {
+      "node": "State",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "State": {
+   "main": [
+    [
+     {
+      "node": "Newest in DB",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Newest in DB": {
+   "main": [
+    [
+     {
+      "node": "Last restart",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Last restart": {
+   "main": [
+    [
+     {
+      "node": "Container unhealthy?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Container unhealthy?": {
+   "main": [
+    [
+     {
+      "node": "Cooldown 30m ok?",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Session open?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Cooldown 30m ok?": {
+   "main": [
+    [
+     {
+      "node": "Restart Evolution",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Once an hour?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Session open?": {
+   "main": [
+    [
+     {
+      "node": "Fresh?",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Once an hour?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Fresh?": {
+   "main": [
+    [],
+    [
+     {
+      "node": "Stale cooldown 60m ok?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Stale cooldown 60m ok?": {
+   "main": [
+    [
+     {
+      "node": "Escalate to container?",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    []
+   ]
+  },
+  "Escalate to container?": {
+   "main": [
+    [
+     {
+      "node": "Restart Evolution",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Reconnect instance",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Reconnect instance": {
+   "main": [
+    [
+     {
+      "node": "Mark instance restart",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark instance restart": {
+   "main": [
+    [
+     {
+      "node": "Log: instance reconnect",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Restart Evolution": {
+   "main": [
+    [
+     {
+      "node": "Mark container restart",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Mark container restart": {
+   "main": [
+    [
+     {
+      "node": "Log: container restart",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Once an hour?": {
+   "main": [
+    [
+     {
+      "node": "Log: pipeline down",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    []
+   ]
+  }
+ },
+ "settings": {
+  "callerPolicy": "workflowsFromSameOwner",
+  "availableInMCP": false,
+  "executionOrder": "v1",
+  "executionTimeout": 120,
+  "saveDataSuccessExecution": "all"
+ }
+}

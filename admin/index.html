@@ -829,6 +829,17 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         '</div>';
     }
 
+    view.addEventListener('click', async function (e) {
+        var b = e.target.closest('#ops-dismiss');
+        if (!b) return;
+        b.disabled = true;
+        try {
+            await A.adminFetchTo('/api/leads-admin', 'ops-events-seen');
+            if (TD.data) TD.data.opsEvents = [];
+            paintToday();
+        } catch (err) { alert(err.message); b.disabled = false; }
+    });
+
     function paintToday() {
         var d = TD.data || {}, c = d.counters || {};
         var q = d.needsReply || [], h = d.hunting || [];
@@ -884,7 +895,20 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '</p>';
         }
 
+        var ops = d.opsEvents || [];
+        var opsBanner = ops.length
+          ? '<div class="scard" style="border-color:#b3261e;margin-bottom:14px">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">' +
+                '<div class="count" style="margin:0;color:#b3261e">Pipeline watchdog · ' + ops.length + ' notice' + (ops.length === 1 ? '' : 's') + '</div>' +
+                '<button class="btn ghost" id="ops-dismiss" style="font-size:10px;padding:3px 8px">Dismiss</button>' +
+              '</div>' +
+              ops.map(function (e) {
+                return '<div style="margin-top:8px;font-size:13px;line-height:1.45"><span class="tsub">' + esc(fmtAgo(e.created_at)) + '</span> · ' + esc(e.message) + '</div>';
+              }).join('') +
+            '</div>'
+          : '';
         view.innerHTML =
+          opsBanner +
           summaryLine +
           '<div class="scard">' +
             '<div style="display:flex;gap:24px;flex-wrap:wrap">' +

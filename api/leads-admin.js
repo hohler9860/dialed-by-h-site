@@ -1456,7 +1456,7 @@ module.exports = async (req, res) => {
         // waiting to be sent, and what is still being hunted. Three questions
         // Henry was answering by eye across three different tabs.
         if (action === "today") {
-            const [queue, hunting, briefs, thread, summary] = await Promise.all([
+            const [queue, hunting, briefs, thread, summary, opsEvents] = await Promise.all([
                 supabase("waiting_on_henry?select=*&limit=60"),
                 supabase("hunting_board?select=*&limit=200"),
                 // Where each conversation stands, read by two models.
@@ -1468,6 +1468,10 @@ module.exports = async (req, res) => {
                 // The day in one paragraph, computed from the same rows below
                 // it so the two can never disagree.
                 supabase("rpc/day_summary", { method: "POST", body: "{}" }).catch(() => null),
+                // Watchdog notices (restarts, pipeline down). Shown as a banner
+                // on the landing tab instead of emailing Henry.
+                supabase("ops_events?select=*&seen_at=is.null&order=created_at.desc&limit=20",
+                    { headers: { "Accept-Profile": "wholesale" } }).catch(() => []),
             ]);
             const q = Array.isArray(queue) ? queue : [];
             const h = Array.isArray(hunting) ? hunting : [];
@@ -1482,6 +1486,7 @@ module.exports = async (req, res) => {
             return res.status(200).json({
                 needsReply: q, summary: summary || null,
                 hunting: h,
+                opsEvents: opsEvents || [],
                 counters: {
                     ballWithYou:  q.filter(r => r.ball === "BALL_WITH_YOU").length,
                     neverAnswered: q.filter(r => r.ball === "NEVER_ANSWERED").length,
@@ -1490,6 +1495,15 @@ module.exports = async (req, res) => {
                     tooVague:   h.filter(r => r.state === "TOO_VAGUE").length,
                 },
             });
+        }
+
+        if (action === "ops-events-seen") {
+            await supabase("ops_events?seen_at=is.null", {
+                method: "PATCH",
+                headers: { "Accept-Profile": "wholesale", "Content-Profile": "wholesale", Prefer: "return=minimal" },
+                body: JSON.stringify({ seen_at: new Date().toISOString() }),
+            });
+            return res.status(200).json({ ok: true });
         }
 
         if (action === "buyers") {

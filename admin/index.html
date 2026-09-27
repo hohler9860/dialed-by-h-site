@@ -3350,6 +3350,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             // user flipped open, so the auto-poll stands down there. Refresh is
             // one click away and switching back to table resumes it.
             if (wView === 'cards') return;
+            // A search result stays put. The poll fetches the plain feed, so
+            // it used to swap the search results for the newest feed rows a
+            // minute after every search. Enter or Refresh reruns the search.
+            if (WS.searched) return;
             // Respect an active empty-window fallback, or the poll would
             // overwrite the widened view with the same empty result.
             A.adminFetchTo('/api/leads-admin', 'wholesale',
@@ -3397,7 +3401,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // here would throw away exactly the older matches the search went
         // looking for. That is why searching appeared to return nothing.
         var cutoff = (days && !WS.searched) ? Date.now() - (+days * 864e5) : 0;
-        var needle = (q || '').toLowerCase();
+        // Every word has to appear, in any order, same as the server search.
+        var needles = (q || '').toLowerCase().split(/\s+/).filter(Boolean);
         return WS.listings.filter(function (l) {
             if (!matchWTile(l, tile)) return false;
             if (brand && (l.brand || '') !== brand) return false;
@@ -3406,10 +3411,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (wfilter.yearTo && !(Number(l.year) <= Number(wfilter.yearTo))) return false;
             if (group && l.group_jid !== group) return false;
             if (cutoff && new Date(l.message_ts).getTime() < cutoff) return false;
-            if (needle) {
+            if (needles.length) {
                 var hay = [l.brand, l.model, l.reference, l.nickname, l.seller_name, l.year,
                            l.dial_material, l.case_material, l.bracelet].filter(Boolean).join(' ').toLowerCase();
-                if (hay.indexOf(needle) < 0) return false;
+                for (var ni = 0; ni < needles.length; ni++) if (hay.indexOf(needles[ni]) < 0) return false;
             }
             return true;
         });
@@ -3557,7 +3562,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                   ' · listings with no year stated are not included. '
                 : WS.searched
                 ? 'Searching all ' + (WS.held || 0).toLocaleString() + ' listings for "' + esc(WS.searched) + '"' + (WS.yearFilter ? ' in ' + esc(WS.yearFilter) : '') + ' · ' +
-                  WS.listings.length + ' found' + (WS.capped ? ', showing the first batch' : '') + ' · press Enter to search again. '
+                  WS.listings.length.toLocaleString() + (WS.capped
+                      ? ' newest matches shown · <button class="btn ghost" id="w-more" style="vertical-align:baseline">Load more</button>'
+                      : ' found') + ' · press Enter to search again. '
                 : (WS.fallbackDays
                     ? '<span class="tag warm">No listings in the selected window</span> — nothing new has arrived recently, so showing the last ' +
                       WS.fallbackDays + ' days instead · '
@@ -3569,7 +3576,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               (WS.listings.length
                 ? 'Newest ' + esc(fmtAgo(WS.listings.reduce(function (a, b) {
                       return new Date(a.message_ts) > new Date(b.message_ts) ? a : b;
-                  }).message_ts)) + ' · refreshed ' + esc(fmtAgo(WS.loadedAt)) + ' · auto every 60s'
+                  }).message_ts)) + ' · refreshed ' + esc(fmtAgo(WS.loadedAt)) + (WS.searched ? '' : ' · auto every 60s')
                 : '') +
             '</p>' +
             '<p class="count">' + list.length + ' of ' + WS.listings.length + ' listing' + (WS.listings.length === 1 ? '' : 's') +
@@ -4350,7 +4357,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var self = this;
             self.disabled = true; self.textContent = 'Loading…';
             A.adminFetchTo('/api/leads-admin', 'wholesale',
-                { days: wfilter.days || 1, q: wq || '', year: wfilter.year || '', year_from: wfilter.yearFrom || '', year_to: wfilter.yearTo || '', brand: wfilter.brand || '', offset: WS.listings.length })
+                // Page the search that is on screen, not whatever has been
+                // typed into the box since (typing only filters locally).
+                { days: wfilter.days || 1, q: WS.searched || '', year: wfilter.year || '', year_from: wfilter.yearFrom || '', year_to: wfilter.yearTo || '', brand: wfilter.brand || '', offset: WS.listings.length })
                 .then(function (r) {
                     var seen = {};
                     WS.listings.forEach(function (l) { seen[l.id] = 1; });

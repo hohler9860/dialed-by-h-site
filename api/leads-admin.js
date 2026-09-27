@@ -501,12 +501,18 @@ module.exports = async (req, res) => {
             let listingFilter = yearFilter ? yearFilter + brandFilter : `&message_ts=gte.${since}` + brandFilter;
             if (term) {
                 // Searching means searching everything, not just the window.
-                const safe = term.replace(/[(),*]/g, " ").trim();
-                if (safe) {
-                    const like = `*${safe}*`;
-                    listingFilter = yearFilter + brandFilter +
-                        `&or=(brand.ilike.${like},model.ilike.${like},reference.ilike.${like},` +
-                        `nickname.ilike.${like},seller_name.ilike.${like})`;
+                // Every word must appear in some field, in any order. The
+                // whole term used to be matched as one phrase inside a single
+                // field, so "rolex daytona" or "patek 5711" found nothing:
+                // no brand or model reads "rolex daytona".
+                const words = term.replace(/[(),*"\\]/g, " ").split(/\s+/).filter(Boolean).slice(0, 6);
+                if (words.length) {
+                    const anyField = (w) => {
+                        const like = `*${encodeURIComponent(w)}*`;
+                        return `or(brand.ilike.${like},model.ilike.${like},reference.ilike.${like},` +
+                            `nickname.ilike.${like},seller_name.ilike.${like})`;
+                    };
+                    listingFilter = yearFilter + brandFilter + `&and=(${words.map(anyField).join(",")})`;
                 }
             }
 
@@ -529,12 +535,25 @@ module.exports = async (req, res) => {
             // matches ids on the plain listings table first (no join, 500
             // rows), then pulls those rows from the view by id, which is
             // indexed. ~1s instead of a server error.
+            //
+            // The photo rule has to apply inside the id query, not after it.
+            // Taking the newest 500 matches and then dropping the ones still
+            // waiting on a photo meant a photo backlog (an outage replay
+            // leaves 1,000+ waiting) threw away almost every match and never
+            // looked further back: "rolex" came back with 11 of 78,000. The
+            // join here is by primary key and stays well under a second,
+            // even 20,000 rows deep, so search pages like the feed does.
             const SEARCH_CAP = 500;
+            let searchFull = false;
             const searchListings = async () => {
-                const ids = await withRetry(() => qAll(
-                    "listings?select=id" + listingFilter + PARTS_EXCLUDE.replace(
-                        "&or=(image_path.not.is.null,media_type.is.null)", "") +
-                    "&order=message_ts.desc", {}, SEARCH_CAP, 0));
+                const ids = await withRetry(() => supabase(
+                    "listings?select=id,m:messages!listings_message_pk_fkey!inner(id)" +
+                    listingFilter + PARTS_EXCLUDE.replace(
+                        "&or=(image_path.not.is.null,media_type.is.null)",
+                        "&m.or=(image_path.not.is.null,media_type.is.null)") +
+                    "&order=message_ts.desc",
+                    { headers: { "Accept-Profile": "wholesale", Range: `${offset}-${offset + SEARCH_CAP - 1}`, "Range-Unit": "items" } }));
+                searchFull = ids.length >= SEARCH_CAP;
                 const rows = [];
                 for (let i = 0; i < ids.length; i += 200) {
                     const chunk = ids.slice(i, i + 200).map((r) => r.id).join(",");
@@ -556,11 +575,7 @@ module.exports = async (req, res) => {
                 term ? searchListings() : withRetry(() => qAll(
                     "listings_with_image?select=" + LISTING_COLS +
                     listingFilter + PARTS_EXCLUDE + "&order=message_ts.desc",
-                    // A search scans the whole table with five wildcard
-                    // matches; a second offset page repeats that scan and can
-                    // trip the database's statement timeout. One page is
-                    // plenty — the tab already says when results are capped.
-                    {}, term ? 1000 : LISTING_CAP, offset
+                    {}, LISTING_CAP, offset
                 )),
                 // Both stats tables grew past what one response can carry once
                 // the RWB groups joined (4.4k variants and climbing). The tab
@@ -677,7 +692,8 @@ module.exports = async (req, res) => {
             return res.status(200).json({
                 listings, stats, variants, alerts, groups, nameByJid,
                 listings_shown: listings.length,
-                listings_capped: listings.length >= LISTING_CAP,
+                // A full search page means there may be more behind it.
+                listings_capped: term ? searchFull : listings.length >= LISTING_CAP,
                 window_days: term ? null : days,
                 searched: term || null,
                 year_filter: yearLabel,

@@ -31,3 +31,18 @@ The context contains only selected labels from the anonymous public catalogue, t
 Open the workflow from Social > Queue or Connections & settings. Choose **Execute workflow** to prepare tomorrow early. Another run for an existing batch skips model calls. Change daily posting times in the website; already-created drafts retain their times. Pause publishing on the website to stop future sends; disabling n8n drafting stops new generation and does not remove existing approved posts.
 
 Validate with `npm run test:social` and `npm run build`. A live test must confirm the n8n execution, five imported drafts, intended dates/times, cost, and unchanged publisher pause/mode. Do not use a public post as a drafting test.
+
+### Henry's writing voice
+
+The shared `content-policy.js` brief applies to the n8n writer, independent reviewer,
+native generator and autonomous review. It uses spoken sentences, concrete watch
+situations and a clear verdict. It rejects formal concierge copy, forced slang,
+repeated hooks and five variations of one checklist. Short posts do not need padding.
+Em dashes remain blocked by the save, approval and publishing paths.
+
+Style was distilled from Henry's supplied AD example and saved transcripts of his
+public talking-head Reels (including DbgLFuzxbEy and DWmu62okYvE). Transcripts are
+style evidence only, not verification of names, specifications, history or prices.
+The brief's example posts are proposed copy, not Henry quotes or approved beliefs.
+No private transcript archive or unpublished draft history is sent to OpenRouter.
+Henry still reviews proposed opinions; first-person stories require confirmation.

@@ -170,12 +170,13 @@ input.ctl::placeholder { color: var(--l3); }
     display: block; font-family: var(--mono); font-size: 11px;
     text-transform: uppercase; letter-spacing: .06em; color: var(--l2); margin-bottom: 6px;
 }
-.field input, .field textarea {
+.field input, .field textarea, .field select {
     width: 100%; font-family: var(--mono); font-size: 13px; color: var(--l1);
     background: transparent; border: 0; border-bottom: 1px solid var(--line);
     padding: 8px 2px; outline: none;
 }
-.field input:focus, .field textarea:focus { border-bottom-color: var(--l1); }
+.field select { border-radius: 0; cursor: pointer; }
+.field input:focus, .field textarea:focus, .field select:focus { border-bottom-color: var(--l1); }
 .field.wide { grid-column: 1 / -1; }
 
 .imgs { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
@@ -490,6 +491,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .kpi .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--bkm); }
 .bk .kpi .v { margin-top: 8px; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
 .bk .kpi .v.pos { color: var(--g); } .bk .kpi .v.neg { color: var(--r); } .bk .kpi .v.flat { color: var(--bkt); }
+.bk .kpi .mix { margin-top: 6px; font-family: var(--mono); font-size: 10.5px; color: var(--bkm); }
 .bk .kpi .cmp { margin-top: 9px; display: flex; justify-content: center; gap: 0; font-family: var(--mono); font-size: 10.5px; color: var(--bkm2); }
 .bk .kpi .cmp span { padding: 0 9px; }
 .bk .kpi .cmp span + span { border-left: 1px solid var(--bkline); }
@@ -714,6 +716,19 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
     function bkMargin(d) {
         return d.sell_total ? bkProfit(d) / bkNum(d.sell_total) : null;
+    }
+    // Sourcing = Henry's money bought the watch. Consignment = a client's watch
+    // sold for a fee, with buy_total holding the payout to the consignor.
+    // Revenue counts both; margins are always reported per type, never blended,
+    // because a 0.4% consignment fee would drag a 5% trading margin down.
+    function bkIsCon(d) { return d.deal_type === 'Consignment'; }
+    function bkMix(sold) {
+        var m = { srev: 0, sgp: 0, scogs: 0, ssold: 0, crev: 0, cgp: 0, ccogs: 0, csold: 0 };
+        sold.forEach(function (d) {
+            var k = bkIsCon(d) ? 'c' : 's', r = bkNum(d.sell_total), c = bkNum(d.buy_total) + bkNum(d.other_costs);
+            m[k + 'rev'] += r; m[k + 'cogs'] += c; m[k + 'gp'] += r - c; m[k + 'sold'] += 1;
+        });
+        return m;
     }
     var BK_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -1001,7 +1016,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var prev = bkPrevRange();
         var cur = bkMetrics(function (d) { return d && d >= cut; });
         var pre = prev ? bkMetrics(function (d) { return d && d >= prev[0] && d < prev[1]; }) : null;
-        var kpi = function (label, val, fmtv, tone, sub) {
+        var kpi = function (label, val, fmtv, tone, sub, mix) {
             var cmp = '';
             if (pre) {
                 var pv = pre[val], cv = cur[val];
@@ -1014,7 +1029,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 cmp = '<div class="cmp"><span><b>' + esc(sub) + '</b>all time</span></div>';
             }
             return '<div class="kpi"><div class="k">' + label + '</div>' +
-                '<div class="v ' + tone + '">' + fmtv(cur[val]) + '</div>' + cmp + '</div>';
+                '<div class="v ' + tone + '">' + fmtv(cur[val]) + '</div>' +
+                (mix ? '<div class="mix">' + mix + '</div>' : '') + cmp + '</div>';
         };
         var money0 = function (v) { return bkMoney(v); };
 
@@ -1035,14 +1051,16 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
             '<div class="bk-sec">Overview</div>' +
             '<div class="bk-kpis">' +
-                kpi('Revenue', 'rev', money0, 'pos', cur.sold + ' piece' + (cur.sold === 1 ? '' : 's') + ' sold') +
-                kpi('Gross profit', 'gp', money0, cur.gp < 0 ? 'neg' : 'pos', cur.rev ? bkPct(cur.gp / cur.rev) + ' margin' : '—') +
+                kpi('Revenue', 'rev', money0, 'pos', cur.sold + ' piece' + (cur.sold === 1 ? '' : 's') + ' sold',
+                    bkCompact(cur.srev) + ' sourcing &middot; ' + bkCompact(cur.crev) + ' consignment') +
+                kpi('Sourcing profit', 'sgp', money0, cur.sgp < 0 ? 'neg' : 'pos', cur.ssold + ' sourced',
+                    cur.srev ? bkPct(cur.sgp / cur.srev) + ' margin on ' + bkMoney(cur.srev) : 'no sourcing sales') +
+                kpi('Consignment fees', 'cgp', money0, cur.cgp < 0 ? 'neg' : 'pos', cur.csold + ' consigned',
+                    cur.crev ? bkPct(cur.cgp / cur.crev) + ' of ' + bkMoney(cur.crev) + ' sold' : 'no consignment sales') +
                 kpi('Overhead', 'opex', money0, 'neg', 'non-watch spend') +
                 kpi('Net profit', 'net', money0, cur.net < 0 ? 'neg' : 'pos', cur.net < 0 ? 'overhead ahead of margin' : 'after overhead') +
                 '<div class="kpi"><div class="k">Cash on hand</div><div class="v ' + (BOOKS.cash < 0 ? 'neg' : 'flat') + '">' + bkMoney(BOOKS.cash) + '</div>' +
                     '<div class="cmp"><span><b>' + (held.length ? bkMoney(stock) : '—') + '</b>' + (held.length ? held.length + ' in stock at cost' : 'nothing in stock') + '</span></div></div>' +
-                '<div class="kpi"><div class="k">Median days to sell</div><div class="v flat">' + (avgDays == null ? '—' : avgDays) + '</div>' +
-                    '<div class="cmp"><span><b>' + (sold.length ? bkPct(gp / (rev || 1)) : '—') + '</b>blended margin</span></div></div>' +
             '</div>' +
 
             '<div class="bk-sec">Money</div>' +
@@ -1066,10 +1084,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<div class="bk-sec">Deals</div>' +
             '<div class="bk-g3">' +
                 '<div class="bk-card"><h3>Profit per deal</h3>' +
-                    '<p class="cap">Sold pieces only, label is margin on sale price</p>' +
+                    '<p class="cap">Sold pieces only. Pale bars are consignment fees, not trading margin</p>' +
                     '<div class="bk-plot" id="bk-deal"><div class="bk-tip" id="bk-deal-t"></div></div></div>' +
                 '<div class="bk-card"><h3>Days to sell</h3>' +
-                    '<p class="cap">Bought to sold, per piece</p>' +
+                    '<p class="cap">Bought (or taken in) to sold, per piece' + (avgDays == null ? '' : ' &middot; median ' + avgDays + 'd') + '</p>' +
                     '<div class="bk-plot" id="bk-days"></div></div>' +
                 '<div class="bk-card"><h3>Overhead by category</h3>' +
                     '<p class="cap">Where the non-watch money goes</p>' +
@@ -1195,7 +1213,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var cogs = sold.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
         var opex = BOOKS.expenses.filter(function (e) { return inR(e.spent_on); })
             .reduce(function (s, e) { return s + bkNum(e.amount); }, 0);
-        return { sold: sold.length, rev: rev, cogs: cogs, gp: rev - cogs, opex: opex, net: rev - cogs - opex };
+        return Object.assign(bkMix(sold),
+            { sold: sold.length, rev: rev, cogs: cogs, gp: rev - cogs, opex: opex, net: rev - cogs - opex });
     }
     function bkPrevRange() {
         var now = new Date();
@@ -1262,7 +1281,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         if (!host) return;
         if (!m.rev) { host.innerHTML = '<p class="bk-empty">No sales in this period</p>'; return; }
         var parts = [
-            ['Cost of watches', m.cogs, '#94a3b8'],
+            ['Cost of watches', m.scogs, '#94a3b8'],
+            ['Paid to consignors', m.ccogs, '#cbd5e1'],
             ['Overhead', Math.min(m.opex, Math.max(m.rev - m.cogs, 0)), 'var(--r)'],
             ['Net profit', Math.max(m.net, 0), 'var(--g)']
         ];
@@ -1284,14 +1304,15 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var by = {};
         BOOKS.deals.forEach(function (d) {
             if (d.sell_total == null || !inRange(d.date_sold)) return;
-            var m = d.date_sold.slice(0, 7); by[m] = by[m] || [0, 0, 0];
+            var m = d.date_sold.slice(0, 7); by[m] = by[m] || [0, 0, 0, 0, 0];
             by[m][0] += bkNum(d.sell_total); by[m][1] += bkProfit(d);
+            if (bkIsCon(d)) { by[m][3] += bkNum(d.sell_total); by[m][4] += bkProfit(d); }
         });
         BOOKS.expenses.forEach(function (e) {
             if (!inRange(e.spent_on)) return;
-            var m = e.spent_on.slice(0, 7); by[m] = by[m] || [0, 0, 0]; by[m][2] += bkNum(e.amount);
+            var m = e.spent_on.slice(0, 7); by[m] = by[m] || [0, 0, 0, 0, 0]; by[m][2] += bkNum(e.amount);
         });
-        var rows = Object.keys(by).sort().map(function (m) { return [m, by[m][0], by[m][1], by[m][2]]; });
+        var rows = Object.keys(by).sort().map(function (m) { return [m, by[m][0], by[m][1], by[m][2], by[m][3], by[m][4]]; });
         if (!rows.length) { host.innerHTML = '<p class="bk-empty">No movement in this period</p>'; host.appendChild(tip); return; }
         var W = 560, H = 210, padL = 46, padB = 26, padT = 8;
         var max = Math.max.apply(null, rows.map(function (r) { return Math.max(r[1], r[2], r[3]); })) || 1;
@@ -1321,8 +1342,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
             var r = rows[i];
             return '<b>' + BK_MON[+r[0].slice(5, 7) - 1] + ' ' + r[0].slice(0, 4) + '</b><br>Revenue ' + bkMoney(r[1]) +
-                '<br>Gross profit ' + bkMoney(r[2]) + '<br>Overhead ' + bkMoney(r[3]) + '<br>Net ' + bkMoney(r[2] - r[3]);
-        }, 170);
+                (r[4] ? '<br>&nbsp;incl. consignment ' + bkMoney(r[4]) : '') +
+                '<br>Sourcing profit ' + bkMoney(r[2] - r[5]) + (r[4] ? '<br>Consignment fees ' + bkMoney(r[5]) : '') +
+                '<br>Overhead ' + bkMoney(r[3]) + '<br>Net ' + bkMoney(r[2] - r[3]);
+        }, 190);
     }
 
     // ── days held per sold piece ──
@@ -1586,17 +1609,17 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var max = Math.max.apply(null, rows.map(function (d) { return Math.abs(bkProfit(d)); })) || 1;
         var out = '', hits = '';
         rows.forEach(function (d, i) {
-            var p = bkProfit(d), w = Math.max((Math.abs(p) / max) * barW, 2), y0 = i * rh + 6;
+            var p = bkProfit(d), w = Math.max((Math.abs(p) / max) * barW, 2), y0 = i * rh + 6, con = bkIsCon(d);
             var model = (d.brand ? d.brand + ' ' : '') + (d.model || d.ref);
             out += '<text class="bk-dlab" x="0" y="' + (y0 + 13) + '">' +
                         esc(model.length > 25 ? model.slice(0, 24) + '…' : model) + '</text>' +
                    '<text class="bk-dsub" x="0" y="' + (y0 + 27) + '">' + esc(d.reference || '') +
-                        ' &middot; ' + bkDays(d.date_bought, d.date_sold) + 'd held</text>' +
+                        ' &middot; ' + (con ? 'consignment' : bkDays(d.date_bought, d.date_sold) + 'd held') + '</text>' +
                    '<rect x="' + labW + '" y="' + (y0 + 7) + '" width="' + w + '" height="14" rx="4" fill="' +
-                        (p < 0 ? 'var(--bad)' : 'var(--ok)') + '"/>' +
+                        (p < 0 ? 'var(--bad)' : con ? 'rgba(22,163,74,.35)' : 'var(--ok)') + '"/>' +
                    '<text class="bk-dlab" x="' + (labW + w + 10) + '" y="' + (y0 + 18) + '">' + bkMoney(p, 2) + '</text>' +
                    '<text class="bk-dsub" x="' + (labW + w + 10) + '" y="' + (y0 + 31) + '">' +
-                        bkPct(bkMargin(d)) + ' margin</text>';
+                        bkPct(bkMargin(d)) + (con ? ' fee' : ' margin') + '</text>';
             hits += '<rect class="bk-hit" x="0" y="' + (i * rh) + '" width="' + W + '" height="' + rh + '" data-i="' + i + '"/>';
         });
         host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Profit per deal">' +
@@ -1604,12 +1627,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         host.appendChild(tip);
         bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
             var d = rows[i];
-            return '<b>' + esc(d.ref) + '</b><br>' +
-                'Bought ' + bkMoney(bkNum(d.buy_total), 2) +
+            return '<b>' + esc(d.ref) + (bkIsCon(d) ? ' &middot; consignment' : '') + '</b><br>' +
+                (bkIsCon(d) ? 'Paid consignor ' : 'Bought ') + bkMoney(bkNum(d.buy_total), 2) +
                     (bkNum(d.other_costs) ? ' &middot; costs ' + bkMoney(bkNum(d.other_costs), 2) : '') + '<br>' +
                 'Sold &nbsp;&nbsp;' + bkMoney(bkNum(d.sell_total), 2) +
                     (d.buyer ? ' to ' + esc(d.buyer) : '') + '<br>' +
-                'Profit ' + bkMoney(bkProfit(d), 2) + ' (' + bkPct(bkMargin(d)) + ')';
+                (bkIsCon(d) ? 'Fee ' : 'Profit ') + bkMoney(bkProfit(d), 2) + ' (' + bkPct(bkMargin(d)) + ')';
         }, 240);
     }
 
@@ -1676,6 +1699,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // The ledger itself, split out of Books so the dashboard stays a dashboard.
     // Shares the same fetched payload — switching tabs does not re-hit the API.
     var dealFilter = 'all';
+    var dealType = 'all';
     var dealQuery = '';
 
     async function renderDeals() {
@@ -1688,6 +1712,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var rows = BOOKS.deals.filter(function (d) {
             if (dealFilter === 'stock' && d.sell_total != null) return false;
             if (dealFilter === 'sold' && d.sell_total == null) return false;
+            if (dealType === 'src' && bkIsCon(d)) return false;
+            if (dealType === 'con' && !bkIsCon(d)) return false;
             if (!q) return true;
             return [d.ref, d.brand, d.model, d.reference, d.serial, d.buyer, d.source_seller, d.notes]
                 .join(' ').toLowerCase().indexOf(q) !== -1;
@@ -1696,8 +1722,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
 
         var sold = rows.filter(function (d) { return d.sell_total != null; });
-        var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
-        var gp = sold.reduce(function (s, d) { return s + bkProfit(d); }, 0);
+        var mx = bkMix(sold);
         var tied = rows.filter(function (d) { return d.sell_total == null; })
             .reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
 
@@ -1710,11 +1735,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     return '<button class="bk-seg" data-f="' + f + '" aria-pressed="' +
                         (dealFilter === f) + '">' + label + '</button>';
                 }).join('') +
+                ['all', 'src', 'con'].map(function (t) {
+                    var label = t === 'all' ? 'Every type' : t === 'src' ? 'Sourcing' : 'Consignment';
+                    return '<button class="bk-seg" data-t="' + t + '" aria-pressed="' +
+                        (dealType === t) + '">' + label + '</button>';
+                }).join('') +
                 '<button class="btn" id="deal-new">+ New Deal</button>' +
             '</div>' +
             '<p class="count">' + rows.length + ' deal' + (rows.length === 1 ? '' : 's') +
-                ' &middot; ' + sold.length + ' sold ' + bkMoney(rev) +
-                ' &middot; profit ' + bkMoney(gp, 2) +
+                (mx.ssold ? ' &middot; sourcing: ' + mx.ssold + ' sold ' + bkMoney(mx.srev) +
+                    ', profit ' + bkMoney(mx.sgp, 2) + ' (' + bkPct(mx.sgp / mx.srev) + ')' : '') +
+                (mx.csold ? ' &middot; consignment: ' + mx.csold + ' sold ' + bkMoney(mx.crev) +
+                    ', fees ' + bkMoney(mx.cgp, 2) + ' (' + bkPct(mx.cgp / mx.crev) + ')' : '') +
                 (tied ? ' &middot; ' + bkMoney(tied) + ' tied up in stock' : '') + '</p>' +
             '<div class="tbl-wrap"><table class="bk-tbl" id="bk-deals"></table></div>';
 
@@ -1728,7 +1760,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             try { next.setSelectionRange(pos, pos); } catch (e) {}
         });
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
-            b.addEventListener('click', function () { dealFilter = b.dataset.f; paintDeals(); });
+            b.addEventListener('click', function () {
+                if (b.dataset.t) dealType = b.dataset.t; else dealFilter = b.dataset.f;
+                paintDeals();
+            });
         });
         document.getElementById('deal-new').addEventListener('click', function () { editDeal(null); });
 
@@ -1736,9 +1771,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     function bkDealTable(rows) {
-        var head = ['Ref', 'Piece', 'Reference', 'Serial', 'Bought', 'Sold', 'Held',
+        var head = ['Ref', 'Type', 'Piece', 'Reference', 'Serial', 'Bought', 'Sold', 'Held',
                     'Cost', 'Sell', 'Profit', 'Margin', 'Buyer'];
-        var nums = { 7: 1, 8: 1, 9: 1, 10: 1 };
+        var nums = { 8: 1, 9: 1, 10: 1, 11: 1 };
         var dash = '<span class="bk-mute">—</span>';
         document.getElementById('bk-deals').innerHTML =
             '<thead><tr>' + head.map(function (h, i) {
@@ -1749,6 +1784,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 var ndocs = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; }).length;
                 return '<tr data-id="' + esc(d.id) + '"><td>' + esc(d.ref) +
                     (ndocs ? ' <span class="bk-mute" title="' + ndocs + ' attached">&#128206;' + ndocs + '</span>' : '') + '</td>' +
+                    '<td class="bk-mute">' + (bkIsCon(d) ? 'Consignment' : 'Sourcing') + '</td>' +
                     '<td class="nm">' + esc((d.brand ? d.brand + ' ' : '') + (d.model || '')) + '</td>' +
                     '<td class="bk-mute">' + esc(d.reference || '') + '</td>' +
                     '<td class="bk-mute">' + esc(d.serial || '') + '</td>' +
@@ -1785,7 +1821,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var val = v[f[0]] == null ? '' : v[f[0]];
             return '<div class="field ' + (f[2] || '') + '">' +
                 '<label for="f-' + f[0] + '">' + esc(f[1]) + '</label>' +
-                (f[3] === 'area'
+                (f[4]
+                    ? '<select id="f-' + f[0] + '">' + f[4].map(function (o) {
+                          return '<option' + (String(val) === o ? ' selected' : '') + '>' + esc(o) + '</option>';
+                      }).join('') + '</select>'
+                    : f[3] === 'area'
                     ? '<textarea id="f-' + f[0] + '" rows="3">' + esc(val) + '</textarea>'
                     : '<input id="f-' + f[0] + '" value="' + esc(val) + '"' +
                       (f[3] ? ' placeholder="' + esc(f[3]) + '"' : '') + '>') +
@@ -1800,6 +1840,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     var DEAL_FORM = [
         ['ref', 'Ref #', '', 'leave blank to auto-number'], ['status', 'Status', '', 'In Stock / Sold'],
+        ['deal_type', 'Type', '', '', ['Sourcing', 'Consignment']],
         ['brand', 'Brand'], ['model', 'Model'],
         ['reference', 'Reference'], ['serial', 'Serial'],
         ['year', 'Year'], ['condition', 'Condition'],
@@ -1816,7 +1857,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     function editDeal(d) {
         var isNew = !d;
-        var v = d || { status: 'In Stock', brand: 'Rolex', date_bought: bkToday(), other_costs: 0 };
+        var v = d || { status: 'In Stock', deal_type: 'Sourcing', brand: 'Rolex', date_bought: bkToday(), other_costs: 0 };
         // Booleans come back from Postgres as true/false; the form speaks Yes/No.
         var form = {};
         DEAL_FORM.forEach(function (f) {
@@ -1835,8 +1876,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '</div>' +
             '<h2>' + (isNew ? 'New Deal' : esc(v.ref)) + '</h2>' +
             '<p class="note">Profit and margin are worked out from these numbers, not typed in.' +
-                (isNew ? ' The ref number is minted when you save.' : '') + '</p>' +
+                (isNew ? ' The ref number is minted when you save.' : '') +
+                ' For a consignment: Source = the consignor, Buy total = what they get paid out, Other costs = wire fees and shipping you covered.</p>' +
             bkFields(DEAL_FORM, form) +
+            (isNew ? '' : bkDealInvoices(v)) +
             (isNew
                 ? '<p class="note" style="margin-top:24px">Save the deal first, then contracts and invoices can be attached here.</p>'
                 : '<div id="deal-docs" style="margin-top:28px"></div>') +
@@ -1857,6 +1900,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }
             document.getElementById('f-sell_total').focus();
         });
+    }
+
+    // Invoices from the Invoices tab whose "Linked deal ref" is this deal.
+    function bkDealInvoices(d) {
+        var inv = (BOOKS.invoices || []).filter(function (x) { return x.deal_ref && x.deal_ref === d.ref; });
+        if (!inv.length) return '';
+        return '<div style="margin-top:24px"><h3 style="font-size:13px;margin:0 0 8px">Invoices</h3>' +
+            inv.map(function (x) {
+                return '<p class="note" style="margin:4px 0">' + esc(x.number) + ' &middot; ' + esc(x.issued_on || '') +
+                    ' &middot; ' + esc([x.client_name, x.company_name].filter(Boolean).join(', ')) +
+                    ' &middot; ' + bkMoney(bkNum(x.total), 2) + (x.status ? ' &middot; ' + esc(x.status) : '') + '</p>';
+            }).join('') + '</div>';
     }
 
     // ── deal attachments: contracts, invoices ───────────────────
@@ -2126,6 +2181,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // Median, not mean: one piece that sat for months would otherwise
         // swamp five that flipped in a week.
         var avgDays = bkMedianDays(sold);
+        var mx = bkMix(sold);
         var liveSubs = B.subscriptions.filter(function (x) { return x.status !== 'Cancel'; });
         var burn = liveSubs.reduce(function (s, x) { return s + n(x.monthly_cost); }, 0);
         var capIn = (B.capital || []).reduce(function (s, c) { return s + (String(c.direction).toLowerCase() === 'in' ? n(c.amount) : -n(c.amount)); }, 0);
@@ -2141,8 +2197,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             [{ v: 'Financial summary  ·  ' + label + '  ·  prepared ' + today, s: BK_XS.sub }],
             blank,
             [{ v: 'At a glance', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }],
-            [{ v: 'Revenue', s: BK_XS.label }, big(rev), { v: sold.length + ' piece' + (sold.length === 1 ? '' : 's') + ' sold', s: BK_XS.sub }],
-            [{ v: 'Gross profit', s: BK_XS.label }, big(gp), { v: rev ? (gp / rev * 100).toFixed(1) + '% blended margin' : '', s: BK_XS.sub }],
+            [{ v: 'Revenue', s: BK_XS.label }, big(rev), { v: sold.length + ' piece' + (sold.length === 1 ? '' : 's') + ' sold (sourcing ' + bkMoney(mx.srev) + ', consignment ' + bkMoney(mx.crev) + ')', s: BK_XS.sub }],
+            [{ v: 'Sourcing profit', s: BK_XS.label }, big(mx.sgp), { v: mx.srev ? (mx.sgp / mx.srev * 100).toFixed(1) + '% margin on sourcing sales' : '', s: BK_XS.sub }],
+            [{ v: 'Consignment fees', s: BK_XS.label }, big(mx.cgp), { v: mx.crev ? (mx.cgp / mx.crev * 100).toFixed(1) + '% of consignment sales' : '', s: BK_XS.sub }],
             [{ v: 'Overhead', s: BK_XS.label }, big(opex), { v: 'operating expenses, not watches', s: BK_XS.sub }],
             [{ v: 'Net profit', s: BK_XS.label }, big(net), { v: net < 0 ? 'overhead ahead of margin' : 'after overhead', s: BK_XS.sub }],
             [{ v: 'Cash on hand', s: BK_XS.label }, big(n(B.cash)), { v: 'bank balance today, all time', s: BK_XS.sub }],
@@ -2152,9 +2209,13 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             [{ v: 'Median days to sell', s: BK_XS.label }, { v: avgDays == null ? '—' : avgDays, s: Object.assign({}, BK_XS.big, { numFmt: '0' }) }, { v: 'bought to sold', s: BK_XS.sub }],
             blank,
             [{ v: 'Profit & loss', s: BK_XS.section }, { v: '', s: BK_XS.section }, { v: '', s: BK_XS.section }],
-            [T('Watch sales'), M(rev)],
-            [T('Cost of watches sold'), M(-cogs)],
-            [TOT('Gross profit'), TOT(gp, 'money'), TOT(rev ? gp / rev : null, 'pct')],
+            [T('Sourcing sales'), M(mx.srev)],
+            [T('Cost of watches sold'), M(-mx.scogs)],
+            [TOT('Sourcing profit'), TOT(mx.sgp, 'money'), TOT(mx.srev ? mx.sgp / mx.srev : null, 'pct')],
+            [T('Consignment sales'), M(mx.crev)],
+            [T('Paid out to consignors'), M(-mx.ccogs)],
+            [TOT('Consignment fees'), TOT(mx.cgp, 'money'), TOT(mx.crev ? mx.cgp / mx.crev : null, 'pct')],
+            [TOT('Gross profit'), TOT(gp, 'money'), TOT('')],
         ];
         cats.forEach(function (c) { S.push([T('  ' + c), M(-byCat[c])]); });
         S.push([TOT('Total overhead'), TOT(-opex, 'money'), TOT(rev ? opex / rev : null, 'pct')]);
@@ -2164,50 +2225,56 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var months = {};
         var mk = function (d) { return String(d).slice(0, 7); };
         sold.forEach(function (d) {
-            var m = mk(d.date_sold); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0 };
+            var m = mk(d.date_sold); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0, sr: 0, sg: 0, cg: 0 };
             months[m].r += n(d.sell_total); months[m].c += n(d.buy_total) + n(d.other_costs); months[m].k++;
+            if (bkIsCon(d)) months[m].cg += bkProfit(d);
+            else { months[m].sr += n(d.sell_total); months[m].sg += bkProfit(d); }
         });
         exp.forEach(function (e) {
-            var m = mk(e.spent_on); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0 };
+            var m = mk(e.spent_on); months[m] = months[m] || { r: 0, c: 0, o: 0, k: 0, sr: 0, sg: 0, cg: 0 };
             months[m].o += n(e.amount);
         });
         var PL = [
             [{ v: 'Profit & loss by month', s: BK_XS.title }],
             [{ v: label + '  ·  watches sold by sale date, overhead by spend date', s: BK_XS.sub }],
             blank,
-            [H('Month'), H('Pieces', true), H('Revenue', true), H('Cost of goods', true), H('Gross profit', true), H('Margin', true), H('Overhead', true), H('Net profit', true)]
+            [H('Month'), H('Pieces', true), H('Revenue', true), H('Cost of goods', true), H('Sourcing profit', true), H('Sourcing margin', true), H('Consignment fees', true), H('Overhead', true), H('Net profit', true)]
         ];
-        var acc = { r: 0, c: 0, o: 0, k: 0 };
+        var acc = { r: 0, c: 0, o: 0, k: 0, sr: 0, sg: 0, cg: 0 };
         Object.keys(months).sort().forEach(function (m) {
             var x = months[m], g = x.r - x.c;
-            acc.r += x.r; acc.c += x.c; acc.o += x.o; acc.k += x.k;
-            PL.push([T(BK_MON[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4)), T(x.k), M(x.r), M(x.c), M(g), P(x.r ? g / x.r : null), M(x.o), M(g - x.o)]);
+            ['r', 'c', 'o', 'k', 'sr', 'sg', 'cg'].forEach(function (f) { acc[f] += x[f] || 0; });
+            PL.push([T(BK_MON[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4)), T(x.k), M(x.r), M(x.c), M(x.sg), P(x.sr ? x.sg / x.sr : null), M(x.cg), M(x.o), M(g - x.o)]);
         });
-        PL.push([TOT('Total'), TOT(acc.k), TOT(acc.r, 'money'), TOT(acc.c, 'money'), TOT(acc.r - acc.c, 'money'), TOT(acc.r ? (acc.r - acc.c) / acc.r : null, 'pct'), TOT(acc.o, 'money'), TOT(acc.r - acc.c - acc.o, 'money')]);
+        PL.push([TOT('Total'), TOT(acc.k), TOT(acc.r, 'money'), TOT(acc.c, 'money'), TOT(acc.sg, 'money'), TOT(acc.sr ? acc.sg / acc.sr : null, 'pct'), TOT(acc.cg, 'money'), TOT(acc.o, 'money'), TOT(acc.r - acc.c - acc.o, 'money')]);
 
         // ── Deals ──
         var D = [
             [{ v: 'Deals', s: BK_XS.title }],
-            [{ v: 'Every piece bought, newest first. Profit = sale price − purchase price − other costs.', s: BK_XS.sub }],
+            [{ v: 'Every piece, newest first. Profit = sale price − purchase price − other costs. On a consignment the purchase price is the payout to the consignor, so profit is the fee.', s: BK_XS.sub }],
             blank,
-            [H('Ref'), H('Status'), H('Watch'), H('Reference'), H('Serial'), H('Year'), H('Set'), H('Bought'), H('Sold'), H('Days', true),
+            [H('Ref'), H('Status'), H('Type'), H('Watch'), H('Reference'), H('Serial'), H('Year'), H('Set'), H('Bought'), H('Sold'), H('Days', true),
              H('Purchase', true), H('Other costs', true), H('Sale', true), H('Profit', true), H('Margin', true), H('Bought from'), H('Sold to'), H('Notes')]
         ];
         deals.sort(function (a, b) { return (a.date_bought || a.date_sold || '') < (b.date_bought || b.date_sold || '') ? 1 : -1; })
             .forEach(function (d) {
                 var p = bkProfit(d);
                 var set = d.box && d.papers ? 'Full set' : d.box ? 'Box only' : d.papers ? 'Papers only' : (d.box === false && d.papers === false ? 'Watch only' : '');
-                D.push([T(d.ref), T(d.sell_total == null ? 'In stock' : 'Sold'), T([d.brand, d.model].filter(Boolean).join(' ')), T(d.reference), T(d.serial), T(d.year), T(set),
+                D.push([T(d.ref), T(d.sell_total == null ? 'In stock' : 'Sold'), T(bkIsCon(d) ? 'Consignment' : 'Sourcing'), T([d.brand, d.model].filter(Boolean).join(' ')), T(d.reference), T(d.serial), T(d.year), T(set),
                     T(d.date_bought), T(d.date_sold), T(d.date_sold && d.date_bought ? bkDays(d.date_bought, d.date_sold) : ''),
                     M(d.buy_total), M(d.other_costs), d.sell_total == null ? T('') : M(d.sell_total), p == null ? T('') : M(p), P(bkMargin(d)),
                     T(d.source_seller), T(d.buyer), T(d.notes)]);
             });
-        var sAll = deals.filter(function (d) { return d.sell_total != null; });
-        var sr = sAll.reduce(function (s, d) { return s + n(d.sell_total); }, 0);
-        var sp = sAll.reduce(function (s, d) { return s + bkProfit(d); }, 0);
-        D.push([TOT('Sold, all time'), TOT(sAll.length + ' pieces'), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''),
-            TOT(sAll.reduce(function (s, d) { return s + n(d.buy_total); }, 0), 'money'), TOT(sAll.reduce(function (s, d) { return s + n(d.other_costs); }, 0), 'money'),
-            TOT(sr, 'money'), TOT(sp, 'money'), TOT(sr ? sp / sr : null, 'pct'), TOT(''), TOT(''), TOT('')]);
+        // One total row per type: a blended margin across both would be meaningless.
+        [['Sourcing', false], ['Consignment', true]].forEach(function (tp) {
+            var sAll = deals.filter(function (d) { return d.sell_total != null && bkIsCon(d) === tp[1]; });
+            if (!sAll.length) return;
+            var sr = sAll.reduce(function (s, d) { return s + n(d.sell_total); }, 0);
+            var sp = sAll.reduce(function (s, d) { return s + bkProfit(d); }, 0);
+            D.push([TOT(tp[0] + ', sold all time'), TOT(sAll.length + ' pieces'), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''), TOT(''),
+                TOT(sAll.reduce(function (s, d) { return s + n(d.buy_total); }, 0), 'money'), TOT(sAll.reduce(function (s, d) { return s + n(d.other_costs); }, 0), 'money'),
+                TOT(sr, 'money'), TOT(sp, 'money'), TOT(sr ? sp / sr : null, 'pct'), TOT(''), TOT(''), TOT('')]);
+        });
 
         // ── Expenses ──
         var E = [
@@ -2319,8 +2386,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             XLSX.utils.book_append_sheet(wb, ws, name);
         };
         add('Summary', S, [30, 18, 34]);
-        add('P&L by month', PL, [14, 8, 14, 14, 14, 9, 14, 14], 3);
-        add('Deals', D, [13, 9, 32, 12, 11, 6, 10, 11, 11, 6, 13, 12, 13, 13, 8, 26, 26, 50], 3);
+        add('P&L by month', PL, [14, 8, 14, 14, 15, 10, 15, 14, 14], 3);
+        add('Deals', D, [13, 9, 12, 32, 12, 11, 6, 10, 11, 11, 6, 13, 12, 13, 13, 8, 26, 26, 50], 3);
         add('Overhead', E, [14, 24, 48, 22, 13, 11, 13, 10, 40]);
         add('Bank', K, [12, 8, 52, 24, 13, 13, 14], 3);
         add('Subscriptions', U, [24, 26, 12, 10, 12, 10, 36], 3);

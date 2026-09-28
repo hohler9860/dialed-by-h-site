@@ -152,6 +152,7 @@ const DEAL_FIELDS = {
     date_bought: "date", date_sold: "date", source_seller: "text", buyer: "text",
     buy_total: "num", other_costs: "num", sell_total: "num",
     payment_in: "text", payment_out: "text", docs: "bool", notes: "text",
+    deal_type: "text",
 };
 const EXPENSE_FIELDS = {
     spent_on: "date", category: "text", description: "text", vendor: "text",
@@ -743,13 +744,15 @@ module.exports = async (req, res) => {
             // These are the money tiles. A limit above 1000 is a lie -- PostgREST
             // caps the response there and says nothing -- so a growing bank
             // register would have started quietly understating cash and profit.
-            const [deals, expenses, subscriptions, capital, bank, docs] = await Promise.all([
+            const [deals, expenses, subscriptions, capital, bank, docs, invoices] = await Promise.all([
                 supabaseAll("dbh_deals?select=*&order=date_bought.asc"),
                 supabaseAll("dbh_expenses?select=*&order=spent_on.asc"),
                 supabaseAll("dbh_subscriptions?select=*&order=monthly_cost.desc"),
                 supabaseAll("dbh_capital?select=*&order=moved_on.asc"),
                 supabaseAll("dbh_bank_txns?select=*&order=posted_on.asc"),
                 supabaseAll("dbh_deal_docs?select=*&order=uploaded_at.desc"),
+                // Just enough to show "Invoice INV00010" on the deal it belongs to.
+                supabaseAll("dbh_invoices?select=id,number,issued_on,client_name,company_name,total,status,deal_ref&deal_ref=not.is.null"),
             ]);
 
             // Cash is a whole-account fact, not a period one: it is every row the
@@ -760,7 +763,7 @@ module.exports = async (req, res) => {
             );
 
             return res.status(200).json({
-                deals, expenses, subscriptions, capital, bank, docs,
+                deals, expenses, subscriptions, capital, bank, docs, invoices,
                 cash: Math.round(cash * 100) / 100,
             });
         }
@@ -788,6 +791,15 @@ module.exports = async (req, res) => {
                 row.ref = prefix + String(next).padStart(3, "0");
             }
             if (!row.ref) return res.status(400).json({ error: "Ref is required" });
+            // Only two kinds. Anything typed that starts with "c" is a
+            // consignment; a blank on an edit leaves the stored type alone.
+            if (row.deal_type != null) {
+                row.deal_type = /^\s*c/i.test(row.deal_type) ? "Consignment" : "Sourcing";
+            } else if (body.id) {
+                delete row.deal_type;
+            } else {
+                row.deal_type = "Sourcing";
+            }
             if (row.sell_total != null && !row.date_sold) {
                 return res.status(400).json({ error: "A sold piece needs a sold date" });
             }

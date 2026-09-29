@@ -406,119 +406,171 @@ table.bk-tbl th.n, table.bk-tbl td.n { text-align: right; padding-right: 14px; }
 table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-mute { color: var(--l3); }
 
-/* Books on white. Cards are frosted glass: translucent white over a faint
-   tinted wash, hairline border, soft lift, and a 1px inner highlight so the
-   edge reads as glass rather than a flat rule. Green = money in / profit,
-   red = money out / loss, nothing else carries colour. */
+/* Books, in the console's own language: cream ground, hairline squares, mono
+   chrome, black for whatever is active. Laid out as a numbered index rail and a
+   four-column panel grid. Green = profit or money in, red = loss or money out,
+   amber = a deadline getting close. Consignment is the hatched fill, never a
+   new colour. */
 .bk {
-    --bkbg: #ffffff; --bkcard: rgba(255,255,255,.72); --bkline: rgba(15,23,42,.08); --bkt: #0f172a; --bkm: #64748b; --bkm2: #94a3b8;
-    --g: #16a34a; --r: #dc2626;
-    --s1: var(--g); --s2: var(--r); --ok: var(--g); --bad: var(--r);
-    --line: var(--bkline); --l1: var(--bkt); --l2: var(--bkm); --l3: var(--bkm2); --b1: #ffffff;
-    --glass: 0 1px 2px rgba(15,23,42,.04), 0 10px 30px -12px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.9);
-    position: relative; color: var(--bkt); padding: 18px; border-radius: 16px; background: var(--bkbg);
-    background-image:
-        radial-gradient(900px 420px at 8% -10%, rgba(34,197,94,.07), transparent 60%),
-        radial-gradient(800px 420px at 100% 0%, rgba(239,68,68,.06), transparent 60%);
+    --ok: #1a7f37; --warn: #d97706; --bad: #c02626; --out: rgba(var(--label-d),.22);
+    --hatch: repeating-linear-gradient(45deg, var(--be), var(--be) 2px, rgba(54,54,48,.55) 2px, rgba(54,54,48,.55) 3px);
 }
-.bk .bk-filters { border-color: var(--bkline); padding: 8px 0 12px; border-top: 0; }
-.bk .bk-seg { color: var(--bkm); }
-.bk .bk-seg:hover { color: var(--bkt); }
-.bk .bk-seg[aria-pressed="true"] { background: var(--bkt); color: #fff; border-radius: 6px; }
-.bk .btn { border-color: var(--bkline); color: var(--bkt); background: rgba(255,255,255,.7); border-radius: 8px; box-shadow: var(--glass); }
-.bk .btn:not(.ghost) { background: var(--bkt); color: #fff; border-color: var(--bkt); }
-.bk .btn:hover { border-color: var(--bkm2); }
-.bk .bk-card {
-    background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 14px; padding: 16px 16px 12px;
-    box-shadow: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
-}
-.bk .bk-card h3 { font-size: 13px; letter-spacing: .02em; color: var(--bkt); }
-.bk .bk-card .cap { color: var(--bkm2); margin-top: 3px; }
-.bk .bk-cat-row { padding: 6px 2px; border-color: var(--bkline); font-size: 12.5px; }
-.bk .bk-cat-row.on { background: var(--bkt); color: #fff; border-radius: 6px; }
-.bk .bk-cat-row .bk-cat-c { color: var(--bkm2); }
-.bk .bk-cat-v.in { color: var(--g); }
-.bk .bk-cat-v.out { color: var(--r); }
+.bk .bk-filters .sp { flex: 1; }
+.bk .btn.sm { font-size: 11px; padding: 6px 10px; }
+.bk-say { margin: 20px 0 22px; max-width: 760px; font-size: 16px; line-height: 1.55; }
+.bk-say b { font-weight: 700; }
+.bk-say .bad { color: var(--bad); }
+
+.bk-shell { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 24px; align-items: start; }
+.bk-rail { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.bk-idx { display: flex; flex-direction: column; gap: 2px; font-family: var(--mono); font-size: 13px; text-transform: uppercase; }
+.bk-idx button { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: none; border: 0; font: inherit; color: var(--l1); cursor: pointer; text-align: left; }
+.bk-idx button:hover { background: rgba(var(--label-d),.05); }
+.bk-idx button .no { color: var(--l3); font-size: 11px; }
+.bk-idx button .n { margin-left: auto; font-size: 11px; color: var(--l2); }
+.bk-idx button[aria-current="true"] { background: #000; color: var(--b1); }
+.bk-idx button[aria-current="true"] .no, .bk-idx button[aria-current="true"] .n { color: rgba(var(--bg-deep),.55); }
+.bk-cashbox { border: 1px solid var(--line); padding: 14px; }
+.bk-cashbox .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); }
+.bk-cashbox .v { font-family: var(--mono); font-size: 26px; line-height: 1.1; margin: 6px 0 10px; }
+.bk-cashbox .r { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--l2); }
+.bk-cashbox .r b { font-weight: 400; color: var(--l1); text-align: right; }
+.bk-cashbox .r.soon, .bk-cashbox .r.soon b { color: var(--bad); }
+.bk-cashbox .r.near, .bk-cashbox .r.near b { color: var(--warn); }
+
+.bk-g4 { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bk-s2 { grid-column: span 2; } .bk-s3 { grid-column: span 3; } .bk-s4 { grid-column: 1 / -1; }
+.bk-pnl { border: 1px solid var(--line); padding: 16px; min-width: 0; }
+.bk-anc { scroll-margin-top: 96px; }
+.bk-ph { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.bk-ph .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--l2); }
+.bk-ph .d { font-family: var(--mono); font-size: 10.5px; color: var(--l3); margin-top: 4px; }
+.bk-ph .big { font-family: var(--mono); font-size: 26px; line-height: 1; text-align: right; }
+
+.bk-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.bk-cell { padding: 2px 16px; border-left: 1px solid var(--line); min-width: 0; }
+.bk-cell:first-child { border-left: 0; padding-left: 0; }
+.bk-cell .count { font-size: 11px; letter-spacing: .1em; margin: 0; }
+.bk-cell .v { display: block; font-weight: 700; font-size: 28px; letter-spacing: -.02em; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.bk-cell .v.ok { color: var(--ok); } .bk-cell .v.bad { color: var(--bad); }
+.bk-cell .m { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 9px; }
+.bk-cell .m .tsub { margin: 0; }
+.bk .tag.blk { background: #000; color: var(--b1); border-color: #000; }
+.bk .tag.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+.bk .tag.bad { background: var(--bad); color: #fff; border-color: var(--bad); }
+.bk .tag.con { border-style: dashed; border-color: var(--l2); color: var(--l2); }
+
+.bk .bk-plot { margin-top: 0; position: relative; }
+.bk .bk-plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bk .bk-tick { font: 9.5px var(--mono); letter-spacing: .08em; fill: var(--l2); }
+.bk .bk-plab { font: 10px var(--mono); fill: var(--ok); }
+.bk .bk-gl { stroke: rgba(var(--label-d),.28); stroke-dasharray: 1.5 4; }
+.bk .bk-base { stroke: var(--l1); stroke-width: 1; }
+.bk .bk-hit { fill: transparent; cursor: default; }
+.bk .bk-hit:hover { fill: rgba(var(--label-d),.04); }
+.bk .bk-tip { background: var(--b1); color: var(--l1); border: 1px solid var(--l1); padding: 9px 11px; min-width: 190px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; white-space: normal; }
+.bk .bk-tip b { display: block; font-weight: 400; margin-bottom: 5px; }
+.bk .bk-tip div { display: flex; justify-content: space-between; gap: 14px; color: var(--l2); padding: 1px 0; }
+.bk .bk-tip div span:last-child { color: var(--l1); }
+.bk-lg { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--l2); }
+.bk-lg i { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--l1); }
+.bk-lg i.src { background: #000; }
+.bk-lg i.con { background: var(--hatch); }
+.bk-lg i.out { background: var(--out); border-color: transparent; }
+.bk-lg .ok { color: var(--ok); }
+
+.bk-mt-row + .bk-mt-row { margin-top: 18px; }
+.bk-mt-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.bk-mt-top .count { font-size: 11px; letter-spacing: .1em; color: var(--l1); margin: 0; }
+.bk-mt-top .p { font-family: var(--mono); font-size: 26px; line-height: 1; }
+.bk-meter { height: 10px; border: 1px solid var(--l1); margin-top: 10px; }
+.bk-meter i { display: block; height: 100%; }
+.bk-mt-foot { display: flex; justify-content: space-between; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
+.bk-mt-foot .count { font-size: 11px; margin: 0; }
+.bk-mt-foot b { font-family: var(--mono); font-weight: 400; font-size: 13px; }
+
+.bk-rank { display: flex; flex-direction: column; }
+.bk-rank .r { display: grid; grid-template-columns: 26px minmax(0, 1fr) 92px; gap: 4px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.bk-rank .r:first-child { padding-top: 0; }
+.bk-rank .r:last-child { border-bottom: 0; padding-bottom: 0; }
+.bk-rank .r[data-cat] { cursor: pointer; }
+.bk-rank .r[data-cat]:hover .t { text-decoration: underline; text-underline-offset: 3px; }
+.bk-rank .no { font: 11px var(--mono); color: var(--l3); }
+.bk-rank .nm { min-width: 0; }
+.bk-rank .t { font-weight: 700; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-rank .s { display: flex; gap: 6px; align-items: center; margin-top: 4px; font: 10.5px var(--mono); text-transform: uppercase; color: var(--l2); white-space: nowrap; overflow: hidden; }
+.bk-rank .val { text-align: right; font-family: var(--mono); font-size: 14px; }
+.bk-rank .val small { display: block; font-size: 10px; color: var(--l2); margin-top: 3px; text-transform: uppercase; }
+.bk-rank .bar { grid-column: 2 / 4; height: 4px; background: rgba(var(--label-d),.07); }
+.bk-rank .bar i { display: block; height: 100%; }
+.bk-rank.tight .r { grid-template-columns: 26px minmax(0, 1fr) 62px; }
+.bk-rank.tight .t { font-size: 13px; }
+
+.bk-qa { display: flex; flex-direction: column; gap: 8px; }
+.bk-qa button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border: 1px solid var(--line); background: transparent; cursor: pointer; text-align: left; font: inherit; color: var(--l1); }
+.bk-qa button:hover { border-color: var(--l1); }
+.bk-qa .ic { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--l1); font: 14px var(--mono); }
+.bk-qa .t { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.bk-qa .d { font-size: 12.5px; color: var(--l2); margin-top: 3px; }
+.bk-qa .go { margin-left: auto; font: 13px var(--mono); color: var(--l3); }
+.bk-qa button.near, .bk-qa button.near .ic { border-color: var(--warn); }
+.bk-qa button.near .ic, .bk-qa button.near .t { color: var(--warn); }
+.bk-qa button.soon, .bk-qa button.soon .ic { border-color: var(--bad); }
+.bk-qa button.soon .ic, .bk-qa button.soon .t { color: var(--bad); }
+
+.bk .bk-cat-row { padding: 7px 2px; font-size: 13px; }
+.bk .bk-cat-row.on { background: #000; color: var(--b1); }
+.bk .bk-cat-v.in { color: var(--ok); }
+.bk .bk-cat-v.out { color: var(--bad); }
 .bk .bk-cat-row.on .bk-cat-v { color: inherit; }
-.bk .bk-tick, .bk .bk-dsub { fill: var(--bkm2); }
-.bk .bk-dlab { fill: var(--bkt); }
-.bk .bk-gl { stroke: rgba(15,23,42,.06); }
-.bk .bk-base { stroke: rgba(15,23,42,.25); }
-.bk .bk-tip { background: #0f172a; color: #fff; border-radius: 8px; }
-.bk .bk-sub { border-color: var(--bkline); padding: 8px 0; }
-.bk .bk-sub .amt { color: var(--r); }
-.bk .bk-sub.dead .amt { color: var(--bkm2); }
-.bk select.stat { background: rgba(255,255,255,.8); border-color: var(--bkline); border-radius: 6px; }
-.bk .bk-foot { color: var(--bkm2); }
-.bk .bk-burn { color: var(--r); }
-.bk table.leads th { color: var(--bkm2); border-color: var(--bkline); }
-.bk table.leads td { border-color: var(--bkline); }
-.bk .tmono { color: var(--bkm); }
-.bk .tsub { color: var(--bkm2); }
-.bk td.in { color: var(--g); }
-.bk td.out { color: var(--r); }
-.bk .count { color: var(--bkm); }
-.bk .bk-legend { color: var(--bkm); margin-top: 8px; }
-.bk .bk-tax { margin: 14px 0 0; display: grid; gap: 10px; }
+.bk .bk-sub .amt { color: var(--bad); }
+.bk .bk-sub.dead .amt { color: var(--l3); }
+.bk .bk-burn { font-family: var(--mono); font-weight: 400; font-size: 20px; color: var(--bad); }
+.bk table.leads th { position: static; background: none; }
+.bk table.leads tr:last-child td { border-bottom: 0; }
+.bk table.leads .n { text-align: right; padding-right: 0; font-family: var(--mono); white-space: nowrap; }
+.bk td.in { color: var(--ok); }
+.bk td.out { color: var(--bad); }
+
+.bk .bk-tax { display: grid; gap: 10px; }
 @media (min-width: 760px) { .bk .bk-tax { grid-template-columns: repeat(3, 1fr); } }
-.bk .bk-tax .t {
-    background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 14px; box-shadow: var(--glass);
-    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-    padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 4px; min-height: 96px;
-}
-.bk .bk-tax .d { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
-.bk .bk-tax .d.soon { color: var(--r); } .bk .bk-tax .d.near { color: #d97706; } .bk .bk-tax .d.far { color: var(--g); }
+.bk .bk-tax .t { border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 4px; min-height: 96px; }
+.bk .bk-tax .d { font-family: var(--mono); font-size: 22px; line-height: 1; }
+.bk .bk-tax .d.soon { color: var(--bad); } .bk .bk-tax .d.near { color: var(--warn); } .bk .bk-tax .d.far { color: var(--ok); }
 .bk .bk-tax .n { font-size: 13px; font-weight: 700; margin-top: 4px; }
-.bk .bk-tax .w { font-family: var(--mono); font-size: 10.5px; color: var(--bkm2); text-transform: uppercase; letter-spacing: .06em; }
-.bk .bk-note { font-family: var(--mono); font-size: 11px; color: var(--bkm); text-transform: none; letter-spacing: 0; line-height: 1.5; margin-top: 4px; }
-.bk .bk-taxrow { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--bkline); }
+.bk .bk-tax .w { font-family: var(--mono); font-size: 10.5px; color: var(--l2); text-transform: uppercase; letter-spacing: .06em; }
+.bk .bk-note { font-family: var(--mono); font-size: 11px; color: var(--l2); line-height: 1.5; margin-top: 4px; }
+.bk .bk-taxrow { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--line); }
 .bk .bk-taxrow:last-child { border-bottom: 0; }
 .bk .bk-taxrow .l { flex: 1; min-width: 0; }
-.bk .bk-taxrow .rt { text-align: right; min-width: 108px; font-family: var(--mono); font-size: 11px; color: var(--bkm); }
-.bk .bk-taxrow .rt b { display: block; font-size: 12px; }
-.bk .bk-head { display: flex; align-items: baseline; gap: 12px; }
-.bk .bk-head h3 { margin: 0; }
-.bk .bk-head .sp { flex: 1; }
+.bk .bk-taxrow .rt { text-align: right; min-width: 108px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
+.bk .bk-taxrow .rt b { display: block; font-size: 12px; font-weight: 400; color: var(--l1); }
 
-/* BI-style pieces: section rules, KPI cards with a previous-period delta,
-   a three-across chart grid, donuts. */
-.bk .bk-sec { display: flex; align-items: center; gap: 14px; margin: 18px 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--bkt); }
-.bk .bk-sec:after { content: ''; flex: 1; height: 1px; background: var(--bkline); }
-.bk .bk-kpis { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
-@media (min-width: 760px)  { .bk .bk-kpis { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1100px) { .bk .bk-kpis { grid-template-columns: repeat(6, 1fr); } }
-.bk .kpi { background: var(--bkcard); border: 1px solid var(--bkline); border-radius: 14px; padding: 14px 12px 12px; text-align: center; box-shadow: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
-.bk .kpi .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--bkm); }
-.bk .kpi .v { margin-top: 8px; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
-.bk .kpi .v.pos { color: var(--g); } .bk .kpi .v.neg { color: var(--r); } .bk .kpi .v.flat { color: var(--bkt); }
-.bk .kpi .mix { margin-top: 6px; font-family: var(--mono); font-size: 10.5px; color: var(--bkm); }
-.bk .kpi .cmp { margin-top: 9px; display: flex; justify-content: center; gap: 0; font-family: var(--mono); font-size: 10.5px; color: var(--bkm2); }
-.bk .kpi .cmp span { padding: 0 9px; }
-.bk .kpi .cmp span + span { border-left: 1px solid var(--bkline); }
-.bk .kpi .cmp b { display: block; font-size: 12px; font-weight: 700; color: var(--bkt); }
-.bk .kpi .cmp span + span { border-left: 1px solid var(--bkline); }
-.bk .kpi .cmp b.up { color: var(--g); } .bk .kpi .cmp b.down { color: var(--r); }
-.bk .bk-g3 { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
-@media (min-width: 760px)  { .bk .bk-g3 { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1100px) { .bk .bk-g3 { grid-template-columns: repeat(3, 1fr); } }
-.bk .bk-g3 .bk-card { margin: 0; display: flex; flex-direction: column; }
-.bk .bk-g3 .bk-card h3 { text-align: center; font-size: 12.5px; }
-.bk .bk-g3 .bk-card .cap { text-align: center; }
-.bk .bk-g3 .bk-plot { flex: 1; }
-.bk .bk-donut { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
-.bk .bk-donut svg { width: 150px; height: 150px; flex: none; }
-.bk .bk-donut .lg { flex: 1; min-width: 0; font-family: var(--mono); font-size: 11px; }
-.bk .bk-donut .lg div { display: flex; align-items: center; gap: 8px; padding: 3px 0; white-space: nowrap; overflow: hidden; }
-.bk .bk-donut .lg i { width: 8px; height: 8px; flex: none; border-radius: 2px; }
-.bk .bk-donut .lg span { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--bkm); }
-.bk .bk-donut .lg b { font-weight: 400; color: var(--bkt); font-variant-numeric: tabular-nums; }
-.bk .bk-stack { margin-top: 14px; }
-.bk .bk-stack .bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; }
-.bk .bk-stack .bar div { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; color: #fff; overflow: hidden; white-space: nowrap; }
-.bk .bk-stack .bar { box-shadow: inset 0 0 0 1px rgba(15,23,42,.06); }
-.bk .bk-stack .lg { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--bkm); }
-.bk .bk-stack .lg i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 2px; }
-.bk .bk-mas.tools { margin-top: 0; }
+@media (max-width: 1240px) {
+    .bk-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 18px; }
+    .bk-cell:nth-child(4) { border-left: 0; padding-left: 0; }
+    .bk-s3 { grid-column: 1 / -1; }
+}
+@media (max-width: 1000px) {
+    .bk-shell { grid-template-columns: minmax(0, 1fr); }
+    .bk-rail { position: static; }
+    .bk-idx { flex-direction: row; overflow-x: auto; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .bk-idx button { white-space: nowrap; }
+    .bk-idx button .n { display: none; }
+    .bk-g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bk-s2, .bk-s3 { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+    .bk-g4 { grid-template-columns: minmax(0, 1fr); }
+    .bk-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bk-cell { border-left: 0 !important; padding-left: 0 !important; }
+    .bk-cell:nth-child(2n) { border-left: 1px solid var(--line) !important; padding-left: 14px !important; }
+    .bk-cell:last-child { grid-column: 1 / -1; border-left: 0 !important; padding-left: 0 !important; }
+    .bk-cell .v { font-size: 24px; }
+    .bk-say { font-size: 15px; }
+    .bk table.leads td:nth-child(2) { white-space: normal; }
+    .bk table.leads .yr { display: none; }
+}
 
 /* ── brand grid ─────────────────────────────────────────── */
 .brands { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
@@ -990,134 +1042,116 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         var sold = BOOKS.deals.filter(function (d) { return d.sell_total != null && inRange(d.date_sold); });
         var held = BOOKS.deals.filter(function (d) { return d.sell_total == null; });
-        var rev = sold.reduce(function (s, d) { return s + bkNum(d.sell_total); }, 0);
-        var gp = sold.reduce(function (s, d) { return s + bkProfit(d); }, 0);
-        var opex = BOOKS.expenses.filter(function (e) { return inRange(e.spent_on); })
-            .reduce(function (s, e) { return s + bkNum(e.amount); }, 0);
-        var net = gp - opex;
-        // Median, not mean: one piece that sat for months would otherwise
-        // swamp five that flipped in a week.
-        var avgDays = bkMedianDays(sold);
         var stock = held.reduce(function (s, d) { return s + bkNum(d.buy_total) + bkNum(d.other_costs); }, 0);
+        var burn = BOOKS.subscriptions.filter(function (x) { return x.status !== 'Cancel'; })
+            .reduce(function (s, x) { return s + bkNum(x.monthly_cost); }, 0);
 
-        // Tile colour is the one rule of the page: green in, red out.
-        var tiles = [
-            ['Revenue', bkMoney(rev), sold.length + ' piece' + (sold.length === 1 ? '' : 's') + ' sold', 'pos'],
-            ['Gross profit', bkMoney(gp), rev ? bkPct(gp / rev) + ' blended margin' : '—', gp < 0 ? 'neg' : 'pos'],
-            ['Overhead', bkMoney(opex), 'non-watch spend', 'neg'],
-            ['Net profit', bkMoney(net), net < 0 ? 'overhead ahead of margin' : 'after overhead', net < 0 ? 'neg' : 'pos'],
-            ['Cash on hand', bkMoney(BOOKS.cash), 'bank balance, all time', BOOKS.cash < 0 ? 'neg' : 'flat'],
-            ['In stock', held.length ? bkMoney(stock) : '—',
-                held.length ? held.length + ' piece' + (held.length === 1 ? '' : 's') + ' at cost'
-                            : (avgDays === null ? 'nothing held' : 'avg ' + avgDays + 'd to sell'), 'flat']
-        ];
-
-        // Previous period, for the delta under each KPI. 'all' has no previous.
+        // Previous period, for the delta tag under each number. 'all' has no previous.
         var prev = bkPrevRange();
-        var cur = bkMetrics(function (d) { return d && d >= cut; });
+        var cur = bkMetrics(inRange);
         var pre = prev ? bkMetrics(function (d) { return d && d >= prev[0] && d < prev[1]; }) : null;
-        var kpi = function (label, val, fmtv, tone, sub, mix) {
-            var cmp = '';
-            if (pre) {
-                var pv = pre[val], cv = cur[val];
-                var pct = pv ? (cv - pv) / Math.abs(pv) : null;
-                var good = (val === 'opex') ? (cv <= pv) : (cv >= pv);
-                cmp = '<div class="cmp"><span><b class="' + (pct == null ? '' : good ? 'up' : 'down') + '">' +
-                        (pct == null ? '—' : (pct >= 0 ? '+' : '') + (pct * 100).toFixed(1) + '%') + '</b>vs prior</span>' +
-                      '<span><b>' + fmtv(pv) + '</b>prior period</span></div>';
-            } else {
-                cmp = '<div class="cmp"><span><b>' + esc(sub) + '</b>all time</span></div>';
-            }
-            return '<div class="kpi"><div class="k">' + label + '</div>' +
-                '<div class="v ' + tone + '">' + fmtv(cur[val]) + '</div>' +
-                (mix ? '<div class="mix">' + mix + '</div>' : '') + cmp + '</div>';
+
+        // One sentence up top, the way Today opens: the period in plain English.
+        var say = cur.sold
+            ? 'You sold <b>' + cur.sold + '</b> piece' + (cur.sold === 1 ? '' : 's') + ' for <b>' + bkMoney(cur.rev) + '</b>. ' +
+              (cur.ssold ? 'Sourcing kept <b>' + bkMoney(cur.sgp) + '</b> (' + bkPct(cur.sgp / cur.srev) + ' on ' + bkMoney(cur.srev) + ')' : 'No sourcing sales') +
+              (cur.csold ? ' and consignment earned <b>' + bkMoney(cur.cgp) + '</b> in fees on ' + bkMoney(cur.crev) + ' of client watches. ' : '. ') +
+              'Overhead was <b>' + bkMoney(cur.opex) + '</b>, so you are ' +
+              (cur.net < 0 ? '<b class="bad">' + bkMoney(-cur.net) + ' behind</b>' : '<b>' + bkMoney(cur.net) + ' ahead</b>') + ' for the period.'
+            : 'Nothing sold in this period. Overhead was <b>' + bkMoney(cur.opex) + '</b>.';
+
+        var delta = function (k, lowerIsGood) {
+            if (!pre) return '';
+            var pv = pre[k], cv = cur[k];
+            if (!pv) return '<span class="tag">No prior</span>';
+            var ch = (cv - pv) / Math.abs(pv), good = lowerIsGood ? cv <= pv : cv >= pv;
+            return '<span class="tag ' + (good ? 'ok' : 'bad') + '">' + (ch >= 0 ? '▲ +' : '▼ ') + (ch * 100).toFixed(1) + '%</span>';
         };
-        var money0 = function (v) { return bkMoney(v); };
+        var cell = function (label, v, tone, tag, sub) {
+            return '<div class="bk-cell"><div class="count">' + label + '</div><b class="v ' + tone + '">' + v + '</b>' +
+                '<div class="m">' + tag + '<span class="tsub">' + sub + '</span></div></div>';
+        };
+        var head = function (k, d, right) {
+            return '<div class="bk-ph"><div><div class="k">' + k + '</div><div class="d">' + d + '</div></div>' + (right || '') + '</div>';
+        };
+        var idx = [['overview', 'Overview'], ['money', 'Money'], ['deals', 'Deals', BOOKS.deals.length], ['cash', 'Cash'],
+                   ['spend', 'Spend', bkCompact(cur.opex)], ['tx', 'Transactions', BOOKS.bank.length], ['tax', 'Tax']];
 
         view.innerHTML = '<div class="bk">' +
             '<div class="bk-filters" role="group" aria-label="Period">' +
                 '<span class="lab">Period</span>' +
                 ['all', '90', 'mtd'].map(function (p) {
                     var label = p === 'all' ? 'All time' : p === '90' ? 'Last 90 days' : 'This month';
-                    return '<button class="bk-seg" data-p="' + p + '" aria-pressed="' +
-                        (bkPeriod === p) + '">' + label + '</button>';
+                    return '<button class="bk-seg" data-p="' + p + '" aria-pressed="' + (bkPeriod === p) + '">' + label + '</button>';
                 }).join('') +
-                '<span style="flex:1"></span>' +
+                '<span class="sp"></span>' +
                 '<button class="btn ghost" id="bk-xlsx">Export to Spreadsheet</button>' +
                 '<button class="btn ghost" id="bk-csv">Import Bank Statement</button>' +
                 '<button class="btn" id="bk-exp-new">Log Expense</button>' +
             '</div>' +
-            '<div class="bk-tax" id="bk-tax-top"><div class="t"><div class="w">Tax calendar</div><div class="n">Loading…</div></div></div>' +
+            '<p class="bk-say">' + say + '</p>' +
 
-            '<div class="bk-sec">Overview</div>' +
-            '<div class="bk-kpis">' +
-                kpi('Revenue', 'rev', money0, 'pos', cur.sold + ' piece' + (cur.sold === 1 ? '' : 's') + ' sold',
-                    bkCompact(cur.srev) + ' sourcing &middot; ' + bkCompact(cur.crev) + ' consignment') +
-                kpi('Sourcing profit', 'sgp', money0, cur.sgp < 0 ? 'neg' : 'pos', cur.ssold + ' sourced',
-                    cur.srev ? bkPct(cur.sgp / cur.srev) + ' margin on ' + bkMoney(cur.srev) : 'no sourcing sales') +
-                kpi('Consignment fees', 'cgp', money0, cur.cgp < 0 ? 'neg' : 'pos', cur.csold + ' consigned',
-                    cur.crev ? bkPct(cur.cgp / cur.crev) + ' of ' + bkMoney(cur.crev) + ' sold' : 'no consignment sales') +
-                kpi('Overhead', 'opex', money0, 'neg', 'non-watch spend') +
-                kpi('Net profit', 'net', money0, cur.net < 0 ? 'neg' : 'pos', cur.net < 0 ? 'overhead ahead of margin' : 'after overhead') +
-                '<div class="kpi"><div class="k">Cash on hand</div><div class="v ' + (BOOKS.cash < 0 ? 'neg' : 'flat') + '">' + bkMoney(BOOKS.cash) + '</div>' +
-                    '<div class="cmp"><span><b>' + (held.length ? bkMoney(stock) : '—') + '</b>' + (held.length ? held.length + ' in stock at cost' : 'nothing in stock') + '</span></div></div>' +
+            '<div class="bk-shell">' +
+              '<aside class="bk-rail">' +
+                '<nav class="bk-idx" id="bk-idx">' + idx.map(function (x, i) {
+                    return '<button data-go="' + x[0] + '"' + (i ? '' : ' aria-current="true"') + '><span class="no">' + String(i + 1).padStart(2, '0') + '</span>' +
+                        x[1] + (x[2] != null ? '<span class="n">' + x[2] + '</span>' : '') + '</button>';
+                }).join('') + '</nav>' +
+                '<div class="bk-cashbox"><div class="k">Cash on hand</div><div class="v">' + bkMoney(BOOKS.cash) + '</div>' +
+                    '<div class="r"><span>In stock</span><b>' + (held.length ? bkMoney(stock) + ' · ' + held.length + ' pc' : 'None') + '</b></div>' +
+                    '<div class="r"><span>Tools / mo</span><b>' + bkMoney(burn) + '</b></div>' +
+                    '<div class="r" id="bk-next"><span>Next up</span><b>…</b></div></div>' +
+              '</aside>' +
+
+              '<div class="bk-g4">' +
+                '<section class="bk-pnl bk-s4 bk-anc" id="bk-s-overview"><div class="bk-strip">' +
+                    cell('Revenue', bkMoney(cur.rev), '', delta('rev') || '<span class="tag blk">' + cur.sold + ' sold</span>',
+                        bkCompact(cur.srev) + ' sourcing · ' + bkCompact(cur.crev) + ' consignment') +
+                    cell('Sourcing profit', bkMoney(cur.sgp), cur.sgp < 0 ? 'bad' : 'ok',
+                        delta('sgp') || (cur.srev ? '<span class="tag ok">' + bkPct(cur.sgp / cur.srev) + ' margin</span>' : ''), cur.ssold + ' bought and sold') +
+                    cell('Consignment fees', bkMoney(cur.cgp), cur.cgp < 0 ? 'bad' : 'ok',
+                        delta('cgp') || (cur.crev ? '<span class="tag con">' + bkPct(cur.cgp / cur.crev) + ' fee</span>' : ''), cur.csold + ' sold for clients') +
+                    cell('Overhead', bkMoney(cur.opex), '', delta('opex', true) || '<span class="tag">Non-watch</span>', 'tools · shipping · travel') +
+                    cell('Net profit', bkMoney(cur.net), cur.net < 0 ? 'bad' : 'ok',
+                        delta('net') || '<span class="tag ' + (cur.net < 0 ? 'bad' : 'ok') + '">' + (cur.net < 0 ? 'Overhead ahead' : 'After overhead') + '</span>',
+                        'profit + fees − overhead') +
+                '</div></section>' +
+
+                '<section class="bk-pnl bk-s3 bk-anc" id="bk-s-money">' +
+                    head('Revenue by month', 'Sale price by sale month · consignment stacked on sourcing · profit on top', '<div class="big" id="bk-rev-total"></div>') +
+                    '<div class="bk-lg"><span><i class="src"></i>Sourcing</span><span><i class="con"></i>Consignment</span><span class="ok">+$ Profit kept</span></div>' +
+                    '<div class="bk-plot" id="bk-rev"><div class="bk-tip" id="bk-rev-t"></div></div></section>' +
+                '<section class="bk-pnl">' + head('Margin by type', 'Never blended') + '<div id="bk-mt"></div></section>' +
+
+                '<section class="bk-pnl bk-s2 bk-anc" id="bk-s-deals">' +
+                    head('Profit per deal', 'Sold pieces, ranked · consignment rows show the fee', '<button class="btn ghost sm" id="bk-to-deals">All deals →</button>') +
+                    '<div class="bk-rank" id="bk-deal-rank"></div></section>' +
+                '<section class="bk-pnl">' + head('Overhead', '<span id="bk-oh-sub"></span>') + '<div class="bk-rank tight" id="bk-oh"></div></section>' +
+                '<section class="bk-pnl">' + head('Quick actions', 'The usual moves') + '<div class="bk-qa" id="bk-qa"></div></section>' +
+
+                '<section class="bk-pnl bk-s2 bk-anc" id="bk-s-cash">' +
+                    head('Cash in / cash out', 'Chase ·1791 by month · capital included',
+                        '<div class="bk-lg" style="margin:0"><span><i class="src"></i>In</span><span><i class="out"></i>Out</span></div>') +
+                    '<div class="bk-plot" id="bk-cash"><div class="bk-tip" id="bk-cash-t"></div></div></section>' +
+                '<section class="bk-pnl bk-s2">' + head('Days to sell', '<span id="bk-days-sub"></span>') + '<div class="bk-rank" id="bk-days"></div></section>' +
+
+                '<section class="bk-pnl bk-s2 bk-anc" id="bk-s-spend">' + head('Spend by category', 'Bank money out · click a row to filter the transactions') + '<div id="bk-cats"></div></section>' +
+                '<section class="bk-pnl">' + head('Money in by category', 'Bank money in, grouped') + '<div id="bk-cats-in"></div></section>' +
+                '<section class="bk-pnl">' + head('Monthly burn', 'Recurring tools · not scoped by period') + '<div id="bk-subs"></div></section>' +
+
+                '<section class="bk-pnl bk-s4 bk-anc" id="bk-s-tx">' +
+                    head(bkRegOpen || bkCat ? 'Every transaction' : 'Latest transactions', '<span id="bk-reg-cap"></span>',
+                        '<button class="btn ghost sm" id="bk-reg-toggle" aria-expanded="' + !!(bkRegOpen || bkCat) + '">' +
+                            (bkRegOpen || bkCat ? 'Latest only' : 'Every transaction →') + '</button>') +
+                    '<div id="bk-register" style="overflow-x:auto"></div></section>' +
+
+                '<section class="bk-pnl bk-s4 bk-anc" id="bk-s-tax">' +
+                    head('Tax calendar', 'Next deadlines · email reminders go out 30 / 14 / 7 / 1 days ahead',
+                        '<button class="btn ghost sm" id="bk-tax-toggle">' + (bkTaxOpen ? 'Hide full year' : 'Full year →') + '</button>') +
+                    '<div class="bk-tax" id="bk-tax-top"><div class="t"><div class="w">Loading…</div></div></div>' +
+                    '<div id="bk-tax" style="margin-top:14px"' + (bkTaxOpen ? '' : ' hidden') + '></div></section>' +
+              '</div>' +
             '</div>' +
-
-            '<div class="bk-sec">Money</div>' +
-            '<div class="bk-g3">' +
-                '<div class="bk-card"><h3>Cash in / cash out</h3>' +
-                    '<p class="cap">Chase &middot;1791 by month, capital included</p>' +
-                    '<div class="bk-legend" style="justify-content:center"><span><i style="background:var(--s1)"></i>Cash in</span>' +
-                    '<span><i style="background:var(--s2)"></i>Cash out</span></div>' +
-                    '<div class="bk-plot" id="bk-cash"><div class="bk-tip" id="bk-cash-t"></div></div></div>' +
-                '<div class="bk-card"><h3>Revenue vs profit by month</h3>' +
-                    '<p class="cap">Sale price and what you kept, by sale month</p>' +
-                    '<div class="bk-legend" style="justify-content:center"><span><i style="background:rgba(22,163,74,.3)"></i>Revenue</span>' +
-                    '<span><i style="background:var(--g)"></i>Gross profit</span><span><i style="background:var(--r)"></i>Overhead</span></div>' +
-                    '<div class="bk-plot" id="bk-pl"><div class="bk-tip" id="bk-pl-t"></div></div></div>' +
-                '<div class="bk-card"><h3>Where revenue went</h3>' +
-                    '<p class="cap">Every dollar of sales, split</p>' +
-                    '<div id="bk-split"></div>' +
-                    '<h3 style="margin-top:16px">Money in</h3><p class="cap">Bank money in by source</p><div id="bk-in-donut"></div></div>' +
-            '</div>' +
-
-            '<div class="bk-sec">Deals</div>' +
-            '<div class="bk-g3">' +
-                '<div class="bk-card"><h3>Profit per deal</h3>' +
-                    '<p class="cap">Sold pieces only. Pale bars are consignment fees, not trading margin</p>' +
-                    '<div class="bk-plot" id="bk-deal"><div class="bk-tip" id="bk-deal-t"></div></div></div>' +
-                '<div class="bk-card"><h3>Days to sell</h3>' +
-                    '<p class="cap">Bought (or taken in) to sold, per piece' + (avgDays == null ? '' : ' &middot; median ' + avgDays + 'd') + '</p>' +
-                    '<div class="bk-plot" id="bk-days"></div></div>' +
-                '<div class="bk-card"><h3>Overhead by category</h3>' +
-                    '<p class="cap">Where the non-watch money goes</p>' +
-                    '<div id="bk-exp-donut"></div></div>' +
-            '</div>' +
-
-            '<div class="bk-sec">Spend &amp; tools</div>' +
-            '<div class="bk-g3">' +
-                '<div class="bk-card"><h3>Spend by category</h3>' +
-                    '<p class="cap">Bank money out. Click a row to filter the register</p>' +
-                    '<div id="bk-cats"></div></div>' +
-                '<div class="bk-card"><h3>Money in by category</h3>' +
-                    '<p class="cap">Bank money in, grouped</p>' +
-                    '<div id="bk-cats-in"></div></div>' +
-                '<div class="bk-card"><h3>Monthly burn</h3>' +
-                    '<p class="cap">Recurring tools, not scoped by period</p>' +
-                    '<div id="bk-subs"></div></div>' +
-            '</div>' +
-
-            '<div class="bk-card" style="margin-top:14px">' +
-                '<div class="bk-head"><h3>Full tax calendar</h3><span class="sp"></span>' +
-                '<button class="btn ghost" id="bk-tax-toggle">' + (bkTaxOpen ? 'Hide' : 'Show') + '</button></div>' +
-                '<p class="cap">Next 12 months. Email reminders go out 30 / 14 / 7 / 1 days ahead.</p>' +
-                '<div id="bk-tax"' + (bkTaxOpen ? '' : ' hidden') + '></div></div>' +
-            '<div class="bk-card" style="margin-top:14px">' +
-                '<div class="bk-head"><h3>Every transaction</h3><span class="sp"></span>' +
-                '<button class="btn ghost" id="bk-reg-toggle" aria-expanded="' + bkRegOpen + '">' +
-                    (bkRegOpen ? 'Hide' : 'Show') + '</button></div>' +
-                '<p class="cap" id="bk-reg-cap"></p>' +
-                '<div id="bk-register" style="overflow-x:auto"' + (bkRegOpen ? '' : ' hidden') + '></div></div>' +
         '</div>';
 
         [].forEach.call(view.querySelectorAll('.bk-seg'), function (b) {
@@ -1126,28 +1160,53 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         document.getElementById('bk-exp-new').addEventListener('click', function () { editExpense(null); });
         document.getElementById('bk-csv').addEventListener('click', importBank);
         document.getElementById('bk-xlsx').addEventListener('click', bkExport);
+        document.getElementById('bk-to-deals').addEventListener('click', function () { bkGoTab('deals'); });
         document.getElementById('bk-tax-toggle').addEventListener('click', function () {
             bkTaxOpen = !bkTaxOpen;
             try { localStorage.setItem('bk-tax-open', bkTaxOpen ? '1' : '0'); } catch (e) {}
             paintBooks();
         });
         document.getElementById('bk-reg-toggle').addEventListener('click', function () {
-            bkRegOpen = !bkRegOpen;
+            // "Latest only" also drops a category filter, or the toggle would do nothing.
+            if (bkRegOpen || bkCat) { bkRegOpen = false; bkCat = ''; } else { bkRegOpen = true; }
             try { localStorage.setItem('bk-reg-open', bkRegOpen ? '1' : '0'); } catch (e) {}
             paintBooks();
         });
+        [].forEach.call(view.querySelectorAll('#bk-idx button'), function (b) {
+            b.addEventListener('click', function () {
+                [].forEach.call(view.querySelectorAll('#bk-idx button'), function (x) { x.removeAttribute('aria-current'); });
+                b.setAttribute('aria-current', 'true');
+                var t = document.getElementById('bk-s-' + b.dataset.go);
+                if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
 
+        bkRevChart(inRange);
+        bkMarginCard(cur, sold);
+        bkDealRank(sold);
+        bkOhRank(inRange, cur.opex);
+        bkQuick();
         bkCashChart(inRange);
-        bkPLChart(inRange);
-        bkSplit(cur);
-        bkDonut(document.getElementById('bk-in-donut'), bkGroupBank(inRange, 'money_in'), ['#22c55e', '#16a34a', '#4ade80', '#86efac', '#166534', '#bbf7d0']);
-        bkDealChart(sold);
-        bkDaysChart(sold);
-        bkDonut(document.getElementById('bk-exp-donut'), bkGroupExp(inRange), ['#ef4444', '#f97316', '#f59e0b', '#fb7185', '#dc2626', '#fdba74', '#9a3412', '#7f1d1d', '#a3a3a3', '#737373', '#525252']);
+        bkDaysRank(sold);
         bkSubs();
         bkCategories(inRange);
         bkRegister(inRange);
         bkTaxCalendar();
+        bkWidth = window.innerWidth;
+    }
+
+    // Charts are drawn at the panel's real pixel width so the mono ticks stay
+    // readable on a phone; a width change redraws them.
+    var bkWidth = 0, bkResize;
+    window.addEventListener('resize', function () {
+        clearTimeout(bkResize);
+        bkResize = setTimeout(function () {
+            if (window.innerWidth !== bkWidth && document.getElementById('bk-rev')) paintBooks();
+        }, 150);
+    });
+    function bkGoTab(tab) {
+        var b = document.querySelector('nav.tabs button[data-tab="' + tab + '"]');
+        if (b) { b.click(); window.scrollTo(0, 0); }
     }
 
     // Deadlines come from the API (lib/tax-calendar.js) so the tab and the
@@ -1186,14 +1245,28 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<div class="n">' + esc(chore.title) + '</div><div class="w">keeps the register true</div></div>' : '');
         if (dates.length + (chore ? 1 : 0) === 4) top.style.gridTemplateColumns = 'repeat(4, 1fr)';
 
+        // The soonest thing on the list, deadline or chore, also sits in the rail
+        // and in Quick actions so it is visible without scrolling down here.
+        var next = BK_TAX.slice().sort(function (a, b) { return a.days - b.days; })[0];
+        var nx = document.getElementById('bk-next'), qn = document.getElementById('bk-qa-next');
+        if (next && nx) {
+            nx.className = 'r ' + tone(next.days);
+            nx.innerHTML = '<span>Next up</span><b>' + esc(fmt(next.date)) + ' · ' + esc(when(next.days)) + '</b>';
+        }
+        if (next && qn) {
+            qn.className = tone(next.days);
+            qn.querySelector('.t').textContent = next.title;
+            qn.querySelector('.d').textContent = fmtY(next.date) + ' · ' + when(next.days) + (next.chore ? ' · monthly chore' : '');
+        }
+
         if (!host) return;
         host.innerHTML = items.map(function (o) {
             return '<div class="bk-taxrow"><div class="l">' +
                 '<div><b>' + esc(o.title) + '</b>' + (o.label ? ' <span class="tmono">' + esc(o.label) + '</span>' : '') +
-                (o.placeholder ? ' <span class="tmono" style="color:#f59e0b">date unconfirmed</span>' : '') + '</div>' +
+                (o.placeholder ? ' <span class="tmono" style="color:var(--warn)">date unconfirmed</span>' : '') + '</div>' +
                 '<div class="tmono">' + esc(o.who) + '</div>' +
                 '<div class="bk-note">' + esc(o.note) + '</div></div>' +
-                '<div class="rt"><b>' + esc(fmt(o.date)) + '</b><span style="color:var(--' + (o.days <= 7 ? 'r' : o.days <= 30 ? 'bkm' : 'g') + ')">' + esc(when(o.days).toLowerCase()) + '</span></div>' +
+                '<div class="rt"><b>' + esc(fmt(o.date)) + '</b><span style="color:var(--' + (o.days <= 7 ? 'bad' : o.days <= 30 ? 'warn' : 'ok') + ')">' + esc(when(o.days).toLowerCase()) + '</span></div>' +
             '</div>';
         }).join('');
     }
@@ -1229,152 +1302,200 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         }
         return null;
     }
-    function bkGroupBank(inRange, col) {
-        var g = {};
-        BOOKS.bank.forEach(function (t) {
-            if (!inRange(t.posted_on) || !bkNum(t[col])) return;
-            var c = t.category || 'Uncategorized'; g[c] = (g[c] || 0) + bkNum(t[col]);
-        });
-        return Object.keys(g).sort(function (a, b) { return g[b] - g[a]; }).map(function (k) { return { label: k, value: g[k] }; });
+    // ── charts and ranked panels ──
+    // Hatched fill means consignment everywhere on this tab, so the two kinds of
+    // sale read apart without a second colour.
+    var BK_HATCH = '<defs><pattern id="bk-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+        '<rect width="5" height="5" fill="#efede7"/><line x1="0" y1="0" x2="0" y2="5" stroke="rgba(54,54,48,.55)" stroke-width="1.6"/></pattern></defs>';
+    function bkNice(v) {
+        var raw = (v || 1) / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+        return [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10].filter(function (x) { return x * mag >= raw; })[0] * mag * 4;
     }
-    function bkGroupExp(inRange) {
-        var g = {};
-        BOOKS.expenses.forEach(function (e) {
-            if (!inRange(e.spent_on)) return;
-            var c = e.category || 'Uncategorized'; g[c] = (g[c] || 0) + bkNum(e.amount);
-        });
-        return Object.keys(g).sort(function (a, b) { return g[b] - g[a]; }).map(function (k) { return { label: k, value: g[k] }; });
+    function bkAxis(W, padL, padT, ph, nice) {
+        var g = '';
+        for (var i = 1; i <= 4; i++) {
+            var v = nice * i / 4, y = padT + ph - v / nice * ph;
+            g += '<line class="bk-gl" x1="' + padL + '" x2="' + W + '" y1="' + y + '" y2="' + y + '"/>' +
+                 '<text class="bk-tick" x="' + (padL - 8) + '" y="' + (y + 3.5) + '" text-anchor="end">' + bkCompact(v) + '</text>';
+        }
+        return g + '<line class="bk-base" x1="' + padL + '" x2="' + W + '" y1="' + (padT + ph) + '" y2="' + (padT + ph) + '"/>' +
+            '<text class="bk-tick" x="' + (padL - 8) + '" y="' + (padT + ph + 3.5) + '" text-anchor="end">$0</text>';
     }
+    function bkMon(m) { return BK_MON[+m.slice(5, 7) - 1]; }
+    function bkEmpty(host, tip, msg) { host.innerHTML = '<p class="bk-empty">' + msg + '</p>'; if (tip) host.appendChild(tip); }
 
-    // ── donut: ring + legend with share. Small slices fold into "Other". ──
-    function bkDonut(host, parts, palette) {
-        if (!host) return;
-        var total = parts.reduce(function (s, p) { return s + p.value; }, 0);
-        if (!total) { host.innerHTML = '<p class="bk-empty">Nothing in this period</p>'; return; }
-        var big = parts.filter(function (p) { return p.value / total >= 0.03; });
-        var rest = parts.filter(function (p) { return p.value / total < 0.03; }).reduce(function (s, p) { return s + p.value; }, 0);
-        if (rest > 0) big.push({ label: 'Other (small)', value: rest });
-        var R = 60, r = 38, C = 75, acc = 0, paths = '';
-        big.forEach(function (p, i) {
-            var a0 = acc / total * Math.PI * 2 - Math.PI / 2; acc += p.value;
-            var a1 = acc / total * Math.PI * 2 - Math.PI / 2;
-            if (big.length === 1) { a0 = -Math.PI / 2; a1 = a0 + Math.PI * 2 - 0.0001; }
-            var large = (a1 - a0) > Math.PI ? 1 : 0;
-            var x0 = C + R * Math.cos(a0), y0 = C + R * Math.sin(a0), x1 = C + R * Math.cos(a1), y1 = C + R * Math.sin(a1);
-            var xi0 = C + r * Math.cos(a1), yi0 = C + r * Math.sin(a1), xi1 = C + r * Math.cos(a0), yi1 = C + r * Math.sin(a0);
-            paths += '<path d="M' + x0 + ' ' + y0 + ' A' + R + ' ' + R + ' 0 ' + large + ' 1 ' + x1 + ' ' + y1 +
-                     ' L' + xi0 + ' ' + yi0 + ' A' + r + ' ' + r + ' 0 ' + large + ' 0 ' + xi1 + ' ' + yi1 + ' Z" fill="' +
-                     palette[i % palette.length] + '" stroke="#fff" stroke-width="1.5"><title>' + esc(p.label) + ' ' + bkMoney(p.value) + '</title></path>';
-        });
-        host.innerHTML = '<div class="bk-donut"><svg viewBox="0 0 150 150" role="img">' + paths +
-            '<text x="75" y="71" text-anchor="middle" style="font:700 15px var(--sans);fill:var(--bkt)">' + bkCompact(total) + '</text>' +
-            '<text x="75" y="87" text-anchor="middle" style="font:10px var(--mono);fill:var(--bkm2)">' + big.length + ' categories</text></svg>' +
-            '<div class="lg">' + big.map(function (p, i) {
-                return '<div><i style="background:' + palette[i % palette.length] + '"></i><span>' + esc(p.label) + '</span><b>' +
-                    (p.value / total * 100).toFixed(0) + '%</b></div>';
-            }).join('') + '</div></div>';
-    }
-
-    // ── 100% stacked bar: cost of goods / overhead / profit as a share of revenue ──
-    function bkSplit(m) {
-        var host = document.getElementById('bk-split');
-        if (!host) return;
-        if (!m.rev) { host.innerHTML = '<p class="bk-empty">No sales in this period</p>'; return; }
-        var parts = [
-            ['Cost of watches', m.scogs, '#94a3b8'],
-            ['Paid to consignors', m.ccogs, '#cbd5e1'],
-            ['Overhead', Math.min(m.opex, Math.max(m.rev - m.cogs, 0)), 'var(--r)'],
-            ['Net profit', Math.max(m.net, 0), 'var(--g)']
-        ];
-        var over = m.net < 0 ? -m.net : 0;
-        var total = parts.reduce(function (s, p) { return s + p[1]; }, 0) || 1;
-        host.innerHTML = '<div class="bk-stack"><div class="bar">' + parts.map(function (p) {
-                var w = p[1] / total * 100;
-                return w > 0 ? '<div style="width:' + w + '%;background:' + p[2] + '" title="' + esc(p[0]) + ' ' + bkMoney(p[1]) + '">' +
-                    (w > 9 ? w.toFixed(0) + '%' : '') + '</div>' : '';
-            }).join('') + '</div>' +
-            '<div class="lg">' + parts.map(function (p) { return '<span><i style="background:' + p[2] + '"></i>' + esc(p[0]) + ' ' + bkMoney(p[1]) + '</span>'; }).join('') +
-            (over ? '<span style="color:var(--r)">Overhead beyond margin: ' + bkMoney(over) + '</span>' : '') + '</div></div>';
-    }
-
-    // ── revenue / gross profit / overhead by month ──
-    function bkPLChart(inRange) {
-        var host = document.getElementById('bk-pl'), tip = document.getElementById('bk-pl-t');
-        if (!host) return;
+    function bkRevChart(inRange) {
+        var host = document.getElementById('bk-rev'), tip = document.getElementById('bk-rev-t');
         var by = {};
         BOOKS.deals.forEach(function (d) {
             if (d.sell_total == null || !inRange(d.date_sold)) return;
-            var m = d.date_sold.slice(0, 7); by[m] = by[m] || [0, 0, 0, 0, 0];
-            by[m][0] += bkNum(d.sell_total); by[m][1] += bkProfit(d);
-            if (bkIsCon(d)) { by[m][3] += bkNum(d.sell_total); by[m][4] += bkProfit(d); }
+            var m = d.date_sold.slice(0, 7); by[m] = by[m] || { s: 0, c: 0, sp: 0, cp: 0 };
+            if (bkIsCon(d)) { by[m].c += bkNum(d.sell_total); by[m].cp += bkProfit(d); }
+            else { by[m].s += bkNum(d.sell_total); by[m].sp += bkProfit(d); }
         });
-        BOOKS.expenses.forEach(function (e) {
-            if (!inRange(e.spent_on)) return;
-            var m = e.spent_on.slice(0, 7); by[m] = by[m] || [0, 0, 0, 0, 0]; by[m][2] += bkNum(e.amount);
-        });
-        var rows = Object.keys(by).sort().map(function (m) { return [m, by[m][0], by[m][1], by[m][2], by[m][3], by[m][4]]; });
-        if (!rows.length) { host.innerHTML = '<p class="bk-empty">No movement in this period</p>'; host.appendChild(tip); return; }
-        var W = 560, H = 210, padL = 46, padB = 26, padT = 8;
-        var max = Math.max.apply(null, rows.map(function (r) { return Math.max(r[1], r[2], r[3]); })) || 1;
-        var raw = max / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
-        var mult = [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10].filter(function (x) { return x * mag >= raw; })[0];
-        var nice = mult * mag * 4, pw = W - padL, ph = H - padB - padT;
-        var step = pw / rows.length, bw = Math.min(16, (step - 16) / 3);
-        var y = function (v) { return padT + ph - (Math.max(v, 0) / nice) * ph; };
-        var g = '';
-        for (var i = 0; i <= 4; i++) {
-            var v = nice * i / 4;
-            g += '<line class="bk-gl" x1="' + padL + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
-                 '<text class="bk-tick" x="' + (padL - 9) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' + (i ? bkCompact(v) : '$0') + '</text>';
-        }
-        var bars = '', hits = '';
+        var rows = Object.keys(by).sort().map(function (m) { return Object.assign({ m: m }, by[m]); });
+        document.getElementById('bk-rev-total').textContent = bkMoney(rows.reduce(function (s, r) { return s + r.s + r.c; }, 0));
+        if (!rows.length) return bkEmpty(host, tip, 'No sales in this period');
+        var W = Math.max(host.clientWidth || 760, 300), H = 250, padL = 44, padB = 24, padT = 22, ph = H - padB - padT, pw = W - padL;
+        var nice = bkNice(Math.max.apply(null, rows.map(function (r) { return r.s + r.c; })));
+        var step = pw / rows.length, bw = Math.min(44, step * .42);
+        var out = BK_HATCH + bkAxis(W, padL, padT, ph, nice), hits = '';
         rows.forEach(function (r, i) {
-            var cx = padL + step * i + step / 2;
-            bars += '<path d="' + bkBar(cx - bw * 1.5 - 2, y(r[1]), bw, padT + ph - y(r[1]), 3) + '" fill="rgba(22,163,74,.3)"/>' +
-                    '<path d="' + bkBar(cx - bw / 2, y(r[2]), bw, padT + ph - y(r[2]), 3) + '" fill="var(--g)"/>' +
-                    '<path d="' + bkBar(cx + bw / 2 + 2, y(r[3]), bw, padT + ph - y(r[3]), 3) + '" fill="var(--r)"/>' +
-                    '<text class="bk-tick" x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' + BK_MON[+r[0].slice(5, 7) - 1] + '</text>';
+            var cx = padL + step * i + step / 2, x = cx - bw / 2, hs = r.s / nice * ph, hc = r.c / nice * ph, top = padT + ph - hs - hc, p = r.sp + r.cp;
+            if (hs) out += '<rect x="' + x + '" y="' + (padT + ph - hs) + '" width="' + bw + '" height="' + hs + '" fill="#000"/>';
+            if (hc) out += '<rect x="' + (x + .5) + '" y="' + (top + .5) + '" width="' + (bw - 1) + '" height="' + Math.max(hc - 1, 0) + '" fill="url(#bk-hatch)" stroke="#000" stroke-width="1"/>';
+            out += '<text class="bk-plab" x="' + cx + '" y="' + (top - 7) + '" text-anchor="middle"' + (p < 0 ? ' style="fill:var(--bad)"' : '') + '>' +
+                       (p < 0 ? '' : '+') + bkCompact(p) + '</text>' +
+                   '<text class="bk-tick" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + bkMon(r.m).toUpperCase() + '</text>';
             hits += '<rect class="bk-hit" x="' + (padL + step * i) + '" y="' + padT + '" width="' + step + '" height="' + ph + '" data-i="' + i + '"/>';
         });
-        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Revenue, gross profit and overhead by month">' + g +
-            '<line class="bk-base" x1="' + padL + '" x2="' + W + '" y1="' + (padT + ph) + '" y2="' + (padT + ph) + '"/>' + bars + hits + '</svg>';
+        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Revenue by month">' + out + hits + '</svg>';
         host.appendChild(tip);
         bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
             var r = rows[i];
-            return '<b>' + BK_MON[+r[0].slice(5, 7) - 1] + ' ' + r[0].slice(0, 4) + '</b><br>Revenue ' + bkMoney(r[1]) +
-                (r[4] ? '<br>&nbsp;incl. consignment ' + bkMoney(r[4]) : '') +
-                '<br>Sourcing profit ' + bkMoney(r[2] - r[5]) + (r[4] ? '<br>Consignment fees ' + bkMoney(r[5]) : '') +
-                '<br>Overhead ' + bkMoney(r[3]) + '<br>Net ' + bkMoney(r[2] - r[3]);
-        }, 190);
+            return '<b>' + bkMon(r.m) + ' ' + r.m.slice(0, 4) + '</b>' +
+                '<div><span>Sourcing</span><span>' + bkMoney(r.s) + '</span></div>' +
+                '<div><span>Consignment</span><span>' + bkMoney(r.c) + '</span></div>' +
+                '<div><span>Sourcing profit</span><span style="color:var(--ok)">' + bkMoney(r.sp, 2) + '</span></div>' +
+                (r.c ? '<div><span>Consignment fees</span><span style="color:var(--ok)">' + bkMoney(r.cp, 2) + '</span></div>' : '');
+        }, 220);
     }
 
-    // ── days held per sold piece ──
-    function bkDaysChart(sold) {
-        var host = document.getElementById('bk-days');
-        if (!host) return;
+    function bkCashChart(inRange) {
+        var host = document.getElementById('bk-cash'), tip = document.getElementById('bk-cash-t');
+        var by = {};
+        BOOKS.bank.forEach(function (t) {
+            if (!inRange(t.posted_on)) return;
+            var m = t.posted_on.slice(0, 7); by[m] = by[m] || [0, 0];
+            by[m][0] += bkNum(t.money_in); by[m][1] += bkNum(t.money_out);
+        });
+        var rows = Object.keys(by).sort().map(function (m) { return { m: m, i: by[m][0], o: by[m][1] }; });
+        if (!rows.length) return bkEmpty(host, tip, 'No bank rows in this period');
+        var W = Math.max(host.clientWidth || 560, 300), H = window.innerWidth > 1000 ? 300 : 240, padL = 44, padB = 24, padT = 8, ph = H - padB - padT, pw = W - padL;
+        var nice = bkNice(Math.max.apply(null, rows.map(function (r) { return Math.max(r.i, r.o); })));
+        var step = pw / rows.length, bw = Math.max(Math.min(16, (step - 12) / 2), 3);
+        var out = bkAxis(W, padL, padT, ph, nice), hits = '';
+        rows.forEach(function (r, i) {
+            var cx = padL + step * i + step / 2, hi = r.i / nice * ph, ho = r.o / nice * ph;
+            out += '<rect x="' + (cx - bw - 1) + '" y="' + (padT + ph - hi) + '" width="' + bw + '" height="' + hi + '" fill="#000"/>' +
+                   '<rect x="' + (cx + 1) + '" y="' + (padT + ph - ho) + '" width="' + bw + '" height="' + ho + '" fill="var(--out)"/>' +
+                   '<text class="bk-tick" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + bkMon(r.m).toUpperCase() + '</text>';
+            hits += '<rect class="bk-hit" x="' + (padL + step * i) + '" y="' + padT + '" width="' + step + '" height="' + ph + '" data-i="' + i + '"/>';
+        });
+        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cash in and out by month">' + out + hits + '</svg>';
+        host.appendChild(tip);
+        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
+            var r = rows[i];
+            return '<b>' + bkMon(r.m) + ' ' + r.m.slice(0, 4) + '</b>' +
+                '<div><span>In</span><span>' + bkMoney(r.i) + '</span></div><div><span>Out</span><span>' + bkMoney(r.o) + '</span></div>' +
+                '<div><span>Net</span><span style="color:' + (r.i - r.o < 0 ? 'var(--bad)' : 'var(--ok)') + '">' + bkMoney(r.i - r.o) + '</span></div>';
+        }, 200);
+    }
+
+    function bkMarginCard(m, sold) {
+        var src = sold.filter(function (d) { return !bkIsCon(d); });
+        var sm = src.map(function (d) { return bkMargin(d); });
+        var scale = Math.max.apply(null, sm.concat([0.1]));
+        var med = bkMedianDays(src);
+        var row = function (name, p, desc, fill) {
+            return '<div class="bk-mt-row"><div class="bk-mt-top"><span class="count">' + name + '</span><span class="p">' + (p == null ? '—' : bkPct(p)) + '</span></div>' +
+                '<div class="tsub" style="margin-top:4px">' + desc + '</div>' +
+                '<div class="bk-meter"><i style="width:' + (p == null ? 0 : Math.max(Math.min(p / scale, 1) * 100, 0)) + '%;background:' + fill + '"></i></div></div>';
+        };
+        document.getElementById('bk-mt').innerHTML =
+            row('Sourcing', m.srev ? m.sgp / m.srev : null, bkMoney(m.sgp) + ' kept on ' + bkMoney(m.srev) + (sm.length ? ' · best ' + bkPct(scale) : ''), '#000') +
+            row('Consignment', m.crev ? m.cgp / m.crev : null, bkMoney(m.cgp) + ' in fees on ' + bkMoney(m.crev), 'var(--hatch)') +
+            '<div class="bk-mt-foot"><span class="count">Median days to sell</span><b>' + (med == null ? '—' : med + 'D') + '</b></div>' +
+            '<p class="tsub" style="margin-top:10px">Bars are measured against your best sourcing deal.</p>';
+    }
+
+    function bkDealRank(sold) {
+        var rows = sold.slice().sort(function (a, b) { return bkProfit(b) - bkProfit(a); });
+        var max = Math.max.apply(null, rows.map(function (d) { return Math.abs(bkProfit(d)); }).concat([1]));
+        var host = document.getElementById('bk-deal-rank');
+        if (!rows.length) return bkEmpty(host, null, 'No sales in this period');
+        host.innerHTML = rows.map(function (d, i) {
+            var p = bkProfit(d), con = bkIsCon(d);
+            return '<div class="r" data-id="' + esc(d.id) + '" style="cursor:pointer"><span class="no">' + String(i + 1).padStart(2, '0') + '</span>' +
+                '<div class="nm"><div class="t">' + esc((d.brand ? d.brand + ' ' : '') + (d.model || d.ref)) + '</div>' +
+                    '<div class="s"><span class="tag' + (con ? ' con' : '') + '">' + (con ? 'Consignment' : 'Sourcing') + '</span>' +
+                    esc(d.reference || '') + ' · ' + esc(d.ref) + '</div></div>' +
+                '<div class="val" style="color:' + (p < 0 ? 'var(--bad)' : 'var(--ok)') + '">' + bkMoney(p) +
+                    '<small>' + bkPct(bkMargin(d)) + (con ? ' fee' : ' margin') + '</small></div>' +
+                '<div class="bar"><i style="width:' + Math.max(Math.abs(p) / max * 100, 1.5) + '%;background:' +
+                    (p < 0 ? 'var(--bad)' : con ? 'var(--hatch)' : '#000') + '"></i></div></div>';
+        }).join('');
+        [].forEach.call(host.querySelectorAll('.r[data-id]'), function (el) {
+            el.addEventListener('click', function () {
+                var d = BOOKS.deals.filter(function (x) { return x.id === el.dataset.id; })[0];
+                if (d) editDeal(d);
+            });
+        });
+    }
+
+    // Clicking a category opens its expenses, which is where they get edited.
+    function bkOhRank(inRange, total) {
+        var g = {};
+        BOOKS.expenses.forEach(function (e) {
+            if (!inRange(e.spent_on)) return;
+            var c = e.category || 'Other'; g[c] = (g[c] || 0) + bkNum(e.amount);
+        });
+        var keys = Object.keys(g).sort(function (a, b) { return g[b] - g[a]; });
+        var shown = keys.slice(0, 6), rest = keys.slice(6);
+        var restSum = rest.reduce(function (s, k) { return s + g[k]; }, 0);
+        var max = Math.max.apply(null, shown.map(function (k) { return g[k]; }).concat([restSum, 1]));
+        var host = document.getElementById('bk-oh');
+        document.getElementById('bk-oh-sub').textContent = bkMoney(total) + ' · ' + keys.length + ' categories · click to edit';
+        if (!keys.length) return bkEmpty(host, null, 'No overhead in this period');
+        var row = function (k, v, i, cat) {
+            return '<div class="r"' + (cat ? ' data-cat="' + esc(k) + '"' : ' title="' + esc(rest.join(', ')) + '"') + '><span class="no">' + String(i + 1).padStart(2, '0') + '</span>' +
+                '<div class="nm"><div class="t">' + esc(k) + '</div></div>' +
+                '<div class="val">' + bkCompact(v) + '<small>' + (v / (total || 1) * 100).toFixed(0) + '%</small></div>' +
+                '<div class="bar"><i style="width:' + (v / max * 100) + '%;background:var(--bad);opacity:' + Math.max(1 - i * .11, .3) + '"></i></div></div>';
+        };
+        host.innerHTML = shown.map(function (k, i) { return row(k, g[k], i, true); }).join('') +
+            (restSum ? row('Everything else', restSum, shown.length, false) : '');
+        [].forEach.call(host.querySelectorAll('[data-cat]'), function (el) {
+            el.addEventListener('click', function () { openCategory(el.dataset.cat, inRange); });
+        });
+    }
+
+    function bkDaysRank(sold) {
         var rows = sold.filter(function (d) { return d.date_bought && d.date_sold; })
             .map(function (d) { return [d, bkDays(d.date_bought, d.date_sold)]; })
             .sort(function (a, b) { return b[1] - a[1]; });
-        if (!rows.length) { host.innerHTML = '<p class="bk-empty">Nothing sold in this period</p>'; return; }
-        // Fixed label column with a clip so a long model name can never run
-        // into its bar; the bar track starts after it. Same-day flips get a
-        // stub bar and the word, not a hairline and "0d".
-        var W = 560, rowH = 34, labW = 190, valW = 58, H = rows.length * rowH + 6;
-        var max = Math.max.apply(null, rows.map(function (r) { return r[1]; })) || 1;
-        var pw = W - labW - valW - 12;
-        var svg = '<defs><clipPath id="bk-days-clip"><rect x="0" y="0" width="' + (labW - 12) + '" height="' + H + '"/></clipPath></defs>' +
-            '<g clip-path="url(#bk-days-clip)">' + rows.map(function (r, i) {
-                var d = r[0], y0 = i * rowH;
-                return '<text class="bk-dlab" x="0" y="' + (y0 + 15) + '">' + esc(((d.brand || '') + ' ' + (d.model || '')).trim()) + '</text>' +
-                       '<text class="bk-dsub" x="0" y="' + (y0 + 28) + '">' + esc(d.reference || '') + '</text>';
-            }).join('') + '</g>' +
-            rows.map(function (r, i) {
-                var y0 = i * rowH, w = Math.max(6, r[1] / max * pw);
-                var lab = r[1] === 0 ? 'same day' : r[1] + 'd';
-                return '<rect x="' + labW + '" y="' + (y0 + 9) + '" width="' + w + '" height="16" rx="5" fill="' + (r[1] > 30 ? 'var(--r)' : 'var(--g)') + '"/>' +
-                       '<text class="bk-dlab" x="' + (labW + w + 8) + '" y="' + (y0 + 21) + '">' + lab + '</text>';
-            }).join('');
-        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Days to sell per piece">' + svg + '</svg>';
+        var host = document.getElementById('bk-days');
+        var fast = rows.filter(function (r) { return r[1] <= 7; }).length;
+        document.getElementById('bk-days-sub').textContent = rows.length
+            ? fast + ' of ' + rows.length + ' sold inside a week · over 30 days reads red' : 'Bought (or taken in) to sold';
+        if (!rows.length) return bkEmpty(host, null, 'Nothing sold in this period');
+        var max = Math.max.apply(null, rows.map(function (r) { return r[1]; }).concat([1]));
+        host.innerHTML = rows.map(function (r, i) {
+            var d = r[0], slow = r[1] > 30;
+            return '<div class="r"><span class="no">' + String(i + 1).padStart(2, '0') + '</span>' +
+                '<div class="nm" title="' + esc(d.date_bought) + ' → ' + esc(d.date_sold) + '"><div class="t">' + esc(((d.brand || '') + ' ' + (d.model || '')).trim()) +
+                    ' <span class="tag' + (bkIsCon(d) ? ' con' : '') + '" style="vertical-align:2px;margin-left:4px">' + esc(d.reference || '') + '</span></div></div>' +
+                '<div class="val"' + (slow ? ' style="color:var(--bad)"' : '') + '>' + (r[1] === 0 ? 'SAME DAY' : r[1] + 'D') + '</div>' +
+                '<div class="bar"><i style="width:' + Math.max(r[1] / max * 100, 1.5) + '%;background:' + (slow ? 'var(--bad)' : '#000') + '"></i></div></div>';
+        }).join('');
+    }
+
+    function bkQuick() {
+        var it = function (id, ic, t, d) {
+            return '<button id="' + id + '"><span class="ic">' + ic + '</span><span><div class="t">' + t + '</div><div class="d">' + d + '</div></span><span class="go">→</span></button>';
+        };
+        document.getElementById('bk-qa').innerHTML =
+            it('bk-qa-deal', '+', 'New deal', 'Sourcing or consignment') +
+            it('bk-qa-inv', '#', 'New invoice', 'Numbered, links to a deal') +
+            it('bk-qa-xlsx', '↓', 'Export spreadsheet', 'Summary, P&amp;L, deals, bank') +
+            it('bk-qa-next', '!', 'Next deadline', 'Loading…');
+        document.getElementById('bk-qa-deal').addEventListener('click', function () { editDeal(null); });
+        document.getElementById('bk-qa-inv').addEventListener('click', function () { bkGoTab('invoices'); });
+        document.getElementById('bk-qa-xlsx').addEventListener('click', bkExport);
+        document.getElementById('bk-qa-next').addEventListener('click', function () {
+            var t = document.getElementById('bk-s-tax');
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     }
 
     // Bank money grouped by the category column, biggest first. Clicking a
@@ -1420,11 +1541,24 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             if (bkCat && (t.category || 'Uncategorized') !== bkCat) return false;
             return true;
         }).sort(function (a, b) { return a.posted_on < b.posted_on ? 1 : -1; });
-        var CAP = 500;
-        document.getElementById('bk-reg-cap').textContent =
-            rows.length + ' transaction' + (rows.length === 1 ? '' : 's') +
-            (bkCat ? ' in ' + bkCat + ' — click the category again to clear' : '') +
-            (rows.length > CAP ? ' · showing the newest ' + CAP : '');
+        var CAP = 500, full = bkRegOpen || !!bkCat;
+        document.getElementById('bk-reg-cap').textContent = full
+            ? rows.length + ' transaction' + (rows.length === 1 ? '' : 's') +
+              (bkCat ? ' in ' + bkCat + ' · click the category again to clear' : '') +
+              (rows.length > CAP ? ' · showing the newest ' + CAP : '')
+            : 'Bank and card · newest first · ' + rows.length + ' in this period';
+        if (!full) {
+            document.getElementById('bk-register').innerHTML =
+                '<table class="leads"><thead><tr><th>Date</th><th>Category</th><th class="n">Amount</th></tr></thead><tbody>' +
+                rows.slice(0, 8).map(function (t) {
+                    var inn = bkNum(t.money_in) > 0;
+                    return '<tr><td class="tmono"><span class="yr">' + esc(t.posted_on.slice(0, 5)) + '</span>' + esc(t.posted_on.slice(5)) + '</td>' +
+                        '<td>' + esc(t.category || 'Uncategorized') + '</td>' +
+                        '<td class="n' + (inn ? ' in' : '') + '">' +
+                            (inn ? '+' + bkMoney(bkNum(t.money_in), 2) : '−' + bkMoney(bkNum(t.money_out), 2)) + '</td></tr>';
+                }).join('') + '</tbody></table>';
+            return;
+        }
         document.getElementById('bk-register').innerHTML =
             '<table class="leads"><thead><tr><th>Date</th><th>Description</th><th>Category</th>' +
             '<th style="text-align:right">In</th><th style="text-align:right">Out</th></tr></thead><tbody>' +
@@ -1453,115 +1587,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
     }
 
-    // A bar is a rounded data-end anchored to the baseline, not a rounded box.
-    function bkBar(x, y, w, h, r) {
-        if (h <= 0.5) return '';
-        r = Math.min(r, w / 2, h);
-        return 'M' + x + ' ' + (y + h) + ' V' + (y + r) + ' a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + (-r) +
-               ' h' + (w - 2 * r) + ' a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r + ' V' + (y + h) + ' Z';
-    }
-
-    function bkCashChart(inRange) {
-        var host = document.getElementById('bk-cash'), tip = document.getElementById('bk-cash-t');
-        var by = {};
-        BOOKS.bank.forEach(function (t) {
-            if (!inRange(t.posted_on)) return;
-            var m = t.posted_on.slice(0, 7);
-            if (!by[m]) by[m] = [0, 0];
-            by[m][0] += bkNum(t.money_in);
-            by[m][1] += bkNum(t.money_out);
-        });
-        var rows = Object.keys(by).sort().map(function (m) { return [m, by[m][0], by[m][1]]; });
-        if (!rows.length) {
-            host.innerHTML = '<p class="bk-empty">No movement in this period</p>';
-            host.appendChild(tip); return;
-        }
-        var W = 560, H = 210, padL = 46, padB = 26, padT = 8;
-        var max = Math.max.apply(null, rows.map(function (r) { return Math.max(r[1], r[2]); })) || 1;
-        // Round the axis to a step a human would pick, so the ticks read
-        // $15K/$30K/$45K rather than $13K/$25K/$38K.
-        var raw = max / 4;
-        var mag = Math.pow(10, Math.floor(Math.log10(raw)));
-        var mult = [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10].filter(function (m) { return m * mag >= raw; })[0];
-        var nice = mult * mag * 4;
-        var pw = W - padL, ph = H - padB - padT;
-        var step = pw / rows.length, bw = Math.min(20, (step - 14) / 2);
-        var y = function (v) { return padT + ph - (v / nice) * ph; };
-
-        var g = '';
-        for (var i = 0; i <= 4; i++) {
-            var v = nice * i / 4;
-            g += '<line class="bk-gl" x1="' + padL + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
-                 '<text class="bk-tick" x="' + (padL - 9) + '" y="' + (y(v) + 3.5) + '" text-anchor="end">' +
-                 (i ? bkCompact(v) : '$0') + '</text>';
-        }
-        var bars = '', hits = '';
-        rows.forEach(function (r, i) {
-            var cx = padL + step * i + step / 2;
-            bars += '<path d="' + bkBar(cx - bw - 1, y(r[1]), bw, padT + ph - y(r[1]), 4) + '" fill="var(--s1)"/>' +
-                    '<path d="' + bkBar(cx + 1, y(r[2]), bw, padT + ph - y(r[2]), 4) + '" fill="var(--s2)"/>' +
-                    '<text class="bk-tick" x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' +
-                    BK_MON[+r[0].slice(5, 7) - 1] + '</text>';
-            hits += '<rect class="bk-hit" x="' + (padL + step * i) + '" y="' + padT + '" width="' + step +
-                    '" height="' + ph + '" data-i="' + i + '"/>';
-        });
-        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
-            'aria-label="Cash in and cash out by month">' + g +
-            '<line class="bk-base" x1="' + padL + '" x2="' + W + '" y1="' + (padT + ph) + '" y2="' + (padT + ph) + '"/>' +
-            bars + hits + '</svg>';
-        host.appendChild(tip);
-        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
-            var r = rows[i];
-            return '<b>' + BK_MON[+r[0].slice(5, 7) - 1] + ' ' + r[0].slice(0, 4) + '</b><br>' +
-                'In &nbsp;' + bkMoney(r[1], 2) + '<br>Out ' + bkMoney(r[2], 2) +
-                '<br>Net ' + bkMoney(r[1] - r[2], 2);
-        }, 150);
-    }
-
-    function bkExpChart(inRange) {
-        var host = document.getElementById('bk-exp'), tip = document.getElementById('bk-exp-t');
-        var agg = {};
-        BOOKS.expenses.forEach(function (e) {
-            if (!inRange(e.spent_on)) return;
-            var c = e.category || 'Other';
-            agg[c] = (agg[c] || 0) + bkNum(e.amount);
-        });
-        var rows = Object.keys(agg).map(function (k) { return [k, agg[k]]; })
-            .sort(function (a, b) { return b[1] - a[1]; });
-        if (!rows.length) {
-            host.innerHTML = '<p class="bk-empty">No overhead in this period</p>';
-            host.appendChild(tip); return;
-        }
-        var total = rows.reduce(function (s, r) { return s + r[1]; }, 0);
-        // One hue for every bar: these categories have no natural order, so
-        // shading them by size would double-encode length as colour.
-        var W = 420, rh = 27, H = rows.length * rh + 6, labW = 150, barW = W - labW - 66;
-        var max = rows[0][1];
-        var out = '', hits = '';
-        rows.forEach(function (r, i) {
-            var w = Math.max((r[1] / max) * barW, 2), y0 = i * rh + 4;
-            out += '<text class="bk-dlab" x="0" y="' + (y0 + 13) + '">' +
-                        esc(r[0].length > 19 ? r[0].slice(0, 18) + '…' : r[0]) + '</text>' +
-                   '<rect x="' + labW + '" y="' + (y0 + 3) + '" width="' + w + '" height="13" rx="4" fill="var(--s2)"/>' +
-                   '<text class="bk-dsub" x="' + (labW + w + 9) + '" y="' + (y0 + 13.5) + '">' + bkMoney(r[1]) + '</text>';
-            hits += '<rect class="bk-hit" x="0" y="' + y0 + '" width="' + W + '" height="' + rh + '" data-i="' + i + '"/>';
-        });
-        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Expenses by category">' +
-            out + hits + '</svg>';
-        host.appendChild(tip);
-        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
-            var r = rows[i];
-            return '<b>' + esc(r[0]) + '</b><br>' + bkMoney(r[1], 2) + ' &middot; ' +
-                bkPct(r[1] / total) + ' of overhead<br>click to open';
-        }, 190);
-        [].forEach.call(host.querySelectorAll('.bk-hit'), function (h) {
-            h.style.cursor = 'pointer';
-            h.addEventListener('click', function () { openCategory(rows[+h.dataset.i][0], inRange); });
-        });
-    }
-
-    // Drilling into a bar is the only way to reach an existing expense for editing,
-    // so the chart is a navigation surface here, not just a picture.
+    // Clicking an Overhead row lands here: it is the only way to reach an
+    // existing expense for editing.
     function openCategory(cat, inRange) {
         var rows = BOOKS.expenses.filter(function (e) {
             return (e.category || 'Other') === cat && inRange(e.spent_on);
@@ -1596,44 +1623,6 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 if (e) editExpense(e);
             });
         });
-    }
-
-    function bkDealChart(sold) {
-        var host = document.getElementById('bk-deal'), tip = document.getElementById('bk-deal-t');
-        var rows = sold.slice().sort(function (a, b) { return bkProfit(b) - bkProfit(a); });
-        if (!rows.length) {
-            host.innerHTML = '<p class="bk-empty">No sales in this period</p>';
-            host.appendChild(tip); return;
-        }
-        var W = 520, rh = 44, H = rows.length * rh + 4, labW = 190, barW = W - labW - 84;
-        var max = Math.max.apply(null, rows.map(function (d) { return Math.abs(bkProfit(d)); })) || 1;
-        var out = '', hits = '';
-        rows.forEach(function (d, i) {
-            var p = bkProfit(d), w = Math.max((Math.abs(p) / max) * barW, 2), y0 = i * rh + 6, con = bkIsCon(d);
-            var model = (d.brand ? d.brand + ' ' : '') + (d.model || d.ref);
-            out += '<text class="bk-dlab" x="0" y="' + (y0 + 13) + '">' +
-                        esc(model.length > 25 ? model.slice(0, 24) + '…' : model) + '</text>' +
-                   '<text class="bk-dsub" x="0" y="' + (y0 + 27) + '">' + esc(d.reference || '') +
-                        ' &middot; ' + (con ? 'consignment' : bkDays(d.date_bought, d.date_sold) + 'd held') + '</text>' +
-                   '<rect x="' + labW + '" y="' + (y0 + 7) + '" width="' + w + '" height="14" rx="4" fill="' +
-                        (p < 0 ? 'var(--bad)' : con ? 'rgba(22,163,74,.35)' : 'var(--ok)') + '"/>' +
-                   '<text class="bk-dlab" x="' + (labW + w + 10) + '" y="' + (y0 + 18) + '">' + bkMoney(p, 2) + '</text>' +
-                   '<text class="bk-dsub" x="' + (labW + w + 10) + '" y="' + (y0 + 31) + '">' +
-                        bkPct(bkMargin(d)) + (con ? ' fee' : ' margin') + '</text>';
-            hits += '<rect class="bk-hit" x="0" y="' + (i * rh) + '" width="' + W + '" height="' + rh + '" data-i="' + i + '"/>';
-        });
-        host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Profit per deal">' +
-            out + hits + '</svg>';
-        host.appendChild(tip);
-        bkTip(host, tip, host.querySelectorAll('.bk-hit'), function (i) {
-            var d = rows[i];
-            return '<b>' + esc(d.ref) + (bkIsCon(d) ? ' &middot; consignment' : '') + '</b><br>' +
-                (bkIsCon(d) ? 'Paid consignor ' : 'Bought ') + bkMoney(bkNum(d.buy_total), 2) +
-                    (bkNum(d.other_costs) ? ' &middot; costs ' + bkMoney(bkNum(d.other_costs), 2) : '') + '<br>' +
-                'Sold &nbsp;&nbsp;' + bkMoney(bkNum(d.sell_total), 2) +
-                    (d.buyer ? ' to ' + esc(d.buyer) : '') + '<br>' +
-                (bkIsCon(d) ? 'Fee ' : 'Profit ') + bkMoney(bkProfit(d), 2) + ' (' + bkPct(bkMargin(d)) + ')';
-        }, 240);
     }
 
     var BK_DISP = {

@@ -1,10 +1,10 @@
 # Internal lead access containment
 
-Prepared September 30, 2026 for Supabase project `untnrofsnmoyxdidxbdj`. Production application requires Henry's explicit approval of this exact access change. The parent task is the sole production executor.
+Prepared September 30, 2026 for Supabase project `untnrofsnmoyxdidxbdj`. Production containment was applied by the parent task after Henry approved the exact access change. This draft PR records the applied fix; it is not an instruction to reapply it.
 
 ## Change
 
-Run `scripts/sql/restrict-internal-lead-access.sql` through Supabase `apply_migration` with name `restrict_internal_lead_access` after approval. It atomically revokes EXECUTE from PUBLIC, anon and authenticated on:
+The parent applied `scripts/sql/restrict-internal-lead-access.sql` through Supabase `apply_migration` as `20260930181021_restrict_internal_lead_access`. It atomically revokes EXECUTE from PUBLIC, anon and authenticated on:
 
 - public.day_summary()
 - public.identity_health()
@@ -29,18 +29,31 @@ It preserves service_role execution, revokes all PUBLIC/anon/authenticated privi
 
 No application caller changes are needed for verified website flows.
 
-## Deployed metadata verification
+## Pre-fix deployed metadata verification
 
-Catalog-only reads confirmed PostgreSQL 17.6, all eight functions SECURITY DEFINER owned by postgres, all granting EXECUTE to PUBLIC; the seven-argument brief additionally grants anon/authenticated explicitly. All eight are effectively executable by anon, authenticated and service_role. lead_stage has all table privileges for anon/authenticated/service_role, no column ACLs, and no security_invoker option. service_role has BYPASSRLS and SELECT on dialed_submissions and lead_drafts, preserving the view's legitimate internal behavior under security_invoker.
+Catalog-only reads confirmed PostgreSQL 17.6, all eight functions SECURITY DEFINER owned by postgres, all granting EXECUTE to PUBLIC; the seven-argument brief additionally grants anon/authenticated explicitly. Before containment, all eight were effectively executable by anon, authenticated and service_role. Before containment, lead_stage had all table privileges for anon/authenticated/service_role, no column ACLs, and no security_invoker option. service_role has BYPASSRLS and SELECT on dialed_submissions and lead_drafts, preserving the view's legitimate internal behavior under security_invoker.
 
 No business RPC, customer-row query, live form or HTTP exposure probe was executed. This establishes unauthorized permissions, not exploitation.
+
+## Production application and independent verification
+
+Evidence supplied by the parent task on September 30, 2026 (all times UTC):
+
+- 17:56: approval request described the exact view/eight-function grant changes and the compatibility risk for unknown external automation using public keys.
+- 18:09:47: Henry approved, “Yep make these changes” (message `messageSentinel_0e84a69a09088191b092b9dc7e26dbac`).
+- 18:10:21: Supabase apply_migration returned success; recorded migration `20260930181021_restrict_internal_lead_access`.
+- 18:10:59: independent catalog verification confirmed all eight signatures deny EXECUTE to anon/authenticated and retain service_role EXECUTE. lead_stage has security_invoker=true, denies both table SELECT and any-column SELECT to anon/authenticated, and retains service_role SELECT.
+- A read-only transaction with `SET LOCAL ROLE service_role; SELECT 1 FROM public.lead_stage LIMIT 0;` succeeded. It checked service-role query permissions without fetching customer rows.
+- Fresh security advisors reported zero anonymous SECURITY DEFINER function warnings and zero SECURITY DEFINER view errors. Unrelated search_path/public-extension warnings remain outside this targeted fix.
+
+No business RPC invocation, live form test, HTTP exposure probe, or misuse investigation was performed. The production checks establish containment and service-role query authorization, not end-to-end external automation health. Do not reapply, rollback, merge, or deploy from this evidence alone.
 
 ## Verification and operational limits
 
 - `node --test test/internal-lead-access.test.js`: synthetic network mocks verify unauthorized list/today/accuracy calls fail before any fetch, and authorized calls to lead_stage/day_summary/identity_health use service-role headers.
 - Forward SQL contains catalog-only assertions; missing objects, inherited unwanted privileges or missing service view prerequisites abort the transaction.
-- After applying, execute `scripts/sql/verify-internal-lead-access.sql` via execute_sql. It runs in a read-only transaction and checks effective privileges, column grants and the view option without selecting customer rows or invoking business RPCs.
-- Then run Supabase get_advisors(type=security); expect targeted anonymous-function and lead_stage SECURITY DEFINER findings to disappear. Report unrelated remaining findings separately.
+- For future read-only rechecks, execute `scripts/sql/verify-internal-lead-access.sql` via execute_sql. It runs in a read-only transaction and checks effective privileges, column grants and the view option without selecting customer rows or invoking business RPCs.
+- Supabase get_advisors(type=security) confirmed the targeted findings cleared after application. Report unrelated remaining findings separately.
 - No local Supabase CLI, psql or Docker was available; the SQL has not been executed against a local fixture. Fresh deployed metadata verifies exact signatures and compatibility. No production permission changes were made by the preparation task.
 - lock_timeout=5s and statement_timeout=30s bound lock waits. A failed transaction leaves the prior permissions intact; do not silently retry without reviewing the failure.
 

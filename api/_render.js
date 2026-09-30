@@ -70,6 +70,9 @@ function renderWatchPage(w, all = []) {
         ...pool.filter(p => p.brand === w.brand && fam(p.model) !== fam(w.model)),
     ].slice(0, 4);
     const displayName = w.name + (w.nickname ? ` "${w.nickname}"` : '');
+    const sourceUrl = '/source?' + new URLSearchParams({
+        brand: w.brand || '', model: w.model || '', reference: w.ref || ''
+    }).toString();
     const canonical = `${SITE_URL}/watch/${w.slug}`;
     const img = normUrl(w.image);
     const title = `${displayName}${w.ref ? ' ' + w.ref : ''} | Dialed By H`;
@@ -380,7 +383,7 @@ ${w.details ? `<p class="pt-blurb">${escHtml(w.details)}</p>` : ''}
 <div class="pt-inquiry">
 <p>Interested in this piece? Inquire below and I&rsquo;ll get back to you with sourcing details, pricing, and availability.</p>
 <a class="pt-btn pt-btn--wa" href="${waLink}" target="_blank" rel="noopener">Message on WhatsApp</a>
-<button type="button" class="pt-btn pt-btn--ghost" onclick="location.href='/source'">Inquire to source</button>
+<button type="button" class="pt-btn pt-btn--ghost" onclick="location.href='${escAttr(sourceUrl)}'">Inquire to source</button>
 </div>
 <div class="pt-chips"><span class="pt-chip">Authenticated</span><span class="pt-chip">Insured nationwide</span><span class="pt-chip">Secure transaction</span></div>
 </div>

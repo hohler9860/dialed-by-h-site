@@ -1095,7 +1095,12 @@
                 // Direct link support: dialedbyhenry.com/source (or /?source, #source) opens the sourcing form
                 const p = location.pathname.replace(/\/+$/, '');
                 if (p === '/source' || location.hash === '#source' || new URLSearchParams(location.search).has('source')) {
-                    app.openModal('BUY');
+                    const params = new URLSearchParams(location.search);
+                    app.openModal('BUY', {
+                        brand: params.get('brand') || '',
+                        model: params.get('model') || '',
+                        ref: params.get('reference') || ''
+                    });
                 }
             },
 
@@ -1108,6 +1113,27 @@
                 const models = CONFIG.WATCH_BRANDS[brand] || [];
                 select.innerHTML = '<option value="" class="bg-charcoal">Select Model</option>' +
                     models.map(m => '<option value="'+esc(m)+'" class="bg-charcoal">'+esc(m)+'</option>').join('');
+            },
+
+            prefillSource: (body, data) => {
+                // Add catalog values absent from the curated menus without losing
+                // the exact watch identity. DOM properties keep URL text inert.
+                const selectValue = (select, value) => {
+                    if (!value) return;
+                    if (!Array.from(select.options).some(option => option.value === value)) {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = value;
+                        option.className = 'bg-charcoal';
+                        select.appendChild(option);
+                    }
+                    select.value = value;
+                };
+                const brand = body.querySelector('[name="watchBrand"]');
+                selectValue(brand, data.brand);
+                app.updateModels(brand.value);
+                selectValue(body.querySelector('[name="watchModel"]'), data.model);
+                body.querySelector('[name="watchRef"]').value = data.ref || '';
             },
 
             toggleMobileMenu: () => {
@@ -1326,6 +1352,7 @@
                 }
 
                 body.innerHTML = html;
+                if (type === 'BUY' && data) app.prefillSource(body, data);
                 safeCreateIcons();
 
                 // pt-modal style entrance animations (ported from assets/modals.js):

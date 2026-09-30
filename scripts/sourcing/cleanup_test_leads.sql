@@ -10,7 +10,7 @@ create table if not exists public.dialed_submissions_removed_20260803 as
 select * from public.dialed_submissions
 where lead_class in ('TEST', 'SPAM')
    or lower(coalesce(full_name, '')) like '%henry%ohler%'
-   or lower(coalesce(email, '')) in ('dialedbyh@gmail.com', 'henrycohler@gmail.com')
+   or lower(coalesce(email, '')) in ('dialedbyh@gmail.com', 'henrycohler@gmail.com', 'henry@dialedbyhenry.com')
    or lower(coalesce(full_name, '')) ~ '\mtest\M'
    or lower(coalesce(email, '')) like '%resend-debug%';
 

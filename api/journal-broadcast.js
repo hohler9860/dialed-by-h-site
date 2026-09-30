@@ -116,6 +116,7 @@ module.exports = async (req, res) => {
             const html = htmlWithUnsub.replaceAll(UNSUB_PLACEHOLDER, unsubUrl);
             const r = await getResend().emails.send({
                 from: "Henry at Off-Catalog <inquiries@mail.dialedbyhenry.com>",
+                replyTo: "henry@dialedbyhenry.com",
                 to: testEmail,
                 subject,
                 html,
@@ -150,6 +151,7 @@ module.exports = async (req, res) => {
                     const html = htmlWithUnsub.replaceAll(UNSUB_PLACEHOLDER, unsubUrl);
                     return getResend().emails.send({
                         from: "Henry at Off-Catalog <inquiries@mail.dialedbyhenry.com>",
+                        replyTo: "henry@dialedbyhenry.com",
                         to: sub.email,
                         subject,
                         html,

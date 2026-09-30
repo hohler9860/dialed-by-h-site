@@ -154,6 +154,7 @@ module.exports = async (req, res) => {
         try {
             const sendRes = await getResend().emails.send({
                 from: "Off-Catalog <inquiries@mail.dialedbyhenry.com>",
+                replyTo: "henry@dialedbyhenry.com",
                 to: email,
                 subject: "Confirm your Off-Catalog subscription",
                 html: confirmEmailHtml({ confirmUrl, email }),

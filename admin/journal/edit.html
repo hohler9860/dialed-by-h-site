@@ -747,7 +747,7 @@
         }
 
         emailTestBtn.addEventListener("click", () => {
-            const target = prompt("Send test to which email?", "dialedbyh@gmail.com");
+            const target = prompt("Send test to which email?", "henry@dialedbyhenry.com");
             if (target && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target.trim())) {
                 sendBroadcast({ testEmail: target.trim() });
             } else if (target !== null) {

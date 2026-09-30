@@ -326,7 +326,7 @@ module.exports = async (req, res) => {
 
       // 1. Notification email to Henry
       if (template) {
-        const toEmail = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
+        const toEmail = process.env.NOTIFICATION_EMAIL || "henry@dialedbyhenry.com";
         console.log("[submit-form] Queuing notification email to:", toEmail);
 
         emailPromises.push(

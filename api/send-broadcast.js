@@ -103,6 +103,7 @@ module.exports = async (req, res) => {
       console.log("[broadcast] TEST MODE -sending to:", payload.testEmail);
       const result = await getResend().emails.send({
         from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+        replyTo: "henry@dialedbyhenry.com",
         to: payload.testEmail,
         subject: payload.subject,
         html,
@@ -168,6 +169,7 @@ module.exports = async (req, res) => {
         batch.map(sub =>
           getResend().emails.send({
             from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+            replyTo: "henry@dialedbyhenry.com",
             to: sub.email,
             subject: payload.subject,
             html,

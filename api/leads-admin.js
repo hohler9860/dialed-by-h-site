@@ -266,7 +266,7 @@ async function sendTaxReminders() {
     if (!due.length) return [];
     const { Resend } = require("resend");
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const to = process.env.NOTIFICATION_EMAIL || "dialedbyh@gmail.com";
+    const to = process.env.NOTIFICATION_EMAIL || "henry@dialedbyhenry.com";
     const esc = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const fmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
     const line = (o) => {

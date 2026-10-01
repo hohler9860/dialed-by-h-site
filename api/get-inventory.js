@@ -271,10 +271,18 @@ module.exports = async (req, res) => {
     // ── Sitemap (XML) ──
     if (q.sitemap) {
         try {
-            const pieces = await fetchAllPieces();
+            const [pieces, articles] = await Promise.all([
+                fetchAllPieces(),
+                sbFetch('/rest/v1/journal_articles?status=eq.published&select=slug,status&order=published_at.desc&limit=1000')
+                    .then(r => r.json())
+                    .catch(err => {
+                        console.error('[get-inventory:sitemap:journal]', err.message);
+                        return [];
+                    }),
+            ]);
             res.setHeader('Content-Type', 'application/xml; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
-            return res.status(200).send(renderSitemap(pieces));
+            return res.status(200).send(renderSitemap(pieces, articles));
         } catch (err) {
             console.error('[get-inventory:sitemap] error:', err && err.message);
             res.setHeader('Content-Type', 'application/xml; charset=utf-8');

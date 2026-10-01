@@ -494,7 +494,7 @@ document.querySelectorAll('.pt-thumbs button').forEach(function (b) {
 </html>`;
 }
 
-function renderSitemap(pieces) {
+function renderSitemap(pieces, articles = []) {
     const CORE = [
         { loc: '/', changefreq: 'daily', priority: '1.0' },
         { loc: '/buy/', changefreq: 'daily', priority: '0.9' },
@@ -522,9 +522,13 @@ function renderSitemap(pieces) {
         .filter(p => p.image && p.slug)
         .map(p => tag({ loc: `/watch/${p.slug}`, changefreq: 'weekly', priority: '0.8' }))
         .join('\n');
+    const articleTags = articles
+        .filter(a => a.status === 'published' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(a.slug || ''))
+        .map(a => tag({ loc: `/journal/${a.slug}`, changefreq: 'monthly', priority: '0.8' }))
+        .join('\n');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${CORE.map(tag).join('\n')}${watchTags ? '\n' + watchTags : ''}
+${CORE.map(tag).join('\n')}${watchTags ? '\n' + watchTags : ''}${articleTags ? '\n' + articleTags : ''}
 </urlset>`;
 }
 

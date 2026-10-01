@@ -1,43 +1,3 @@
-// Retry an <img> that failed to load, up to four times with growing delays.
-// Storage rate-limits (429) and flaky mobile radios both clear within seconds.
-// Chrome reports the refusal as net::ERR_BLOCKED_BY_ORB, because the 429 body
-// is JSON rather than an image, so the tile sees a plain error event.
-// The retries keep the same srcset (the ~14KB medium variant): a grid-level
-// listener used to answer the first failure by fetching the 900px file at
-// once, and this retry then fetched that same file again with a cache-bust,
-// so one refused thumbnail cost two 30-47KB downloads on the radio the LCP
-// tile was still using. After the last retry the full-size file is tried
-// once, which covers a variant that is genuinely missing, and only if that
-// fails too does the tile become the wordmark placeholder.
-window.dbhImgRetry = function (el) {
-  var n = Number(el.dataset.retry || 0);
-  if (n >= 4) {
-    if (el.dataset.full && !el.dataset.fullTried && el.getAttribute('src').indexOf(el.dataset.full) !== 0) {
-      el.dataset.fullTried = '1';
-      el.removeAttribute('srcset');
-      el.setAttribute('src', el.dataset.full);
-      return;
-    }
-    el.onerror = null;
-    var ph = document.createElement('span');
-    ph.className = 'ph';
-    ph.textContent = 'DIALED BY H';
-    if (el.parentNode) el.parentNode.replaceChild(ph, el);
-    return;
-  }
-  el.dataset.retry = n + 1;
-  var wait = [1200, 3000, 7000, 15000][n] + Math.random() * 800;
-  setTimeout(function () {
-    var src = el.getAttribute('src'), ss = el.getAttribute('srcset');
-    var bust = (src.indexOf('?') > -1 ? '&' : '?') + 'r=' + (n + 1);
-    if (ss) el.setAttribute('srcset', ss.split(',').map(function (part) {
-      var bits = part.trim().split(/\s+/);
-      return bits[0] + (bits[0].indexOf('?') > -1 ? '&' : '?') + 'r=' + (n + 1) + (bits[1] ? ' ' + bits[1] : '');
-    }).join(', '));
-    el.setAttribute('src', src + bust);
-  }, wait);
-};
-
 /* Prime Time Miami — Buy page: functional facet filters (dealer-style:
    Brand / Model / Case Material / Price Range / Year / Condition),
    asymmetric grid render, and scroll parallax on cards.
@@ -174,7 +134,7 @@ window.dbhImgRetry = function (el) {
     var fallback = c.piece || '';
     art.innerHTML =
       '<a href="#celeb=' + slug + '" aria-label="' + c.name.replace(/"/g, '') + ' watch collection">' +
-      '<div class="pt-item__media pt-item__media--celeb"><img src="/images/celebs/' + slug + '.webp" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'' + fallback + '\'"></div>' +
+      '<div class="pt-item__media pt-item__media--celeb"><img data-src="/images/celebs/' + slug + '.webp" data-full="' + fallback.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" width="300" height="300" alt="" decoding="async"></div>' +
       '<div class="pt-item__row"><span>' + c.name + '</span>' +
       '<span class="pt-item__meta">' + c.count + ' pieces</span></div>' +
       '</a>';
@@ -464,20 +424,12 @@ window.dbhImgRetry = function (el) {
   // janks the page. Render in chunks and append the next chunk as you approach
   // the bottom (sentinel + IntersectionObserver).
   var CHUNK = 60;
-  // The first screen is a dozen tiles at most. Build those synchronously so
-  // their image requests go out at once, and hand the rest of the first chunk
-  // to an idle callback: the browser would otherwise queue ~30 lazy thumbnails
-  // (its lazy-load margin on a slow connection is 2500px) alongside the eight
-  // that decide LCP. Chunks after the first are still built in one go.
+  // Build the first screen immediately; the image queue below controls requests.
   var FIRST = 12;
-  // Tiles fetched at high priority. The grid is two columns at 820px and
-  // under (see .pt-grid12), so the first viewport holds two rows at most;
-  // eight high-priority tiles there meant four off-screen images sharing the
-  // radio equally with the one that becomes LCP. Wider layouts keep eight.
   var HIGH = window.matchMedia && window.matchMedia('(max-width: 820px)').matches ? 4 : 8;
   var renderList = [];
   var renderedCount = 0;
-  var sentinel = null;
+  var sentinel = null, chunkObserver = null;
   var chunkToken = 0;
   var later = window.requestIdleCallback
     ? function (fn) { window.requestIdleCallback(fn, { timeout: 400 }); }
@@ -497,10 +449,12 @@ window.dbhImgRetry = function (el) {
         sentinel = document.createElement('div');
         sentinel.style.cssText = 'height:1px;grid-column:1/-1';
         grid.appendChild(sentinel);
-        var io = new IntersectionObserver(function (es) {
-          if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); appendChunk(); }
+        if (chunkObserver) chunkObserver.disconnect();
+        chunkObserver = new IntersectionObserver(function (es) {
+          if (token !== chunkToken) return;
+          if (es.some(function (e) { return e.isIntersecting; })) { chunkObserver.disconnect(); appendChunk(); }
         }, { rootMargin: '1200px' });
-        io.observe(sentinel);
+        chunkObserver.observe(sentinel);
       }
       revealCards();
     };
@@ -508,43 +462,19 @@ window.dbhImgRetry = function (el) {
     place(0, head);
     if (head < slice.length) {
       revealCards();
-      // Wait for the high-priority tiles to land before building the rest.
-      // Storage refuses part of any burst much past ~28 requests (429, seen
-      // by Chrome as ERR_BLOCKED_BY_ORB) and a refused first-row tile is a
-      // multi-second LCP. Twelve tiles now go out alone; the next 48, and the
-      // ~25 lazy requests Chrome makes for them, follow once the first row
-      // is in, or after 1.5s regardless.
-      whenSettled(grid.querySelectorAll('img[fetchpriority="high"]'), 1500, function () {
-        later(function () {
-          // A filter or search re-rendered the grid in the meantime; this
-          // batch belongs to a list that is no longer on screen.
-          if (token !== chunkToken) return;
-          place(head, slice.length);
-          finish();
-        });
+      later(function () {
+        if (token !== chunkToken) return;
+        place(head, slice.length);
+        finish();
       });
     } else {
       finish();
     }
   }
 
-  // Run cb once every image in the list has loaded or errored, or after
-  // maxWait ms, whichever comes first. Never fires twice.
-  function whenSettled(imgs, maxWait, cb) {
-    var left = 0, done = false;
-    var fire = function () { if (!done) { done = true; cb(); } };
-    var one = function () { if (--left <= 0) fire(); };
-    [].forEach.call(imgs, function (im) {
-      if (im.complete) return;
-      left++;
-      im.addEventListener('load', one, { once: true });
-      im.addEventListener('error', one, { once: true });
-    });
-    if (left === 0) return fire();
-    setTimeout(fire, maxWait);
-  }
-
   function render() {
+    resetCardLoading();
+    if (chunkObserver) chunkObserver.disconnect();
     chunkToken++; // cancel any deferred batch from the previous render
     if (!celebsMode()) currentCeleb = null;
     if (celebsMode() && !currentCeleb) {
@@ -596,23 +526,21 @@ window.dbhImgRetry = function (el) {
       var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
       var abs = function (u) { return /^https?:\/\//i.test(u) || u.charAt(0) === '/' ? u : '/img?src=' + encodeURIComponent(u); };
       var imgSrc = w.image ? abs(w.image) : '';
-      var eager = i < HIGH ? ' fetchpriority="high"' : ' loading="lazy"';
+      var eager = i < HIGH ? ' fetchpriority="high"' : '';
       // Tiles render around 300px, so serve the 300px variant and let the
       // browser step up to 600/900 only on wide or retina screens. Previously
       // every tile downloaded the full 900px file - the bulk of /buy/'s LCP.
       // width/height are intrinsic (the renders are square) so the grid
       // reserves space before the image lands and cannot shift.
       var srcset = (w.imageThumb && w.imageMedium)
-        ? ' srcset="' + escf(abs(w.imageThumb)) + ' 300w, ' + escf(abs(w.imageMedium)) + ' 600w, ' + escf(imgSrc) + ' 900w"' +
+        ? ' data-srcset="' + escf(abs(w.imageThumb)) + ' 300w, ' + escf(abs(w.imageMedium)) + ' 600w, ' + escf(imgSrc) + ' 900w"' +
           ' sizes="(max-width: 640px) 45vw, (max-width: 1100px) 30vw, 300px"'
         : '';
-      // Supabase storage answers a burst of thumbnail requests with the odd
-      // 429, which the browser renders as a broken-image glyph. A refused
-      // image is not a missing image, so retry it with backoff (see dbhImgRetry).
+      // Keep URLs inert until the bounded preload queue starts this image.
       var img = imgSrc
-        ? '<img src="' + escf(w.imageThumb ? abs(w.imageThumb) : imgSrc) + '"' + srcset +
+        ? '<img data-src="' + escf(w.imageThumb ? abs(w.imageThumb) : imgSrc) + '"' + srcset +
           ' data-full="' + escf(imgSrc) + '"' +
-          ' width="300" height="300" alt="" decoding="async" onerror="dbhImgRetry(this)"' + eager + '>'
+          ' width="300" height="300" alt="" decoding="async"' + eager + '>'
         : '<span class="ph">DIALED BY H</span>';
       art.innerHTML =
         '<a href="/watch/' + (w.slug || '') + '" aria-label="' + title.replace(/"/g, '') + '">' +
@@ -623,25 +551,169 @@ window.dbhImgRetry = function (el) {
       return art;
   }
 
-  // Tile image failures are handled by dbhImgRetry (top of file) via each
-  // tile's inline onerror. A capture-phase listener here used to swap in the
-  // full-size file on the first failure; it ran alongside the retry and
-  // doubled the downloads, so its two steps (full-size once, then the
-  // wordmark placeholder) now live in dbhImgRetry's give-up path.
+  // Preload close to the viewport with a small request budget. Native lazy
+  // loading can launch dozens of requests at once and reveal in download order.
+  var imageQueue = [], activeImages = 0, imageJobs = [];
+  var preloadObserver, revealObserver, revealFrame, loadingGeneration = 0;
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  // staggered scroll reveal (haoqi work-grid pattern), applied to not-yet-revealed cards
+  function resetCardLoading() {
+    loadingGeneration++;
+    if (preloadObserver) preloadObserver.disconnect();
+    if (revealObserver) revealObserver.disconnect();
+    preloadObserver = revealObserver = null;
+    if (revealFrame) cancelAnimationFrame(revealFrame);
+    revealFrame = null;
+    imageQueue = [];
+    imageJobs.forEach(function (job) { if (job.cancel) job.cancel(); });
+    imageJobs = [];
+  }
+
+  function requestImage(card) {
+    var job = card._dbhImage;
+    if (!job || job.started || job.queued || job.done) return;
+    job.queued = true;
+    imageQueue.push(job);
+    pumpImages();
+  }
+
+  function pumpImages() {
+    // A fast scroll or filter change should prioritize the current viewport.
+    imageQueue.sort(function (a, b) {
+      return Math.abs(a.card.getBoundingClientRect().top) - Math.abs(b.card.getBoundingClientRect().top);
+    });
+    while (activeImages < 4 && imageQueue.length) {
+      var job = imageQueue.shift();
+      if (job.generation !== loadingGeneration || !job.card.isConnected) continue;
+      var bounds = job.card.getBoundingClientRect();
+      if (bounds.bottom < -800 || bounds.top > window.innerHeight + 1000) {
+        job.queued = false;
+        if (preloadObserver) preloadObserver.observe(job.card);
+        continue;
+      }
+      startImage(job);
+    }
+  }
+
+  function startImage(job) {
+    job.started = true;
+    activeImages++;
+    var im = job.image, timer, attempt = 0, finished = false;
+    function cleanup() {
+      clearTimeout(timer);
+      im.onload = im.onerror = null;
+    }
+    function finish(cancelled) {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      activeImages--;
+      job.done = true;
+      if (!cancelled) { job.card.classList.add('is-image-ready'); scheduleReveal(); }
+      pumpImages();
+    }
+    function fallback() {
+      cleanup();
+      im.removeAttribute('srcset');
+      im.removeAttribute('src');
+      var ph = document.createElement('span');
+      ph.className = 'ph';
+      ph.textContent = 'Image unavailable';
+      im.replaceWith(ph);
+      finish(false);
+    }
+    function failed() {
+      if (finished) return;
+      // A missing responsive variant gets one full-size fallback immediately.
+      // No random cache-busting retries or 30-second blank tiles.
+      if (attempt++ === 0 && im.dataset.full) {
+        cleanup();
+        im.removeAttribute('srcset');
+        im.onload = loaded;
+        im.onerror = fallback;
+        timer = setTimeout(fallback, 6000);
+        im.src = im.dataset.full;
+      } else fallback();
+    }
+    function loaded() {
+      if (!im.naturalWidth) return failed();
+      // decode() finishes before revealing the row, including cached images.
+      if (im.decode) im.decode().then(function () { finish(false); }, failed);
+      else finish(false);
+    }
+    job.cancel = function () {
+      if (finished) return;
+      cleanup();
+      im.removeAttribute('srcset');
+      im.removeAttribute('src');
+      finish(true);
+    };
+    im.onload = loaded;
+    im.onerror = failed;
+    timer = setTimeout(failed, 6000);
+    // Assign sizes/srcset first so a responsive image only makes one request.
+    if (im.dataset.srcset) im.setAttribute('srcset', im.dataset.srcset);
+    im.src = im.dataset.src;
+  }
+
+  function scheduleReveal() {
+    if (revealFrame) return;
+    revealFrame = requestAnimationFrame(function () {
+      revealFrame = null;
+      var cards = [].slice.call(grid.querySelectorAll('.pt-reveal'));
+      var rows = [];
+      cards.forEach(function (card) {
+        var row = rows[rows.length - 1];
+        if (!row || Math.abs(row.top - card.offsetTop) > 2) {
+          row = { top: card.offsetTop, cards: [] };
+          rows.push(row);
+        }
+        row.cards.push(card);
+      });
+      rows.forEach(function (row) {
+        if (!row.cards.some(function (card) { return card._dbhVisible; })) return;
+        row.cards.forEach(requestImage);
+        if (!row.cards.every(function (card) { return card.classList.contains('is-image-ready'); })) return;
+        // Use the actual rendered row, rather than an index modulo four.
+        row.cards.sort(function (a, b) { return a.offsetLeft - b.offsetLeft; });
+        row.cards.forEach(function (card, col) {
+          if (card.classList.contains('is-in')) return;
+          card.style.transitionDelay = reducedMotion.matches ? '0ms' : (col * 70) + 'ms';
+          card.classList.add('is-in');
+          if (revealObserver) revealObserver.unobserve(card);
+        });
+      });
+    });
+  }
+
   function revealCards() {
     var items = [].slice.call(grid.querySelectorAll('.pt-reveal:not(.is-observed)'));
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var el = e.target;
-        setTimeout(function () { el.classList.add('is-in'); }, 70 * (items.indexOf(el) % 4));
-        io.unobserve(el);
-      });
-    }, { threshold: 0.12 });
-    items.forEach(function (el) { el.classList.add('is-observed'); io.observe(el); });
+    if (!preloadObserver) {
+      preloadObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          requestImage(entry.target);
+          preloadObserver.unobserve(entry.target);
+        });
+      }, { rootMargin: '800px 0px' });
+      revealObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) { entry.target._dbhVisible = entry.isIntersecting; });
+        scheduleReveal();
+      }, { threshold: 0 });
+    }
+    items.forEach(function (card) {
+      card.classList.add('is-observed');
+      var im = card.querySelector('img[data-src]');
+      if (im) {
+        var job = { card: card, image: im, generation: loadingGeneration };
+        card._dbhImage = job;
+        imageJobs.push(job);
+      } else card.classList.add('is-image-ready');
+      preloadObserver.observe(card);
+      revealObserver.observe(card);
+    });
   }
+  window.addEventListener('resize', scheduleReveal);
 
 
   // Search box. Debounced so typing does not rebuild the grid on every key.

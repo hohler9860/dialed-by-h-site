@@ -582,15 +582,16 @@
     imageQueue.sort(function (a, b) {
       return Math.abs(a.card.getBoundingClientRect().top) - Math.abs(b.card.getBoundingClientRect().top);
     });
-    while (activeImages < 4 && imageQueue.length) {
+    while (activeImages < 6 && imageQueue.length) {
       var job = imageQueue.shift();
       if (job.generation !== loadingGeneration || !job.card.isConnected) continue;
       var bounds = job.card.getBoundingClientRect();
-      if (bounds.bottom < -800 || bounds.top > window.innerHeight + 1000) {
+      if (bounds.bottom < -800 || bounds.top > window.innerHeight + 1800) {
         job.queued = false;
         if (preloadObserver) preloadObserver.observe(job.card);
         continue;
       }
+      job.queued = false;
       startImage(job);
     }
   }
@@ -598,62 +599,95 @@
   function startImage(job) {
     job.started = true;
     activeImages++;
-    var im = job.image, timer, attempt = 0, finished = false;
+    var im = job.image, timer, finished = false, attempt = job.attempt || 0;
     function cleanup() {
       clearTimeout(timer);
       im.onload = im.onerror = null;
     }
-    function finish(cancelled) {
-      if (finished) return;
+    function release() {
+      if (finished) return false;
       finished = true;
       cleanup();
       activeImages--;
+      job.started = false;
+      return true;
+    }
+    function stopRequest() {
+      im.removeAttribute('srcset');
+      im.removeAttribute('src');
+    }
+    function complete() {
+      if (!release()) return;
       job.done = true;
-      if (!cancelled) { job.card.classList.add('is-image-ready'); scheduleReveal(); }
+      job.card.classList.add('is-image-ready');
+      scheduleReveal();
       pumpImages();
     }
-    function fallback() {
-      cleanup();
-      im.removeAttribute('srcset');
-      im.removeAttribute('src');
-      var ph = document.createElement('span');
-      ph.className = 'ph';
-      ph.textContent = 'Image unavailable';
-      im.replaceWith(ph);
-      finish(false);
-    }
     function failed() {
-      if (finished) return;
-      // A missing responsive variant gets one full-size fallback immediately.
-      // No random cache-busting retries or 30-second blank tiles.
-      if (attempt++ === 0 && im.dataset.full) {
-        cleanup();
-        im.removeAttribute('srcset');
-        im.onload = loaded;
-        im.onerror = fallback;
-        timer = setTimeout(fallback, 6000);
-        im.src = im.dataset.full;
-      } else fallback();
+      if (!release()) return;
+      stopRequest();
+      // A temporary refusal or timeout must remain recoverable. Retry through
+      // the same queue, releasing this slot while waiting so other tiles load.
+      if (attempt < 3) {
+        job.attempt = attempt + 1;
+        job.queued = true;
+        var retryTimer = setTimeout(function () {
+          job.queued = false;
+          if (job.generation === loadingGeneration && job.card.isConnected) requestImage(job.card);
+        }, [800, 2000, 4000][attempt]);
+        job.cancel = function () { clearTimeout(retryTimer); job.done = true; };
+      } else {
+        job.done = true;
+        job.card.classList.add('is-image-error');
+        var retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'pt-image-retry';
+        retry.textContent = 'Retry photo';
+        retry.addEventListener('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          retry.remove();
+          job.card.classList.remove('is-image-error');
+          job.done = false;
+          job.attempt = 0;
+          requestImage(job.card);
+        });
+        // Keep the retry button outside the product link for valid keyboard navigation.
+        job.card.appendChild(retry);
+      }
+      pumpImages();
     }
     function loaded() {
+      if (finished) return;
       if (!im.naturalWidth) return failed();
-      // decode() finishes before revealing the row, including cached images.
-      if (im.decode) im.decode().then(function () { finish(false); }, failed);
-      else finish(false);
+      clearTimeout(timer);
+      // Decode rejection can follow a responsive-source change even when an
+      // image is usable. Never replace a successfully downloaded photo for it.
+      timer = setTimeout(complete, 1500);
+      if (im.decode) im.decode().then(complete, function () {
+        if (im.naturalWidth) complete(); else failed();
+      });
+      else complete();
     }
     job.cancel = function () {
-      if (finished) return;
-      cleanup();
-      im.removeAttribute('srcset');
-      im.removeAttribute('src');
-      finish(true);
+      if (!release()) return;
+      stopRequest();
+      job.done = true;
+      pumpImages();
     };
     im.onload = loaded;
     im.onerror = failed;
-    timer = setTimeout(failed, 6000);
-    // Assign sizes/srcset first so a responsive image only makes one request.
-    if (im.dataset.srcset) im.setAttribute('srcset', im.dataset.srcset);
-    im.src = im.dataset.src;
+    timer = setTimeout(failed, 20000);
+    var source = (attempt % 2 === 1 && im.dataset.full) ? im.dataset.full : im.dataset.src;
+    // Only retry requests bypass an error cached upstream. Normal loads retain caching.
+    var url = function (value) { return attempt >= 2 ? value + (value.indexOf('?') < 0 ? '?' : '&') + 'retry=' + attempt : value; };
+    if (attempt % 2 === 0 && im.dataset.srcset) {
+      im.setAttribute('srcset', im.dataset.srcset.split(',').map(function (part) {
+        var pieces = part.trim().split(/\s+/);
+        return url(pieces[0]) + (pieces[1] ? ' ' + pieces[1] : '');
+      }).join(', '));
+    } else im.removeAttribute('srcset');
+    im.src = url(source);
   }
 
   function scheduleReveal() {
@@ -673,12 +707,13 @@
       rows.forEach(function (row) {
         if (!row.cards.some(function (card) { return card._dbhVisible; })) return;
         row.cards.forEach(requestImage);
-        if (!row.cards.every(function (card) { return card.classList.contains('is-image-ready'); })) return;
+        // Reveal ready photos in column order; slow neighbors retain visible
+        // loading tiles instead of making the entire row disappear.
         // Use the actual rendered row, rather than an index modulo four.
         row.cards.sort(function (a, b) { return a.offsetLeft - b.offsetLeft; });
         row.cards.forEach(function (card, col) {
-          if (card.classList.contains('is-in')) return;
-          card.style.transitionDelay = reducedMotion.matches ? '0ms' : (col * 70) + 'ms';
+          if (card.classList.contains('is-in') || !card.classList.contains('is-image-ready')) return;
+          card.style.setProperty('--image-delay', reducedMotion.matches ? '0ms' : (col * 70) + 'ms');
           card.classList.add('is-in');
           if (revealObserver) revealObserver.unobserve(card);
         });
@@ -695,7 +730,7 @@
           requestImage(entry.target);
           preloadObserver.unobserve(entry.target);
         });
-      }, { rootMargin: '800px 0px' });
+      }, { rootMargin: '1600px 0px' });
       revealObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) { entry.target._dbhVisible = entry.isIntersecting; });
         scheduleReveal();

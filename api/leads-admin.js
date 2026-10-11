@@ -869,7 +869,7 @@ module.exports = async (req, res) => {
             if (!row.deal_id || !row.path || !row.filename) {
                 return res.status(400).json({ error: "Missing document fields" });
             }
-            if (!["contract", "invoice", "statement", "other"].includes(row.kind)) row.kind = "other";
+            if (!["contract", "invoice", "statement", "unboxing", "other"].includes(row.kind)) row.kind = "other";
             const [doc] = await supabase("dbh_deal_docs", {
                 method: "POST",
                 headers: { Prefer: "return=representation" },

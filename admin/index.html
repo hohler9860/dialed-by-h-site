@@ -1770,8 +1770,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }).join('') + '</tr></thead><tbody>' +
             rows.map(function (d) {
                 var p = bkProfit(d);
-                var ndocs = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; }).length;
+                var mine = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; });
+                var ndocs = mine.filter(function (x) { return x.kind !== 'unboxing'; }).length;
+                var nvid = mine.length - ndocs;
                 return '<tr data-id="' + esc(d.id) + '"><td>' + esc(d.ref) +
+                    (nvid ? ' <span class="bk-mute" title="Unboxing video on file">&#9654;</span>' : '') +
                     (ndocs ? ' <span class="bk-mute" title="' + ndocs + ' attached">&#128206;' + ndocs + '</span>' : '') + '</td>' +
                     '<td class="bk-mute">' + (bkIsCon(d) ? 'Consignment' : 'Sourcing') + '</td>' +
                     '<td class="nm">' + esc((d.brand ? d.brand + ' ' : '') + (d.model || '')) + '</td>' +
@@ -1910,9 +1913,27 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     function paintDealDocs(d) {
         var box = document.getElementById('deal-docs');
         if (!box) return;
-        var docs = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; });
+        box.dataset.deal = d.id;
+        var all = (BOOKS.docs || []).filter(function (x) { return x.deal_id === d.id; });
+        var vids = all.filter(function (x) { return x.kind === 'unboxing'; });
+        var docs = all.filter(function (x) { return x.kind !== 'unboxing'; });
         box.innerHTML =
-            '<label style="display:block;margin-bottom:10px">Attachments</label>' +
+            '<label style="display:block;margin-bottom:10px">Unboxing video</label>' +
+            (vids.length
+                ? '<table class="bk-tbl" style="margin-bottom:14px"><tbody>' + vids.map(function (x) {
+                    return '<tr><td><a href="#" class="js-vid-play" data-path="' + esc(x.path) + '">&#9654; ' + esc(x.filename) + '</a></td>' +
+                        '<td class="bk-mute" style="width:70px">' + bkBytes(x.size_bytes) + '</td>' +
+                        '<td class="bk-mute" style="width:110px">' + esc((x.uploaded_at || '').slice(0, 10)) + '</td>' +
+                        '<td style="width:34px;text-align:right"><a href="#" class="js-doc-del" data-id="' + esc(x.id) + '" data-path="' + esc(x.path) + '" title="Delete">&#10005;</a></td></tr>';
+                }).join('') + '</tbody></table>'
+                : '<p class="note" style="margin:0 0 12px">No unboxing video yet. Film the piece coming out of the dealer\'s box with the serial in frame.</p>') +
+            '<div id="vid-player"></div>' +
+            '<div class="bar">' +
+                '<button class="btn ghost" id="vid-add">Upload unboxing video&hellip;</button>' +
+                '<input id="vid-file" type="file" accept="video/*,.mov,.mp4" style="display:none">' +
+                '<span class="note" id="vid-status" style="margin-top:0"></span>' +
+            '</div>' +
+            '<label style="display:block;margin:28px 0 10px">Attachments</label>' +
             (docs.length
                 ? '<table class="bk-tbl" style="margin-bottom:14px"><tbody>' + docs.map(function (x) {
                     return '<tr><td style="width:90px"><span class="tag">' + esc(x.kind.toUpperCase()) + '</span></td>' +
@@ -1952,6 +1973,28 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             });
         });
 
+        [].forEach.call(box.querySelectorAll('.js-vid-play'), function (a) {
+            a.addEventListener('click', async function (e) {
+                e.preventDefault();
+                var slot = document.getElementById('vid-player');
+                slot.innerHTML = '<p class="note" style="margin:0 0 12px">Loading&hellip;</p>';
+                try {
+                    var r = await A.adminFetchTo('/api/leads-admin', 'books-doc-url', { path: a.dataset.path });
+                    slot.innerHTML = '<video controls playsinline preload="metadata" ' +
+                        'style="display:block;width:100%;max-height:70vh;background:#000;margin-bottom:14px"></video>';
+                    slot.firstChild.src = r.url;
+                } catch (err) {
+                    slot.innerHTML = '';
+                    alert(err.message || 'Could not open video');
+                }
+            });
+        });
+        var vfile = document.getElementById('vid-file');
+        document.getElementById('vid-add').addEventListener('click', function () { vfile.click(); });
+        vfile.addEventListener('change', function () {
+            if (vfile.files[0]) bkUploadUnboxing(d, vfile.files[0]);
+        });
+
         var file = document.getElementById('doc-file');
         document.getElementById('doc-add').addEventListener('click', function () { file.click(); });
         file.addEventListener('change', async function () {
@@ -1981,6 +2024,140 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             }
             paintDealDocs(d);
         });
+    }
+
+    // ── unboxing videos ─────────────────────────────────────────
+    // Every incoming piece gets filmed coming out of the dealer's box. Phone
+    // footage is huge (4K runs ~170MB a minute), so it is re-encoded right here
+    // with WebCodecs (Mediabunny) before anything uploads: H.264, 30fps, 1080p,
+    // or 720p when a long video needs the bitrate cut to fit. The ceiling is
+    // Supabase's project-wide upload cap (Project Settings > Storage), which
+    // sits above the bucket's own 500MB limit. Raise both together.
+    var BK_VIDEO_MAX_BYTES = 50e6;
+    var BK_VIDEO_LIB = 'https://cdn.jsdelivr.net/npm/mediabunny@1.60.0/dist/bundles/mediabunny.min.mjs';
+
+    function bkBytes(n) {
+        n = Number(n) || 0;
+        if (n >= 1e9) return (n / 1e9).toFixed(1) + ' GB';
+        if (n >= 1e6) return Math.round(n / 1e6) + ' MB';
+        return Math.max(1, Math.round(n / 1e3)) + ' KB';
+    }
+
+    async function bkCompressVideo(f, onProgress) {
+        if (typeof VideoEncoder === 'undefined') throw new Error('this browser has no video encoder');
+        var MB = await import(BK_VIDEO_LIB);
+        var input = new MB.Input({ source: new MB.BlobSource(f), formats: MB.ALL_FORMATS });
+        var track = await input.getPrimaryVideoTrack();
+        if (!track) throw new Error('no video track in that file');
+        var secs = await input.computeDuration();
+        var stats = await track.computePacketStats(90);
+        // 92% of the cap over the running time, less ~200kbps for the audio,
+        // which is copied across untouched.
+        var budget = secs > 0 ? BK_VIDEO_MAX_BYTES * 0.92 * 8 / secs - 200000 : 3500000;
+        var bitrate = Math.max(600000, Math.min(3500000, Math.floor(budget)));
+        // Under ~2Mbps a 1080p frame smears the dial worse than 720p does.
+        var longSide = bitrate < 2000000 ? 1280 : 1920;
+        var scale = Math.min(1, longSide / Math.max(track.displayWidth, track.displayHeight));
+        var video = {
+            width: Math.round(track.displayWidth * scale / 2) * 2,
+            codec: 'avc',
+            quality: new MB.Quality({ bitrate: bitrate }),
+            forceTranscode: true,
+        };
+        if (stats.averagePacketRate > 31) video.frameRate = 30;
+        var output = new MB.Output({
+            format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }),
+            target: new MB.BufferTarget(),
+        });
+        var conv = await MB.Conversion.init({
+            input: input, output: output, tracks: 'primary', video: video, showWarnings: false,
+        });
+        var hasVideo = conv.utilizedTracks.some(function (t) { return t.isVideoTrack(); });
+        if (!conv.isValid || !hasVideo) {
+            throw new Error('cannot convert this file (' +
+                conv.discardedTracks.map(function (x) { return x.reason; }).join(', ') + ')');
+        }
+        conv.onProgress = onProgress;
+        await conv.execute();
+        return new Blob([output.target.buffer], { type: 'video/mp4' });
+    }
+
+    // fetch() can't report upload progress, and a 40MB PUT over a phone
+    // connection needs a number on screen.
+    function bkPutWithProgress(url, blob, type, onProgress) {
+        return new Promise(function (resolve, reject) {
+            var x = new XMLHttpRequest();
+            x.open('PUT', url);
+            x.setRequestHeader('Content-Type', type);
+            x.upload.onprogress = function (e) { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+            x.onload = function () {
+                if (x.status < 300) return resolve();
+                reject(new Error(x.status === 413 || /too large/i.test(x.responseText)
+                    ? 'Over the Supabase upload cap. Raise it in Project Settings > Storage.'
+                    : 'Upload failed (' + x.status + ')'));
+            };
+            x.onerror = function () { reject(new Error('Upload failed (network)')); };
+            x.send(blob);
+        });
+    }
+
+    async function bkUploadUnboxing(d, f) {
+        var btn = document.getElementById('vid-add');
+        var status = document.getElementById('vid-status');
+        var say = function (t) { if (status) status.textContent = t; };
+        var guard = function (e) { e.preventDefault(); e.returnValue = ''; };
+        btn.disabled = true;
+        window.addEventListener('beforeunload', guard);
+        try {
+            var blob, type = 'video/mp4';
+            var name = 'unboxing-' + f.name.replace(/\.[^.]+$/, '') + '.mp4';
+            try {
+                say('Loading compressor…');
+                blob = await bkCompressVideo(f, function (p) {
+                    say('Compressing ' + Math.round(p * 100) + '%. Keep this tab open.');
+                });
+            } catch (err) {
+                console.warn('[books] video compress failed', err);
+                if (f.size > BK_VIDEO_MAX_BYTES) {
+                    throw new Error('Could not compress on this device (' + (err.message || err) +
+                        '). Try Chrome or Safari on a laptop.');
+                }
+                if (!confirm('Could not compress on this device. Upload the original (' + bkBytes(f.size) + ') instead?')) {
+                    say('');
+                    return;
+                }
+                blob = f;
+                name = 'unboxing-' + f.name;
+                type = f.type || 'video/quicktime';
+            }
+            if (blob.size > BK_VIDEO_MAX_BYTES) {
+                throw new Error('Still ' + bkBytes(blob.size) + ' after compressing, over the ' +
+                    bkBytes(BK_VIDEO_MAX_BYTES) + ' upload cap. Trim the video and try again.');
+            }
+            var sign = await A.adminFetchTo('/api/leads-admin', 'books-doc-sign-upload',
+                { deal_id: d.id, filename: name });
+            await bkPutWithProgress(sign.uploadUrl, blob, type, function (p) {
+                say('Uploading ' + Math.round(p * 100) + '%');
+            });
+            var rec = await A.adminFetchTo('/api/leads-admin', 'books-doc-record', {
+                doc: { deal_id: d.id, kind: 'unboxing', filename: name, path: sign.path,
+                       mime: type, size_bytes: blob.size }
+            });
+            BOOKS.docs = [rec.doc].concat(BOOKS.docs || []);
+            // The sheet may have moved on to another deal during a long upload.
+            var box = document.getElementById('deal-docs');
+            if (box && box.dataset.deal === d.id) {
+                paintDealDocs(d);
+                document.getElementById('vid-status').textContent =
+                    'Saved. ' + bkBytes(f.size) + ' down to ' + bkBytes(blob.size) + '.';
+            }
+        } catch (err) {
+            say('');
+            alert(err.message || 'Upload failed');
+        } finally {
+            window.removeEventListener('beforeunload', guard);
+            btn.disabled = false;
+        }
     }
 
     async function saveDeal(d) {

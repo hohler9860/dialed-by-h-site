@@ -1534,22 +1534,6 @@ module.exports = async (req, res) => {
             return res.status(200).json({ ok: true });
         }
 
-        if (action === "buyers") {
-            const rows = await supabaseAll("buyers_board?select=*&order=last_want_at.desc", {
-                headers: { "Accept-Profile": "wholesale" },
-            });
-            const list = Array.isArray(rows) ? rows : [];
-            return res.status(200).json({
-                rows: list,
-                counters: {
-                    total: list.length,
-                    sourceable: list.filter((r) => r.can_source).length,
-                    store_cheaper: list.filter((r) => r.store_beats_group).length,
-                    buyers: list.reduce((n, r) => n + (r.buyers || 0), 0),
-                },
-            });
-        }
-
         // Is anything actually flowing. A broken flow shows up here as a step
         // that has not produced anything in far longer than it should have,
         // which is the only symptom a dead webhook ever gives off.

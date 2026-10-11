@@ -1932,6 +1932,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<input id="vid-file" type="file" accept="video/*,.mov,.mp4" style="display:none">' +
                 '<span class="note" id="vid-status" style="margin-top:0"></span>' +
             '</div>' +
+            (BK_WEBKIT
+                ? '<p class="note" style="margin:0 0 12px;color:var(--bad)">Safari can\'t reliably compress iPhone 4K video ' +
+                  '(its decoder crashes partway). Open this page in Chrome on your Mac to upload.</p>'
+                : '') +
             '<label style="display:block;margin:28px 0 10px">Attachments</label>' +
             (docs.length
                 ? '<table class="bk-tbl" style="margin-bottom:14px"><tbody>' + docs.map(function (x) {
@@ -2034,6 +2038,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // sits above the bucket's own 500MB limit. Raise both together.
     var BK_VIDEO_MAX_BYTES = 50e6;
     var BK_VIDEO_LIB = 'https://cdn.jsdelivr.net/npm/mediabunny@1.60.0/dist/bundles/mediabunny.min.mjs';
+    // Safari, and every browser on an iPhone. Tested on Safari 27 with 4K iPhone
+    // HEVC: ~20x slower than Chrome, and its decoder throws "Decoder failure"
+    // partway through some files.
+    var BK_WEBKIT = /AppleWebKit/.test(navigator.userAgent) && !/Chrome\//.test(navigator.userAgent);
 
     function bkBytes(n) {
         n = Number(n) || 0;
@@ -2073,7 +2081,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         // mode works, but Mediabunny has no option for it, so it goes in on the
         // way to configure() and the original is put back afterwards.
         var proto = VideoEncoder.prototype, configure = proto.configure;
-        if (/AppleWebKit/.test(navigator.userAgent) && !/Chrome\//.test(navigator.userAgent)) {
+        if (BK_WEBKIT) {
             proto.configure = function (c) {
                 return configure.call(this, /^avc1\./.test(c.codec)
                     ? Object.assign({}, c, { latencyMode: 'realtime' }) : c);
@@ -2134,7 +2142,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 console.warn('[books] video compress failed', err);
                 if (f.size > BK_VIDEO_MAX_BYTES) {
                     throw new Error('Could not compress on this device (' + (err.message || err) +
-                        '). Try Chrome or Safari on a laptop.');
+                        '). Use Chrome on your Mac.');
                 }
                 if (!confirm('Could not compress on this device. Upload the original (' + bkBytes(f.size) + ') instead?')) {
                     say('');

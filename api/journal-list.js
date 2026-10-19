@@ -1,3 +1,4 @@
+const { journalImage } = require('../lib/journal-image');
 // GET /api/journal-list
 // Returns published Off-Catalog articles (card list for /journal/ index page)
 // Query params:
@@ -40,6 +41,7 @@ module.exports = async (req, res) => {
             "subtitle",
             "excerpt",
             "hero_image_url",
+            "content_html",
             "category",
             "author_name",
             "published_at",
@@ -64,7 +66,8 @@ module.exports = async (req, res) => {
             return res.status(500).json({ error: "Failed to load journal" });
         }
 
-        const articles = await r.json();
+        const rows = await r.json();
+        const articles = rows.map(({ content_html, ...article }) => ({ ...article, hero_image_url: journalImage({ ...article, content_html }) }));
         return res.status(200).json({ articles, count: articles.length });
     } catch (err) {
         console.error("[journal-list] UNHANDLED:", err.message);

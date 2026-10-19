@@ -1,3 +1,4 @@
+const { journalImage } = require('../lib/journal-image');
 // Server-side renderer for individual Off-Catalog articles.
 // Routed via vercel.json: /journal/:slug -> /api/journal-article-render?slug=:slug
 // Returns full HTML (not JSON) so search engines get content in the initial response.
@@ -44,6 +45,7 @@ a{display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;paddin
 small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.4);margin-bottom:16px}
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="stylesheet" href="/assets/journal-editorial.css">
 </head>
 <body>
 <div>
@@ -57,6 +59,7 @@ small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
 }
 
 function renderArticleHtml(a) {
+    a = { ...a, hero_image_url: journalImage(a) };
     const title       = a.title || "Untitled";
     const subtitle    = a.subtitle || "";
     const seoTitle    = a.seo_title || `${title} | Off-Catalog by Dialed By H`;
@@ -309,6 +312,7 @@ document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '798516899968965');
 fbq('track', 'PageView');
 </script>
+<link rel="stylesheet" href="/assets/journal-editorial.css">
 </head>
 <body class="bg-beige" style="background:#fff">
 <header class="header sticky top-0 z-20 text-navy bg-beige"><div class="container"><nav class="header__bar w-full flex justify-between items-center text-10 relative">
@@ -331,8 +335,9 @@ fbq('track', 'PageView');
 </span>
 </i><i class="hidden b1024:inline not-italic">)</i>
 </a></nav></div></header>
-<main class="pa-page">
-<div class="container">
+<main class="pa-page${a.hero_image_url ? ' has-hero' : ''}">
+${a.hero_image_url ? `<div class="pa-banner"><img src="${escAttr(heroUrl)}" alt="${escAttr(a.hero_alt || title)}" fetchpriority="high"></div>` : ""}
+<article class="container pa-paper">
 <a class="pa-crumb" href="/journal/">&larr; Off-Catalog</a>
 <div class="pa-meta">
     ${category ? `<span>${escHtml(category)}</span>` : ""}
@@ -341,7 +346,7 @@ fbq('track', 'PageView');
 </div>
 <h1 class="pa-title">${escHtml(title)}</h1>
 ${subtitle ? `<p class="pa-sub">${escHtml(subtitle)}</p>` : ""}
-${heroUrl && a.hero_image_url ? `<img class="pa-hero" src="${escAttr(heroUrl)}" alt="${escAttr(a.hero_alt || title)}" loading="eager">` : ""}
+
 <div class="pa-heroline"><span>By ${escHtml(a.author_name || "Henry Ohler")}</span><span>Dialed By H</span></div>
 <div class="pa-body">${contentHtml}</div>
 <div class="pa-cta">
@@ -354,7 +359,7 @@ ${heroUrl && a.hero_image_url ? `<img class="pa-hero" src="${escAttr(heroUrl)}" 
 <p id="oc-end-msg" class="oc-end-msg" style="display:none"></p>
 </form>
 </div>
-</div>
+</article>
 </main>
 <footer class="footer relative pb-5 b768:pt-20 b768:pb-16 bg-beige text-black border border-t border-black border-opacity-10 js-footer"><div class="container"><div class="grid grid-cols-24 b768:gap-5">
 <div class="col-span-24 b768:col-span-12 border">

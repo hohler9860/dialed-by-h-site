@@ -88,3 +88,7 @@ Test your own confirm + unsubscribe flow before announcing:
 - `journal_articles`: every article (drafts + published)
 - `journal_subscribers`: double-opt-in email list with unsubscribe tokens
 - `journal-images` storage bucket: for hero + inline images
+
+## Editorial standard
+
+All journal layout and writing work follows [Off-Catalog editorial rules](docs/JOURNAL-EDITORIAL-RULES.md). These rules cover headlines, decks, automatic lead imagery, stable watch artwork, article layouts and publishing boundaries.

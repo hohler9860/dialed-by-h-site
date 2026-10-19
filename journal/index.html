@@ -192,6 +192,7 @@ fbq('track', 'PageView');
 }
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
+<link rel="stylesheet" href="/assets/journal-editorial.css">
 </head>
 <body class="bg-beige" style="background:#fff">
 <header class="header sticky top-0 z-20 text-navy bg-beige"><div class="container"><nav class="header__bar w-full flex justify-between items-center text-10 relative">
@@ -216,13 +217,10 @@ fbq('track', 'PageView');
 </a></nav></div></header>
 <main class="pt-page">
 <div class="container">
-<span class="pt-crumb" data-scramble data-delay="150">Home / Journal</span>
-<h1 data-hsst>Off-Catalog</h1>
-<div class="pt-cols" style="margin-bottom:40px">
-<div class="k pt-reveal"><span data-scramble data-delay="250">The journal from Dialed By H</span></div>
-<div class="b pt-reveal"><p style="font-size:14px;color:rgba(0,0,0,.6)">Market notes on Rolex, Patek Philippe, Audemars Piguet and the independents. Sourcing stories, grey market analysis, and rare reference releases.</p></div>
-</div>
-<div class="pt-jgrid" id="pt-journal"></div>
+<div class="journal-masthead"><div><span class="pt-crumb">The journal by Dialed By H</span><h1>Off-Catalog</h1></div><p>Watches worth a closer look.<br>Stories, releases and notes from the market.</p></div>
+<section id="journal-feature" aria-label="Latest story" hidden></section>
+<div class="journal-section-label"><h2>All stories</h2><span>From the desk of Henry Ohler</span></div>
+<div class="pt-jgrid" id="pt-journal" aria-live="polite"><p>Loading stories…</p></div>
 </div>
 </main>
 <footer class="footer relative pb-5 b768:pt-20 b768:pb-16 bg-beige text-black border border-t border-black border-opacity-10 js-footer"><div class="container"><div class="grid grid-cols-24 b768:gap-5">
@@ -285,9 +283,15 @@ fbq('track', 'PageView');
 <script>
 (function(){
   var wrap = document.getElementById('pt-journal');
-  fetch('/api/journal-list').then(function(r){return r.json()}).then(function(d){
+  fetch('/api/journal-list?limit=50').then(function(r){if(!r.ok)throw new Error('Journal unavailable');return r.json()}).then(function(d){
     var arts = Array.isArray(d) ? d : (d.articles || []);
     if (!arts.length) { wrap.innerHTML = '<p style="font-size:12px;color:rgba(0,0,0,.5)">No articles yet.</p>'; return; }
+    function esc(v){return String(v || '').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+    var latest = arts[0], feature = document.getElementById('journal-feature');
+    feature.hidden = false;
+    feature.innerHTML = '<a class="journal-feature" href="/journal/' + encodeURIComponent(latest.slug) + '">' +
+      (latest.hero_image_url ? '<img src="' + esc(latest.hero_image_url) + '" alt="" fetchpriority="high">' : '') +
+      '<div class="journal-feature-copy"><span class="journal-eyebrow">Latest story · ' + esc(latest.category || 'Journal') + '</span><h2>' + esc(latest.title) + '</h2><p>' + esc(latest.subtitle || latest.excerpt) + '</p><span class="journal-read">Read the story ↗</span></div></a>';
     var usedStickers = [];
     // keyword-matched stickers: if the article is about a watch we have as a
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.
@@ -334,8 +338,9 @@ fbq('track', 'PageView');
       var txt = (a.title || '') + ' ' + (a.subtitle || '');
       var h = 0;
       for (var i = 0; i < a.slug.length; i++) { h = (h * 31 + a.slug.charCodeAt(i)) >>> 0; }
-      var idx = -1;
-      for (var si = 0; si < SPECIALS.length; si++) {
+      var curated = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches": 159, "the-watches-that-caught-our-eye-at-the-2026-us-open": 145, "travis-scotts-watches-go-well-beyond-the-obvious-flex": 146, "geneva-watch-days-2026-plus-the-recent-releases-worth-a-look": 147, "rolex-gets-complicated-the-three-new-perpetual-padellone-models": 148, "serena-williams-just-made-the-royal-oak-her-own": 149, "kruk-designs-luxury-watch-rolls-leather-goods": 150, "fp-journe-14-million-phillips-auction-independents": 151, "tudor-black-bay-chrono-39-bumblebee": 152, "ap-royal-oak-offshore-summer-chronographs": 153, "royal-pop-launch-was-a-mess": 154, "the-royal-pop-is-going-to-be-louder-than-the-moonswatch": 155, "my-day-at-watches-and-wonders-2026": 156, "rolex-just-dropped-at-watches-and-wonders-2026": 157, "what-rolex-is-probably-dropping-at-watches-and-wonders-2026": 158};
+      var idx = curated[a.slug] ? curated[a.slug] - 1 : -1;
+      for (var si = 0; idx === -1 && si < SPECIALS.length; si++) {
         if (SPECIALS[si].re.test(txt)) {
           var pool = SPECIALS[si].pool;
           idx = pool[h % pool.length];
@@ -350,11 +355,12 @@ fbq('track', 'PageView');
       usedStickers.push(idx);
       var n = String(idx + 1); if (n.length < 2) n = '0' + n;
       var cover = '<img class="jimg" src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
-      return '<a class="pt-jitem" href="/journal/' + a.slug + '">' +
-        cover +
-        '<span class="jd">' + date + '</span>' +
-        '<span class="jt">' + a.title + (a.subtitle ? '<small>' + a.subtitle + '</small>' : '') + '</span>' +
-        '<span class="ja">Read</span></a>';
+      return '<a class="pt-jitem" href="/journal/' + encodeURIComponent(a.slug) + '">' +
+        '<div class="journal-artwork">' + cover + '</div>' +
+        '<span class="jd">' + esc(a.category || 'Journal') + ' · ' + esc(date) + '</span>' +
+        '<h3 class="jt">' + esc(a.title) + '</h3>' +
+        '<p class="journal-deck">' + esc(a.subtitle || a.excerpt) + '</p>' +
+        '<span class="ja">Read story ↗</span></a>';
     }).join('');
   }).catch(function(){ wrap.innerHTML = '<p style="font-size:12px;color:rgba(0,0,0,.5)">Journal unavailable right now.</p>'; });
 })();

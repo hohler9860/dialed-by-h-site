@@ -1,0 +1,18 @@
+# The repo root is the deploy root (outputDirectory "."), so anything not listed
+# here is publicly downloadable. Keep internal scripts, SQL, workflow exports,
+# docs and tests out of the deployment. lib/ and src/ are needed by the server
+# functions and the build, so they stay and are blocked by redirects in vercel.json.
+/scripts/*
+!/scripts/admin-auth.js
+!/scripts/lucide.min.js
+!/scripts/premium-ui.js
+!/scripts/social-admin.js
+!/scripts/inline-css.js
+/supabase
+/supabase-schema.sql
+/docs
+/test
+/tests
+/JOURNAL-SETUP.md
+/.github
+/.env.example

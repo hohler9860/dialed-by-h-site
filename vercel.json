@@ -164,6 +164,21 @@
   ],
   "redirects": [
     {
+      "source": "/lib/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/src/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/scripts/inline-css.js",
+      "destination": "/",
+      "permanent": false
+    },
+    {
       "source": "/journal.html",
       "destination": "/journal/",
       "permanent": true

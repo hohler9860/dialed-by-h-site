@@ -167,11 +167,13 @@
       modal.querySelector('form').addEventListener('submit', function (e) {
         e.preventDefault();
         var form = e.target;
+        if (window.dbhTracking) window.dbhTracking.attempt(form);
         var fd = new FormData(form);
         var get = function (k) { return (fd.get(k) || '').toString().trim(); };
         var err = form.querySelector('.dbh-lm__err');
         var missing = ['name', 'email', 'phone', 'preferred', 'location', 'brand'].filter(function (k) { return !get(k); });
         if (missing.length) {
+          if (window.dbhTracking) window.dbhTracking.error(form);
           err.style.display = 'block';
           var first = form.querySelector('[name="' + missing[0] + '"]');
           if (first) first.focus();
@@ -202,7 +204,8 @@
             preferred: get('preferred') || null,
             okToText: !!fd.get('textok'),
             watchDetails: detailParts.join(' | '),
-            website: get('website')
+            website: get('website'),
+            attribution: window.dbhTracking ? window.dbhTracking.context(form) : null
           })
         }).then(function (r) {
           if (!r.ok) throw new Error(r.status);
@@ -216,6 +219,7 @@
             '<a class="dbh-lm__link" href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>');
           modal.querySelector('.dbh-lm__close').addEventListener('click', close);
         }).catch(function () {
+          if (window.dbhTracking) window.dbhTracking.error(form);
           var lines = [cfg.title + ' — Dialed By H'];
           var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
           Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
@@ -241,6 +245,7 @@
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         modal.classList.add('is-open');
+        if (window.dbhTracking) window.dbhTracking.open(modal.querySelector('form'), {source:'BUY',sell:'SELL',trade:'TRADE'}[kind]);
         var first = modal.querySelector('input[name="name"]');
         if (first && window.matchMedia('(min-width: 640px)').matches) first.focus();
       });

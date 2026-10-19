@@ -2,7 +2,8 @@
 /**
  * The scan behind the admin Today page. Runs the three channel reconcilers in
  * sequence so waiting_on_henry / hunting_board / day_summary are computed
- * from this morning's conversations, not last week's.
+ * from this morning's conversations, not last week's, then refreshes the
+ * retail price comparables (retail-sync.js).
  *
  * Scheduled by launchd (com.dialedbyh.daily-scan, every 2h from 8:00 to
  * 22:00 local) and safe to run by hand:  node scripts/daily-scan.js
@@ -20,6 +21,9 @@ const SCRIPTS = [
   'imessage-reconcile.js',
   'whatsapp-reconcile.js',
   'email-reconcile.js',
+  // Last, and it paces itself: the shops block n8n's server, so retail price
+  // comparables are refreshed from this Mac instead.
+  'retail-sync.js',
 ];
 
 // ── env (for the network probe target) ──────────────────────────────────────

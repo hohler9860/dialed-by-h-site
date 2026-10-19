@@ -285,9 +285,17 @@ const patchSource = (slug, body) => db(`retail_sources?slug=eq.${encodeURICompon
     if (Date.now() - runStarted > RUN_BUDGET_MS) { console.log(`retail-sync: out of time, ${s.slug} waits for the next run`); break; }
     const shop = { slug: s.slug, base: s.base_url.replace(/\/$/, '') };
     const st = state[s.slug] || { resume: 1, stuck: 0 };
-    // Three runs in a row with no progress from the same page: start over, so
-    // the front of the catalogue is not left stale behind a page that never loads.
-    const from = st.stuck >= 3 ? 1 : st.resume;
+    // Three runs in a row refused at the same page: that is as deep as this shop
+    // lets anyone read today. Count the cycle as done so the shop stops taking
+    // run time from the others, and start again from page 1 tomorrow.
+    if (st.stuck >= 3) {
+      state[s.slug] = { resume: 1, stuck: 0 };
+      writeState(state);
+      await patchSource(s.slug, { last_sync: new Date().toISOString(), last_error: `shop refuses pages from ${st.resume} on` });
+      console.log(`retail-sync: ${s.slug} refuses pages from ${st.resume} on; counted as refreshed, restarts from page 1 tomorrow`);
+      continue;
+    }
+    const from = st.resume;
     const t0 = Date.now();
     const r = await syncShop(shop, from, (next) => { state[s.slug] = { resume: next, stuck: 0 }; writeState(state); });
     const secs = Math.round((Date.now() - t0) / 1000);

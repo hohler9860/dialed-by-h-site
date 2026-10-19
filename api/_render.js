@@ -51,6 +51,8 @@ p{font-size:13px;color:rgba(0,0,0,.55);margin:0 0 28px}
 a{display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;padding:16px 34px;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
 small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.4);margin-bottom:16px}
 </style><script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/assets/inquiry-schema.js?v=1"></script>
+<script defer src="/assets/inquiry-tracking.js?v=1"></script>
 </head>
 <body><div>
 <small>Dialed By H</small>
@@ -344,6 +346,8 @@ t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '798516899968965'); fbq('track', 'PageView');
 </script>
+<script defer src="/assets/inquiry-schema.js?v=1"></script>
+<script defer src="/assets/inquiry-tracking.js?v=1"></script>
 </head>
 <body class="bg-beige" style="background:#fff">
 <header class="header sticky top-0 z-20 text-navy bg-beige"><div class="container"><nav class="header__bar w-full flex justify-between items-center text-10 relative">

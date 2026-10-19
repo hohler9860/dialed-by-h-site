@@ -46,6 +46,8 @@ small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
 <link rel="stylesheet" href="/assets/journal-editorial.css">
+<script defer src="/assets/inquiry-schema.js?v=1"></script>
+<script defer src="/assets/inquiry-tracking.js?v=1"></script>
 </head>
 <body>
 <div>
@@ -313,6 +315,8 @@ fbq('init', '798516899968965');
 fbq('track', 'PageView');
 </script>
 <link rel="stylesheet" href="/assets/journal-editorial.css">
+<script defer src="/assets/inquiry-schema.js?v=1"></script>
+<script defer src="/assets/inquiry-tracking.js?v=1"></script>
 </head>
 <body class="bg-beige" style="background:#fff">
 <header class="header sticky top-0 z-20 text-navy bg-beige"><div class="container"><nav class="header__bar w-full flex justify-between items-center text-10 relative">

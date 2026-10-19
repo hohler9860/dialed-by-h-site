@@ -1,3 +1,4 @@
+const inquiryTracking = require('../lib/inquiry-tracking');
 const { Resend } = require("resend");
 const { guard } = require("../lib/ratelimit.js");
 
@@ -186,6 +187,7 @@ function buildEmail(type, data) {
 }
 
 module.exports = async (req, res) => {
+  if (req.query && ['track', 'analytics'].includes(req.query.action)) return inquiryTracking.handle(req, res);
   console.log("[submit-form] Function invoked, method:", req.method);
 
   const allowedOrigins = ["https://dialedbyhenry.com", "https://www.dialedbyhenry.com"];
@@ -287,6 +289,7 @@ module.exports = async (req, res) => {
     // Insert into Supabase
     const row = {
       submission_type: type,
+      attribution: inquiryTracking.attribution(req.body.attribution, type),
       email: email.toLowerCase().trim(),
       full_name: fullName?.trim() || null,
       watch_details: detailsForRow,

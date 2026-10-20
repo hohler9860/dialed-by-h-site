@@ -7,8 +7,10 @@
 // compare, same CORS allowlist. If the admin auth model changes, change it in both.
 
 const crypto = require("crypto");
+const clientMatching = require("../lib/client-matching.js");
 const taxCal = require("../lib/tax-calendar.js");
 const socialAdmin = require("../lib/social-admin.js");
+const { buildHealthResponse, snapshotFreshness } = require("../lib/pipeline-health.js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://untnrofsnmoyxdidxbdj.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -104,9 +106,13 @@ async function supabaseAll(path, options = {}, cap = 20000, start = 0) {
     const out = [];
     for (let from = start; from < start + cap; from += PAGE) {
         const to = from + PAGE - 1;
-        const page = await supabase(path, {
+        // POST RPC pagination uses query parameters; Range alone can return
+        // the first page repeatedly and create a convincing but false shortlist.
+        const isPost = String(options.method || "GET").toUpperCase() === "POST";
+        const pagePath = isPost ? path + (path.includes("?") ? "&" : "?") + `offset=${from}&limit=${PAGE}` : path;
+        const page = await supabase(pagePath, {
             ...options,
-            headers: { ...(options.headers || {}), Range: `${from}-${to}`, "Range-Unit": "items" },
+            headers: { ...(options.headers || {}), ...(isPost ? {} : { Range: `${from}-${to}`, "Range-Unit": "items" }) },
         });
         if (!Array.isArray(page) || page.length === 0) break;
         out.push(...page);
@@ -1077,22 +1083,91 @@ module.exports = async (req, res) => {
             return res.status(200).json({ row: saved });
         }
 
+        if (action === "match-feedback") {
+            const wantId=Number(body.want_id),listingId=Number(body.listing_id);
+            if (![wantId,listingId].every(n=>Number.isSafeInteger(n)&&n>0) || !["FIT","REJECT"].includes(body.decision)) return res.status(400).json({error:"Invalid review"});
+            const [ws,ls,ps] = await Promise.all([
+                supabase(`client_wants?select=*&id=eq.${wantId}&status=eq.OPEN`),
+                supabase(`listings?select=*&id=eq.${listingId}`,{headers:{"Accept-Profile":"wholesale"}}),
+                supabase(`client_match_preferences?select=*&want_id=eq.${wantId}`)
+            ]);
+            if (!ws[0] || !ls[0]) return res.status(404).json({error:"Request or listing no longer found"});
+            const req=clientMatching.requestFor(ws[0],ps[0]);
+            const hash=clientMatching.evidenceHash(req,ls[0]);
+            if (hash!==body.evidence_hash) return res.status(409).json({error:"Evidence changed. Refresh and review again."});
+            if (body.decision==="FIT" && (!req.confirmed || clientMatching.evaluate(req,ls[0]).rejected.length)) return res.status(400).json({error:"Confirm the request and resolve hard mismatches before marking a fit"});
+            const reason=String(body.reason||"").trim().slice(0,1000);
+            if (!reason) return res.status(400).json({error:"Record what you checked or why this is wrong"});
+            await supabase("client_match_feedback?on_conflict=want_id,listing_id,evidence_hash,engine_version",{
+                method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({want_id:wantId,listing_id:listingId,evidence_hash:hash,engine_version:clientMatching.VERSION,decision:body.decision,reason,reviewed_at:new Date().toISOString()})
+            });
+            return res.status(200).json({ok:true});
+        }
+
+        if (action === "confirm-match-request") {
+            const id = Number(body.want_id);
+            if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ error: "Invalid request" });
+            const rows = await supabase(`client_wants?select=*&id=eq.${id}&status=eq.OPEN`);
+            const want = rows[0];
+            if (!want) return res.status(404).json({ error: "Open request not found" });
+            if (body.source_hash !== clientMatching.sourceHash(want)) return res.status(409).json({ error: "Request changed. Refresh and review again." });
+            const input = body.preferences || {}, preferences = {};
+            for (const f of ["brand","model","reference","condition","set","dial_color","bracelet","bezel","case_material","dial_material","manual_requirements"]) {
+                preferences[f] = String(input[f] || "").trim().slice(0, f === "manual_requirements" ? 1000 : 120) || null;
+            }
+            for (const f of ["max_price","year_from","year_to","case_size_mm"]) {
+                const n = input[f] === "" || input[f] == null ? null : Number(input[f]);
+                if (n !== null && (!Number.isFinite(n) || n <= 0)) return res.status(400).json({ error: "Invalid " + f });
+                preferences[f] = n;
+            }
+            for (const f of ["has_diamonds","diamonds_factory"]) {
+                if (![undefined,null,"","true","false"].includes(input[f])) return res.status(400).json({error:"Invalid " + f});
+                preferences[f] = input[f] === "true" ? true : input[f] === "false" ? false : null;
+            }
+            if (preferences.condition && !["NEW","UNWORN","PRE_OWNED"].includes(preferences.condition)) return res.status(400).json({error:"Use NEW, UNWORN or PRE_OWNED for condition"});
+            if (preferences.set && !["FULL_SET","WATCH_AND_CARD","WATCH_AND_BOX","WATCH_ONLY"].includes(preferences.set)) return res.status(400).json({error:"Use a listed contents value"});
+            if ((preferences.year_from && (preferences.year_from < 1900 || preferences.year_from > 2100 || !Number.isInteger(preferences.year_from))) || (preferences.year_to && (preferences.year_to < 1900 || preferences.year_to > 2100 || !Number.isInteger(preferences.year_to)))) return res.status(400).json({error:"Enter valid four-digit years"});
+            if (preferences.case_size_mm && (preferences.case_size_mm < 15 || preferences.case_size_mm > 65)) return res.status(400).json({error:"Check case size in mm"});
+            if (preferences.year_from && preferences.year_to && preferences.year_from > preferences.year_to) return res.status(400).json({ error: "Year range is reversed" });
+            // Budget is optional: clients are never asked for one, so it only
+            // filters when they volunteered it.
+            if (!preferences.brand || (!preferences.reference && !preferences.model)) return res.status(400).json({ error: "Confirm brand, and reference or model" });
+            if (body.notes_reviewed !== true) return res.status(400).json({ error: "Review original notes before confirming" });
+            await supabase("client_match_preferences?on_conflict=want_id", {
+                method:"POST",headers:{ Prefer:"resolution=merge-duplicates,return=minimal" },
+                body:JSON.stringify({ want_id:id, preferences,source_hash:clientMatching.sourceHash(want),confirmed_at:new Date().toISOString() })
+            });
+            return res.status(200).json({ ok:true });
+        }
+
         if (action === "matches") {
             const wh = (path) => supabase(path, { headers: { "Accept-Profile": "wholesale" } });
-
-            const [wants, matches, alerts] = await Promise.all([
-                supabaseAll("open_wants_board?select=*"),
-                // Best (cheapest) match per want is what matters operationally;
-                // the rest are noise from one client matching every Daytona posted.
-                // This has to read ALL of them: picking the cheapest out of only
-                // the 400 newest quietly showed a worse price than was available.
-                supabaseAll(
-                    "want_matches?select=*,want:client_wants(client_name,client_phone,ok_to_text,lead_quality,brand,model,reference,opened_at,status)" +
-                    "&order=created_at.desc"
-                ),
+            const now = Date.now();
+            const [wants, saved, feedback] = await Promise.all([
+                supabaseAll("client_wants?select=*&status=eq.OPEN&order=id.asc"),
+                supabaseAll("client_match_preferences?select=*"),
+                supabaseAll("client_match_feedback?select=*")
+            ]);
+            const savedById = new Map(saved.map(r=>[String(r.want_id),r]));
+            const requests = wants.slice(0,100).map(w=>{
+                const p = clientMatching.requestFor(w,savedById.get(String(w.id)),now);
+                return {brand:clientMatching.brandKey(p.brand),reference:clientMatching.key(p.reference),model:clientMatching.key(p.model)};
+            });
+            const [listings, retail, alerts] = await Promise.all([
+                supabaseAll("rpc/client_match_candidate_pool?select=id,brand,model,reference,price_usd,condition,set_completeness,year,seller_name,message_ts,dial_color,dial_material,bracelet,bezel,case_material,case_size_mm,has_diamonds,diamonds_factory,trust_score,listing_type,status,vision_mismatch,photo_conflicts,photo_unresolved,photo_read_at", {method:"POST",headers:{"Accept-Profile":"wholesale","Content-Profile":"wholesale"},body:JSON.stringify({p_requests:requests})}, 10000),
+                supabaseAll("retail_listings?select=id,source_slug,external_id,brand,reference,price_usd,available,last_seen,condition,set_completeness,dial_color,year&available=eq.true&last_seen=gte." + encodeURIComponent(new Date(now-36*36e5).toISOString()) + "&order=last_seen.desc,id.desc", {headers:{"Accept-Profile":"wholesale"}}, 5000),
                 wh("deal_alerts?select=*&order=created_at.desc&limit=100"),
             ]);
-
+            const result = clientMatching.shortlist(wants,listings,saved,now,feedback);
+            const matches = result.best;
+            for (const w of wants) {
+                w.match_preferences = clientMatching.requestFor(w,savedById.get(String(w.id)),now);
+                w.days_open = Math.max(0,Math.floor((now-Date.parse(w.opened_at))/864e5));
+            }
+            for (const m of matches) {
+                m.pricing = clientMatching.priceTarget(m.want.match_preferences,m.listing,retail,now);
+                if (m.pricing.market_below_target) m.assessment.review.push("Market asking prices do not support five-percent target");
+            }
             // Attach the dealer's own photo of the piece. Seeing the watch is how
             // Henry judges condition before he spends anything chasing it.
             const listingIds = [...new Set((matches || []).map((m) => m.listing_id).filter(Boolean))];
@@ -1134,36 +1209,39 @@ module.exports = async (req, res) => {
                         m.image_url = l.image_path ? urlByPath[l.image_path] || null : null;
                         // The whole listing, so the match card can open into the
                         // actual piece rather than a summary of it.
-                        m.listing = l;
+                        m.listing = { ...m.listing, ...l };
                     }
                 } catch (err) {
                     // Photos are a nicety; never take the whole view down for them.
                     console.error("[leads-admin] match photos failed:", err.message);
                 }
+
+                // The dealer's number, for "Open dealer chat" and "Ask if available":
+                // listing -> message sender -> dealers roster, same chain as ask-dealer.
+                try {
+                    const posts = await wh(`listings?select=id,message_pk&id=in.(${listingIds.join(",")})`);
+                    const msgIds = [...new Set((posts || []).map((p) => p.message_pk).filter(Boolean))];
+                    const msgs = msgIds.length ? await wh(`messages?select=id,sender_jid&id=in.(${msgIds.join(",")})`) : [];
+                    const lids = [...new Set((msgs || []).map((x) => x.sender_jid).filter(Boolean))];
+                    const roster = lids.length ? await wh("dealers?select=lid,phone&lid=in.(" +
+                        lids.map((x) => encodeURIComponent('"' + x + '"')).join(",") + ")") : [];
+                    const phoneByLid = {}, senderByMsg = {}, msgByListing = {};
+                    for (const d of roster || []) if (d.phone) phoneByLid[d.lid] = d.phone;
+                    for (const x of msgs || []) senderByMsg[x.id] = x.sender_jid;
+                    for (const p of posts || []) msgByListing[p.id] = p.message_pk;
+                    for (const m of matches || []) {
+                        m.dealer_phone = phoneByLid[senderByMsg[msgByListing[m.listing_id]]] || null;
+                    }
+                } catch (err) {
+                    console.error("[leads-admin] match dealer phones failed:", err.message);
+                }
             }
 
-            // Collapse to one row per want: cheapest wins, ties broken by profit.
-            const bestByWant = {};
-            for (const m of matches || []) {
-                if (!m.want || m.want.status !== "OPEN") continue;
-                const cur = bestByWant[m.want_id];
-                if (!cur || Number(m.dealer_price) < Number(cur.dealer_price)) bestByWant[m.want_id] = m;
-            }
-            const best = Object.values(bestByWant).sort((a, b) => {
-                const rank = (q) => (q === "HOT" ? 1 : q === "WARM" ? 2 : 3);
-                const d = rank(a.want?.lead_quality) - rank(b.want?.lead_quality);
-                return d !== 0 ? d : Number(b.profit_high || 0) - Number(a.profit_high || 0);
-            });
-
-            return res.status(200).json({
-                wants, best, alerts,
-                counters: {
-                    open_wants: wants.length,
-                    hot: wants.filter((w) => w.lead_quality === "HOT").length,
-                    matched: best.length,
-                    unmatched: wants.filter((w) => !bestByWant[w.id]).length,
-                    alerts: alerts.length,
-                },
+            const best = matches;
+            const bestByWant = new Set(best.map(m=>m.want_id));
+            return res.status(200).json({ wants, best, alerts, diagnostic:result.diagnostic, engine_version:result.version,
+                pool_truncated:wants.length>100 || listings.length>=10000 || retail.length>=5000,
+                counters:{open_wants:wants.length,hot:wants.filter(w=>w.lead_quality==="HOT").length,matched:best.length,unmatched:wants.filter(w=>!bestByWant.has(w.id)).length,alerts:alerts.length}
             });
         }
 
@@ -1442,7 +1520,7 @@ module.exports = async (req, res) => {
             if (only === "noprice")   filter = "&price_usd=is.null";
 
             const [flows, scorecard, coverage, samples, benchModels, benchFields,
-                   identity, disputes, leadDisputes, contested] = await Promise.all([
+                   identity, disputes, leadDisputes, contested, snapshots] = await Promise.all([
                 // Each of these is a full-table aggregate; when one trips the
                 // database statement timeout the tab must still render with
                 // whatever did come back, not die as a whole.
@@ -1467,6 +1545,7 @@ module.exports = async (req, res) => {
                 // References the chats cannot agree on: these are the ones worth
                 // pinning down by hand, because a wrong one sends the wrong watch.
                 wh("contested_refs?select=*&order=listings.desc&limit=60").catch(() => []),
+                wh("admin_snapshot_refreshes?select=name,refreshed_at").catch(() => []),
             ]);
             return res.status(200).json({
                 flows: flows || [], scorecard: scorecard || [],
@@ -1474,6 +1553,7 @@ module.exports = async (req, res) => {
                 benchModels: benchModels || [], benchFields: benchFields || [],
                 identity: identity || null, contested: contested || [],
                 disputes: disputes || [], leadDisputes: leadDisputes || [],
+                scorecardFreshness: snapshotFreshness(snapshots, "model_scorecard"),
             });
         }
 
@@ -1539,23 +1619,16 @@ module.exports = async (req, res) => {
         // which is the only symptom a dead webhook ever gives off.
         if (action === "health") {
             const wh = (p) => supabase(p, { headers: { "Accept-Profile": "wholesale" } });
-            const [rows, scorecard, errors] = await Promise.all([
+            const [rows, scorecard, errors, snapshots] = await Promise.all([
                 // pipeline_health can hit the DB statement timeout when the
                 // jobs table is backed up; the tab must still render (the
                 // requeue controls live here) so a failed view = empty list.
                 wh("pipeline_health?select=*").catch(() => []),
                 wh("model_scorecard?select=*").catch(() => []),
                 wh("extraction_errors?select=*&limit=20").catch(() => []),
+                wh("admin_snapshot_refreshes?select=name,refreshed_at").catch(() => []),
             ]);
-            const list = Array.isArray(rows) ? rows : [];
-            return res.status(200).json({
-                steps: list,
-                scorecard: Array.isArray(scorecard) ? scorecard : [],
-                errors: Array.isArray(errors) ? errors : [],
-                dead: list.filter((s) => s.status === "DEAD").length,
-                stale: list.filter((s) => s.status === "STALE").length,
-                checked_at: new Date().toISOString(),
-            });
+            return res.status(200).json(buildHealthResponse(rows, scorecard, errors, snapshots));
         }
 
         // ── Jobs board ─────────────────────────────────────────────────────

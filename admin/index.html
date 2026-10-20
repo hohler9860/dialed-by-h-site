@@ -4762,7 +4762,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     async function renderMatches() {
         var r = await A.adminFetchTo('/api/leads-admin', 'matches');
         MX.wants = r.wants || []; MX.best = r.best || [];
-        MX.alerts = r.alerts || []; MX.counters = r.counters || {};
+        MX.alerts = r.alerts || []; MX.counters = r.counters || {}; MX.poolTruncated = !!r.pool_truncated;
         // Quote book rides along: the Prices view is where the confidence gate is
         // actually visible, and the tile count comes from it.
         try {
@@ -4791,7 +4791,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var alerts = MX.alerts.filter(function (a) { return !q || hay(a).indexOf(q) >= 0; });
 
         var tiles = [
-            { k: 'matched', l: 'Matched',  v: MX.best.length },
+            { k: 'matched', l: 'Review candidates',  v: MX.best.length },
             { k: 'waiting', l: 'Still hunting', v: MX.wants.length - MX.best.length },
             { k: 'alerts',  l: 'Under market', v: MX.alerts.length },
             { k: 'prices',  l: 'Quotable', v: (QB.counters.quotable != null ? QB.counters.quotable : '—') },
@@ -4813,11 +4813,18 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
               '<button class="btn ghost" id="mx-src-go">Find it</button></div>' +
             '<div class="src-panel" id="mx-src-out"></div>';
 
+        if (MX.poolTruncated) html += '<p class="err">Candidate search reached its limit. Results are incomplete.</p>';
+        if (mxView === 'matched' || mxView === 'waiting') {
+            html += '<details style="margin:16px 0"><summary>Review client requests (' + MX.wants.length + ')</summary>' +
+                '<p class="count">Resolve changed budgets, alternative watches and details in the original notes. Confirmation lasts 30 days and expires if the source request changes.</p>' +
+                MX.wants.filter(function(w) { return !q || hay(w).indexOf(q) >= 0; }).map(mxRequestForm).join('') + '</details>';
+        }
+
         if (mxView === 'matched') {
             html += '<p class="count">' + matched.length + ' client' + (matched.length === 1 ? '' : 's') +
                     ' with a piece available now · cheapest match each</p>' +
                     (matched.length ? matched.map(mxCard).join('')
-                      : '<p class="count">Nothing matched yet. Wants stay open, so this fills as dealers post.</p>');
+                      : '<p class="count">No candidates passed the identity and budget gates. Review client requests below; this does not prove supply is unavailable.</p>');
         } else if (mxView === 'waiting') {
             html += '<p class="count">' + waiting.length + ' open want' + (waiting.length === 1 ? '' : 's') +
                     ' with nothing in the groups yet</p>' +
@@ -4967,76 +4974,46 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
     // A card, not a row: this is the thing Henry acts on, and it needs both
     // phone numbers and the money in one glance.
+    function mxRequestForm(w) {
+        var p = w.match_preferences || {};
+        var fields = [['brand','Brand'],['model','Model'],['reference','Full reference'],['max_price','Client budget USD (optional, only if they gave one)'],['condition','Condition: NEW / UNWORN / PRE_OWNED'],['set','Contents: FULL_SET / WATCH_AND_CARD / WATCH_AND_BOX / WATCH_ONLY'],['year_from','Year from'],['year_to','Year to'],['dial_color','Dial color'],['dial_material','Dial material'],['bracelet','Bracelet'],['bezel','Bezel'],['case_material','Case metal'],['case_size_mm','Size mm'],['manual_requirements','Other requirements / acceptable alternatives to check manually']];
+        return '<details class="scard" style="margin-top:10px"><summary>' + esc(w.client_name || 'Client') + ' · ' + esc([p.brand,p.model,p.reference].filter(Boolean).join(' ')) + ' · ' + (p.confirmed ? 'request confirmed' : 'needs confirmation') + '</summary>' +
+            '<p style="white-space:pre-wrap">Original notes: ' + esc(w.notes || 'None recorded') + '</p>' +
+            '<form class="js-match-request" data-want="' + esc(w.id) + '"><div class="dgrid">' + fields.map(function(f) {
+                return '<label><span class="dk">' + esc(f[1]) + '</span><input class="ctl" name="' + f[0] + '" value="' + esc(p[f[0]] == null ? '' : p[f[0]]) + '"></label>';
+            }).join('') + ['has_diamonds','diamonds_factory'].map(function(f) {
+                return '<label><span class="dk">' + (f === 'has_diamonds' ? 'Diamonds' : 'Factory diamonds') + '</span><select class="ctl" name="' + f + '"><option value="">No restriction</option><option value="true"' + (p[f] === true ? ' selected' : '') + '>Required</option><option value="false"' + (p[f] === false ? ' selected' : '') + '>Not acceptable</option></select></label>';
+            }).join('') + '</div><p><label><input type="checkbox" name="notes_reviewed" required> I reviewed the original notes, resolved conflicting details and confirmed this is still wanted. Blank fields mean no restriction.</label></p>' +
+            '<button class="btn" type="submit">Confirm request</button><span class="js-request-result" role="status"></span></form></details>';
+    }
+
     function mxCard(m) {
-        var w = m.want || {};
-        var piece = [w.brand, w.model, m.reference || w.reference].filter(Boolean).join(' ') || 'Watch';
-        var days = w.opened_at ? Math.floor((Date.now() - new Date(w.opened_at).getTime()) / 864e5) : 0;
+        var w = m.want || {}, l = m.listing || {}, p = m.pricing || {};
+        var piece = [l.brand,l.model,l.reference].filter(Boolean).join(' ');
         var cp = String(w.client_phone || '').replace(/\D/g, '');
         var dp = String(m.dealer_phone || '').replace(/\D/g, '');
-        // A target price only exists when retail was matched like for like.
-        var verified = (m.quote_confidence === 'HIGH' || m.quote_confidence === 'MEDIUM')
-                       && m.quote_high != null;
-
-        var spec = [
-            m.listing && m.listing.year,
-            m.listing && m.listing.condition && m.listing.condition !== 'UNKNOWN'
-                ? m.listing.condition.replace(/_/g, ' ') : null,
-            m.listing && m.listing.set_completeness && m.listing.set_completeness !== 'UNKNOWN'
-                ? m.listing.set_completeness.replace(/_/g, ' ') : null,
-            m.listing && m.listing.case_material ? m.listing.case_material.replace(/_/g, ' ') : null,
-            m.listing && m.listing.dial_material && m.listing.dial_material !== 'STANDARD'
-                ? m.listing.dial_material : null,
-            m.listing && m.listing.has_diamonds ? 'diamonds' : null,
-            m.listing && m.listing.nickname ? '"' + m.listing.nickname + '"' : null,
-        ].filter(Boolean).join(' · ');
-
-        return '<div class="scard" style="margin-bottom:10px">' +
-          '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">' +
-            // The dealer's own photo: how condition actually gets judged.
-            (m.image_url
-              ? '<img class="wthumb" style="width:64px;height:64px;flex:0 0 64px" ' +
-                'src="' + esc(m.image_url) + '" alt="" loading="lazy" decoding="async">'
-              : '') +
-            '<div style="flex:1">' +
-              '<div class="tname">' + esc(w.client_name || 'Client') +
-                (w.lead_quality ? ' <span class="tag ' + w.lead_quality.toLowerCase() + '">' + esc(w.lead_quality) + '</span>' : '') +
-                (w.ok_to_text === false ? ' <span class="tag spam">no texts</span>' : '') + '</div>' +
-              '<div class="tsub">' + esc(piece) + ' · asked ' + (days === 0 ? 'today' : days + 'd ago') + '</div>' +
-              (spec ? '<div class="tsub">' + esc(spec) + '</div>' : '') +
-            '</div>' +
-            // Only show a range when retail was matched like for like. Otherwise
-            // the floor is the only number the system can stand behind.
-            '<div style="text-align:right">' +
-              '<div class="tname">' + (verified
-                  ? esc(money(m.profit_low)) + ' to ' + esc(money(m.profit_high))
-                  : esc(money(m.profit_low)) + '+') + '</div>' +
-              '<div class="tsub">' + (verified ? 'your margin' : 'floor margin, retail unverified') + '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="dgrid" style="margin-top:10px">' +
-            '<div><div class="dk">Dealer asks</div><div class="dv">' + esc(money(m.dealer_price)) + '</div></div>' +
-            '<div><div class="dk">You quote</div><div class="dv">' + (verified
-                ? esc(money(m.quote_low)) + ' to ' + esc(money(m.quote_high))
-                : esc(money(m.quote_low)) + ' floor') + '</div></div>' +
-            '<div><div class="dk">Retail</div><div class="dv">' + (m.retail_median
-                ? esc(money(m.retail_median)) + (m.retail_source ? ' (' + esc(m.retail_source) + ')' : '')
-                : 'not comparable yet') + '</div></div>' +
-            '<div><div class="dk">Confidence</div><div class="dv">' +
-                esc(m.quote_confidence || 'NONE') + (m.match_tier ? ' · ' + esc(m.match_tier) : '') + '</div></div>' +
-            '<div><div class="dk">Dealer</div><div class="dv">' + esc(m.dealer_name || 'unknown') + '</div></div>' +
-          '</div>' +
-          '<div class="row" style="gap:8px;margin-top:10px">' +
+        var ref = m.reference || l.reference || w.reference || '';
+        return '<div class="scard" style="margin-bottom:10px"><div class="row" style="gap:12px">' +
+            (m.image_url ? '<img class="wthumb" style="width:64px;height:64px" src="' + esc(m.image_url) + '" alt="" loading="lazy">' : '') +
+            '<div><div class="tname">' + esc(w.client_name || 'Client') +
+                (w.lead_quality ? ' <span class="tag ' + esc(w.lead_quality.toLowerCase()) + '">' + esc(w.lead_quality) + '</span>' : '') +
+                (w.ok_to_text === false ? ' <span class="tag spam">no texts</span>' : '') + '</div><div class="tsub">' + esc(piece) + '</div>' +
+            '<div class="tsub">' + (m.feedback && m.feedback.decision === 'FIT' ? 'Specs reviewed; quote and availability pending' : 'Needs review') + ' · ' + esc(m.assessment.identity.replace(/_/g,' ')) + ' · ' + m.candidate_count + ' candidate(s)</div></div></div>' +
+            '<div class="dgrid" style="margin-top:10px"><div><div class="dk">Dealer ask</div><div class="dv">' + esc(money(m.dealer_price)) + '</div></div>' +
+            '<div><div class="dk">5–8% target before costs</div><div class="dv">' + esc(money(p.target_low)) + (p.target_high != null ? ' to ' + esc(money(p.target_high)) : ' · target unsupported') + '</div></div>' +
+            '<div><div class="dk">Comparable retail asks</div><div class="dv">' + (p.market_median ? esc(money(p.market_median)) : 'Insufficient evidence') + ' · ' + (p.market_count || 0) + ' observations / ' + (p.market_sources || 0) + ' sources</div></div>' +
+            '<div><div class="dk">Dealer</div><div class="dv">' + esc(m.dealer_name || 'unknown') + '</div></div></div>' +
+            '<p class="count">' + esc(p.pricing_note) + '</p><ul>' + m.assessment.review.map(function(r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul>' +
+            '<div class="row" style="gap:8px;flex-wrap:wrap">' +
             (cp ? '<a class="btn ghost" href="https://wa.me/' + esc(cp) + '" target="_blank" rel="noopener">Message client</a>' : '') +
             (dp ? '<a class="btn ghost" href="https://wa.me/' + esc(dp) + '" target="_blank" rel="noopener">Open dealer chat</a>' : '') +
             (dp ? '<button class="btn ghost js-ask" data-listing="' + esc(m.listing_id) + '">Ask if available</button>' : '') +
-            ((m.reference || w.reference)
-              ? '<button class="btn ghost js-source" data-ref="' + esc(m.reference || w.reference) + '">Source it</button>'
-              : '') +
-            (m.listing ? '<button class="btn ghost js-piece" data-piece="' + esc(m.listing_id) + '">View the piece</button>' : '') +
-          '</div>' +
-          '<div class="piece-panel" data-piecefor="' + esc(m.listing_id || '') + '"></div>' +
-          '<div class="src-panel" data-srcfor="' + esc(m.reference || w.reference || '') + '"></div>' +
-        '</div>';
+            (ref ? '<button class="btn ghost js-source" data-ref="' + esc(ref) + '">Source it</button>' : '') +
+            '<button class="btn ghost js-piece" data-piece="' + esc(m.listing_id) + '">View the piece</button>' +
+            '<button class="btn ghost js-match-feedback" data-want="' + esc(m.want_id) + '" data-listing="' + esc(m.listing_id) + '" data-decision="FIT">Specs fit</button>' +
+            '<button class="btn ghost js-match-feedback" data-want="' + esc(m.want_id) + '" data-listing="' + esc(m.listing_id) + '" data-decision="REJECT">Wrong match</button></div>' +
+            '<div class="piece-panel" data-piecefor="' + esc(m.listing_id) + '"></div>' +
+            '<div class="src-panel" data-srcfor="' + esc(ref) + '"></div></div>';
     }
 
     // The dealer's own photo, full size, next to every attribute that was read
@@ -5153,6 +5130,29 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     function wireMatches() {
+        [].forEach.call(document.querySelectorAll('.js-match-feedback'),function(button) {
+            button.addEventListener('click',async function() {
+                var m=MX.best.find(function(m) {return String(m.want_id)===button.dataset.want && String(m.listing_id)===button.dataset.listing;});
+                var reason=prompt(button.dataset.decision==='FIT' ? 'What specs and evidence did you verify? This does not approve a quote or availability.' : 'Why is this a wrong match?');
+                if (!reason || !reason.trim()) return;
+                button.disabled=true;
+                try {await A.adminFetchTo('/api/leads-admin','match-feedback',{want_id:m.want_id,listing_id:m.listing_id,evidence_hash:m.evidence_hash,decision:button.dataset.decision,reason:reason}); await renderMatches();}
+                catch(e) {alert(e.message);button.disabled=false;}
+            });
+        });
+        [].forEach.call(document.querySelectorAll('.js-match-request'), function(form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var w = MX.wants.find(function(w) { return String(w.id) === form.dataset.want; });
+                var fields = new FormData(form), preferences = {}, status = form.querySelector('.js-request-result');
+                fields.forEach(function(v,k) { if (k !== 'notes_reviewed') preferences[k] = v; });
+                var button = form.querySelector('button'); button.disabled = true;
+                try {
+                    await A.adminFetchTo('/api/leads-admin','confirm-match-request',{want_id:w.id,source_hash:w.match_preferences.source_hash,preferences:preferences,notes_reviewed:fields.get('notes_reviewed') === 'on'});
+                    await renderMatches();
+                } catch(e) { status.textContent = ' ' + e.message; button.disabled = false; }
+            });
+        });
         [].forEach.call(document.querySelectorAll('[data-mx]'), function (b) {
             b.addEventListener('click', function () { mxView = this.dataset.mx; paintMatches(); });
         });
@@ -5230,7 +5230,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         [].forEach.call(document.querySelectorAll('.js-piece'), function (b) {
             b.addEventListener('click', function () {
-                var box = this.closest('.bcard').querySelector('.piece-panel');
+                var box = this.closest('.scard').querySelector('.piece-panel');
                 if (!box) return;
                 if (box.innerHTML) { box.innerHTML = ''; this.textContent = 'View the piece'; return; }
                 var id = String(this.dataset.piece);
@@ -5244,7 +5244,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         [].forEach.call(document.querySelectorAll('.js-source'), function (b) {
             b.addEventListener('click', function () {
                 var ref = this.dataset.ref;
-                var box = this.closest('.bcard').querySelector('.src-panel');
+                var box = this.closest('.scard').querySelector('.src-panel');
                 if (!box) return;
                 // second click closes it again
                 if (box.innerHTML) { box.innerHTML = ''; this.textContent = 'Source it'; return; }
@@ -5448,7 +5448,10 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           '</tbody></table></div>' +
 
           '<p class="count">Model scorecard · graded against the original message, not the ' +
-          'model\'s own confidence</p>' +
+          'model\'s own confidence. Snapshot: ' +
+          esc(AC.scorecardFreshness && AC.scorecardFreshness.refreshed_at
+            ? new Date(AC.scorecardFreshness.refreshed_at).toLocaleString() : 'unavailable') +
+          (!AC.scorecardFreshness || AC.scorecardFreshness.stale ? ' (overdue; figures may be outdated)' : '') + '</p>' +
           '<div class="tbl-wrap" style="margin-bottom:20px"><table class="leads"><thead><tr>' +
             '<th>Model</th><th style="width:80px">Read</th><th style="width:80px">Trust</th>' +
             '<th style="width:80px">Solid</th><th style="width:80px">Weak</th>' +
@@ -5887,6 +5890,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var d = pair[0], jb = pair[1] || {};
         var steps = d.steps || [];
         var bad = d.dead + d.stale;
+        var freshness = d.freshness || {};
+        var healthFresh = freshness.health || { stale: true };
+        var scoreFresh = freshness.scorecard || { stale: true };
 
         // Jobs board: the pipeline is a set of 30s workers coordinating through
         // wholesale.jobs. Failures never retry themselves — they are listed
@@ -5930,11 +5936,14 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<div class="tile"><span class="tk">Stale</span><span class="tv">' + d.stale + '</span></div>' +
             '<div class="tile"><span class="tk">Dead</span><span class="tv">' + d.dead + '</span></div>' +
           '</div>' +
-          '<p class="count">' + (bad === 0
+          '<p class="count">' + (healthFresh.stale
+            ? 'Health snapshot is missing or overdue. Pipeline status is unknown until refresh succeeds.'
+            : bad === 0
             ? 'Everything has produced something recently.'
             : bad + ' step' + (bad === 1 ? '' : 's') + ' not producing. A flow can be broken for weeks ' +
               'and the only symptom is silence here.') +
-          ' Checked ' + esc(new Date(d.checked_at).toLocaleTimeString()) + '.</p>' +
+          ' Snapshot: ' + esc(healthFresh.refreshed_at ? new Date(healthFresh.refreshed_at).toLocaleString() : 'unavailable') +
+          '. Checked ' + esc(new Date(d.checked_at).toLocaleTimeString()) + '.</p>' +
           '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
             '<th style="width:90px">State</th><th style="width:190px">Step</th><th>What it does</th>' +
             '<th style="width:110px">Last</th><th style="width:110px;text-align:right">Recent</th>' +
@@ -5955,7 +5964,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           // sat at 94 and never moved, but the score computed against the
           // original message plus how often a human had to step in.
           '<p class="count" style="margin-top:22px">Extraction accuracy · graded against the ' +
-          'original WhatsApp message, not the model\'s opinion of itself</p>' +
+          'original WhatsApp message, not the model\'s opinion of itself. Snapshot: ' +
+          esc(scoreFresh.refreshed_at ? new Date(scoreFresh.refreshed_at).toLocaleString() : 'unavailable') +
+          (scoreFresh.stale ? ' (overdue; these figures may be outdated)' : '') + '</p>' +
           '<div class="tbl-wrap"><table class="leads"><thead><tr>' +
             '<th style="width:180px">Model</th><th style="width:80px">Read</th>' +
             '<th style="width:80px">Trust</th><th style="width:90px">Solid</th>' +

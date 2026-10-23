@@ -1,0 +1,81 @@
+{
+ "name": "WA watch: Starbucks buyers -> Henry",
+ "nodes": [
+  {
+   "name": "Alert from DB",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "wa-watch-SECRET_SEE_VAULT_wa_watch_webhook_url",
+    "responseMode": "onReceived",
+    "options": {}
+   },
+   "webhookId": "8edc1895-0efa-4df5-89bf-cd7c6689bb2d",
+   "id": "885f8d0f-197f-43ac-90b4-15c27e71453c"
+  },
+  {
+   "name": "Send it to Henry",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    260,
+    0
+   ],
+   "id": "fb91a9f4-d581-465c-b7d2-eb4d28ddf285",
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "VcTG5513qngKMPJg",
+     "name": "Evolution API (dialedbyh)"
+    }
+   },
+   "retryOnFail": true,
+   "maxTries": 3,
+   "waitBetweenTries": 5000,
+   "parameters": {
+    "method": "POST",
+    "url": "http://evo-k6x1gy4eqpxfxdf2xd9t6ru1.66.135.7.116.sslip.io/message/sendText/dialedbyh",
+    "authentication": "predefinedCredentialType",
+    "nodeCredentialType": "httpHeaderAuth",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "Content-Type",
+       "value": "application/json"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ number: '19146211848', text: $json.body.text }) }}",
+    "options": {
+     "timeout": 30000
+    }
+   }
+  }
+ ],
+ "connections": {
+  "Alert from DB": {
+   "main": [
+    [
+     {
+      "node": "Send it to Henry",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "saveDataSuccessExecution": "all",
+  "executionTimeout": 120,
+  "timezone": "America/New_York"
+ }
+}

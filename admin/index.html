@@ -3,51 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#FBFAF4">
+<meta name="theme-color" content="#F7F3E9">
 <title>Admin · Dialed By H</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4">
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logomark-charcoal.svg">
 <!-- Home-screen app icon: iOS reads these when Henry adds the admin from Safari. -->
 <link rel="apple-touch-icon" sizes="180x180" href="/admin/icon-180.png">
 <meta name="apple-mobile-web-app-title" content="DBH Admin">
 
 <style>
 /*
- * Admin console, built in the Boston Watch Club admin's design language:
- * cream ground, Departure Mono chrome, TikTok Sans display, black tab pills.
- * Deliberately self-contained — it does NOT load /dist/styles.css, because the
- * site's global sheet uppercases the whole body and would fight every label
- * here. Tokens below are lifted from the BWC theme.
+ * Admin console in the Dialed by H identity (Beau Parent, Nov 2026): cream
+ * ground, charcoal ink, Suisse Intl / Works / Intl Mono. Deliberately
+ * self-contained; it does NOT load /dist/styles.css because the site's global
+ * sheet uppercases the whole body and would fight every label here.
  */
-@font-face {
-    font-family: 'tronica-mono';
-    src: url('/fonts/DepartureMono-Regular.otf') format('opentype');
-    font-weight: 400; font-display: block;
-}
-@font-face {
-    font-family: 'tiktok';
-    src: url('/fonts/TikTokSans.ttf') format('truetype');
-    font-weight: 100 900; font-display: block;
-}
+@font-face { font-family: 'Suisse Intl'; font-weight: 400; font-style: normal; font-display: swap; src: url('/assets/fonts/suisse/SuisseIntl-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Suisse Intl'; font-weight: 500; font-style: normal; font-display: swap; src: url('/assets/fonts/suisse/SuisseIntl-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Suisse Works'; font-weight: 400; font-style: normal; font-display: swap; src: url('/assets/fonts/suisse/SuisseWorks-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Suisse Intl Mono'; font-weight: 400; font-style: normal; font-display: swap; src: url('/assets/fonts/suisse/SuisseIntlMono-Regular.woff2') format('woff2'); }
 
 :root {
-    --label: 0,0,0;
-    --label-d: 54,54,48;
-    --bg-deep: 251,250,244;
-    --l1: rgba(var(--label),1);
-    --l2: rgba(var(--label-d),.6);
-    --l3: rgba(var(--label-d),.32);
-    --line: rgba(var(--label-d),.1);
-    --b1: rgb(var(--bg-deep));
-    --be: #efede7;
-    --mono: 'tronica-mono', ui-monospace, 'SF Mono', Menlo, monospace;
-    --sans: 'tiktok', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* Beau Parent identity: charcoal ink on cream, warm greys for UI chrome. */
+    --charcoal: #252522; --cream: #F7F3E9;
+    --grey-dark: #52514E; --grey-mid: #999791; --grey-light: #D8D5CE;
+    --label: 37,37,34;
+    --label-d: 37,37,34;
+    --bg-deep: 247,243,233;
+    --l1: var(--charcoal);
+    --l2: var(--grey-dark);
+    --l3: var(--grey-mid);
+    --line: var(--grey-light);
+    --b1: var(--cream);
+    --be: #ECE7DA;
+    /* Three faces, three jobs: Intl = headlines, names, buttons. Works = running
+       text and watch model names. Mono = eyebrows, labels, references, figures. */
+    --mono: 'Suisse Intl Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: 'Suisse Intl', 'Helvetica Neue', Arial, sans-serif;
+    --works: 'Suisse Works', Georgia, 'Times New Roman', serif;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-synthesis: none; }
 html, body { min-height: 100%; background: var(--b1); }
 body { color: var(--l1); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
-::selection { background: #fff; color: #000; }
+::selection { background: var(--l1); color: var(--b1); }
 a { color: inherit; text-decoration: none; }
 
 .mono { font-family: var(--mono); }
@@ -57,48 +56,47 @@ a { color: inherit; text-decoration: none; }
 header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 50;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; font-family: var(--mono); font-size: 15px;
+    padding: 16px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
     background: rgba(var(--bg-deep),.8); backdrop-filter: blur(6px);
 }
 @media (min-width: 1024px) { header { padding: 28px 56px; } }
-header img { height: 16px; width: auto; display: block; }
-@media (min-width: 1024px) { header img { height: 18px; } }
+header img { height: 11px; width: auto; display: block; }
+@media (min-width: 1024px) { header img { height: 14px; } }
 .hbtn {
-    font-family: var(--mono); font-size: 15px; text-transform: uppercase;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
     background: none; border: 0; padding: 8px; cursor: pointer; color: var(--l1);
     position: relative;
 }
 .hbtn::before {
-    content: ''; position: absolute; inset: 0;
-    border: 2px dotted transparent; transition: border-color .2s; pointer-events: none;
+    content: ''; position: absolute; left: 8px; right: 8px; bottom: 3px; height: 1px;
+    background: var(--l1); transform: scaleX(0); transform-origin: left; transition: transform .2s; pointer-events: none;
 }
-.hbtn:hover::before { border-color: var(--l1); }
+.hbtn:hover::before { transform: scaleX(1); }
 
 /* ── layout ─────────────────────────────────────────────── */
 main { margin: 0 auto; padding: 84px 28px 60px; width: 100%; max-width: none; }
 @media (max-width: 700px) { main { padding: 76px 12px 40px; } }
 @media (min-width: 1024px) { main { padding: 128px 24px; } }
 
-.eyebrow { font-family: var(--mono); font-size: 14px; text-transform: uppercase; color: var(--l2); }
+.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--l2); }
 h1.title {
-    margin-top: 8px; font-weight: 700; font-size: 40px; line-height: 1;
-    letter-spacing: -.02em; text-transform: uppercase;
-    font-variation-settings: 'wdth' 120;
+    margin-top: 10px; font-weight: 500; font-size: 40px; line-height: .95;
+    letter-spacing: -.03em;
 }
-@media (min-width: 1024px) { h1.title { font-size: 60px; } }
+@media (min-width: 1024px) { h1.title { font-size: 56px; } }
 
 /* ── tabs ───────────────────────────────────────────────── */
 nav.tabs {
-    margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px;
-    font-family: var(--mono); font-size: 14px; text-transform: uppercase;
+    margin-top: 32px; display: flex; flex-wrap: wrap; gap: 4px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
     border-bottom: 1px solid var(--line);
 }
 nav.tabs button {
-    padding: 12px 16px; cursor: pointer; background: none; border: 0;
+    padding: 12px 14px; cursor: pointer; background: none; border: 0;
     font: inherit; color: var(--l1); transition: background .15s, color .15s;
 }
 nav.tabs button:hover { color: var(--l1); background: rgba(var(--label-d),.05); }
-nav.tabs button[aria-selected="true"] { background: #000; color: var(--b1); }
+nav.tabs button[aria-selected="true"] { background: var(--l1); color: var(--b1); }
 
 section.body { margin-top: 40px; min-height: 40vh; }
 
@@ -114,18 +112,18 @@ input.ctl::placeholder { color: var(--l3); }
 .grow { flex: 1; min-width: 200px; }
 
 .btn {
-    font-family: var(--mono); font-size: 13px; text-transform: uppercase;
-    padding: 10px 16px; cursor: pointer; border: 1px solid #000;
-    background: #000; color: var(--b1); transition: opacity .15s;
+    font-family: var(--sans); font-weight: 400; font-size: 13px; letter-spacing: 0;
+    padding: 10px 16px; cursor: pointer; border: 1px solid var(--l1); border-radius: 0;
+    background: var(--l1); color: var(--b1); transition: opacity .15s, border-color .15s;
 }
 .btn:hover { opacity: .82; }
-.btn.ghost { background: transparent; color: var(--l1); border-color: var(--line); }
+.btn.ghost { background: transparent; color: var(--l1); border-color: var(--grey-mid); }
 .btn.ghost:hover { border-color: var(--l1); opacity: 1; }
 .btn.danger { background: transparent; color: #b3261e; border-color: rgba(179,38,30,.35); }
 .btn.danger:hover { border-color: #b3261e; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 
-.count { font-family: var(--mono); font-size: 13px; text-transform: uppercase; color: var(--l2); margin-bottom: 12px; }
+.count { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--l2); margin-bottom: 12px; }
 
 /* ── rows ───────────────────────────────────────────────── */
 .row {
@@ -143,7 +141,7 @@ input.ctl::placeholder { color: var(--l3); }
     display: flex; align-items: center; justify-content: center;
     font-family: var(--mono); font-size: 8px; color: var(--l3);
 }
-.row .rname { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+.row .rname { font-weight: 500; font-size: 15px; letter-spacing: -.01em; }
 .row .rmeta {
     font-family: var(--mono); font-size: 11px; text-transform: uppercase;
     color: var(--l2); margin-top: 3px; word-break: break-word;
@@ -153,7 +151,7 @@ input.ctl::placeholder { color: var(--l3); }
     font-family: var(--mono); font-size: 10px; text-transform: uppercase;
     border: 1px solid var(--line); padding: 3px 7px; white-space: nowrap;
 }
-.pill.on { background: #000; color: var(--b1); border-color: #000; }
+.pill.on { background: var(--l1); color: var(--b1); border-color: var(--l1); }
 
 /* ── editor ─────────────────────────────────────────────── */
 .sheet {
@@ -162,8 +160,8 @@ input.ctl::placeholder { color: var(--l3); }
 }
 .sheet-inner { max-width: 900px; margin: 0 auto; padding-bottom: 80px; }
 .sheet h2 {
-    font-weight: 700; font-size: 30px; text-transform: uppercase;
-    letter-spacing: -.02em; font-variation-settings: 'wdth' 120; margin-bottom: 4px;
+    font-weight: 500; font-size: 30px; line-height: 1.05;
+    letter-spacing: -.02em; margin-bottom: 4px;
 }
 .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 28px; }
 .field label {
@@ -189,12 +187,12 @@ input.ctl::placeholder { color: var(--l3); }
 }
 .imgcard .tools button:hover { border-color: var(--l1); }
 .imgcard .primary {
-    position: absolute; top: 4px; left: 4px; background: #000; color: var(--b1);
+    position: absolute; top: 4px; left: 4px; background: var(--l1); color: var(--b1);
     font-family: var(--mono); font-size: 9px; padding: 2px 5px; text-transform: uppercase;
 }
 
-.note { font-family: var(--mono); font-size: 12px; color: var(--l2); margin-top: 8px; }
-.err { font-family: var(--mono); font-size: 13px; color: #b3261e; text-transform: uppercase; margin-top: 12px; }
+.note { font-family: var(--works); font-size: 13px; line-height: 1.5; color: var(--l2); margin-top: 8px; }
+.err { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: #b3261e; text-transform: uppercase; margin-top: 12px; }
 
 /* ── leads dashboard ────────────────────────────────────── */
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px; margin-bottom: 20px; }
@@ -203,7 +201,7 @@ input.ctl::placeholder { color: var(--l3); }
     background: transparent; text-align: left; transition: border-color .15s, background .15s;
 }
 .tile:hover { border-color: var(--l1); }
-.tile[aria-pressed="true"] { background: #000; border-color: #000; }
+.tile[aria-pressed="true"] { background: var(--l1); border-color: var(--l1); }
 .tile[aria-pressed="true"] .tk, .tile[aria-pressed="true"] .tv { color: var(--b1); }
 .tk { display: block; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); }
 .tv { display: block; font-family: var(--mono); font-size: 24px; line-height: 1.1; margin-top: 5px; color: var(--l1); }
@@ -233,10 +231,10 @@ table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line)
    uppercase row with the name left and the price right. */
 .wcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 34px 18px; padding-top: 20px; }
 .wcard { cursor: pointer; min-width: 0; }
-.wcard .wc-img { position: relative; width: 100%; aspect-ratio: 1; background: #0d0d0d; overflow: hidden; }
+.wcard .wc-img { position: relative; width: 100%; aspect-ratio: 1; background: var(--charcoal); overflow: hidden; }
 .wcard .wc-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .wcard .wc-img .wc-noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono); font-size: 9px; letter-spacing: .3em; color: rgba(255,255,255,.25); }
+    font-family: var(--mono); font-size: 9px; letter-spacing: .3em; color: rgba(247,243,233,.3); }
 .wcard .wc-tag { position: absolute; top: 0; right: 0; z-index: 2; background: var(--l1); color: var(--b1);
     font-family: var(--mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; padding: 4px 8px; }
 .wcard .wc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 12px;
@@ -269,7 +267,7 @@ table.leads td { padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line)
 @keyframes pbump { 0% { fill: #7fd97f; } 100% { fill: var(--l1); } }
 table.leads tbody tr { cursor: pointer; }
 table.leads tbody tr:hover { background: rgba(var(--label-d),.04); }
-.tname { font-weight: 700; letter-spacing: -.01em; }
+.tname { font-weight: 500; letter-spacing: -.01em; }
 .tsub { font-family: var(--mono); font-size: 11px; color: var(--l2); margin-top: 2px; }
 .tmono { font-family: var(--mono); font-size: 11px; color: var(--l2); white-space: nowrap; }
 
@@ -291,14 +289,14 @@ table.leads tbody tr:hover { background: rgba(var(--label-d),.04); }
     display: inline-block; font-family: var(--mono); font-size: 9px; text-transform: uppercase;
     letter-spacing: .06em; border: 1px solid var(--line); padding: 2px 6px; white-space: nowrap;
 }
-.tag.hot { background: #000; color: var(--b1); border-color: #000; }
+.tag.hot { background: var(--l1); color: var(--b1); border-color: var(--l1); }
 .tag.warm { border-color: var(--l1); color: var(--l1); }
 .tag.spam, .tag.test { color: var(--l3); }
 .detail { background: rgba(var(--label-d),.03); }
 .detail td { padding: 16px 10px 20px 0; }
 .dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 26px; }
 .dk { font-family: var(--mono); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--l2); margin-bottom: 3px; }
-.dv { font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.dv { font-family: var(--works); font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
 select.stat {
     font-family: var(--mono); font-size: 10px; text-transform: uppercase;
     background: transparent; border: 1px solid var(--line); padding: 3px 5px; cursor: pointer; color: var(--l1);
@@ -311,7 +309,7 @@ select.stat {
  * silent collision.
  *
  * Chart colours are the only new hues in the console. They were validated
- * colourblind-safe against this cream ground (#FBFAF4): worst all-pairs CVD
+ * colourblind-safe against this cream ground (#F7F3E9): worst all-pairs CVD
  * deltaE 9.2, normal-vision 24.0. Do not swap them for something that "matches"
  * without re-checking, and do not add a third series without doing the same.
  */
@@ -325,7 +323,7 @@ select.stat {
 .bk-filters .lab { color: var(--l3); margin-right: 6px; }
 .bk-seg { padding: 7px 13px; cursor: pointer; background: none; border: 0; font: inherit; color: var(--l2); }
 .bk-seg:hover { color: var(--l1); }
-.bk-seg[aria-pressed="true"] { background: #000; color: var(--b1); }
+.bk-seg[aria-pressed="true"] { background: var(--l1); color: var(--b1); }
 
 .bk-stats {
     margin-top: 24px; display: grid; gap: 1px; background: var(--line);
@@ -336,8 +334,8 @@ select.stat {
 .bk-stat { background: var(--b1); padding: 18px 16px 16px; }
 .bk-k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--l3); }
 .bk-v {
-    margin-top: 9px; font-size: 27px; font-weight: 700; line-height: 1;
-    letter-spacing: -.02em; font-variation-settings: 'wdth' 105;
+    margin-top: 9px; font-size: 27px; font-weight: 500; line-height: 1;
+    letter-spacing: -.02em;
 }
 .bk-v.neg { color: var(--bad); }
 .bk-s { margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
@@ -348,8 +346,7 @@ select.stat {
 @media (min-width: 900px) { .bk-grid.two { grid-template-columns: 1.35fr 1fr; } }
 .bk-card { border: 1px solid var(--line); padding: 20px 20px 16px; }
 .bk-card h3 {
-    font-size: 15px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: -.01em; font-variation-settings: 'wdth' 115;
+    font-size: 15px; font-weight: 500; letter-spacing: -.01em;
 }
 .bk-card .cap { margin-top: 5px; font-family: var(--mono); font-size: 11px; color: var(--l2); }
 .bk-cat-row { display: flex; align-items: baseline; gap: 12px; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
@@ -366,15 +363,15 @@ select.stat {
 .bk-legend i { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: -1px; }
 .bk-plot { margin-top: 12px; position: relative; }
 .bk-plot svg { display: block; width: 100%; overflow: visible; }
-.bk-tick { font-family: var(--mono); font-size: 10.5px; fill: rgba(54,54,48,.5); letter-spacing: .03em; }
+.bk-tick { font-family: var(--mono); font-size: 10.5px; fill: rgba(37,37,34,.5); letter-spacing: .03em; }
 .bk-dlab { font-family: var(--mono); font-size: 11px; fill: var(--l1); }
-.bk-dsub { font-family: var(--mono); font-size: 10.5px; fill: rgba(54,54,48,.5); }
-.bk-gl { stroke: rgba(54,54,48,.08); stroke-width: 1; }
-.bk-base { stroke: rgba(54,54,48,.28); stroke-width: 1; }
+.bk-dsub { font-family: var(--mono); font-size: 10.5px; fill: rgba(37,37,34,.5); }
+.bk-gl { stroke: rgba(37,37,34,.08); stroke-width: 1; }
+.bk-base { stroke: rgba(37,37,34,.28); stroke-width: 1; }
 .bk-hit { fill: transparent; cursor: crosshair; }
 .bk-tip {
     position: absolute; pointer-events: none; opacity: 0; transition: opacity .12s;
-    background: #000; color: var(--b1); padding: 8px 10px; font-family: var(--mono);
+    background: var(--l1); color: var(--b1); padding: 8px 10px; font-family: var(--mono);
     font-size: 11px; line-height: 1.55; white-space: nowrap; z-index: 5;
 }
 .bk-empty { font-family: var(--mono); font-size: 12px; color: var(--l3); padding: 26px 0; text-align: center; }
@@ -386,7 +383,7 @@ select.stat {
 .bk-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
 .bk-chip i { width: 7px; height: 7px; display: block; }
 .bk-foot { display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--l3); }
-.bk-burn { font-family: var(--sans); font-size: 21px; font-weight: 700; letter-spacing: -.02em; color: var(--l1); }
+.bk-burn { font-family: var(--sans); font-size: 21px; font-weight: 500; letter-spacing: -.02em; color: var(--l1); }
 
 table.bk-tbl { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
 table.bk-tbl th {
@@ -413,12 +410,12 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
    new colour. */
 .bk {
     --ok: #1a7f37; --warn: #d97706; --bad: #c02626; --out: rgba(var(--label-d),.22);
-    --hatch: repeating-linear-gradient(45deg, var(--be), var(--be) 2px, rgba(54,54,48,.55) 2px, rgba(54,54,48,.55) 3px);
+    --hatch: repeating-linear-gradient(45deg, var(--be), var(--be) 2px, rgba(37,37,34,.55) 2px, rgba(37,37,34,.55) 3px);
 }
 .bk .bk-filters .sp { flex: 1; }
 .bk .btn.sm { font-size: 11px; padding: 6px 10px; }
-.bk-say { margin: 20px 0 22px; max-width: 760px; font-size: 16px; line-height: 1.55; }
-.bk-say b { font-weight: 700; }
+.bk-say { margin: 20px 0 22px; max-width: 760px; font-family: var(--works); font-size: 16px; line-height: 1.55; }
+.bk-say b { font-family: var(--sans); font-weight: 500; }
 .bk-say .bad { color: var(--bad); }
 
 .bk-shell { display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 24px; align-items: start; }
@@ -428,7 +425,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-idx button:hover { background: rgba(var(--label-d),.05); }
 .bk-idx button .no { color: var(--l3); font-size: 11px; }
 .bk-idx button .n { margin-left: auto; font-size: 11px; color: var(--l2); }
-.bk-idx button[aria-current="true"] { background: #000; color: var(--b1); }
+.bk-idx button[aria-current="true"] { background: var(--l1); color: var(--b1); }
 .bk-idx button[aria-current="true"] .no, .bk-idx button[aria-current="true"] .n { color: rgba(var(--bg-deep),.55); }
 .bk-cashbox { border: 1px solid var(--line); padding: 14px; }
 .bk-cashbox .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); }
@@ -451,13 +448,13 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-cell { padding: 2px 16px; border-left: 1px solid var(--line); min-width: 0; }
 .bk-cell:first-child { border-left: 0; padding-left: 0; }
 .bk-cell .count { font-size: 11px; letter-spacing: .1em; margin: 0; }
-.bk-cell .v { display: block; font-weight: 700; font-size: 28px; letter-spacing: -.02em; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.bk-cell .v { display: block; font-weight: 500; font-size: 28px; letter-spacing: -.02em; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
 .bk-cell .v.ok { color: var(--ok); } .bk-cell .v.bad { color: var(--bad); }
 .bk-cell .m { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 9px; }
 .bk-cell .m .tsub { margin: 0; }
-.bk .tag.blk { background: #000; color: var(--b1); border-color: #000; }
-.bk .tag.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
-.bk .tag.bad { background: var(--bad); color: #fff; border-color: var(--bad); }
+.bk .tag.blk { background: var(--l1); color: var(--b1); border-color: var(--l1); }
+.bk .tag.ok { background: var(--ok); color: var(--b1); border-color: var(--ok); }
+.bk .tag.bad { background: var(--bad); color: var(--b1); border-color: var(--bad); }
 .bk .tag.con { border-style: dashed; border-color: var(--l2); color: var(--l2); }
 
 .bk .bk-plot { margin-top: 0; position: relative; }
@@ -474,7 +471,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .bk-tip div span:last-child { color: var(--l1); }
 .bk-lg { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--l2); }
 .bk-lg i { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--l1); }
-.bk-lg i.src { background: #000; }
+.bk-lg i.src { background: var(--l1); }
 .bk-lg i.con { background: var(--hatch); }
 .bk-lg i.out { background: var(--out); border-color: transparent; }
 .bk-lg .ok { color: var(--ok); }
@@ -497,7 +494,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-rank .r[data-cat]:hover .t { text-decoration: underline; text-underline-offset: 3px; }
 .bk-rank .no { font: 11px var(--mono); color: var(--l3); }
 .bk-rank .nm { min-width: 0; }
-.bk-rank .t { font-weight: 700; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-rank .t { font-weight: 500; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bk-rank .s { display: flex; gap: 6px; align-items: center; margin-top: 4px; font: 10.5px var(--mono); text-transform: uppercase; color: var(--l2); white-space: nowrap; overflow: hidden; }
 .bk-rank .val { text-align: right; font-family: var(--mono); font-size: 14px; }
 .bk-rank .val small { display: block; font-size: 10px; color: var(--l2); margin-top: 3px; text-transform: uppercase; }
@@ -511,7 +508,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-qa button:hover { border-color: var(--l1); }
 .bk-qa .ic { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--l1); font: 14px var(--mono); }
 .bk-qa .t { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-.bk-qa .d { font-size: 12.5px; color: var(--l2); margin-top: 3px; }
+.bk-qa .d { font-family: var(--works); font-size: 13px; color: var(--l2); margin-top: 3px; }
 .bk-qa .go { margin-left: auto; font: 13px var(--mono); color: var(--l3); }
 .bk-qa button.near, .bk-qa button.near .ic { border-color: var(--warn); }
 .bk-qa button.near .ic, .bk-qa button.near .t { color: var(--warn); }
@@ -519,7 +516,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk-qa button.soon .ic, .bk-qa button.soon .t { color: var(--bad); }
 
 .bk .bk-cat-row { padding: 7px 2px; font-size: 13px; }
-.bk .bk-cat-row.on { background: #000; color: var(--b1); }
+.bk .bk-cat-row.on { background: var(--l1); color: var(--b1); }
 .bk .bk-cat-v.in { color: var(--ok); }
 .bk .bk-cat-v.out { color: var(--bad); }
 .bk .bk-cat-row.on .bk-cat-v { color: inherit; }
@@ -537,7 +534,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .bk .bk-tax .t { border: 1px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 4px; min-height: 96px; }
 .bk .bk-tax .d { font-family: var(--mono); font-size: 22px; line-height: 1; }
 .bk .bk-tax .d.soon { color: var(--bad); } .bk .bk-tax .d.near { color: var(--warn); } .bk .bk-tax .d.far { color: var(--ok); }
-.bk .bk-tax .n { font-size: 13px; font-weight: 700; margin-top: 4px; }
+.bk .bk-tax .n { font-size: 13px; font-weight: 500; margin-top: 4px; }
 .bk .bk-tax .w { font-family: var(--mono); font-size: 10.5px; color: var(--l2); text-transform: uppercase; letter-spacing: .06em; }
 .bk .bk-note { font-family: var(--mono); font-size: 11px; color: var(--l2); line-height: 1.5; margin-top: 4px; }
 .bk .bk-taxrow { display: flex; gap: 14px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--line); }
@@ -590,7 +587,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 .scard .row { padding: 0; border-bottom: 0; cursor: default; }
 .scard pre { margin: 6px 0 0; }
 .bcard img { width: 44px; height: 44px; object-fit: cover; background: var(--be); flex: none; display: block; }
-.bcard .bn { font-weight: 700; font-size: 14px; letter-spacing: -.01em; line-height: 1.25; }
+.bcard .bn { font-weight: 500; font-size: 14px; letter-spacing: -.01em; line-height: 1.25; }
 .bcard .bc { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--l2); margin-top: 3px; }
 .crumb {
     font-family: var(--mono); font-size: 12px; text-transform: uppercase;
@@ -620,11 +617,11 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 <!-- LOGIN -->
 <section id="gate">
     <div class="box">
-        <img src="/images/logo-dark.png" alt="Dialed By H" style="height:18px;width:auto;display:block;margin-bottom:28px">
+        <img src="/assets/brand/logomark-charcoal.svg" alt="Dialed By H" style="height:56px;width:auto;display:block;margin-bottom:28px">
         <p class="eyebrow">Control Room</p>
         <h1 class="title" style="font-size:40px;margin-bottom:28px">Admin</h1>
         <form id="gate-form">
-            <input id="gate-pw" type="password" autocomplete="current-password" placeholder="ADMIN PASSWORD">
+            <input id="gate-pw" type="password" autocomplete="current-password" placeholder="Admin password">
             <button class="btn" type="submit" style="width:100%">Sign In</button>
             <p id="gate-err" class="err hidden">Wrong password</p>
         </form>
@@ -634,7 +631,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 <!-- CONSOLE -->
 <div id="app" class="hidden">
     <header>
-        <a href="/"><img src="/images/logo-dark.png" alt="Dialed By H"></a>
+        <a href="/"><img src="/assets/brand/wordmark-charcoal.svg" alt="Dialed By H"></a>
         <a class="hbtn" href="/admin/analytics">Inquiry Analytics</a>
         <button id="signout" class="hbtn">Sign Out</button>
     </header>
@@ -810,7 +807,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     }
 
     function tdTag(txt, colour) {
-        return '<span class="tag" style="background:' + colour + ';color:#fff">' + esc(txt) + '</span>';
+        return '<span class="tag" style="background:' + colour + ';color: var(--b1)">' + esc(txt) + '</span>';
     }
 
     function tdPerson(r) {
@@ -1306,7 +1303,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     // Hatched fill means consignment everywhere on this tab, so the two kinds of
     // sale read apart without a second colour.
     var BK_HATCH = '<defs><pattern id="bk-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
-        '<rect width="5" height="5" fill="#efede7"/><line x1="0" y1="0" x2="0" y2="5" stroke="rgba(54,54,48,.55)" stroke-width="1.6"/></pattern></defs>';
+        '<rect width="5" height="5" fill="#ECE7DA"/><line x1="0" y1="0" x2="0" y2="5" stroke="rgba(37,37,34,.55)" stroke-width="1.6"/></pattern></defs>';
     function bkNice(v) {
         var raw = (v || 1) / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
         return [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10].filter(function (x) { return x * mag >= raw; })[0] * mag * 4;
@@ -1342,8 +1339,8 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var out = BK_HATCH + bkAxis(W, padL, padT, ph, nice), hits = '';
         rows.forEach(function (r, i) {
             var cx = padL + step * i + step / 2, x = cx - bw / 2, hs = r.s / nice * ph, hc = r.c / nice * ph, top = padT + ph - hs - hc, p = r.sp + r.cp;
-            if (hs) out += '<rect x="' + x + '" y="' + (padT + ph - hs) + '" width="' + bw + '" height="' + hs + '" fill="#000"/>';
-            if (hc) out += '<rect x="' + (x + .5) + '" y="' + (top + .5) + '" width="' + (bw - 1) + '" height="' + Math.max(hc - 1, 0) + '" fill="url(#bk-hatch)" stroke="#000" stroke-width="1"/>';
+            if (hs) out += '<rect x="' + x + '" y="' + (padT + ph - hs) + '" width="' + bw + '" height="' + hs + '" fill="var(--l1)"/>';
+            if (hc) out += '<rect x="' + (x + .5) + '" y="' + (top + .5) + '" width="' + (bw - 1) + '" height="' + Math.max(hc - 1, 0) + '" fill="url(#bk-hatch)" stroke="var(--l1)" stroke-width="1"/>';
             out += '<text class="bk-plab" x="' + cx + '" y="' + (top - 7) + '" text-anchor="middle"' + (p < 0 ? ' style="fill:var(--bad)"' : '') + '>' +
                        (p < 0 ? '' : '+') + bkCompact(p) + '</text>' +
                    '<text class="bk-tick" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + bkMon(r.m).toUpperCase() + '</text>';
@@ -1377,7 +1374,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var out = bkAxis(W, padL, padT, ph, nice), hits = '';
         rows.forEach(function (r, i) {
             var cx = padL + step * i + step / 2, hi = r.i / nice * ph, ho = r.o / nice * ph;
-            out += '<rect x="' + (cx - bw - 1) + '" y="' + (padT + ph - hi) + '" width="' + bw + '" height="' + hi + '" fill="#000"/>' +
+            out += '<rect x="' + (cx - bw - 1) + '" y="' + (padT + ph - hi) + '" width="' + bw + '" height="' + hi + '" fill="var(--l1)"/>' +
                    '<rect x="' + (cx + 1) + '" y="' + (padT + ph - ho) + '" width="' + bw + '" height="' + ho + '" fill="var(--out)"/>' +
                    '<text class="bk-tick" x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + bkMon(r.m).toUpperCase() + '</text>';
             hits += '<rect class="bk-hit" x="' + (padL + step * i) + '" y="' + padT + '" width="' + step + '" height="' + ph + '" data-i="' + i + '"/>';
@@ -1403,7 +1400,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<div class="bk-meter"><i style="width:' + (p == null ? 0 : Math.max(Math.min(p / scale, 1) * 100, 0)) + '%;background:' + fill + '"></i></div></div>';
         };
         document.getElementById('bk-mt').innerHTML =
-            row('Sourcing', m.srev ? m.sgp / m.srev : null, bkMoney(m.sgp) + ' kept on ' + bkMoney(m.srev) + (sm.length ? ' · best ' + bkPct(scale) : ''), '#000') +
+            row('Sourcing', m.srev ? m.sgp / m.srev : null, bkMoney(m.sgp) + ' kept on ' + bkMoney(m.srev) + (sm.length ? ' · best ' + bkPct(scale) : ''), 'var(--l1)') +
             row('Consignment', m.crev ? m.cgp / m.crev : null, bkMoney(m.cgp) + ' in fees on ' + bkMoney(m.crev), 'var(--hatch)') +
             '<div class="bk-mt-foot"><span class="count">Median days to sell</span><b>' + (med == null ? '—' : med + 'D') + '</b></div>' +
             '<p class="tsub" style="margin-top:10px">Bars are measured against your best sourcing deal.</p>';
@@ -1423,7 +1420,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<div class="val" style="color:' + (p < 0 ? 'var(--bad)' : 'var(--ok)') + '">' + bkMoney(p) +
                     '<small>' + bkPct(bkMargin(d)) + (con ? ' fee' : ' margin') + '</small></div>' +
                 '<div class="bar"><i style="width:' + Math.max(Math.abs(p) / max * 100, 1.5) + '%;background:' +
-                    (p < 0 ? 'var(--bad)' : con ? 'var(--hatch)' : '#000') + '"></i></div></div>';
+                    (p < 0 ? 'var(--bad)' : con ? 'var(--hatch)' : 'var(--l1)') + '"></i></div></div>';
         }).join('');
         [].forEach.call(host.querySelectorAll('.r[data-id]'), function (el) {
             el.addEventListener('click', function () {
@@ -1476,7 +1473,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 '<div class="nm" title="' + esc(d.date_bought) + ' → ' + esc(d.date_sold) + '"><div class="t">' + esc(((d.brand || '') + ' ' + (d.model || '')).trim()) +
                     ' <span class="tag' + (bkIsCon(d) ? ' con' : '') + '" style="vertical-align:2px;margin-left:4px">' + esc(d.reference || '') + '</span></div></div>' +
                 '<div class="val"' + (slow ? ' style="color:var(--bad)"' : '') + '>' + (r[1] === 0 ? 'SAME DAY' : r[1] + 'D') + '</div>' +
-                '<div class="bar"><i style="width:' + Math.max(r[1] / max * 100, 1.5) + '%;background:' + (slow ? 'var(--bad)' : '#000') + '"></i></div></div>';
+                '<div class="bar"><i style="width:' + Math.max(r[1] / max * 100, 1.5) + '%;background:' + (slow ? 'var(--bad)' : 'var(--l1)') + '"></i></div></div>';
         }).join('');
     }
 
@@ -1520,7 +1517,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             var keys = Object.keys(data).sort(function (a, b) { return data[b][0] - data[a][0]; });
             var total = keys.reduce(function (s, k) { return s + data[k][0]; }, 0);
             host.innerHTML = keys.map(function (k) { return row(k, data[k], clickable, dir); }).join('') +
-                '<div class="bk-cat-row" style="border-top:1px solid var(--line);font-weight:600">' +
+                '<div class="bk-cat-row" style="border-top:1px solid var(--line);font-weight: 500">' +
                 '<span class="bk-cat-n">Total</span><span class="bk-cat-c"></span>' +
                 '<span class="bk-cat-v ' + dir + '">' + bkMoney(total) + '</span></div>';
         };
@@ -1985,7 +1982,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                 try {
                     var r = await A.adminFetchTo('/api/leads-admin', 'books-doc-url', { path: a.dataset.path });
                     slot.innerHTML = '<video controls playsinline preload="metadata" ' +
-                        'style="display:block;width:100%;max-height:70vh;background:#000;margin-bottom:14px"></video>';
+                        'style="display:block;width:100%;max-height:70vh;background:var(--l1);margin-bottom:14px"></video>';
                     slot.firstChild.src = r.url;
                 } catch (err) {
                     slot.innerHTML = '';
@@ -3293,7 +3290,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             '<td>' + (q ? '<span class="tag ' + q.toLowerCase() + '">' + esc(q) + '</span>' : '<span class="tmono">—</span>') + '</td>' +
             '<td>' + (c ? '<span class="tag ' + c.toLowerCase() + '">' + esc(c) + '</span>' : '<span class="tmono">—</span>') +
                 (l.stage ? '<div style="margin-top:4px"><span class="tag" style="background:' +
-                    stageColor(l.stage) + ';color:#fff;border-color:transparent">' +
+                    stageColor(l.stage) + ';color: var(--b1);border-color:transparent">' +
                     esc(l.stage) + '</span></div>' : '') + '</td>' +
             '<td><select class="stat" data-status-for="' + esc(l.id) + '">' +
                 STATUSES.map(function (v) {
@@ -4276,7 +4273,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
     var invLogoCache = null;
     function invLoadLogo() {
         if (invLogoCache) return Promise.resolve(invLogoCache);
-        return fetch('/assets/dbh/invoice-logo.png').then(function (r) { return r.blob(); }).then(function (b) {
+        return fetch('/assets/brand/combination-mark-charcoal.png').then(function (r) { return r.blob(); }).then(function (b) {
             return new Promise(function (ok) {
                 var fr = new FileReader();
                 fr.onload = function () {
@@ -4288,26 +4285,68 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             });
         }).catch(function () { return null; });
     }
+    // Brand fonts for the PDF. jsPDF embeds raw TTF handed over as base64, so the
+    // four faces are fetched once per session and only when a PDF is made. If a
+    // fetch fails the PDF still renders, in Helvetica.
+    var invFontCache = null;
+    function invLoadFonts(doc) {
+        var files = [
+            ['SuisseIntl-Regular.ttf', 'SuisseIntl', 'normal'],
+            ['SuisseIntl-Medium.ttf', 'SuisseIntl', 'bold'],      // Medium is the heaviest licensed weight
+            ['SuisseWorks-Regular.ttf', 'SuisseWorks', 'normal'],
+            ['SuisseIntlMono-Regular.ttf', 'SuisseMono', 'normal'],
+        ];
+        var register = function () {
+            invFontCache.forEach(function (f) { doc.addFileToVFS(f[0], f[3]); doc.addFont(f[0], f[1], f[2]); });
+            return true;
+        };
+        if (invFontCache) return Promise.resolve(register());
+        return Promise.all(files.map(function (f) {
+            return fetch('/assets/fonts/suisse/' + f[0]).then(function (r) {
+                if (!r.ok) throw new Error(f[0]);
+                return r.arrayBuffer();
+            }).then(function (buf) {
+                var bytes = new Uint8Array(buf), out = '';
+                for (var i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+                return [f[0], f[1], f[2], btoa(out)];
+            });
+        })).then(function (loaded) { invFontCache = loaded; return register(); }).catch(function () { return false; });
+    }
     function invDate(iso) {
         var p = String(iso || '').split('-');
         return p.length === 3 ? p[1] + '/' + p[2] + '/' + p[0] : (iso || '');
     }
 
-    // Same geometry as the Python/reportlab version: US Letter, 60pt margins,
-    // logo + business block left, INVOICE/DATE/BALANCE right, dark header bar
-    // on the line table, payment info bottom-left, totals bottom-right.
+    // US Letter, 60pt margins: combination mark + business block left,
+    // INVOICE / DATE / BALANCE right, charcoal header bar on the line table,
+    // payment info bottom-left, totals bottom-right. Type follows the brand
+    // system: Suisse Intl for names and figures (Medium where the old layout
+    // was bold), Works for descriptions and running text, Intl Mono uppercase
+    // for every label. Palette is charcoal, cream and the warm greys only.
     async function invoicePdf(inv, s) {
         var jsPDF = await invLoadPdfLib();
         var logo = await invLoadLogo();
         s = s || {};
         var doc = new jsPDF({ unit: 'pt', format: 'letter' });
+        var brand = await invLoadFonts(doc);
+        var FACE = brand
+            ? { intl: 'SuisseIntl', works: 'SuisseWorks', mono: 'SuisseMono' }
+            : { intl: 'helvetica', works: 'times', mono: 'courier' };
         var W = 612, ml = 60, mr = 60, rx = W - mr, usable = W - ml - mr;
-        var GREY = '#666666', LIGHT = '#999999', BLACK = '#222222', LINE = '#CCCCCC', BLUE = '#2D6CA2';
-        var dt = function (x, y, text, size, color, bold, align) {
-            doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        var INK = '#252522', GREY = '#52514E', LIGHT = '#999791', LINE = '#D8D5CE', CREAM = '#F7F3E9';
+        var setf = function (face, size, medium) {
+            doc.setFont(FACE[face] || FACE.intl, medium && face === 'intl' ? 'bold' : 'normal');
             doc.setFontSize(size || 10);
-            doc.setTextColor(color || BLACK);
+        };
+        // dt(x, y, text, size, color, face, medium, align)
+        var dt = function (x, y, text, size, color, face, medium, align) {
+            setf(face || 'intl', size, medium);
+            doc.setTextColor(color || INK);
             doc.text(String(text == null ? '' : text), x, y, { align: align || 'left' });
+        };
+        // Mono uppercase label, the eyebrow of the brand system.
+        var lab = function (x, y, text, size, color, align) {
+            dt(x, y, String(text == null ? '' : text).toUpperCase(), size || 7.5, color || LIGHT, 'mono', false, align);
         };
         var hline = function (y, x1, x2) {
             doc.setDrawColor(LINE); doc.setLineWidth(0.5); doc.line(x1 == null ? ml : x1, y, x2 == null ? rx : x2, y);
@@ -4315,41 +4354,41 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
 
         var topY = 65, infoY;
         if (logo) {
-            var lw = 200, lh = logo.h * (lw / logo.w);
-            doc.addImage(logo.data, 'PNG', ml, topY - 5, lw, lh);
-            infoY = topY + lh + 8;
+            var lw = 170, lh = logo.h * (lw / logo.w);
+            doc.addImage(logo.data, 'PNG', ml, topY - 12, lw, lh);
+            infoY = topY + lh + 10;
         } else {
-            dt(ml, topY, s.business_name || 'Dialed by H', 22, BLACK, true);
-            infoY = topY + 28;
+            dt(ml, topY, s.business_name || 'Dialed by H', 20, INK, 'intl', true);
+            infoY = topY + 26;
         }
-        dt(ml, infoY, s.address || '', 10, GREY); infoY += 15;
-        dt(ml, infoY, s.city_state || '', 10, GREY); infoY += 15;
-        dt(ml, infoY, s.phone || '', 10, GREY); infoY += 15;
-        dt(ml, infoY, s.website || '', 10, BLUE); infoY += 15;
+        dt(ml, infoY, s.address || '', 9.5, GREY); infoY += 14;
+        dt(ml, infoY, s.city_state || '', 9.5, GREY); infoY += 14;
+        dt(ml, infoY, s.phone || '', 9.5, GREY); infoY += 14;
+        dt(ml, infoY, s.website || '', 9.5, INK); infoY += 14;
 
         var ry = topY;
-        [[String(inv.title || 'Invoice').toUpperCase(), inv.number], ['DATE', invDate(inv.issued_on)]].concat(inv.due_on ? [['DUE DATE', invDate(inv.due_on)]] : []).concat([['BALANCE DUE', 'USD ' + invMoney(inv.total)]]).forEach(function (m) {
-            dt(rx, ry, m[0], 8, GREY, true, 'right'); ry += 16;
-            dt(rx, ry, m[1], 11, BLACK, false, 'right'); ry += 24;
+        [[String(inv.title || 'Invoice'), inv.number], ['Date', invDate(inv.issued_on)]].concat(inv.due_on ? [['Due date', invDate(inv.due_on)]] : []).concat([['Balance due', 'USD ' + invMoney(inv.total)]]).forEach(function (m) {
+            lab(rx, ry, m[0], 7.5, LIGHT, 'right'); ry += 15;
+            dt(rx, ry, m[1], 11, INK, 'intl', false, 'right'); ry += 24;
         });
 
         var y = Math.max(infoY, ry) + 8;
         hline(y); y += 22;
-        dt(ml, y, 'BILL TO', 8, GREY, true); y += 22;
-        if (inv.company_name) { dt(ml, y, inv.company_name, 16, BLACK, true); y += 22; }
+        lab(ml, y, 'Bill to', 7.5, LIGHT); y += 20;
+        if (inv.company_name) { dt(ml, y, inv.company_name, 15, INK, 'intl', true); y += 21; }
         [inv.client_name, inv.address_1, inv.address_2, inv.city_state_zip, inv.email].forEach(function (line) {
-            if (line) { dt(ml, y, line, 11); y += 16; }
+            if (line) { dt(ml, y, line, 10.5, INK, 'intl'); y += 15; }
         });
         y += 14;
 
         var headerH = 26, pad = 10;
         var colRateR = rx - 165, colQtyC = rx - 110, colAmtR = rx - pad;
-        doc.setFillColor('#333333'); doc.rect(ml, y, usable, headerH, 'F');
-        var hy = y + headerH - 8;
-        dt(ml + pad, hy, 'DESCRIPTION', 8, '#FFFFFF', true);
-        dt(colRateR, hy, 'RATE', 8, '#FFFFFF', true, 'right');
-        dt(colQtyC, hy, 'QTY', 8, '#FFFFFF', true, 'center');
-        dt(colAmtR, hy, 'AMOUNT', 8, '#FFFFFF', true, 'right');
+        doc.setFillColor(INK); doc.rect(ml, y, usable, headerH, 'F');
+        var hy = y + headerH - 9;
+        lab(ml + pad, hy, 'Description', 7.5, CREAM);
+        lab(colRateR, hy, 'Rate', 7.5, CREAM, 'right');
+        lab(colQtyC, hy, 'Qty', 7.5, CREAM, 'center');
+        lab(colAmtR, hy, 'Amount', 7.5, CREAM, 'right');
         y += headerH;
 
         var maxDescW = (colRateR - 60) - (ml + pad);
@@ -4357,9 +4396,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             y += 8;
             var rowY = y + 12;
             var rate = Number(it.rate) || 0, qty = parseInt(it.qty, 10) || 1;
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+            setf('works', 10.5);
             var lines = doc.splitTextToSize(String(it.description || ''), maxDescW);
-            lines.forEach(function (t, i) { dt(ml + pad, rowY + i * 15, t, 10); });
+            lines.forEach(function (t, i) { dt(ml + pad, rowY + i * 15, t, 10.5, INK, 'works'); });
             var details = [
                 it.reference ? 'Ref. ' + it.reference : '',
                 it.serial ? 'Serial ' + it.serial : '',
@@ -4367,39 +4406,39 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             ].filter(Boolean).join('  ·  ');
             var dLines = [];
             if (details) {
-                doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+                setf('mono', 7.5);
                 dLines = doc.splitTextToSize(details, maxDescW);
-                dLines.forEach(function (t, i) { dt(ml + pad, rowY + lines.length * 15 + i * 12 - 1, t, 8.5, GREY); });
+                dLines.forEach(function (t, i) { dt(ml + pad, rowY + lines.length * 15 + i * 12 - 1, t, 7.5, GREY, 'mono'); });
             }
-            dt(colRateR, rowY, invMoney(rate), 10, BLACK, false, 'right');
-            dt(colQtyC, rowY, String(qty), 10, BLACK, false, 'center');
-            dt(colAmtR, rowY, invMoney(rate * qty), 10, BLACK, false, 'right');
+            dt(colRateR, rowY, invMoney(rate), 10, INK, 'intl', false, 'right');
+            dt(colQtyC, rowY, String(qty), 10, INK, 'intl', false, 'center');
+            dt(colAmtR, rowY, invMoney(rate * qty), 10, INK, 'intl', false, 'right');
             y = rowY + Math.max(lines.length - 1, 0) * 15 + dLines.length * 12 + 10;
         });
         y += 6; hline(y); y += 26;
 
         var totLX = W / 2 + 10, ty = y;
         hline(ty - 4, totLX, rx);
-        dt(totLX, ty + 12, 'TOTAL', 10, GREY, true); dt(colAmtR, ty + 12, invMoney(inv.subtotal), 10, BLACK, false, 'right'); ty += 28;
+        lab(totLX, ty + 12, 'Total', 8, GREY); dt(colAmtR, ty + 12, invMoney(inv.subtotal), 10, INK, 'intl', false, 'right'); ty += 28;
         if (Number(inv.tax_amount) > 0) {
             hline(ty - 4, totLX, rx);
-            dt(totLX, ty + 12, 'TAX (' + Number(inv.tax_rate) + '%)', 10, GREY, true);
-            dt(colAmtR, ty + 12, invMoney(inv.tax_amount), 10, BLACK, false, 'right'); ty += 28;
+            lab(totLX, ty + 12, 'Tax (' + Number(inv.tax_rate) + '%)', 8, GREY);
+            dt(colAmtR, ty + 12, invMoney(inv.tax_amount), 10, INK, 'intl', false, 'right'); ty += 28;
         }
         if (Number(inv.shipping) > 0) {
             hline(ty - 4, totLX, rx);
-            dt(totLX, ty + 12, 'SHIPPING', 10, GREY, true);
-            dt(colAmtR, ty + 12, invMoney(inv.shipping), 10, BLACK, false, 'right'); ty += 28;
+            lab(totLX, ty + 12, 'Shipping', 8, GREY);
+            dt(colAmtR, ty + 12, invMoney(inv.shipping), 10, INK, 'intl', false, 'right'); ty += 28;
         }
         hline(ty - 4, totLX, rx);
-        dt(totLX, ty + 14, 'BALANCE DUE', 14, BLACK, true);
-        dt(colAmtR, ty + 14, 'USD ' + invMoney(inv.total), 14, BLACK, true, 'right');
+        dt(totLX, ty + 14, 'Balance due', 14, INK, 'intl', true);
+        dt(colAmtR, ty + 14, 'USD ' + invMoney(inv.total), 14, INK, 'intl', true, 'right');
 
         var py = y;
-        dt(ml, py, 'Payment Info', 14, BLACK, true); py += 22;
-        dt(ml, py, 'PAYMENT INSTRUCTIONS', 9, GREY, true); py += 16;
+        dt(ml, py, 'Payment info', 13, INK, 'intl', true); py += 20;
+        lab(ml, py, 'Payment instructions', 7.5, LIGHT); py += 16;
         String(inv.payment_instructions || s.payment_instructions || '').split('\n').forEach(function (line) {
-            dt(ml, py, line, 10, GREY); py += 14;
+            dt(ml, py, line, 10, GREY, 'works'); py += 14;
         });
 
         doc.save(String(inv.title || 'Invoice').replace(/[^\w]+/g, '-') + '-' + inv.number + '.pdf');

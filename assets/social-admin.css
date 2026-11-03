@@ -1,7 +1,7 @@
 /* Extend the existing admin tokens and controls. No independent theme. */
-.social h2{font-size:30px;font-weight:700;line-height:1.1;text-transform:uppercase;letter-spacing:-.02em;font-variation-settings:'wdth' 120}
-.social h3{font-size:18px;font-weight:600;margin:8px 0 12px}
-.social p{font-size:14px;line-height:1.6;margin:8px 0 14px}
+.social h2{font-size:30px;font-weight:500;line-height:1.05;letter-spacing:-.02em}
+.social h3{font-size:18px;font-weight:500;margin:8px 0 12px}
+.social p{font-family:var(--works);font-size:14px;line-height:1.6;margin:8px 0 14px}
 .social .count{font-size:11px}
 .social-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:24px}
 .social-grid.social-two{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
@@ -16,7 +16,7 @@
 .social-table td{vertical-align:top;padding:11px 10px 11px 0;border-bottom:1px solid var(--line);min-width:120px}
 .social-table tbody tr:hover td{background:rgba(var(--label-d),.04)}
 .social-table td:first-child{width:40%;min-width:260px}
-.social .social-post{white-space:pre-wrap;font-size:15px;overflow-wrap:anywhere}
+.social .social-post{font-family:var(--works);white-space:pre-wrap;font-size:15px;overflow-wrap:anywhere}
 .social .social-note{font-size:12px;color:var(--l2)}
 .social-actions{display:flex;gap:8px;flex-wrap:wrap;min-width:180px}
 .social-actions .btn{font-size:11px;padding:7px 9px}
@@ -30,14 +30,14 @@
 @media(max-width:850px){.social-grid,.social-grid.social-two{grid-template-columns:1fr}.social-grid.social-two{gap:16px}.social-panel{padding:16px}.social h2{font-size:26px}.social .bar .grow{min-width:0}}
 
 .social-subnav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.social .btn[aria-pressed="true"]{background:var(--l1,#000);color:var(--b1);border-color:var(--l1,#000)}
+.social .btn[aria-pressed="true"]{background:var(--l1,var(--l1));color:var(--b1);border-color:var(--l1,var(--l1))}
 .social-preview{border-left:3px solid currentColor;padding:8px 12px;background:var(--be)}
 .social-row{display:flex;align-items:flex-start;gap:20px;justify-content:space-between;padding:18px 0;border-top:1px solid var(--line)}
 .social-row>div{min-width:0;overflow-wrap:anywhere}.social-row>.btn{flex-shrink:0}
 .social-editor{max-width:940px}.social form .ctl{width:100%;min-width:0;box-sizing:border-box}
 .social-times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .social label.social-check{display:flex;align-items:flex-start;gap:10px;font-family:inherit;font-size:13px;text-transform:none;letter-spacing:0;line-height:1.5;color:var(--l1)}
-.social-check input{width:16px;height:16px;margin:2px 0 0;flex-shrink:0;accent-color:#000}
+.social-check input{width:16px;height:16px;margin:2px 0 0;flex-shrink:0;accent-color:var(--l1)}
 .social-sources{max-height:240px;overflow:auto;padding:0 14px;border:1px solid var(--line)}
 .social-code{font-family:var(--mono);font-size:12px!important;overflow-wrap:anywhere}.social-copy{font-size:16px}
 .social-form-actions{margin-top:24px}.social-job{padding:12px;border:1px solid var(--line)}

@@ -7,7 +7,7 @@
   var FACETS = [];
 
   // curated Collection pills — must match Notion multi-select names exactly
-  var COLLECTIONS = ["Women's", '2026 Novelties', 'Classics', 'Everyday Wear', 'My Picks', 'Celebrities'];
+  var COLLECTIONS = ["Women's", '2026 Novelties', 'Classics', 'Everyday Wear', 'My Picks'];
 
   function uniq(key) {
     var out = [];
@@ -47,147 +47,10 @@
     return out.sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
   }
 
-  function celebOptions() {
-    var out = [];
-    INV.forEach(function (w) { (w.celebs || []).forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); }); });
-    return out.sort();
-  }
-
-
-
-  // ── Celebrities inside the native grid ─────────────────────────────
-  // Collection > Celebrities: celeb cards render in the grid itself.
-  // Click one -> same page becomes their profile (photo, bio, their pieces).
-  var currentCeleb = null;
-  var CELEB_BIOS = {
-    'Anant Ambani': 'Heir to the Reliance empire and one of the most-watched young collectors in the world. His wedding season alone put more grail Pateks on wrists than most auctions.',
-    'Carmelo Anthony': 'Ten-time NBA All-Star with a taste that runs from gem-set Royal Oaks to serious Patek complications.',
-    'Central Cee': 'UK rap\u2019s biggest crossover star. Datejusts and Daytonas early, Richard Milles as the streams stacked up.',
-    'Charles Leclerc': 'Ferrari\u2019s lead driver and a Richard Mille ambassador who actually races in his.',
-    'Chris Paul': 'The Point God keeps it classic: Rolex and Patek, nothing that needs explaining.',
-    'Conor McGregor': 'Loudest collection in combat sports. Gem-set Pateks, rainbow Rolexes, and the watches to match the suits.',
-    'Cristiano Ronaldo': 'Possibly the most expensive watch collection in sport, heavy on gem-set Rolex and Jacob & Co grails.',
-    'David Beckham': 'Decades of taste distilled: vintage-leaning Rolex and elegant dress pieces that age like he does.',
-    'Devin Booker': 'Book keeps a tight rotation of Patek sport pieces and clean Rolex references.',
-    'DJ Khaled': 'They don\u2019t want you to have this collection. Major keys: gem-set Nautilus and enough Rolex to stock a boutique.',
-    'Drake': 'One of the deepest collections in music. Rare RMs, Richard Mille collabs, and Pateks most collectors only see in books.',
-    'Dwayne "The Rock" Johnson': 'The hardest worker in the room wears understated heavy-hitters, Daytonas included.',
-    'Ed Sheeran': 'Quietly one of the best watch collections in the world. Deep Patek knowledge, rare complications, zero flexing.',
-    'Future': 'Pluto\u2019s collection is icy by design: gem-set Pateks and Richard Milles that match the discography.',
-    'Giannis Antetokounmpo': 'The Greek Freak\u2019s collection is growing like his trophy case, Nautilus first.',
-    'Gordon Ramsay': 'The chef plates Michelin stars and wears grail-tier Pateks and Rolexes while doing it.',
-    'James Harden': 'The Beard\u2019s collection is as flashy as the step-back: iced Richard Milles and McLaren collabs.',
-    'Jason Statham': 'Action-star simple: tool watches and heavy hitters that could survive one of his movies.',
-    'Jay-Z': 'Hov collects at museum level. Tiffany-dial Pateks, one-of-one Royal Oaks, and pieces with real provenance.',
-    'Jayson Tatum': 'Boston\u2019s own. The Celtics star keeps Pateks and Cubitus pieces in the rotation.',
-    'John Mayer': 'Arguably the most influential collector alive. His Daytona taste literally moves the market.',
-    'Justin Bieber': 'From iced-out beginnings to serious Patek and AP maturity.',
-    'Kai Cenat': 'Streaming\u2019s biggest star came for the RMs and never logged off.',
-    'Kevin Hart': 'One of Hollywood\u2019s most serious collectors. Deep in Richard Mille and rare-dial Rolex territory.',
-    'Lando Norris': 'F1\u2019s fan favorite, Richard Mille on the wrist on and off the grid.',
-    'LeBron James': 'The King\u2019s collection matches the resume: RM collabs bearing his own name, grail APs and Pateks.',
-    'Lil Baby': 'Atlanta\u2019s hardest worker keeps the wrist as consistent as the output: iced Pateks and RMs.',
-    'Lionel Messi': 'The GOAT wears his own Jacob & Co partnership pieces and quiet Rolex classics.',
-    'Luka Doncic': 'Luka Magic extends to the wrist: Royal Oaks and Richard Milles between triple-doubles.',
-    'Maluma': 'Latin pop royalty with a wrist game to match: gem-set APs and Pateks.',
-    'Mark Wahlberg': 'One of the most aggressive collectors in Hollywood. Museum-grade Pateks and Daytonas, always trading.',
-    'Mark Zuckerberg': 'Recently converted, immediately serious: from a $120 wrist to Grand Complications.',
-    'Michael Jordan': 'His Airness collects like he played: rare Richard Milles and only the hardest pieces to get.',
-    'Patrick Mahomes': 'The QB of the era keeps it clean with Rolex sport models and the occasional heavy hitter.',
-    'Post Malone': 'Posty\u2019s collection mixes iced grails with genuine collector taste.',
-    'Russell Westbrook': 'Fashion\u2019s favorite point guard, Richard Mille\u2019s favorite walking billboard.',
-    'Shah Rukh Khan': 'Bollywood\u2019s king with a collection spanning decades of Patek and Rolex royalty.',
-    'Stephen Curry': 'The greatest shooter ever curates Royal Oaks and Pateks with the same precision.',
-    'Sylvester Stallone': 'A legend whose Panerai obsession launched a brand and whose Journe consignments broke auction records.',
-    'Tom Brady': 'The GOAT of football, an Audemars ambassador turned deep Rolex and Patek collector.',
-    'Travis Scott': 'Cactus Jack\u2019s wrist rotation is as curated as the discography: rare APs and custom pieces.',
-  };
-  function celebSlug(n) {
-    return String(n).toLowerCase().replace(/["\u2019']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  }
-  function celebIndexData() {
-    var map = {};
-    INV.forEach(function (w) {
-      (w.celebs || []).forEach(function (c) {
-        map[c] = map[c] || { name: c, count: 0, piece: null };
-        map[c].count++;
-        // Store the transparent cutout up front. The old code appended
-        // ?mode=cutout to the /img path; a static Storage URL ignores that.
-        if (!map[c].piece && w.image) map[c].piece = w.imageCutout || w.image;
-      });
-    });
-    var FEATURED = ['Travis Scott', 'Tom Brady', 'Drake', 'DJ Khaled', 'Charles Leclerc', 'Central Cee'];
-    return Object.keys(map).sort(function (a, b) {
-      var fa = FEATURED.indexOf(a), fb = FEATURED.indexOf(b);
-      if (fa < 0) fa = 99; if (fb < 0) fb = 99;
-      if (fa !== fb) return fa - fb;
-      return a < b ? -1 : a > b ? 1 : 0;
-    }).map(function (k) { return map[k]; });
-  }
-  function celebsMode() {
-    return (selected.collection || []).indexOf('Celebrities') >= 0;
-  }
-  function buildCelebCard(c) {
-    var art = document.createElement('article');
-    art.className = 'pt-item pt-reveal';
-    var slug = celebSlug(c.name);
-    var fallback = c.piece || '';
-    art.innerHTML =
-      '<a href="#celeb=' + slug + '" aria-label="' + c.name.replace(/"/g, '') + ' watch collection">' +
-      '<div class="pt-item__media pt-item__media--celeb"><img data-src="/images/celebs/' + slug + '.webp" data-full="' + fallback.replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" width="300" height="300" alt="" decoding="async"></div>' +
-      '<div class="pt-item__row"><span>' + c.name + '</span>' +
-      '<span class="pt-item__meta">' + c.count + ' pieces</span></div>' +
-      '</a>';
-    return art;
-  }
-  function celebByName(name) {
-    var hit = null;
-    celebIndexData().forEach(function (c) { if (celebSlug(c.name) === name || c.name === name) hit = c; });
-    return hit;
-  }
-  function renderCelebHeader(c) {
-    var head = document.getElementById('pt-celebhead');
-    if (!head) {
-      head = document.createElement('div');
-      head.id = 'pt-celebhead';
-      grid.parentNode.insertBefore(head, grid);
-    }
-    var slug = celebSlug(c.name);
-    head.innerHTML =
-      '<a class="pt-celebhead__back" href="#celebs">&larr; All celebrities</a>' +
-      '<div class="pt-celebhead__row">' +
-      '<img class="pt-celebhead__img" src="/images/celebs/' + slug + '.webp" alt="' + c.name.replace(/"/g, '') + '">' +
-      '<div><h2 class="pt-celebhead__name">' + c.name + '</h2>' +
-      '<p class="pt-celebhead__bio">' + (CELEB_BIOS[c.name] || '') + '</p>' +
-      '<p class="pt-celebhead__n">' + c.count + ' pieces in the collection \u00b7 all available to source</p></div></div>';
-    head.style.display = '';
-  }
-  function hideCelebHeader() {
-    var head = document.getElementById('pt-celebhead');
-    if (head) head.style.display = 'none';
-  }
-  function syncCelebHash() {
-    var h = location.hash || '';
-    if (h.indexOf('#celeb=') === 0) {
-      var c = celebByName(decodeURIComponent(h.slice(7)));
-      if (c) {
-        currentCeleb = c.name;
-        if (!celebsMode()) { selected.collection = (selected.collection || []).concat(['Celebrities']); }
-        return;
-      }
-    }
-    if (h === '#celebs') { currentCeleb = null; if (!celebsMode()) selected.collection = (selected.collection || []).concat(['Celebrities']); }
-  }
-  window.addEventListener('hashchange', function () {
-    var h = location.hash || '';
-    if (h.indexOf('#celeb=') === 0 || h === '#celebs') { syncCelebHash(); render(); }
-    else if (currentCeleb || celebsMode()) { currentCeleb = null; render(); }
-  });
-
   function buildFacets() {
     var years = uniq('year');
     FACETS = [
-      { id: 'collection', label: 'Collection', options: COLLECTIONS, match: function (w, sel) { var rest = sel.filter(function (c) { return c !== 'Celebrities'; }); var hit = (w.collections || []).some(function (c) { return rest.indexOf(c) >= 0; }); if (sel.indexOf('Celebrities') >= 0) hit = hit || (w.celebs || []).length > 0; return hit; } },
+      { id: 'collection', label: 'Collection', options: COLLECTIONS, match: function (w, sel) { return (w.collections || []).some(function (c) { return sel.indexOf(c) >= 0; }); } },
       { id: 'brand', label: 'Brand', options: uniq('brand'), match: function (w, sel) { return sel.indexOf(w.brand) >= 0; } },
       { id: 'model', label: 'Model', options: modelOptions(), match: function (w, sel) { return sel.indexOf(modelFamily(w.model)) >= 0; } },
       { id: 'size', label: 'Case Size', options: sizeOptions(), match: function (w, sel) { return sel.indexOf(w.caseSize) >= 0; } },
@@ -246,7 +109,6 @@
     clear.textContent = 'Clear all';
     clear.addEventListener('click', function () {
       selected = {};
-      currentCeleb = null;
       searchQ = '';
       var qb = document.getElementById('pt-q');
       if (qb) { qb.value = ''; qb.parentNode.classList.remove('has-q'); }
@@ -398,7 +260,7 @@
     if (w.__hay) return w.__hay;
     w.__hay = [w.brand, w.model, w.nickname, w.name, w.ref, w.details,
                w.year, w.caseMaterial, w.dialColor, w.condition,
-               (w.collections || []).join(' '), (w.celebs || []).join(' ')]
+               (w.collections || []).join(' ')]
       .filter(Boolean).join(' ').toLowerCase();
     return w.__hay;
   }
@@ -476,30 +338,6 @@
     resetCardLoading();
     if (chunkObserver) chunkObserver.disconnect();
     chunkToken++; // cancel any deferred batch from the previous render
-    if (!celebsMode()) currentCeleb = null;
-    if (celebsMode() && !currentCeleb) {
-      // celebrity index: celeb cards live where the watches usually are
-      hideCelebHeader();
-      var cs = celebIndexData();
-      grid.innerHTML = '';
-      cs.forEach(function (c) { grid.appendChild(buildCelebCard(c)); });
-      revealCards();
-      count.textContent = cs.length + ' celebrity collections';
-      document.getElementById('pt-clear').classList.add('is-visible');
-      return;
-    }
-    if (currentCeleb) {
-      var cd = celebByName(currentCeleb);
-      if (cd) renderCelebHeader(cd);
-      renderList = sortList(INV.filter(function (w) { return (w.celebs || []).indexOf(currentCeleb) >= 0; }));
-      renderedCount = 0; sentinel = null;
-      grid.innerHTML = '';
-      appendChunk();
-      count.textContent = renderList.length + ' pieces \u00b7 ' + currentCeleb;
-      document.getElementById('pt-clear').classList.add('is-visible');
-      return;
-    }
-    hideCelebHeader();
     renderList = sortList(filtered());
     renderedCount = 0;
     sentinel = null;
@@ -759,14 +597,6 @@
     function apply() {
       searchQ = box.value.trim().toLowerCase();
       wrap.classList.toggle('has-q', !!searchQ);
-      // Celebrity mode swaps the grid for celeb cards, so a search typed while
-      // it is on would return matches nobody can see. Drop out of it.
-      if (searchQ && (celebsMode() || currentCeleb)) {
-        currentCeleb = null;
-        var cb = panels.querySelector('input[value="Celebrities"]');
-        if (cb && cb.checked) { cb.checked = false; selected.collection = (selected.collection || []).filter(function (v) { return v !== 'Celebrities'; }); }
-        if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-      }
       render();
     }
     box.addEventListener('input', function () { clearTimeout(t); t = setTimeout(apply, 180); });
@@ -822,7 +652,6 @@
         var tmp = INV[i]; INV[i] = INV[j]; INV[j] = tmp;
       }
       featuredOrder();
-      syncCelebHash();
       buildFacets();
       buildBar();
       refreshModelPanel();

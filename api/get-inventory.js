@@ -23,7 +23,7 @@ const WRITABLE = [
     'piece', 'brand', 'model', 'nickname', 'ref',
     'case_material', 'case_size_mm', 'dial_color', 'bracelet',
     'condition', 'set_included', 'year',
-    'collections', 'celebs', 'tags',
+    'collections', 'tags',
     'images', 'images_cutout', 'sort_order',
 ];
 
@@ -35,7 +35,7 @@ function pick(body) {
         if (k === 'case_size_mm' || k === 'year' || k === 'sort_order') {
             v = (v === '' || v == null) ? null : Number(v);
             if (v != null && Number.isNaN(v)) v = null;
-        } else if (k === 'collections' || k === 'celebs' || k === 'images' || k === 'images_cutout') {
+        } else if (k === 'collections' || k === 'images' || k === 'images_cutout') {
             v = Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
         } else {
             v = v == null ? '' : String(v);
@@ -213,7 +213,6 @@ async function handleAdmin(req, res) {
                     bracelets: uniq(p => [p.bracelet]),
                     sets: uniq(p => [p.set]),
                     collections: uniq(p => p.collections),
-                    celebs: uniq(p => p.celebs),
                 });
             }
 
@@ -491,7 +490,6 @@ module.exports = async (req, res) => {
                 const o = {};
                 for (const k of KEEP) if (w[k]) o[k] = w[k];
                 if (w.collections && w.collections.length) o.collections = w.collections;
-                if (w.celebs && w.celebs.length) o.celebs = w.celebs;
                 o.i = rel(w.image);
                 // c: 1 means "the -cutout sibling of i"; a string is an explicit
                 // path; absent means the cutout is the standard image itself.

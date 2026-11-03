@@ -76,7 +76,7 @@ function mapRow(r) {
         imageMedium: variant(images[0], 'medium'),
         images,
         imagesMedium: images.map(u => variant(u, 'medium')),
-        // Transparent 520px variant for the homepage ticker and celeb cards.
+        // Transparent 520px variant for the homepage ticker.
         // Falls back to the standard image, which is what the old `?mode=cutout`
         // effectively did for opaque photos that have no meaningful cutout.
         imageCutout: cutouts[0] || images[0] || '',
@@ -96,7 +96,6 @@ function mapRow(r) {
         set: r.set_included || '',
         collections: Array.isArray(r.collections) ? r.collections : [],
         tags: r.tags || '',
-        celebs: Array.isArray(r.celebs) ? r.celebs : [],
         // When the piece landed in the catalog. The homepage ticker leads with
         // new stock, which it cannot do from array position alone.
         addedAt: r.created_at || '',

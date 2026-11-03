@@ -35,7 +35,7 @@ function fourOhFourHtml() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Article not found - Off-Catalog - Dialed By H</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5" />
 <style>
 @font-face{font-display:swap;font-family:"Archivo";font-style:normal;font-weight:100 900;font-stretch:62% 125%;src:url(/assets/fonts/Archivo-wdth-wght.woff2) format("woff2")}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;color:#000;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;text-align:center;padding:24px}
@@ -106,9 +106,9 @@ function renderArticleHtml(a) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=4" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5" />
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=5" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5" />
 
 <title>${escHtml(seoTitle)}</title>
 <meta name="description" content="${escAttr(description)}">

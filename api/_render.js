@@ -41,7 +41,7 @@ function fourOhFour() {
     return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Piece not found - Dialed By H</title><meta name="robots" content="noindex, nofollow">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5" />
 <link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin><link rel="dns-prefetch" href="https://untnrofsnmoyxdidxbdj.supabase.co">
 <style>
 @font-face{font-display:swap;font-family:"Archivo";font-style:normal;font-weight:100 900;font-stretch:62% 125%;src:url(/assets/fonts/Archivo-wdth-wght.woff2) format("woff2")}
@@ -140,9 +140,9 @@ function renderWatchPage(w, all = []) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=4" />
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=4" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=4" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5" />
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=5" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=5" />
 <title>${escHtml(title)}</title>
 <meta name="description" content="${escAttr(description)}">
 ${w.tags ? `<meta name="keywords" content="${escAttr(w.tags)}">` : ''}

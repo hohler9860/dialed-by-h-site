@@ -54,14 +54,6 @@
   ],
   "rewrites": [
     {
-      "source": "/source",
-      "destination": "/"
-    },
-    {
-      "source": "/source/",
-      "destination": "/"
-    },
-    {
       "source": "/img",
       "destination": "/api/img"
     },

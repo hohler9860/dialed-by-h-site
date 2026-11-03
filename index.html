@@ -622,7 +622,7 @@ footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110p
     el.innerHTML=picks.map(function(w,k){
       var img=base+String(w.i).replace(/\.webp$/,'-cutout.webp');
       return '<a class="piece" href="/watch/'+esc(w.slug)+'"><div class="ph"><img src="'+esc(img)+'" alt="'+esc(w.brand+' '+(w.model||''))+'" loading="lazy" width="400" height="400"></div>'+
-        '<div class="info"><span class="code">[ C'+String(k+1).padStart(3,'0')+' ]</span><span class="brand">'+esc(w.brand)+'</span><span class="model">'+esc(w.model||w.name)+(w.nickname?' '+esc(w.nickname):'')+'</span><span class="ref">Ref. '+esc(w.ref||'')+'</span></div></a>';
+        '<div class="info"><span class="code">[ C'+String(k+1).padStart(3,'0')+' ]</span><span class="brand">'+esc(w.brand)+'</span><span class="model">'+esc(w.model||w.name)+(w.nickname?' '+esc(w.nickname):'')+'</span>'+(w.ref?'<span class="ref">Ref. '+esc(w.ref)+'</span>':'')+'</div></a>';
     }).join('');
   }).catch(function(){});
   // Journal

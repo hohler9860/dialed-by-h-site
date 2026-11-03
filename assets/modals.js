@@ -20,33 +20,39 @@
   };
 
   var CSS = [
-    '.dbh-lm{position:fixed;inset:0;z-index:81;display:flex;background:rgba(0,0,0,.82);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px;box-sizing:border-box;opacity:0;transition:opacity .25s ease}',
+    '@font-face{font-family:"Suisse Intl";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntl-Regular.woff2) format("woff2")}',
+    '@font-face{font-family:"Suisse Intl";font-weight:500;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntl-Medium.woff2) format("woff2")}',
+    '@font-face{font-family:"Suisse Works";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseWorks-Regular.woff2) format("woff2")}',
+    '@font-face{font-family:"Suisse Intl Mono";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntlMono-Regular.woff2) format("woff2")}',
+    '.dbh-lm{--lm-ink:#252522;--lm-paper:#F7F3E9;--lm-dark:#52514E;--lm-mid:#999791;--lm-light:#D8D5CE;--lm-intl:"Suisse Intl","Helvetica Neue",Arial,sans-serif;--lm-works:"Suisse Works",Georgia,serif;--lm-mono:"Suisse Intl Mono","SF Mono",Menlo,monospace;position:fixed;inset:0;z-index:81;display:flex;background:rgba(37,37,34,.86);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px;box-sizing:border-box;opacity:0;transition:opacity .25s ease;font-synthesis:none}',
     '.dbh-lm.is-open{opacity:1}',
-    '.dbh-lm__card{position:relative;width:100%;max-width:512px;margin:auto;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#f2f2f0;color:#0a0a0a;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.45);padding:24px;box-sizing:border-box;font-family:var(--pt-mono,"Tronica Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace);transform:translateY(14px) scale(.985);transition:transform .35s cubic-bezier(.19,1,.22,1)}',
+    '.dbh-lm *{box-sizing:border-box}',
+    '.dbh-lm__card{position:relative;width:100%;max-width:520px;margin:auto;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--lm-paper);color:var(--lm-ink);border:1px solid var(--lm-ink);border-radius:0;padding:26px 24px 28px;transform:translateY(12px);transition:transform .3s cubic-bezier(.2,.7,.2,1);font-family:var(--lm-intl);-webkit-font-smoothing:antialiased}',
     '.dbh-lm.is-open .dbh-lm__card{transform:none}',
-    '@media (min-width:640px){.dbh-lm__card{padding:28px 32px 32px}}',
-    '.dbh-lm__close{position:sticky;top:0;float:right;margin:-8px -8px 0 0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid rgba(10,10,10,.2);background:rgba(255,255,255,.8);color:#0a0a0a;cursor:pointer;padding:0;transition:background .2s ease}',
-    '.dbh-lm__close:hover{background:#0a0a0a;color:#fff}',
-    '.dbh-lm__title{font-family:var(--pt-serif,"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif);font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;text-transform:uppercase;margin:0 40px 8px 0}',
-    '.dbh-lm__sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(10,10,10,.55);margin:0 0 28px}',
-    '.dbh-lm__field{margin:0 0 16px}',
-    '.dbh-lm label.dbh-lm__label{display:block;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(10,10,10,.6);margin:0 0 8px}',
-    '.dbh-lm input[type=text],.dbh-lm input[type=email],.dbh-lm input[type=tel],.dbh-lm select,.dbh-lm textarea{width:100%;box-sizing:border-box;background:transparent;border:1px solid rgba(10,10,10,.22);border-radius:0;padding:12px;font-size:14px;font-family:inherit;color:#0a0a0a;text-transform:uppercase;-webkit-appearance:none;appearance:none;outline:none;transition:border-color .2s ease}',
-    '.dbh-lm input:focus,.dbh-lm select:focus,.dbh-lm textarea:focus{border-color:#0a0a0a}',
-    '.dbh-lm input::placeholder,.dbh-lm textarea::placeholder{color:rgba(10,10,10,.35);text-transform:none;font-size:13px}',
-    '.dbh-lm select{background-image:url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'6\'><path d=\'M1 1l4 4 4-4\' stroke=\'%230a0a0a\' fill=\'none\'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px;cursor:pointer}',
-    '.dbh-lm select:disabled{color:rgba(10,10,10,.4);cursor:default}',
-    '.dbh-lm textarea{min-height:76px;resize:vertical}',
-    '.dbh-lm__check{display:flex;align-items:center;gap:12px;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(10,10,10,.6);cursor:pointer;margin:4px 0 16px}',
-    '.dbh-lm__check input{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1px solid rgba(10,10,10,.4);background:transparent;margin:0;flex-shrink:0;cursor:pointer}',
-    '.dbh-lm__check input:checked{background:#0a0a0a}',
-    '.dbh-lm__submit,.dbh-lm__link{display:flex;align-items:center;justify-content:center;width:100%;box-sizing:border-box;margin-top:8px;padding:16px 24px;border:1px solid #0a0a0a;background:#0a0a0a;color:#fff;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .25s ease,color .25s ease}',
-    '.dbh-lm__submit:hover,.dbh-lm__link:hover{background:transparent;color:#0a0a0a}',
+    '@media (min-width:640px){.dbh-lm__card{padding:34px 38px 38px}}',
+    '.dbh-lm__close{position:sticky;top:0;float:right;margin:-6px -6px 0 0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:0;border:1px solid var(--lm-light);background:var(--lm-paper);color:var(--lm-ink);cursor:pointer;z-index:2;transition:background .2s,color .2s,border-color .2s}',
+    '.dbh-lm__close:hover{background:var(--lm-ink);color:var(--lm-paper);border-color:var(--lm-ink)}',
+    '.dbh-lm__eyebrow{display:block;font-family:var(--lm-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--lm-mid);margin:4px 0 14px}',
+    '.dbh-lm__title{font-family:var(--lm-intl);font-weight:500;font-size:30px;line-height:1;letter-spacing:-.02em;text-transform:none;margin:0 40px 10px 0}',
+    '.dbh-lm__sub{font-family:var(--lm-works);font-size:16px;line-height:1.45;letter-spacing:0;text-transform:none;color:var(--lm-dark);margin:0 0 30px}',
+    '.dbh-lm__field{margin:0 0 20px}',
+    '.dbh-lm label.dbh-lm__label{display:block;font-family:var(--lm-mono);font-size:10px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--lm-mid);margin:0 0 4px}',
+    '.dbh-lm input[type=text],.dbh-lm input[type=email],.dbh-lm input[type=tel],.dbh-lm select,.dbh-lm textarea{width:100%;background:transparent;border:0;border-bottom:1px solid var(--lm-light);border-radius:0;padding:9px 0;font-size:15px;font-family:var(--lm-intl);color:var(--lm-ink);outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}',
+    '.dbh-lm input:focus,.dbh-lm select:focus,.dbh-lm textarea:focus{border-color:var(--lm-ink)}',
+    '.dbh-lm input::placeholder,.dbh-lm textarea::placeholder{color:var(--lm-mid);text-transform:none;font-size:14px}',
+    '.dbh-lm select{background-image:url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'6\'><path d=\'M1 1l4 4 4-4\' stroke=\'%23252522\' fill=\'none\'/></svg>");background-repeat:no-repeat;background-position:right 2px center;padding-right:22px;cursor:pointer}',
+    '.dbh-lm select:disabled{color:var(--lm-mid);cursor:default}',
+    '.dbh-lm textarea{min-height:72px;resize:vertical;font-family:var(--lm-works);font-size:15px;line-height:1.5}',
+    '.dbh-lm__check{display:flex;align-items:center;gap:12px;font-family:var(--lm-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--lm-dark);cursor:pointer;margin:2px 0 22px}',
+    '.dbh-lm__check input{appearance:none;-webkit-appearance:none;width:13px;height:13px;border:1px solid var(--lm-dark);background:transparent;margin:0;flex-shrink:0;cursor:pointer}',
+    '.dbh-lm__check input:checked{background:var(--lm-ink);border-color:var(--lm-ink)}',
+    '.dbh-lm__submit,.dbh-lm__link{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;padding:16px 24px;border:1px solid var(--lm-ink);background:transparent;color:var(--lm-ink);font-family:var(--lm-intl);font-size:12px;font-weight:400;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .25s ease,color .25s ease}',
+    '.dbh-lm__submit:hover,.dbh-lm__link:hover{background:var(--lm-ink);color:var(--lm-paper)}',
     '.dbh-lm__submit:disabled{opacity:.6;cursor:default}',
-    '.dbh-lm__link--ghost{background:transparent;color:#0a0a0a;margin-top:10px}',
-    '.dbh-lm__link--ghost:hover{background:#0a0a0a;color:#fff}',
-    '.dbh-lm__lead{font-size:13px;line-height:1.6;color:rgba(10,10,10,.75);margin:0 0 20px}',
-    '.dbh-lm__err{font-size:11px;letter-spacing:.08em;color:#b3261e;margin:10px 0 0;display:none}'
+    '.dbh-lm__link--ghost{border-color:var(--lm-light)}',
+    '.dbh-lm__link--ghost:hover{background:var(--lm-ink);color:var(--lm-paper);border-color:var(--lm-ink)}',
+    '.dbh-lm__lead{font-family:var(--lm-works);font-size:15px;line-height:1.55;color:var(--lm-dark);margin:0 0 22px}',
+    '.dbh-lm__err{font-family:var(--lm-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8a3a2f;margin:12px 0 0;display:none;line-height:1.5}'
   ].join('\n');
 
   function ensureCss() {
@@ -98,9 +104,9 @@
   }
 
   var FORMS = {
-    sell:   { title: 'Request to Sell',   sub: "Quick form. I'll text you back." },
-    trade:  { title: 'Request to Trade',  sub: "Quick form. I'll text you back." },
-    source: { title: 'Request to Source', sub: "Quick form. I'll text you back." }
+    sell:   { eyebrow: 'Sell',      title: 'Request to sell',   sub: "Quick form. I'll text you back, usually within a few hours." },
+    trade:  { eyebrow: 'Trade',     title: 'Request to trade',  sub: "Quick form. I'll text you back, usually within a few hours." },
+    source: { eyebrow: 'Concierge', title: 'Request to source', sub: "Tell me the piece. I'll text you back, usually within a few hours." }
   };
 
   var current = null;
@@ -137,6 +143,7 @@
 
     if (kind === 'buy') {
       modal.innerHTML = card(
+        '<span class="dbh-lm__eyebrow">Buy</span>' +
         '<h2 class="dbh-lm__title">Looking to buy?</h2>' +
         '<p class="dbh-lm__sub">Fastest way is a DM.</p>' +
         '<p class="dbh-lm__lead">Tell me what you\'re after and I\'ll come back with what I can find.</p>' +
@@ -146,11 +153,12 @@
       var cfg = FORMS[kind];
       if (!cfg) return;
       modal.innerHTML = card(
+        '<span class="dbh-lm__eyebrow">' + esc(cfg.eyebrow) + '</span>' +
         '<h2 class="dbh-lm__title">' + esc(cfg.title) + '</h2>' +
         '<p class="dbh-lm__sub">' + esc(cfg.sub) + '</p>' +
         '<form novalidate>' + formFields(kind) +
         '<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">' +
-        '<button type="submit" class="dbh-lm__submit">Send It</button>' +
+        '<button type="submit" class="dbh-lm__submit">Send</button>' +
         '<p class="dbh-lm__err">Please fill in your name, email, phone, preferred contact, location and brand.</p>' +
         '</form>');
 
@@ -213,6 +221,7 @@
           // have never seen the account; this is the moment they are paying
           // attention.
           modal.innerHTML = card(
+            '<span class="dbh-lm__eyebrow">Received</span>' +
             '<h2 class="dbh-lm__title">Got it.</h2>' +
             '<p class="dbh-lm__sub">I\'ll be in touch shortly.</p>' +
             '<p class="dbh-lm__lead">In the meantime, follow Dialed By H on Instagram. That\'s where every new piece shows up first.</p>' +
@@ -264,22 +273,10 @@
     return (window.app && typeof window.app.openModal === 'function') ? window.app : null;
   }
   function openKind(kind, fromUrl) {
-    if (kind === 'sell' || kind === 'trade') {
-      if (homeApp()) {
-        homeApp().openModal(kind.toUpperCase());
-      } else if (fromUrl) {
-        // Arrived via /sell or /trade: the homepage app is still booting.
-        // Wait for it rather than reloading the page (that would loop).
-        var tries = 0;
-        var t = setInterval(function () {
-          tries += 1;
-          if (homeApp()) {
-            clearInterval(t); homeApp().openModal(kind.toUpperCase());
-          } else if (tries > 50) { clearInterval(t); open(kind); }
-        }, 100);
-      } else {
-        location.href = '/' + kind;
-      }
+    // The old homepage rendered Sell/Trade through its own app.openModal; the
+    // new pages have no such app, so this card is the one and only form.
+    if ((kind === 'sell' || kind === 'trade') && homeApp()) {
+      homeApp().openModal(kind.toUpperCase());
       return;
     }
     open(kind);

@@ -66,7 +66,7 @@ function renderArticleHtml(a) {
     const subtitle    = a.subtitle || "";
     const seoTitle    = a.seo_title || `${title} | Off-Catalog by Dialed By H`;
     const description = a.seo_description || a.excerpt || subtitle || "Read the latest from Off-Catalog, the journal by Dialed By H.";
-    const heroUrl     = a.hero_image_url || "https://www.dialedbyhenry.com/images/og-share-v2.png";
+    const heroUrl     = a.hero_image_url || "https://www.dialedbyhenry.com/images/og-share-v3.png";
     const canonical   = `${SITE_URL}/journal/${a.slug}`;
     const pubDate     = a.published_at;
     const pubDateText = formatPubDate(pubDate);

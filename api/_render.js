@@ -21,7 +21,7 @@ function isAbsolute(raw) {
     return /^https?:\/\//i.test(raw);
 }
 function normUrl(raw) {
-    if (!raw) return `${SITE_URL}/images/og-share-v2.png`;
+    if (!raw) return `${SITE_URL}/images/og-share-v3.png`;
     if (isAbsolute(raw)) return raw;
     return raw.startsWith('/') ? `${SITE_URL}${raw}` : `${SITE_URL}/img?src=${encodeURIComponent(raw)}`;
 }

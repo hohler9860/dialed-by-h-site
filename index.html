@@ -31,7 +31,7 @@
     <title>Dialed By H | Boston Luxury Watch Dealer &amp; Concierge - Buy, Sell &amp; Trade Rare Timepieces</title>
     <meta name="theme-color" content="#252522">
     <link rel="preload" href="/assets/fonts/suisse/SuisseWorks-Regular.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Medium.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Regular.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin>
         <script type="application/ld+json">
     {
@@ -253,17 +253,15 @@
 @font-face{font-family:"Suisse Intl Mono";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntlMono-Regular.woff2) format("woff2")}
 :root{--charcoal:#252522;--cream:#F7F3E9;--grey-dark:#52514E;--grey-mid:#999791;--grey-light:#D8D5CE;
 --intl:"Suisse Intl","Helvetica Neue",Arial,sans-serif;--works:"Suisse Works",Georgia,"Times New Roman",serif;--mono:"Suisse Intl Mono","SF Mono",Menlo,monospace;
---u:calc(100vw / 1920);--gutter:clamp(20px,2.3vw,44px);color-scheme:dark}
+--u:calc(100vw / 1920);--gutter:clamp(20px,2.1vw,40px);color-scheme:dark}
 @media(max-width:899px){:root{--u:calc(100vw / 760)}}
 *{box-sizing:border-box;font-synthesis:none}
-html{scroll-behavior:smooth}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--charcoal);color:var(--cream);font-family:var(--works);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--cream);color:var(--charcoal);font-family:var(--works);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-h1,h2,h3,p,figure,blockquote{margin:0}
+h1,h2,h3,p{margin:0}
 /* ---------- hero (Figma 241:849, 1920x1080; --u = 1 Figma px) ---------- */
-.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--charcoal)}
+.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:var(--charcoal);color:var(--cream)}
 .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1.4s ease}
 .slide.is-on{opacity:1}
 .veil{position:absolute;inset:0;background:rgba(0,0,0,.05);pointer-events:none}
@@ -288,103 +286,88 @@ h1{font-family:var(--works);font-weight:400;font-size:calc(34*var(--u));line-hei
   .block{bottom:calc(28*var(--u));width:calc(600*var(--u))}
   h1{font-size:calc(44*var(--u))}.sub{font-size:calc(22*var(--u))}.cta{font-size:calc(15*var(--u))}
 }
-/* mobile menu */
+/* mobile menu sheet */
 .sheet{position:fixed;inset:0;z-index:50;background:var(--charcoal);color:var(--cream);display:none;flex-direction:column;justify-content:space-between;padding:max(22px,env(safe-area-inset-top,0px)) var(--gutter) max(24px,env(safe-area-inset-bottom,0px))}
 .sheet.is-open{display:flex}
 .sheet header{display:flex;justify-content:space-between;align-items:center}
-.sheet header svg{position:static;width:200px}
+.sheet .wm2{width:200px;height:auto;color:var(--cream)}
 .sheet header button{background:none;border:0;color:var(--cream);font-family:var(--intl);font-size:13px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;padding:0}
 .sheet ol{list-style:none;margin:0;padding:0;display:grid;gap:18px}
 .sheet li{display:flex;align-items:baseline;gap:22px}
 .sheet .n{font-family:var(--intl);font-size:12px;letter-spacing:.03em;width:30px}
 .sheet li a{font-family:var(--works);font-size:30px;line-height:1}
-.sheet .contact{display:grid;gap:4px}
-/* ---------- sections ---------- */
-.sec{padding:clamp(72px,9vw,140px) var(--gutter)}
-.sec.light{background:var(--cream);color:var(--charcoal)}
-.sec.dark{background:var(--charcoal);color:var(--cream)}
-.wrap{max-width:1480px;margin:0 auto}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);display:flex;gap:1.4em}
-.light .eyebrow{color:var(--grey-dark)}
-h2{font-family:var(--intl);font-weight:500;font-size:clamp(34px,4.2vw,64px);line-height:.98;letter-spacing:-.02em;text-wrap:balance}
-h2 .in{display:block;padding-left:.9em}
-.lede{font-family:var(--works);font-size:clamp(17px,1.25vw,21px);line-height:1.5;max-width:58ch}
-.lede+.lede{text-indent:2.4em}
-.btn{font-family:var(--intl);font-weight:400;font-size:13px;letter-spacing:.02em;border:1px solid currentColor;padding:15px 24px;display:inline-flex;align-items:center;gap:22px;justify-content:space-between;transition:background .18s,color .18s;min-width:260px}
-.btn .ar{font-family:var(--mono);font-size:11px;letter-spacing:.06em}
-.dark .btn:hover{background:var(--cream);color:var(--charcoal)}
-.light .btn:hover{background:var(--charcoal);color:var(--cream)}
-.link{font-family:var(--intl);font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-decoration:underline;text-underline-offset:.25em;text-decoration-thickness:1px;width:max-content}
-.split{display:grid;gap:40px;align-items:start}
-@media(min-width:900px){.split{grid-template-columns:5fr 7fr;gap:60px}}
-.stack{display:grid;gap:28px}
-.actions{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;padding-top:8px}
-/* catalogue */
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:40px 24px;padding-top:48px}
-@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:1100px){.grid{grid-template-columns:repeat(6,1fr);gap:32px 20px}}
-.piece{display:grid;gap:14px;min-width:0}
-.piece .ph{aspect-ratio:1;display:flex;align-items:center;justify-content:center}
-.piece img{width:84%;height:auto;filter:drop-shadow(0 18px 24px rgba(0,0,0,.35))}
-.info{display:grid;gap:3px}
-.info .code{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-mid)}
-.info .brand{font-family:var(--intl);font-weight:500;font-size:13px}
-.info .model{font-family:var(--works);font-size:15px;line-height:1.25}
-.info .ref{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-mid)}
-/* sell/trade */
-.two{display:grid;gap:40px;padding-top:48px}
-@media(min-width:900px){.two{grid-template-columns:1fr 1fr;gap:60px}}
-.card{border-top:1px solid currentColor;padding-top:22px;display:grid;gap:16px;align-content:start}
-.card h3{font-family:var(--intl);font-weight:500;font-size:clamp(22px,2vw,30px);line-height:1.05;letter-spacing:-.01em}
-.card p{font-family:var(--works);font-size:16px;line-height:1.5;max-width:46ch}
-.card p+p{text-indent:2.2em}
-.card ul{margin:0;padding:0;list-style:none;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;display:grid;gap:5px;color:var(--grey-dark)}
-.dark .card ul{color:var(--grey-mid)}
-/* about */
-.about{display:grid;gap:40px;align-items:center}
-@media(min-width:900px){.about{grid-template-columns:4fr 7fr;gap:70px}}
-.about img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover}
-.cities{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);display:flex;gap:1.6em;flex-wrap:wrap}
-/* process */
-.steps{display:grid;gap:36px;padding-top:48px;counter-reset:s}
-@media(min-width:900px){.steps{grid-template-columns:repeat(4,1fr);gap:40px}}
-.step{border-top:1px solid currentColor;padding-top:20px;display:grid;gap:12px;align-content:start}
-.step .n{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-dark)}
-.step h3{font-family:var(--works);font-weight:400;font-size:clamp(20px,1.6vw,26px);line-height:1.15}
-.step p{font-family:var(--works);font-size:15px;line-height:1.5;color:var(--grey-dark)}
-/* journal */
-.posts{display:grid;gap:36px;padding-top:48px}
-@media(min-width:800px){.posts{grid-template-columns:repeat(3,1fr);gap:32px}}
-.post{display:grid;gap:14px;min-width:0}
-.post .im{aspect-ratio:4/3;overflow:hidden;background:var(--grey-light)}
-.post img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
-.post:hover img{transform:scale(1.03)}
-.post .cat{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-dark)}
-.post h3{font-family:var(--works);font-weight:400;font-size:clamp(19px,1.5vw,24px);line-height:1.2;text-wrap:balance}
-.post p{font-family:var(--works);font-size:15px;line-height:1.5;color:var(--grey-dark)}
-/* testimonials */
-.quotes{display:grid;gap:40px 32px;padding-top:48px}
-@media(min-width:800px){.quotes{grid-template-columns:repeat(3,1fr)}}
-.quote{display:grid;gap:18px;border-top:1px solid var(--grey-dark);padding-top:22px;align-content:start}
-.quote img{width:64px;height:64px;object-fit:contain}
-.quote blockquote{font-family:var(--works);font-size:15.5px;line-height:1.5;color:var(--grey-light)}
-.quote figcaption{display:grid;gap:3px}
-.quote .name{font-family:var(--intl);font-weight:500;font-size:13px}
-.quote .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)}
-/* footer */
-footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110px) var(--gutter) max(28px,env(safe-area-inset-bottom,0px))}
-.cm{width:min(100%,520px);height:auto;color:var(--cream)}
-.fgrid{display:grid;gap:40px;padding-top:56px}
-@media(min-width:800px){.fgrid{grid-template-columns:1.4fr 1fr 1fr 1fr}}
-.fcol{display:grid;gap:10px;align-content:start}
-.fcol .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)}
-.fcol a,.fcol span.v{font-family:var(--intl);font-size:14px}
-.fcol a:hover{color:var(--grey-light)}
-.contactrow{display:grid;gap:18px}
-.c{display:grid;gap:4px}
-.legal{border-top:1px solid var(--grey-dark);margin-top:56px;padding-top:18px;display:grid;gap:14px;font-family:var(--works);font-size:12.5px;line-height:1.5;color:var(--grey-mid)}
-.fine{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--grey-dark)}
-.sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.sheet .c{display:grid;gap:4px}
+/* ---------- shared ---------- */
+.k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)}
+.btn{font-family:var(--intl);font-weight:400;font-size:12px;letter-spacing:.04em;text-transform:uppercase;border:1px solid currentColor;padding:15px 28px;display:inline-flex;align-items:center;justify-content:center;min-width:230px;transition:background .25s,color .25s;cursor:pointer;background:transparent;color:inherit}
+.on-cream .btn:hover{background:var(--charcoal);color:var(--cream)}
+.on-dark .btn:hover{background:var(--cream);color:var(--charcoal)}
+/* ---------- ticker (cream strip, same marquee as before, CSS driven) ---------- */
+.ticker{background:var(--cream);color:var(--charcoal);border-top:1px solid var(--grey-light);border-bottom:1px solid var(--grey-light);padding:22px 0;overflow:hidden;contain:layout style}
+.ticker__track{display:flex;width:max-content;animation:tick var(--tdur,180s) linear infinite;will-change:transform}
+.ticker:hover .ticker__track{animation-play-state:paused}
+.ticker__half{display:flex;align-items:center;flex:none}
+.titem{display:flex;align-items:center;gap:20px;margin:0 32px;flex:none}
+.titem img{width:64px;height:64px;object-fit:contain;transition:transform .3s}
+.titem:hover img{transform:scale(1.08)}
+.titem .tn{font-family:var(--works);font-size:22px;line-height:1;white-space:nowrap}
+.titem .tr{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);white-space:nowrap;margin-top:6px}
+.titem .dot{width:5px;height:5px;background:var(--grey-light);margin-left:8px}
+.titem:hover .dot{background:var(--charcoal)}
+.ticker:empty{min-height:110px}
+@keyframes tick{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.ticker__track{animation:none}}
+/* ---------- testimonials (same 3-column vertical marquee, restyled) ---------- */
+.clients{background:var(--charcoal);color:var(--cream);padding:clamp(56px,6vw,96px) var(--gutter)}
+.clients .hd{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.clients h2{font-family:var(--works);font-weight:400;font-size:clamp(26px,2.4vw,38px);line-height:1;letter-spacing:-.02em}
+.tcols{display:flex;justify-content:center;gap:24px;margin-top:40px;max-height:680px;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent)}
+.ttrack{display:flex;flex-direction:column;gap:24px;padding-bottom:24px;animation:tscroll var(--dur,15s) linear infinite}
+@keyframes tscroll{to{transform:translateY(-50%)}}
+.tcol--2,.tcol--3{display:none}
+@media(min-width:768px){.tcol--2{display:block}}
+@media(min-width:1024px){.tcol--3{display:block}}
+@media(prefers-reduced-motion:reduce){.ttrack{animation:none}}
+.tcard{width:340px;max-width:82vw;padding:26px;border:1px solid var(--grey-dark);background:transparent}
+.tcard p{font-family:var(--works);font-size:15px;line-height:1.6;color:var(--grey-light)}
+.who{display:flex;align-items:center;gap:14px;margin-top:22px}
+.who img{width:40px;height:40px;object-fit:contain;flex:none}
+.name{font-family:var(--intl);font-weight:500;font-size:13px;color:var(--cream)}
+.role{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);margin-top:3px}
+/* ---------- faq (same layout: tag left, ruled list right) ---------- */
+.faq{background:var(--cream);color:var(--charcoal);padding:clamp(72px,7vw,112px) var(--gutter)}
+.faq__g{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;max-width:1360px;margin:0 auto}
+.faq__tag{grid-column:1/4;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);font-weight:400}
+.faq__list{grid-column:4/13}
+.faq__item{border-top:1px solid var(--grey-light)}
+.faq__item--last{border-bottom:1px solid var(--grey-light)}
+.faq__q{display:flex;justify-content:space-between;align-items:baseline;gap:20px;width:100%;padding:26px 2px;cursor:pointer;background:none;border:none;text-align:left;color:inherit;-webkit-tap-highlight-color:transparent}
+.faq__q:focus-visible{outline:1px solid currentColor;outline-offset:4px}
+.faq__q h3{font-family:var(--works);font-size:19px;font-weight:400;line-height:1.3}
+.faq__t{font-family:var(--intl);font-size:20px;color:var(--grey-dark);transition:transform .3s ease;flex:none}
+.faq__item.is-open .faq__t{transform:rotate(45deg)}
+.faq__panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 650ms cubic-bezier(.22,1,.36,1)}
+.faq__item.is-open .faq__panel{grid-template-rows:1fr}
+.faq__inner{overflow:hidden;min-height:0;clip-path:inset(0 0 100% 0);transition:clip-path 650ms cubic-bezier(.22,1,.36,1)}
+.faq__item.is-open .faq__inner{clip-path:inset(0 0 0 0)}
+.faq__inner p{font-family:var(--works);font-size:15.5px;line-height:1.6;color:var(--grey-dark);padding:0 2px 28px;max-width:640px}
+.faq__cta{margin-top:44px;display:flex;flex-direction:column;align-items:flex-start;gap:16px}
+.faq__cta p{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)}
+@media(max-width:820px){.faq__tag,.faq__list{grid-column:1/13}.faq__tag{margin-bottom:24px}}
+/* ---------- footer (same 4-column layout) ---------- */
+footer{background:var(--charcoal);color:var(--cream);padding:80px var(--gutter) max(40px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--grey-dark)}
+.fgrid{max-width:1360px;margin:0 auto;display:grid;grid-template-columns:5fr 3fr 3fr 3fr;gap:20px}
+.cm{width:min(100%,300px);height:auto;color:var(--cream);margin-bottom:26px}
+.flabel{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:18px}
+footer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-family:var(--intl);font-size:13px}
+footer li{display:flex;gap:16px}
+footer li>span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);min-width:92px;padding-top:2px}
+footer a{transition:opacity .3s}
+footer a:hover{opacity:.55}
+.legal{max-width:1360px;margin:52px auto 0}
+.legal p{max-width:720px;font-family:var(--works);font-size:12px;color:var(--grey-mid);line-height:1.7}
+.copy{max-width:1360px;margin:16px auto 0;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-dark)}
+@media(max-width:820px){footer{padding:60px 20px 40px}.fgrid{grid-template-columns:1fr;gap:36px}}
 [hidden]{display:none!important}
     </style>
     <!-- Meta Pixel Code -->
@@ -418,7 +401,7 @@ footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110p
 <path d="M110.498 30H118.898V81.6796H110.498V30Z" fill="currentColor"/>
 <path d="M77.3596 56.0801C77.3596 53.3068 76.8796 50.8001 75.9196 48.5602C75.013 46.2669 73.7063 44.3469 71.9997 42.8002C70.3463 41.2536 68.3463 40.0536 65.9997 39.2002C63.7064 38.3469 61.1997 37.9203 58.4798 37.9203H38.3999V73.76H59.3598C62.0264 73.76 64.453 73.36 66.6397 72.56C68.8797 71.7066 70.773 70.5067 72.3196 68.96C73.9196 67.4133 75.1463 65.5734 75.9996 63.44C76.9063 61.2534 77.3596 58.8001 77.3596 56.0801ZM58.0798 30.0803C62.0797 30.0803 65.7864 30.667 69.1997 31.8403C72.613 33.0136 75.573 34.7203 78.0796 36.9603C80.5863 39.1469 82.5596 41.8669 83.9996 45.1202C85.4395 48.3735 86.1595 52.0801 86.1595 56.2401C86.1595 60.1867 85.4395 63.7334 83.9996 66.88C82.6129 69.9733 80.6662 72.6133 78.1596 74.7999C75.7063 76.9866 72.8263 78.6666 69.5197 79.8399C66.213 81.0132 62.6931 81.5999 58.9598 81.5999H30V30.0803H58.0798Z" fill="currentColor"/>
 </svg>
-  <nav class="hnav" aria-label="Primary"><ol><li><span class="n">I.</span><a href="#concierge">Concierge</a></li><li><span class="n">II.</span><a href="#catalogue">Sourcing Catalogue</a></li><li><span class="n">III.</span><a href="#sell-trade">Sell or Trade</a></li><li><span class="n">IV.</span><a href="#about">About</a></li><li><span class="n">V.</span><a href="#process">Process</a></li><li><span class="n">VI.</span><a href="#journal">Journal</a></li></ol></nav>
+  <nav class="hnav" aria-label="Primary"><ol><li><span class="n">I.</span><a href="/source">Concierge</a></li><li><span class="n">II.</span><a href="/buy/">Sourcing Catalogue</a></li><li><span class="n">III.</span><a href="/sell">Sell or Trade</a></li><li><span class="n">IV.</span><a href="/about/">About</a></li><li><span class="n">V.</span><a href="/process/">Process</a></li><li><span class="n">VI.</span><a href="/journal/">Journal</a></li></ol></nav>
   <button class="menu" id="menu-open" aria-controls="sheet" aria-expanded="false">Menu</button>
   <svg class="lm" role="img" aria-label="Dialed by H monogram" viewBox="0 0 145 142" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M57.1557 79.3136V62.6865C57.1557 52.548 56.1859 52.1425 55.1352 51.2503L64.9145 47.1138C63.8639 47.9248 62.8132 52.548 62.8132 62.6865V66.6608H81.3211V62.6865C81.3211 52.548 80.2705 47.9248 79.3006 47.1138L88.9991 51.2503C88.0292 52.1425 86.8978 52.548 86.8978 62.6865V79.3136C86.8978 89.4521 88.0292 89.5332 88.9991 90.3443L79.3006 94.5619C80.2705 93.7508 81.3211 89.4521 81.3211 79.3136V72.0139H62.8132V79.3136C62.8132 89.4521 63.8639 93.7508 64.9145 94.5619L55.1352 90.3443C56.1859 89.5332 57.1557 89.4521 57.1557 79.3136ZM43.1738 70.4728C43.1738 53.5213 57.2366 42.6528 72.5117 42.6528C90.1306 42.6528 100.961 56.1167 100.961 69.4995C100.961 87.1811 86.8978 98.5362 71.7035 98.5362C54.0037 98.5362 43.1738 84.3423 43.1738 70.4728ZM95.1415 70.3917C95.1415 57.82 85.8471 46.7893 71.5418 46.7893C57.2366 46.7893 49.1545 57.1711 49.1545 69.4995C49.1545 82.5579 58.1256 94.3997 72.5925 94.3997C86.2512 94.3997 95.1415 83.2879 95.1415 70.3917ZM30 70.3917C30 45.7349 50.5285 30 72.6733 30C98.4551 30 114.134 49.7092 114.134 69.4184C114.134 94.8052 93.6867 111.108 71.461 111.108C45.76 111.108 30 90.5065 30 70.3917ZM107.749 70.7973C107.749 51.9802 92.9593 35.5153 71.2185 35.5153C50.6901 35.5153 36.5465 50.9258 36.5465 69.0129C36.5465 88.2355 51.0134 105.593 72.835 105.593C93.5251 105.593 107.749 89.6143 107.749 70.7973Z" fill="currentColor"/>
@@ -428,7 +411,7 @@ footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110p
       <h1>Watches Worth Knowing.</h1>
       <p class="sub">A considered approach to sourcing, buying and selling exceptional timepieces.</p>
     </div>
-    <a class="cta" href="#concierge">Talk to the concierge about sourcing</a>
+    <a class="cta" href="/source">Talk to the concierge about sourcing</a>
   </div>
 </section>
 
@@ -444,128 +427,39 @@ footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110p
 <path d="M110.498 30H118.898V81.6796H110.498V30Z" fill="currentColor"/>
 <path d="M77.3596 56.0801C77.3596 53.3068 76.8796 50.8001 75.9196 48.5602C75.013 46.2669 73.7063 44.3469 71.9997 42.8002C70.3463 41.2536 68.3463 40.0536 65.9997 39.2002C63.7064 38.3469 61.1997 37.9203 58.4798 37.9203H38.3999V73.76H59.3598C62.0264 73.76 64.453 73.36 66.6397 72.56C68.8797 71.7066 70.773 70.5067 72.3196 68.96C73.9196 67.4133 75.1463 65.5734 75.9996 63.44C76.9063 61.2534 77.3596 58.8001 77.3596 56.0801ZM58.0798 30.0803C62.0797 30.0803 65.7864 30.667 69.1997 31.8403C72.613 33.0136 75.573 34.7203 78.0796 36.9603C80.5863 39.1469 82.5596 41.8669 83.9996 45.1202C85.4395 48.3735 86.1595 52.0801 86.1595 56.2401C86.1595 60.1867 85.4395 63.7334 83.9996 66.88C82.6129 69.9733 80.6662 72.6133 78.1596 74.7999C75.7063 76.9866 72.8263 78.6666 69.5197 79.8399C66.213 81.0132 62.6931 81.5999 58.9598 81.5999H30V30.0803H58.0798Z" fill="currentColor"/>
 </svg><button id="menu-close">Close</button></header>
-  <nav aria-label="Menu"><ol><li><span class="n">I.</span><a href="#concierge" data-close>Concierge</a></li><li><span class="n">II.</span><a href="#catalogue" data-close>Sourcing Catalogue</a></li><li><span class="n">III.</span><a href="#sell-trade" data-close>Sell or Trade</a></li><li><span class="n">IV.</span><a href="#about" data-close>About</a></li><li><span class="n">V.</span><a href="#process" data-close>Process</a></li><li><span class="n">VI.</span><a href="#journal" data-close>Journal</a></li></ol></nav>
-  <div class="contact">
-    <span class="k" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)">(WhatsApp)</span>
-    <a href="https://wa.me/19146211848" style="font-family:var(--intl);font-size:16px">+1.914.621.1848</a>
-  </div>
+  <nav aria-label="Menu"><ol><li><span class="n">I.</span><a href="/source">Concierge</a></li><li><span class="n">II.</span><a href="/buy/">Sourcing Catalogue</a></li><li><span class="n">III.</span><a href="/sell">Sell or Trade</a></li><li><span class="n">IV.</span><a href="/about/">About</a></li><li><span class="n">V.</span><a href="/process/">Process</a></li><li><span class="n">VI.</span><a href="/journal/">Journal</a></li></ol></nav>
+  <div class="c"><span class="k">(WhatsApp)</span><a href="https://wa.me/19146211848" style="font-family:var(--intl);font-size:16px">+1.914.621.1848</a></div>
 </div>
 
 <main>
-<section class="sec light" id="concierge">
-  <div class="wrap split">
-    <div class="stack">
-      <p class="eyebrow"><span>I.</span><span>Concierge</span></p>
-      <h2>Tell me what<span class="in">you want.</span></h2>
-    </div>
-    <div class="stack">
-      <p class="lede">Dialed by H is a one-person sourcing desk for serious watches. You tell me the reference, the dial, the condition and the timeline. I go find it through a private network of dealers and collectors across Boston, New York and Miami, verify it, and put it on your wrist. No waitlist, no retail games.</p>
-      <p class="lede">Buying, selling and trading all run through the same conversation. Start on WhatsApp and I usually come back with an option within a few hours.</p>
-      <div class="actions">
-        <a class="btn" href="https://wa.me/19146211848?text=Hi%20Henry%2C%20I%27m%20looking%20for%20" target="_blank" rel="noopener noreferrer">Message the concierge <span class="ar">(WA)</span></a>
-        <a class="link" href="/buy/">Or browse the sourcing catalogue</a>
-      </div>
-    </div>
-  </div>
+<div class="ticker" aria-label="Recently sourced">
+  <div class="ticker__track" id="ticker"><div class="ticker__half" id="tick-a"></div><div class="ticker__half" id="tick-b"></div></div>
+</div>
+
+<section class="clients on-dark" id="testimonials" role="region" aria-label="Testimonials">
+  <div class="hd"><span class="k">Clients</span><h2>What clients say.</h2></div>
+  <div class="tcols"><div class="tcol tcol--1" style="--dur:22s"><div class="ttrack"><div class="tcard"><p>&ldquo;Henry helped me pick up an AP Royal Oak Offshore 26420Ti back in March and the whole process was really smooth. He kept me updated at every step and the watch arrived exactly how he described, with the box and papers all there. A few months later I went back to him for a 41mm Celebration Dial and it was the same easy experience. He's the only guy I'm dealing with for these pieces going forward.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/ap-roo-26420ti-blue.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">James Schmitt</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Henry&rsquo;s a friend of mine, so take this with that in mind. But friend or not, he got me my 2026 Submariner Date quick, papers and all, and the whole thing was effortless. That&rsquo;s just how he operates.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-submariner-126610ln-2026.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">David Beylouni</div><div class="role">Friend &amp; Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Purchasing a rare Rolex Daytona from Henry was an exceptional experience from start to finish. His responsiveness, attention to detail, and ability to source a watch in outstanding condition exceeded my expectations. From answering every question promptly to arranging overnight shipping, Henry made the entire process seamless, and I couldn&rsquo;t be happier with the experience!&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-daytona-116503-black-mop.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Chris Marotti</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Henry helped me pick up an AP Royal Oak Offshore 26420Ti back in March and the whole process was really smooth. He kept me updated at every step and the watch arrived exactly how he described, with the box and papers all there. A few months later I went back to him for a 41mm Celebration Dial and it was the same easy experience. He's the only guy I'm dealing with for these pieces going forward.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/ap-roo-26420ti-blue.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">James Schmitt</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Henry&rsquo;s a friend of mine, so take this with that in mind. But friend or not, he got me my 2026 Submariner Date quick, papers and all, and the whole thing was effortless. That&rsquo;s just how he operates.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-submariner-126610ln-2026.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">David Beylouni</div><div class="role">Friend &amp; Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Purchasing a rare Rolex Daytona from Henry was an exceptional experience from start to finish. His responsiveness, attention to detail, and ability to source a watch in outstanding condition exceeded my expectations. From answering every question promptly to arranging overnight shipping, Henry made the entire process seamless, and I couldn&rsquo;t be happier with the experience!&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-daytona-116503-black-mop.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Chris Marotti</div><div class="role">Verified Client</div></div></div></div></div></div><div class="tcol tcol--2" style="--dur:26s"><div class="ttrack"><div class="tcard"><p>&ldquo;A friend of mine who collects pointed me to Henry when I mentioned I was looking for a 124300 green dial. He found one within the week, which honestly surprised me. Price was reasonable and the watch arrived in great shape with everything you'd want. Already talking to him about my next piece.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-op41-124300-green.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Mike Steinmetz</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;We love your content and the way you showcase things in your style!&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/jacob-co-casino-tourbillon.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Jacob &amp; Co.</div><div class="role">Brand</div></div></div></div><div class="tcard"><p>&ldquo;Spent months trying to track down a 126518 on the Oysterflex. ADs kept telling me I needed to be a longer client and the online dealers were way over where the market actually was. A buddy told me to message Henry, and 3 days later I had one on my wrist. Box, papers, condition, all spot on. He's earned my next purchase for sure.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-daytona-126518ln-white.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Daniel Carter</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;A friend of mine who collects pointed me to Henry when I mentioned I was looking for a 124300 green dial. He found one within the week, which honestly surprised me. Price was reasonable and the watch arrived in great shape with everything you'd want. Already talking to him about my next piece.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-op41-124300-green.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Mike Steinmetz</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;We love your content and the way you showcase things in your style!&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/jacob-co-casino-tourbillon.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Jacob &amp; Co.</div><div class="role">Brand</div></div></div></div><div class="tcard"><p>&ldquo;Spent months trying to track down a 126518 on the Oysterflex. ADs kept telling me I needed to be a longer client and the online dealers were way over where the market actually was. A buddy told me to message Henry, and 3 days later I had one on my wrist. Box, papers, condition, all spot on. He's earned my next purchase for sure.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-daytona-126518ln-white.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Daniel Carter</div><div class="role">Verified Client</div></div></div></div></div></div><div class="tcol tcol--3" style="--dur:24s"><div class="ttrack"><div class="tcard"><p>&ldquo;Saw Henry on Instagram and reached out about a 124300 with the Celebration dial. He came back with one in 2 days and the price was the lowest of anyone I'd asked. He kept me posted the whole way and the watch arrived in perfect shape. Going back to him for my next one for sure.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-op41-124300-celebration.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Shamik Patel</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Henry helped me pick up an AP Royal Oak Offshore 26420Ti back in March and the whole process was really smooth. He kept me updated at every step and the watch arrived exactly how he described, with the box and papers all there. A few months later I went back to him for a 41mm Celebration Dial and it was the same easy experience. He's the only guy I'm dealing with for these pieces going forward.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/ap-roo-26420ti-blue.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">James Schmitt</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;A friend of mine who collects pointed me to Henry when I mentioned I was looking for a 124300 green dial. He found one within the week, which honestly surprised me. Price was reasonable and the watch arrived in great shape with everything you'd want. Already talking to him about my next piece.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-op41-124300-green.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Mike Steinmetz</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Saw Henry on Instagram and reached out about a 124300 with the Celebration dial. He came back with one in 2 days and the price was the lowest of anyone I'd asked. He kept me posted the whole way and the watch arrived in perfect shape. Going back to him for my next one for sure.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-op41-124300-celebration.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Shamik Patel</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;Henry helped me pick up an AP Royal Oak Offshore 26420Ti back in March and the whole process was really smooth. He kept me updated at every step and the watch arrived exactly how he described, with the box and papers all there. A few months later I went back to him for a 41mm Celebration Dial and it was the same easy experience. He's the only guy I'm dealing with for these pieces going forward.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/ap-roo-26420ti-blue.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">James Schmitt</div><div class="role">Verified Client</div></div></div></div><div class="tcard"><p>&ldquo;A friend of mine who collects pointed me to Henry when I mentioned I was looking for a 124300 green dial. He found one within the week, which honestly surprised me. Price was reasonable and the watch arrived in great shape with everything you'd want. Already talking to him about my next piece.&rdquo;</p><div class="who"><img src="/assets/dbh/sticker_img/rolex-op41-124300-green.webp" alt="" loading="lazy" width="40" height="40"><div><div class="name">Mike Steinmetz</div><div class="role">Verified Client</div></div></div></div></div></div></div>
 </section>
 
-<section class="sec dark" id="catalogue">
-  <div class="wrap">
-    <div class="split">
-      <div class="stack">
-        <p class="eyebrow"><span>II.</span><span>Sourcing Catalogue</span></p>
-        <h2>What I can<span class="in">source now.</span></h2>
-      </div>
-      <div class="stack">
-        <p class="lede">A living list of the references I move most. If the piece you want is not here, that is normal. Most of what I source never gets listed.</p>
-        <div class="actions"><a class="link" href="/buy/">View the full catalogue</a></div>
-      </div>
-    </div>
-    <div class="grid" id="picks" aria-live="polite"></div>
-  </div>
-</section>
-
-<section class="sec light" id="sell-trade">
-  <div class="wrap">
-    <div class="split">
-      <div class="stack">
-        <p class="eyebrow"><span>III.</span><span>Sell or Trade</span></p>
-        <h2>Moving a piece<span class="in">on?</span></h2>
-      </div>
-      <p class="lede">Send me the reference, condition and what comes with it. I will give you a real number, not a lowball, and if you would rather trade up I will work the difference into the next piece.</p>
-    </div>
-    <div class="two">
-      <div class="card">
-        <h3>Sell</h3>
-        <p>An outright offer, usually within the day. Insured overnight shipping both ways, payment wired the day the watch clears inspection.</p>
-        <ul><li>Offer within 24 hours</li><li>Insured shipping covered</li><li>Wire on inspection</li></ul>
-        <a class="btn" href="/sell">Get an offer <span class="ar">&rarr;</span></a>
-      </div>
-      <div class="card">
-        <h3>Trade</h3>
-        <p>Put your current piece toward the one you actually want. I value what you have, source what you are after, and settle the difference in one transaction.</p>
-        <ul><li>One transaction</li><li>Difference settled either way</li><li>Any brand considered</li></ul>
-        <a class="btn" href="/trade">Start a trade <span class="ar">&rarr;</span></a>
+<section class="faq on-cream" id="faq">
+  <div class="faq__g">
+    <h2 class="faq__tag">FAQ</h2>
+    <div class="faq__list">
+      <div class="faq__item"><button type="button" class="faq__q" aria-expanded="false"><h3>How do you source rare and hard-to-find watches?</h3><span class="faq__t">+</span></button><div class="faq__panel"><div class="faq__inner"><p>I work through a vetted network of dealers, collectors, and trusted contacts across Boston, New York, Miami, and globally. When you tell me what you're looking for, I tap that network directly instead of waiting for a piece to surface publicly. Most sourcing requests get a real lead within 12 hours.</p></div></div></div><div class="faq__item"><button type="button" class="faq__q" aria-expanded="false"><h3>How do you authenticate watches before delivery?</h3><span class="faq__t">+</span></button><div class="faq__panel"><div class="faq__inner"><p>Every piece is independently authenticated by a trusted watch specialist before it reaches you. I verify provenance, papers, and movement. If anything doesn't check out, the deal doesn't happen.</p></div></div></div><div class="faq__item"><button type="button" class="faq__q" aria-expanded="false"><h3>What brands do you specialize in?</h3><span class="faq__t">+</span></button><div class="faq__panel"><div class="faq__inner"><p>Rolex, Patek Philippe, Audemars Piguet, F.P. Journe, A. Lange &amp; Söhne, Vacheron Constantin, Richard Mille, Cartier, and independent watchmakers. If you have a brand in mind that isn't on this list, ask. Chances are I can still find it.</p></div></div></div><div class="faq__item"><button type="button" class="faq__q" aria-expanded="false"><h3>How long does it take to source a piece?</h3><span class="faq__t">+</span></button><div class="faq__panel"><div class="faq__inner"><p>First response on a sourcing request: within 12 hours. Time to actually find the watch varies by reference. Common references can land in days. Hyped or discontinued pieces may take a few weeks. I keep you updated the whole way.</p></div></div></div><div class="faq__item"><button type="button" class="faq__q" aria-expanded="false"><h3>Can I trade in or sell my current watch?</h3><span class="faq__t">+</span></button><div class="faq__panel"><div class="faq__inner"><p>Yes. I offer competitive market trade-in pricing toward your next piece, and I can also sell a watch outright on consignment. Either way, you get a transparent quote and independent authentication.</p></div></div></div><div class="faq__item faq__item--last"><button type="button" class="faq__q" aria-expanded="false"><h3>Where are you based and do you ship?</h3><span class="faq__t">+</span></button><div class="faq__panel"><div class="faq__inner"><p>I'm based in Boston with active presence in New York and Miami. Pieces ship fully insured anywhere in the United States. International delivery is case by case. Reach out and we'll figure it out.</p></div></div></div>
+      <div class="faq__cta">
+        <p>Still have a question?</p>
+        <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" class="btn">WhatsApp</a>
+        <a href="sms:+19146211848" class="btn">Text me</a>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="sec dark" id="about">
-  <div class="wrap about">
-    <img src="/images/Henry.webp" alt="Henry Ohler, founder of Dialed by H" loading="lazy" width="1200" height="1600">
-    <div class="stack">
-      <p class="eyebrow"><span>IV.</span><span>About</span></p>
-      <h2>Built on the<span class="in">right calls.</span></h2>
-      <p class="lede">I am Henry. I started Dialed by H in 2025 because the way most people buy a serious watch is broken: years on a list, or a dealer you have never met quoting a number nobody can check. I wanted a dealer who picks up the phone, tells you the truth about the market, and only sells what he would wear.</p>
-      <p class="lede">Everything here is sourced through relationships I have built one deal at a time. Every piece is verified before it ships. If I would not put it on my own wrist, it does not go on yours.</p>
-      <p class="cities"><span>Boston</span><span>New York</span><span>Miami</span></p>
-    </div>
-  </div>
-</section>
-
-<section class="sec light" id="process">
-  <div class="wrap">
-    <div class="stack">
-      <p class="eyebrow"><span>V.</span><span>Process</span></p>
-      <h2>Four steps.<span class="in">No surprises.</span></h2>
-    </div>
-    <div class="steps">
-      <div class="step"><span class="n">I.</span><h3>Tell me the piece</h3><p>Reference, dial, condition, box and papers, timeline. The more exact you are, the faster this goes.</p></div>
-      <div class="step"><span class="n">II.</span><h3>I source it</h3><p>I go through my network, not public listings. You usually hear back with an option within hours, not weeks.</p></div>
-      <div class="step"><span class="n">III.</span><h3>I verify it</h3><p>Movement, case, dial, serials and papers checked before any money moves. Photos and video sent to you first.</p></div>
-      <div class="step"><span class="n">IV.</span><h3>It ships overnight</h3><p>Fully insured, signature required, tracking in your hand. In Boston, New York or Miami I can hand it over in person.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="sec light" id="journal" style="padding-top:0">
-  <div class="wrap">
-    <div class="split">
-      <div class="stack">
-        <p class="eyebrow"><span>VI.</span><span>Journal</span></p>
-        <h2>Notes from<span class="in">the desk.</span></h2>
-      </div>
-      <div class="stack"><p class="lede">Market reads, new releases and the references worth paying attention to. Written by me, not a content team.</p><div class="actions"><a class="link" href="/journal/">All articles</a></div></div>
-    </div>
-    <div class="posts" id="posts"></div>
-  </div>
-</section>
-
-<section class="sec dark" id="clients">
-  <div class="wrap">
-    <div class="stack">
-      <p class="eyebrow"><span>Clients</span></p>
-      <h2>In their<span class="in">words.</span></h2>
-    </div>
-    <div class="quotes"><figure class="quote"><img src="/assets/dbh/sticker_img/ap-roo-26420ti-blue.webp" alt="" loading="lazy" width="120" height="120"><blockquote>&ldquo;Henry helped me pick up an AP Royal Oak Offshore 26420Ti back in March and the whole process was really smooth. He kept me updated at every step and the watch arrived exactly how he described, with the box and papers all there. A few months later I went back to him for a 41mm Celebration Dial and it was the same easy experience.&rdquo;</blockquote><figcaption><span class="name">James Schmitt</span><span class="k">Verified client</span></figcaption></figure><figure class="quote"><img src="/assets/dbh/sticker_img/rolex-daytona-126518ln-white.webp" alt="" loading="lazy" width="120" height="120"><blockquote>&ldquo;Spent months trying to track down a 126518 on the Oysterflex. ADs kept telling me I needed to be a longer client and the online dealers were way over where the market actually was. A buddy told me to message Henry, and 3 days later I had one on my wrist. Box, papers, condition, all spot on.&rdquo;</blockquote><figcaption><span class="name">Daniel Carter</span><span class="k">Verified client</span></figcaption></figure><figure class="quote"><img src="/assets/dbh/sticker_img/rolex-daytona-116503-black-mop.webp" alt="" loading="lazy" width="120" height="120"><blockquote>&ldquo;Purchasing a rare Rolex Daytona from Henry was an exceptional experience from start to finish. His responsiveness, attention to detail, and ability to source a watch in outstanding condition exceeded my expectations. From answering every question promptly to arranging overnight shipping, Henry made the entire process seamless.&rdquo;</blockquote><figcaption><span class="name">Chris Marotti</span><span class="k">Verified client</span></figcaption></figure><figure class="quote"><img src="/assets/dbh/sticker_img/rolex-op41-124300-green.webp" alt="" loading="lazy" width="120" height="120"><blockquote>&ldquo;A friend of mine who collects pointed me to Henry when I mentioned I was looking for a 124300 green dial. He found one within the week, which honestly surprised me. Price was reasonable and the watch arrived in great shape with everything you'd want. Already talking to him about my next piece.&rdquo;</blockquote><figcaption><span class="name">Mike Steinmetz</span><span class="k">Verified client</span></figcaption></figure><figure class="quote"><img src="/assets/dbh/sticker_img/rolex-op41-124300-celebration.webp" alt="" loading="lazy" width="120" height="120"><blockquote>&ldquo;Saw Henry on Instagram and reached out about a 124300 with the Celebration dial. He came back with one in 2 days and the price was the lowest of anyone I'd asked. He kept me posted the whole way and the watch arrived in perfect shape. Going back to him for my next one for sure.&rdquo;</blockquote><figcaption><span class="name">Shamik Patel</span><span class="k">Verified client</span></figcaption></figure><figure class="quote"><img src="/assets/dbh/sticker_img/rolex-submariner-126610ln-2026.webp" alt="" loading="lazy" width="120" height="120"><blockquote>&ldquo;Henry's a friend of mine, so take this with that in mind. But friend or not, he got me my 2026 Submariner Date quick, papers and all, and the whole thing was effortless. That's just how he operates.&rdquo;</blockquote><figcaption><span class="name">David Beylouni</span><span class="k">Verified client</span></figcaption></figure></div>
   </div>
 </section>
 </main>
 
 <footer>
-  <div class="wrap">
-    <svg class="cm" role="img" aria-label="Dialed by H" viewBox="0 0 930 142" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="fgrid">
+    <div>
+      <svg class="cm" role="img" aria-label="Dialed by H" viewBox="0 0 930 142" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M57.1557 79.3136V62.6865C57.1557 52.548 56.1859 52.1425 55.1352 51.2503L64.9145 47.1138C63.8639 47.9248 62.8132 52.548 62.8132 62.6865V66.6608H81.3211V62.6865C81.3211 52.548 80.2705 47.9248 79.3006 47.1138L88.9991 51.2503C88.0292 52.1425 86.8978 52.548 86.8978 62.6865V79.3136C86.8978 89.4521 88.0292 89.5332 88.9991 90.3443L79.3006 94.5619C80.2705 93.7508 81.3211 89.4521 81.3211 79.3136V72.0139H62.8132V79.3136C62.8132 89.4521 63.8639 93.7508 64.9145 94.5619L55.1352 90.3443C56.1859 89.5332 57.1557 89.4521 57.1557 79.3136ZM43.1738 70.4728C43.1738 53.5213 57.2366 42.6528 72.5117 42.6528C90.1306 42.6528 100.961 56.1167 100.961 69.4995C100.961 87.1811 86.8978 98.5362 71.7035 98.5362C54.0037 98.5362 43.1738 84.3423 43.1738 70.4728ZM95.1415 70.3917C95.1415 57.82 85.8471 46.7893 71.5418 46.7893C57.2366 46.7893 49.1545 57.1711 49.1545 69.4995C49.1545 82.5579 58.1256 94.3997 72.5925 94.3997C86.2512 94.3997 95.1415 83.2879 95.1415 70.3917ZM30 70.3917C30 45.7349 50.5285 30 72.6733 30C98.4551 30 114.134 49.7092 114.134 69.4184C114.134 94.8052 93.6867 111.108 71.461 111.108C45.76 111.108 30 90.5065 30 70.3917ZM107.749 70.7973C107.749 51.9802 92.9593 35.5153 71.2185 35.5153C50.6901 35.5153 36.5465 50.9258 36.5465 69.0129C36.5465 88.2355 51.0134 105.593 72.835 105.593C93.5251 105.593 107.749 89.6143 107.749 70.7973Z" fill="currentColor"/>
 <path d="M891.002 44.7944H899.402V96.314H891.002V72.8742H855.962V96.314H847.562V44.7944H855.962V65.0343H891.002V44.7944Z" fill="currentColor"/>
 <path d="M776.434 44.7943L751.874 73.7541V96.3139H743.394V73.7541L718.834 44.7943H729.474C732.674 48.1543 735.741 51.6476 738.674 55.2742C741.661 58.8475 744.674 62.3942 747.714 65.9141L765.874 44.7943H776.434Z" fill="currentColor"/>
@@ -577,28 +471,27 @@ footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110p
 <path d="M249.632 44.7141H258.032V96.3937H249.632V44.7141Z" fill="currentColor"/>
 <path d="M216.494 70.7942C216.494 68.0209 216.014 65.5143 215.054 63.2743C214.147 60.981 212.841 59.061 211.134 57.5143C209.481 55.9677 207.481 54.7677 205.134 53.9144C202.841 53.061 200.334 52.6344 197.614 52.6344H177.534V88.4741H198.494C201.161 88.4741 203.587 88.0741 205.774 87.2741C208.014 86.4207 209.907 85.2208 211.454 83.6741C213.054 82.1275 214.281 80.2875 215.134 78.1542C216.041 75.9675 216.494 73.5142 216.494 70.7942ZM197.214 44.7944C201.214 44.7944 204.921 45.3811 208.334 46.5544C211.747 47.7277 214.707 49.4344 217.214 51.6744C219.721 53.861 221.694 56.581 223.134 59.8343C224.574 63.0876 225.294 66.7943 225.294 70.9542C225.294 74.9008 224.574 78.4475 223.134 81.5941C221.747 84.6874 219.801 87.3274 217.294 89.5141C214.841 91.7007 211.961 93.3807 208.654 94.554C205.347 95.7273 201.827 96.314 198.094 96.314H169.134V44.7944H197.214Z" fill="currentColor"/>
 </svg>
-    <div class="fgrid">
-      <div class="fcol contactrow">
-        <div class="c"><span class="k">(WhatsApp)</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">+1.914.621.1848</a></div>
-        <div class="c"><span class="k">(Email)</span><a href="mailto:henry@dialedbyhenry.com">henry@dialedbyhenry.com</a></div>
-        <div class="c"><span class="k">(Instagram)</span><a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener noreferrer">@dialedbyh</a></div>
-        <div class="c"><span class="k">(LinkedIn)</span><a href="https://www.linkedin.com/company/dialedbyh/" target="_blank" rel="noopener noreferrer">DialedbyH</a></div>
-      </div>
-      <div class="fcol"><span class="k">Menu</span><a href="/buy/">Sourcing Catalogue</a><a href="/sell">Sell</a><a href="/trade">Trade</a><a href="#concierge">Concierge</a></div>
-      <div class="fcol"><span class="k">Company</span><a href="/about/">About</a><a href="/process/">Process</a><a href="/journal/">Journal</a><a href="/boston">Boston Watch Dealer</a><a href="/privacy">Privacy &amp; Terms</a></div>
-      <div class="fcol"><span class="k">Brands</span><a href="/rolex">Rolex</a><a href="/patek-philippe">Patek Philippe</a><a href="/audemars-piguet">Audemars Piguet</a><a href="/richard-mille">Richard Mille</a><a href="/vacheron-constantin">Vacheron Constantin</a><a href="/cartier">Cartier</a><a href="/fp-journe">F.P. Journe</a><a href="/a-lange-sohne">A. Lange &amp; S&ouml;hne</a></div>
+      <ul>
+        <li><span>Text</span><a href="sms:+19146211848">+1.914.621.1848</a></li>
+        <li><span>WhatsApp</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">+1.914.621.1848</a></li>
+        <li><span>Email</span><a href="mailto:henry@dialedbyhenry.com">henry@dialedbyhenry.com</a></li>
+        <li><span>Instagram</span><a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener noreferrer">@dialedbyh</a></li>
+        <li><span>LinkedIn</span><a href="https://www.linkedin.com/company/dialedbyh/" target="_blank" rel="noopener noreferrer">DialedbyH</a></li>
+      </ul>
     </div>
-    <div class="legal">
-      <p>Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
-      <span class="fine">&copy; 2026 Dialed by H &middot; dialedbyhenry.com</span>
-    </div>
+    <div><span class="flabel">Menu</span><ul><li><a href="/buy/">Sourcing Catalogue</a></li><li><a href="/trade">Trade</a></li><li><a href="/sell">Sell</a></li><li><a href="/source">Concierge</a></li></ul></div>
+    <div><span class="flabel">Company</span><ul><li><a href="/about/">About</a></li><li><a href="/process/">Process</a></li><li><a href="/journal/">Journal</a></li><li><a href="/boston">Boston Watch Dealer</a></li><li><a href="/privacy">Privacy &amp; Terms</a></li></ul></div>
+    <div><span class="flabel">Brands</span><ul><li><a href="/rolex">Rolex</a></li><li><a href="/patek-philippe">Patek Philippe</a></li><li><a href="/audemars-piguet">Audemars Piguet</a></li><li><a href="/richard-mille">Richard Mille</a></li><li><a href="/vacheron-constantin">Vacheron Constantin</a></li><li><a href="/cartier">Cartier</a></li><li><a href="/fp-journe">F.P. Journe</a></li><li><a href="/a-lange-sohne">A. Lange &amp; S&ouml;hne</a></li></ul></div>
   </div>
+  <div class="legal"><p>Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p></div>
+  <div class="copy">&copy; Dialed by H &middot; dialedbyhenry.com</div>
 </footer>
 
 <script defer src="/assets/inquiry-schema.js?v=1"></script>
 <script defer src="/assets/inquiry-tracking.js?v=1"></script>
 <script>
 (function(){
+  var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});};
   // Hero rotation. Photo 1 ships in the HTML; the rest load after the page is idle.
   var s=[].slice.call(document.querySelectorAll('.slide')),i=0,rm=matchMedia('(prefers-reduced-motion: reduce)').matches,mob=matchMedia('(max-width: 760px)').matches;
   function hydrate(k){var el=s[k];if(el.dataset.src){el.src=mob?el.dataset.m:el.dataset.src;delete el.dataset.src;}}
@@ -609,30 +502,22 @@ footer{background:var(--charcoal);color:var(--cream);padding:clamp(60px,7vw,110p
   function open(){sheet.classList.add('is-open');o.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
   function close(){sheet.classList.remove('is-open');o.setAttribute('aria-expanded','false');document.body.style.overflow='';}
   o.addEventListener('click',open);c.addEventListener('click',close);
-  sheet.querySelectorAll('[data-close]').forEach(function(a){a.addEventListener('click',close);});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
-  // Catalogue picks
-  var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});};
-  fetch('/api/get-inventory?grid=1').then(function(r){return r.json();}).then(function(d){
-    var base=d.base||'',all=d.pieces||[];
-    var picks=all.filter(function(w){return w.c===1&&String(w.collections||'').indexOf('My Picks')>=0;});
-    if(picks.length<6)picks=picks.concat(all.filter(function(w){return w.c===1&&picks.indexOf(w)<0;}));
-    picks=picks.slice(0,6);
-    var el=document.getElementById('picks');
-    el.innerHTML=picks.map(function(w,k){
-      var img=base+String(w.i).replace(/\.webp$/,'-cutout.webp');
-      return '<a class="piece" href="/watch/'+esc(w.slug)+'"><div class="ph"><img src="'+esc(img)+'" alt="'+esc(w.brand+' '+(w.model||''))+'" loading="lazy" width="400" height="400"></div>'+
-        '<div class="info"><span class="code">[ C'+String(k+1).padStart(3,'0')+' ]</span><span class="brand">'+esc(w.brand)+'</span><span class="model">'+esc(w.model||w.name)+(w.nickname?' '+esc(w.nickname):'')+'</span>'+(w.ref?'<span class="ref">Ref. '+esc(w.ref)+'</span>':'')+'</div></a>';
+  // Ticker: inventory-driven, same ?ticker=1 feed as before. Paints nothing until the catalogue answers.
+  function shorten(t,n){t=String(t||'');if(t.length<=n)return t;var cut=t.slice(0,n+1).lastIndexOf(' ');return (cut>20?t.slice(0,cut):t.slice(0,n))+'\u2026';}
+  fetch('/api/get-inventory?ticker=1').then(function(r){return r.json();}).then(function(d){
+    var p=(Array.isArray(d)?d:(d.pieces||[])).filter(function(w){return /-cutout\.webp$/.test(w.imageCutout||'');});
+    if(!p.length)return;
+    var html=p.map(function(w){
+      var img=w.imageCutoutThumb||w.imageCutout, nm=shorten((w.brand||'')+' '+(w.model||w.name||''),34), rf=shorten(w.ref||w.details||'',40);
+      return '<a class="titem" href="/watch/'+esc(w.slug)+'"><img src="'+esc(img)+'" alt="'+esc(nm)+'" width="64" height="64" loading="lazy" decoding="async"><span><span class="tn">'+esc(nm)+'</span><br><span class="tr">'+esc(rf)+'</span></span><span class="dot"></span></a>';
     }).join('');
+    document.getElementById('tick-a').innerHTML=html;document.getElementById('tick-b').innerHTML=html;
+    document.getElementById('ticker').style.setProperty('--tdur',Math.max(80,p.length*4.2)+'s');
   }).catch(function(){});
-  // Journal
-  fetch('/api/journal-list?limit=3').then(function(r){return r.json();}).then(function(d){
-    var a=d.articles||[];var el=document.getElementById('posts');
-    el.innerHTML=a.slice(0,3).map(function(p){
-      return '<a class="post" href="/journal/'+esc(p.slug)+'"><div class="im">'+(p.hero_image_url?'<img src="'+esc(p.hero_image_url)+'" alt="" loading="lazy">':'')+'</div>'+
-        '<span class="cat">'+esc(p.category||'Journal')+(p.reading_time_minutes?' &middot; '+esc(p.reading_time_minutes)+' min':'')+'</span><h3>'+esc(p.title)+'</h3>'+(p.excerpt?'<p>'+esc(p.excerpt)+'</p>':'')+'</a>';
-    }).join('');
-  }).catch(function(){});
+  // FAQ accordion, one open at a time (same behaviour as before)
+  var items=document.querySelectorAll('.faq__item');
+  items.forEach(function(it){var btn=it.querySelector('.faq__q');btn.addEventListener('click',function(){var was=it.classList.contains('is-open');items.forEach(function(x){x.classList.remove('is-open');x.querySelector('.faq__q').setAttribute('aria-expanded','false');});if(!was){it.classList.add('is-open');btn.setAttribute('aria-expanded','true');}});});
 })();
 </script>
 </body>

@@ -316,6 +316,7 @@ h1{font-family:var(--works);font-weight:400;font-size:calc(34*var(--u));line-hei
 .titem .brand{font-family:var(--intl);font-weight:500;font-size:14px;letter-spacing:-.005em}
 .titem .model{font-family:var(--works);font-size:20px;line-height:1.05;white-space:nowrap}
 .titem .ref{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-dark);white-space:nowrap}
+.titem .sep{width:22px;height:auto;color:var(--grey-mid);flex:none;margin-right:14px}
 .ticker:empty{min-height:110px}
 @keyframes tick{to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.ticker__track{animation:none}}
@@ -508,13 +509,14 @@ footer a:hover{opacity:.55}
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
   sheet.querySelectorAll('[data-modal]').forEach(function(a){a.addEventListener('click',close);});
   // Ticker: inventory-driven, same ?ticker=1 feed as before. Paints nothing until the catalogue answers.
+  var SEP='<svg class="sep" aria-hidden="true" viewBox="0 0 145 142" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M57.1557 79.3136V62.6865C57.1557 52.548 56.1859 52.1425 55.1352 51.2503L64.9145 47.1138C63.8639 47.9248 62.8132 52.548 62.8132 62.6865V66.6608H81.3211V62.6865C81.3211 52.548 80.2705 47.9248 79.3006 47.1138L88.9991 51.2503C88.0292 52.1425 86.8978 52.548 86.8978 62.6865V79.3136C86.8978 89.4521 88.0292 89.5332 88.9991 90.3443L79.3006 94.5619C80.2705 93.7508 81.3211 89.4521 81.3211 79.3136V72.0139H62.8132V79.3136C62.8132 89.4521 63.8639 93.7508 64.9145 94.5619L55.1352 90.3443C56.1859 89.5332 57.1557 89.4521 57.1557 79.3136ZM43.1738 70.4728C43.1738 53.5213 57.2366 42.6528 72.5117 42.6528C90.1306 42.6528 100.961 56.1167 100.961 69.4995C100.961 87.1811 86.8978 98.5362 71.7035 98.5362C54.0037 98.5362 43.1738 84.3423 43.1738 70.4728ZM95.1415 70.3917C95.1415 57.82 85.8471 46.7893 71.5418 46.7893C57.2366 46.7893 49.1545 57.1711 49.1545 69.4995C49.1545 82.5579 58.1256 94.3997 72.5925 94.3997C86.2512 94.3997 95.1415 83.2879 95.1415 70.3917ZM30 70.3917C30 45.7349 50.5285 30 72.6733 30C98.4551 30 114.134 49.7092 114.134 69.4184C114.134 94.8052 93.6867 111.108 71.461 111.108C45.76 111.108 30 90.5065 30 70.3917ZM107.749 70.7973C107.749 51.9802 92.9593 35.5153 71.2185 35.5153C50.6901 35.5153 36.5465 50.9258 36.5465 69.0129C36.5465 88.2355 51.0134 105.593 72.835 105.593C93.5251 105.593 107.749 89.6143 107.749 70.7973Z" fill="currentColor"/></svg>';
   function shorten(t,n){t=String(t||'');if(t.length<=n)return t;var cut=t.slice(0,n+1).lastIndexOf(' ');return (cut>20?t.slice(0,cut):t.slice(0,n))+'\u2026';}
   fetch('/api/get-inventory?ticker=1').then(function(r){return r.json();}).then(function(d){
     var p=(Array.isArray(d)?d:(d.pieces||[])).filter(function(w){return /-cutout\.webp$/.test(w.imageCutout||'');});
     if(!p.length)return;
     var html=p.map(function(w,k){
       var img=w.imageCutoutThumb||w.imageCutout, code='[ '+String(k+1).padStart(3,'0')+' ]', model=shorten((w.model||w.name||'')+(w.nickname?' '+w.nickname:''),44), rf=w.ref?('Ref. '+w.ref):shorten(w.details||'',40);
-      return '<a class="titem" href="/watch/'+esc(w.slug)+'"><img src="'+esc(img)+'" alt="'+esc((w.brand||'')+' '+model)+'" width="72" height="72" loading="lazy" decoding="async"><span class="ti"><span class="l1"><span class="code">'+esc(code)+'</span><span class="brand">'+esc(w.brand||'')+'</span></span><span class="model">'+esc(model)+'</span><span class="ref">'+esc(rf)+'</span></span></a>';
+      return '<a class="titem" href="/watch/'+esc(w.slug)+'">'+SEP+'<img src="'+esc(img)+'" alt="'+esc((w.brand||'')+' '+model)+'" width="72" height="72" loading="lazy" decoding="async"><span class="ti"><span class="l1"><span class="code">'+esc(code)+'</span><span class="brand">'+esc(w.brand||'')+'</span></span><span class="model">'+esc(model)+'</span><span class="ref">'+esc(rf)+'</span></span></a>';
     }).join('');
     document.getElementById('tick-a').innerHTML=html;document.getElementById('tick-b').innerHTML=html;
     document.getElementById('ticker').style.setProperty('--tdur',Math.max(90,p.length*5)+'s');

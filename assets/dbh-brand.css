@@ -64,7 +64,10 @@ button{font:inherit;color:inherit}
 .sheet .c a{font-family:var(--intl);font-size:16px}
 
 /* ── footer ── */
-.sf{background:var(--charcoal);color:var(--cream);padding:80px var(--gutter) max(40px,env(safe-area-inset-bottom,0px))}
+/* overflow-anchor: if the browser pins scroll to the footer, every batch of catalogue
+   cards added above it keeps the footer in view, which loads the next batch, until all
+   1,725 are on the page and the visitor has been thrown to the bottom. */
+.sf{overflow-anchor:none;background:var(--charcoal);color:var(--cream);padding:80px var(--gutter) max(40px,env(safe-area-inset-bottom,0px))}
 .sf__grid{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:5fr 3fr 3fr 3fr;gap:20px}
 .sf .cm{width:min(100%,300px);height:auto;margin-bottom:26px}
 .sf__label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:18px}

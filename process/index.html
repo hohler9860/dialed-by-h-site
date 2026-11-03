@@ -100,6 +100,15 @@ fbq('track', 'PageView');
   sheet.addEventListener('click',function(e){if(e.target.closest('a'))close();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
 })();
+// Photo storage refuses bursts, so a page of tiles can lose a few on first load.
+// Try each again with a short backoff. /buy/ has its own queue and is skipped.
+document.addEventListener('error',function(e){
+  var i=e.target;
+  if(!i||i.tagName!=='IMG'||!i.closest('.pt-item__media')||i.closest('.pt-reveal'))return;
+  var n=+(i.dataset.retry||0);if(n>=3)return;
+  i.dataset.retry=n+1;
+  setTimeout(function(){var s=(i.currentSrc||i.src).split('?')[0];i.removeAttribute('srcset');i.src=s+'?r='+(n+1);},[800,2000,4000][n]);
+},true);
 </script>
 <!--/dbh:scripts-->
 </body>

@@ -139,19 +139,19 @@
     },
     {
       "source": "/sell",
-      "destination": "/"
+      "destination": "/legacy/home.html"
     },
     {
       "source": "/sell/",
-      "destination": "/"
+      "destination": "/legacy/home.html"
     },
     {
       "source": "/trade",
-      "destination": "/"
+      "destination": "/legacy/home.html"
     },
     {
       "source": "/trade/",
-      "destination": "/"
+      "destination": "/legacy/home.html"
     }
   ],
   "redirects": [

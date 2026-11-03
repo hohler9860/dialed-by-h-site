@@ -361,30 +361,38 @@
       var art = document.createElement('article');
       art.className = 'pt-item pt-reveal';
       var escf = function (x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
-      var title = escf((w.brand || '') + ' ' + (w.nickname || w.model || w.name || ''));
+      var model = w.nickname || w.model || w.name || '';
+      var label = escf(((w.brand || '') + ' ' + model + (w.ref ? ' ' + w.ref : '')).trim());
       var abs = function (u) { return /^https?:\/\//i.test(u) || u.charAt(0) === '/' ? u : '/img?src=' + encodeURIComponent(u); };
-      var imgSrc = w.image ? abs(w.image) : '';
+      // The transparent cutout sits on the warm panel. Every piece has one today;
+      // anything without one keeps its dark render, full-bleed on a charcoal tile.
+      var cut = /-cutout\.webp$/.test(w.imageCutout || '') ? abs(w.imageCutout) : '';
+      var imgSrc = cut || (w.image ? abs(w.image) : '');
       var eager = i < HIGH ? ' fetchpriority="high"' : '';
-      // Tiles render around 300px, so serve the 300px variant and let the
-      // browser step up to 600/900 only on wide or retina screens. Previously
-      // every tile downloaded the full 900px file - the bulk of /buy/'s LCP.
-      // width/height are intrinsic (the renders are square) so the grid
-      // reserves space before the image lands and cannot shift.
-      var srcset = (w.imageThumb && w.imageMedium)
-        ? ' data-srcset="' + escf(abs(w.imageThumb)) + ' 300w, ' + escf(abs(w.imageMedium)) + ' 600w, ' + escf(imgSrc) + ' 900w"' +
-          ' sizes="(max-width: 640px) 45vw, (max-width: 1100px) 30vw, 300px"'
-        : '';
+      // Tiles render around 220px, so serve the small file and let the browser
+      // step up only on wide or retina screens. width/height are intrinsic so the
+      // grid reserves space before the image lands and cannot shift.
+      var small = cut ? cut.replace(/\.webp$/, '-thumb.webp') : (w.imageThumb ? abs(w.imageThumb) : imgSrc);
+      var srcset = cut
+        ? ' data-srcset="' + escf(small) + ' 224w, ' + escf(cut) + ' 520w"' +
+          ' sizes="(max-width: 640px) 42vw, (max-width: 1100px) 26vw, 220px"'
+        : (w.imageThumb && w.imageMedium)
+          ? ' data-srcset="' + escf(abs(w.imageThumb)) + ' 300w, ' + escf(abs(w.imageMedium)) + ' 600w, ' + escf(imgSrc) + ' 900w"' +
+            ' sizes="(max-width: 640px) 45vw, (max-width: 1100px) 30vw, 300px"'
+          : '';
       // Keep URLs inert until the bounded preload queue starts this image.
       var img = imgSrc
-        ? '<img data-src="' + escf(w.imageThumb ? abs(w.imageThumb) : imgSrc) + '"' + srcset +
+        ? '<img data-src="' + escf(small) + '"' + srcset +
           ' data-full="' + escf(imgSrc) + '"' +
           ' width="300" height="300" alt="" decoding="async"' + eager + '>'
         : '<span class="ph">DIALED BY H</span>';
       art.innerHTML =
-        '<a href="/watch/' + (w.slug || '') + '" aria-label="' + title.replace(/"/g, '') + '">' +
-        '<div class="pt-item__media">' + img + '</div>' +
-        '<div class="pt-item__row"><span>' + title + '</span>' +
-        '<span class="pt-item__meta">' + (w.year || '') + '</span></div>' +
+        '<a href="/watch/' + (w.slug || '') + '" aria-label="' + label + '">' +
+        '<div class="pt-item__media' + (cut ? '' : ' is-render') + '">' + img + '</div>' +
+        '<div class="wi"><span class="wi__l1"><span class="wi__brand">' + escf(w.brand || '') + '</span>' +
+        (w.year ? '<span class="wi__year">' + escf(w.year) + '</span>' : '') + '</span>' +
+        '<span class="wi__model">' + escf(model) + '</span>' +
+        (w.ref ? '<span class="wi__ref">Ref. ' + escf(w.ref) + '</span>' : '') + '</div>' +
         '</a>';
       return art;
   }

@@ -1,31 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=5" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
-    <link rel="shortcut icon" href="/favicon-fpj-32.png?v=5" />
-    <title>Watch Trivia | Dialed By H</title>
-    <meta name="description" content="Test how much you actually know about luxury watches. Three difficulty tiers plus dedicated quizzes for Rolex, Patek Philippe, Audemars Piguet, and independents.">
-    <meta name="keywords" content="watch trivia, luxury watch quiz, Rolex trivia, Patek Philippe quiz, AP Royal Oak quiz, independent watchmakers quiz, watch collector test, horology quiz">
-    <meta name="author" content="Henry Ohler">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.dialedbyhenry.com/trivia/">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.dialedbyhenry.com/trivia/">
-    <meta property="og:title" content="Watch Trivia | Dialed By H">
-    <meta property="og:description" content="Test how much you actually know about luxury watches. Three difficulty levels, thirty questions, instant answers.">
-    <meta property="og:image" content="https://www.dialedbyhenry.com/images/Henry.webp">
-    <meta property="og:site_name" content="Dialed By H">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Watch Trivia | Dialed By H">
-    <meta name="twitter:description" content="Test how much you actually know about luxury watches.">
-    <meta name="twitter:image" content="https://www.dialedbyhenry.com/images/Henry.webp">
-
-    <script type="application/ld+json">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Watch Trivia | Dialed By H</title>
+<meta name="description" content="Test how much you actually know about luxury watches. Three difficulty tiers plus dedicated quizzes for Rolex, Patek Philippe, Audemars Piguet, and independents.">
+<meta name="keywords" content="watch trivia, luxury watch quiz, Rolex trivia, Patek Philippe quiz, AP Royal Oak quiz, independent watchmakers quiz, watch collector test, horology quiz">
+<meta name="author" content="Henry Ohler">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.dialedbyhenry.com/trivia/">
+<meta property="og:title" content="Watch Trivia | Dialed By H">
+<meta property="og:description" content="Test how much you actually know about luxury watches. Three difficulty levels, thirty questions, instant answers.">
+<meta property="og:image" content="https://www.dialedbyhenry.com/images/og-share-v3.png">
+<meta property="og:site_name" content="Dialed By H">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Watch Trivia | Dialed By H">
+<meta name="twitter:description" content="Test how much you actually know about luxury watches.">
+<meta name="twitter:image" content="https://www.dialedbyhenry.com/images/og-share-v3.png">
+<link rel="canonical" href="https://www.dialedbyhenry.com/trivia/">
+<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
@@ -44,7 +38,7 @@
         }
     }
     </script>
-    <script type="application/ld+json">
+<script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -54,302 +48,130 @@
         ]
     }
     </script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text&family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <script src="/scripts/lucide.min.js"></script>
-    <link rel="stylesheet" href="/dist/styles.css">
-    <!-- Meta Pixel Code -->
-    <script>
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-    document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '798516899968965');
-    fbq('track', 'PageView');
-    </script>
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=798516899968965&ev=PageView&noscript=1"/></noscript>
-    <!-- End Meta Pixel Code -->
-
-    <style>
-        /* Override global body opacity (site uses page-ready fade-in) */
-        body { opacity: 1 !important; transition: none !important; }
-
-        /* trivia-specific styling, keeps the editorial concierge feel */
-        .difficulty-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(240,240,240,0.08);
-            transition: border-color 0.3s ease, transform 0.3s ease, background 0.3s ease;
-            cursor: pointer;
-        }
-        .difficulty-card:hover {
-            border-color: rgba(240,240,240,0.25);
-            background: rgba(255,255,255,0.035);
-            transform: translateY(-2px);
-        }
-        .difficulty-tier {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #888;
-        }
-        .best-score {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 10px;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #f0f0f0;
-            opacity: 0.55;
-        }
-
-        .answer-btn {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 14px 18px;
-            border: 1px solid rgba(240,240,240,0.10);
-            background: rgba(255,255,255,0.02);
-            color: #f0f0f0;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            line-height: 1.4;
-            cursor: pointer;
-            transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
-        }
-        .answer-btn:hover:not(:disabled) {
-            border-color: rgba(240,240,240,0.30);
-            background: rgba(255,255,255,0.04);
-        }
-        .answer-btn:disabled { cursor: default; }
-        .answer-btn.correct {
-            border-color: rgba(120,200,140,0.55);
-            background: rgba(120,200,140,0.10);
-            color: #d6f0dc;
-        }
-        .answer-btn.incorrect {
-            border-color: rgba(220,110,110,0.55);
-            background: rgba(220,110,110,0.10);
-            color: #f0d6d6;
-        }
-        .answer-letter {
-            display: inline-block;
-            width: 22px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            color: #888;
-            margin-right: 8px;
-        }
-
-        .quiz-progress {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: #888;
-        }
-        .progress-bar {
-            height: 2px;
-            background: rgba(240,240,240,0.08);
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background: #f0f0f0;
-            transition: width 0.4s ease;
-        }
-
-        .explanation {
-            border-left: 2px solid rgba(240,240,240,0.20);
-            padding: 10px 16px;
-            background: rgba(255,255,255,0.015);
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            line-height: 1.55;
-            color: rgba(240,240,240,0.75);
-        }
-
-        .pill-btn {
-            display: inline-block;
-            padding: 12px 22px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            border: 1px solid rgba(240,240,240,0.20);
-            background: transparent;
-            color: #f0f0f0;
-            cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        }
-        .pill-btn:hover {
-            background: #f0f0f0;
-            color: #0a0a0a;
-            border-color: #f0f0f0;
-        }
-        .pill-btn.primary {
-            background: #f0f0f0;
-            color: #0a0a0a;
-            border-color: #f0f0f0;
-        }
-        .pill-btn.primary:hover {
-            background: #ffffff;
-            border-color: #ffffff;
-        }
-        .pill-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            background: transparent;
-            color: #f0f0f0;
-        }
-
-        .score-display {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: clamp(48px, 9vw, 96px);
-            letter-spacing: -0.04em;
-            line-height: 0.95;
-        }
-        .score-label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: #888;
-        }
-    </style>
-<script defer src="/assets/inquiry-schema.js?v=1"></script>
-<script defer src="/assets/inquiry-tracking.js?v=1"></script>
+<!--dbh:head-->
+<link rel="icon" href="/favicon.ico?v=6" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=5">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
+<meta name="theme-color" content="#F7F3E9">
+<link rel="preload" href="/assets/fonts/suisse/SuisseWorks-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/dbh-brand.css?v=3">
+<script>
+if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
+var go=function(){if(go.done)return;go.done=!0;t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)};
+f.addEventListener('load',go);setTimeout(go,4000)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '798516899968965');
+fbq('track', 'PageView');
+}
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<!--/dbh:head-->
 </head>
-<body class="min-h-screen bg-charcoal text-ivory selection:bg-ivory selection:text-charcoal font-inter">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-
-    <!-- NAV -->
-    <nav class="w-full z-40 px-6 sm:px-10 md:px-16 py-5 sm:py-6 flex justify-between items-center relative">
-        <a href="/">
-            <img src="/images/logo.png" alt="Dialed By H" class="h-8 sm:h-10 w-auto object-contain">
-        </a>
-        <div class="hidden md:flex space-x-8 text-sm font-space font-medium uppercase tracking-widest items-center">
-            <a href="/about" class="nav-link hover:text-muted transition-colors">About Me</a>
-            <a href="/process" class="nav-link hover:text-muted transition-colors">My Process</a>
-            <a href="/journal/" class="nav-link hover:text-muted transition-colors">Journal</a>
-            <a href="/" class="bg-ivory text-charcoal px-5 py-2 text-xs font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
-        </div>
-        <button onclick="document.getElementById('mobile-menu').style.opacity='1'; document.getElementById('mobile-menu').style.pointerEvents='auto'; document.body.style.overflow='hidden';" class="md:hidden text-ivory">
-            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/>
-            </svg>
-        </button>
-    </nav>
-
-    <!-- MOBILE MENU -->
-    <div id="mobile-menu" class="fixed inset-0 z-50 bg-charcoal/95 backdrop-blur-sm flex flex-col items-center justify-center space-y-8 transition-all duration-500 opacity-0 pointer-events-none">
-        <button onclick="document.getElementById('mobile-menu').style.opacity='0'; document.getElementById('mobile-menu').style.pointerEvents='none'; document.body.style.overflow='';" class="absolute top-4 right-6 text-ivory">
-            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-        </button>
-        <a href="/about" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">About Me</a>
-        <a href="/process" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">My Process</a>
-        <a href="/journal/" class="text-2xl font-space font-bold uppercase tracking-widest hover:text-muted transition-colors">Journal</a>
-        <a href="/" class="bg-ivory text-charcoal px-8 py-3 text-sm font-bold font-space uppercase tracking-widest hover:bg-muted hover:text-white transition-colors">Back to Home</a>
-    </div>
-
-    <!-- CONTENT -->
-    <main class="max-w-5xl mx-auto px-6 sm:px-10 md:px-16 py-12 sm:py-20">
+<body>
+<!--dbh:header-->
+<header class="sh"><div class="sh__bar">
+  <a href="/" class="sh__home" aria-label="Dialed by H home"><img class="wm" src="/assets/brand/wordmark-charcoal.svg" alt="Dialed by H" width="791" height="112"></a>
+  <nav aria-label="Primary"><ol><li><span class="n">I.</span><a href="/source" data-modal="source">Concierge</a></li><li><span class="n">II.</span><a href="/buy/">Sourcing Catalogue</a></li><li><span class="n">III.</span><a href="/sell" data-modal="sell">Sell or Trade</a></li><li><span class="n">IV.</span><a href="/about/">About</a></li><li><span class="n">V.</span><a href="/process/">Process</a></li><li><span class="n">VI.</span><a href="/journal/">Journal</a></li></ol></nav>
+  <button type="button" class="menu" id="menu-open" aria-controls="sheet" aria-expanded="false">Menu</button>
+  <a href="/" class="sh__mark" aria-label="Dialed by H home"><img class="lm" src="/assets/brand/logomark-charcoal.svg" alt="" width="145" height="142"></a>
+</div></header>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Menu">
+  <header><a href="/" aria-label="Dialed by H home"><img class="wm2" src="/assets/brand/wordmark-cream.svg" alt="Dialed by H" width="791" height="112"></a><button type="button" id="menu-close">Close</button></header>
+  <nav aria-label="Menu"><ol><li><span class="n">I.</span><a href="/source" data-modal="source">Concierge</a></li><li><span class="n">II.</span><a href="/buy/">Sourcing Catalogue</a></li><li><span class="n">III.</span><a href="/sell" data-modal="sell">Sell or Trade</a></li><li><span class="n">IV.</span><a href="/about/">About</a></li><li><span class="n">V.</span><a href="/process/">Process</a></li><li><span class="n">VI.</span><a href="/journal/">Journal</a></li></ol></nav>
+  <div class="c"><span class="k">(WhatsApp)</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">+1.914.621.1848</a></div>
+</div>
+<!--/dbh:header-->
+<main class="tv">
 
         <!-- INTRO / DIFFICULTY SELECTION -->
         <section id="screen-intro">
-            <a href="/" class="inline-block opacity-80 hover:opacity-100 transition-opacity mb-5" aria-label="Dialed By H home">
-                <img src="/images/logo.png" alt="Dialed By H" class="h-6 sm:h-7 w-auto object-contain">
-            </a>
-            <h1 class="font-space font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tighter uppercase mb-5 leading-[0.9]">
-                Watch <span class="text-muted">Trivia</span>
-            </h1>
-            <p class="font-inter text-base sm:text-lg text-ivory/70 max-w-2xl mb-12 leading-relaxed">
+            <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / Trivia</nav>
+            <h1 class="pg-h1">Watch Trivia</h1>
+            <p class="tv-intro">
                 Pick your test. Three difficulty tiers, or go brand-specific with the houses.
             </p>
 
             <!-- GENERAL SECTION -->
-            <h3 class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-5">General</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-12">
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="easy">
-                    <div class="flex items-center justify-between mb-4">
+            <h3 class="tv-label">General</h3>
+            <div class="tv-grid tv-grid--3">
+                <button class="difficulty-card" data-pool="easy">
+                    <div class="tv-row">
                         <span class="difficulty-tier">Tier I</span>
                         <span class="best-score" data-best="easy">Best: --</span>
                     </div>
-                    <h2 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Easy</h2>
-                    <p class="font-inter text-sm text-ivory/65 leading-relaxed">Common references, household names. Built for newcomers.</p>
+                    <h2 class="tv-card-title">Easy</h2>
+                    <p class="tv-card-copy">Common references, household names. Built for newcomers.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="medium">
-                    <div class="flex items-center justify-between mb-4">
+                <button class="difficulty-card" data-pool="medium">
+                    <div class="tv-row">
                         <span class="difficulty-tier">Tier II</span>
                         <span class="best-score" data-best="medium">Best: --</span>
                     </div>
-                    <h2 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Medium</h2>
-                    <p class="font-inter text-sm text-ivory/65 leading-relaxed">Vintage references, complications, market context. Built for collectors.</p>
+                    <h2 class="tv-card-title">Medium</h2>
+                    <p class="tv-card-copy">Vintage references, complications, market context. Built for collectors.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="hard">
-                    <div class="flex items-center justify-between mb-4">
+                <button class="difficulty-card" data-pool="hard">
+                    <div class="tv-row">
                         <span class="difficulty-tier">Tier III</span>
                         <span class="best-score" data-best="hard">Best: --</span>
                     </div>
-                    <h2 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Hard</h2>
-                    <p class="font-inter text-sm text-ivory/65 leading-relaxed">Obscure independents, auction prices, complications most dealers don't carry.</p>
+                    <h2 class="tv-card-title">Hard</h2>
+                    <p class="tv-card-copy">Obscure independents, auction prices, complications most dealers don't carry.</p>
                 </button>
             </div>
 
             <!-- BY THE HOUSE SECTION -->
-            <h3 class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-5">By the House</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mb-14">
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="rolex">
-                    <div class="flex items-center justify-between mb-4">
+            <h3 class="tv-label">By the House</h3>
+            <div class="tv-grid tv-grid--2">
+                <button class="difficulty-card" data-pool="rolex">
+                    <div class="tv-row">
                         <span class="difficulty-tier">House</span>
                         <span class="best-score" data-best="rolex">Best: --</span>
                     </div>
-                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Rolex</h3>
-                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">From the crown to the Daytona record.</p>
+                    <h3 class="tv-card-title">Rolex</h3>
+                    <p class="tv-card-copy">From the crown to the Daytona record.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="patek">
-                    <div class="flex items-center justify-between mb-4">
+                <button class="difficulty-card" data-pool="patek">
+                    <div class="tv-row">
                         <span class="difficulty-tier">House</span>
                         <span class="best-score" data-best="patek">Best: --</span>
                     </div>
-                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Patek Philippe</h3>
-                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">Sterns, Nautilus, and the long game.</p>
+                    <h3 class="tv-card-title">Patek Philippe</h3>
+                    <p class="tv-card-copy">Sterns, Nautilus, and the long game.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="ap">
-                    <div class="flex items-center justify-between mb-4">
+                <button class="difficulty-card" data-pool="ap">
+                    <div class="tv-row">
                         <span class="difficulty-tier">House</span>
                         <span class="best-score" data-best="ap">Best: --</span>
                     </div>
-                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Audemars Piguet</h3>
-                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">Genta, the Royal Oak, Le Brassus and back.</p>
+                    <h3 class="tv-card-title">Audemars Piguet</h3>
+                    <p class="tv-card-copy">Genta, the Royal Oak, Le Brassus and back.</p>
                 </button>
 
-                <button class="difficulty-card text-left p-6 sm:p-7 rounded-lg" data-pool="independents">
-                    <div class="flex items-center justify-between mb-4">
+                <button class="difficulty-card" data-pool="independents">
+                    <div class="tv-row">
                         <span class="difficulty-tier">House</span>
                         <span class="best-score" data-best="independents">Best: --</span>
                     </div>
-                    <h3 class="font-space font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-2">Independents</h3>
-                    <p class="font-inter text-sm text-ivory/65 italic leading-relaxed">Journe, Dufour, Rexhep, and the deep end.</p>
+                    <h3 class="tv-card-title">Independents</h3>
+                    <p class="tv-card-copy">Journe, Dufour, Rexhep, and the deep end.</p>
                 </button>
             </div>
 
             <!-- HOUSE RULES -->
-            <div class="border-t border-ivory/10 pt-8">
-                <h3 class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-4">House Rules</h3>
-                <ul class="font-inter text-sm text-ivory/60 space-y-2 leading-relaxed max-w-2xl">
+            <div class="tv-how">
+                <h3 class="tv-label">House Rules</h3>
+                <ul >
                     <li>Ten questions. One shot per question. No hints.</li>
                     <li>Instant reveal with a short explanation after each answer.</li>
                     <li>Best scores are saved locally to your device.</li>
@@ -359,82 +181,92 @@
 
         <!-- QUIZ SCREEN -->
         <section id="screen-quiz" class="hidden">
-            <div class="flex items-center justify-between mb-3">
+            <div class="tv-row">
                 <span class="quiz-progress" id="quiz-meta">Easy · Question 1 of 10</span>
-                <button id="quiz-exit" class="quiz-progress hover:text-ivory transition-colors" style="background:none;border:none;cursor:pointer;">Exit</button>
+                <button id="quiz-exit" class="quiz-progress quiz-exit">Exit</button>
             </div>
-            <div class="progress-bar mb-10">
+            <div class="progress-bar">
                 <div class="progress-bar-fill" id="progress-fill" style="width:10%"></div>
             </div>
 
-            <h2 id="question-text" class="font-space font-bold text-2xl sm:text-3xl md:text-4xl tracking-tight leading-[1.15] mb-8 max-w-3xl"></h2>
+            <h2 id="question-text" class="tv-q"></h2>
 
-            <div id="answer-grid" class="space-y-3 mb-6"></div>
+            <div id="answer-grid" class="tv-answers"></div>
 
-            <div id="explanation-box" class="explanation hidden mb-6"></div>
+            <div id="explanation-box" class="explanation hidden"></div>
 
-            <div class="flex justify-end">
+            <div class="tv-end">
                 <button id="next-btn" class="pill-btn primary" disabled>Next Question</button>
             </div>
         </section>
 
         <!-- RESULTS SCREEN -->
         <section id="screen-results" class="hidden">
-            <p class="font-space text-[11px] tracking-[0.25em] uppercase text-muted mb-4" id="result-tier">Easy Tier · Complete</p>
-            <h2 class="font-space font-bold text-3xl sm:text-4xl md:text-5xl tracking-tighter uppercase mb-10 leading-[0.95]">
-                The <span class="text-muted">Score</span>
+            <p class="tv-label" id="result-tier">Easy Tier · Complete</p>
+            <h2 class="pg-h1">
+                The Score
             </h2>
 
-            <div class="flex items-baseline gap-4 mb-3">
+            <div class="tv-score">
                 <span class="score-display" id="score-number">0</span>
-                <span class="score-display text-muted" id="score-total">/ 10</span>
+                <span class="score-display dim" id="score-total">/ 10</span>
             </div>
-            <p id="score-verdict" class="font-inter text-sm sm:text-base text-ivory/65 mb-10 max-w-xl leading-relaxed"></p>
+            <p id="score-verdict" class="tv-verdict"></p>
 
-            <div id="best-row" class="border-t border-ivory/10 pt-6 mb-10 max-w-md">
-                <div class="flex items-center justify-between">
-                    <span class="font-space text-[11px] tracking-[0.22em] uppercase text-muted">Personal Best</span>
-                    <span id="best-value" class="font-space font-bold text-sm tracking-widest text-ivory">--</span>
+            <div id="best-row" class="tv-best">
+                <div class="tv-row">
+                    <span class="tv-label">Personal Best</span>
+                    <span id="best-value" class="tv-best-v">--</span>
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-3 mb-10">
+            <div class="tv-actions">
                 <button id="share-btn" class="pill-btn primary">Share Score</button>
                 <button id="retry-btn" class="pill-btn">Try Again</button>
                 <button id="back-btn" class="pill-btn">Back to Menu</button>
             </div>
 
-            <div id="share-feedback" class="font-space text-[11px] tracking-[0.22em] uppercase text-muted hidden">Copied to clipboard</div>
+            <div id="share-feedback" class="tv-label hidden">Copied to clipboard</div>
         </section>
     </main>
-
-    <!-- FOOTER -->
-    <footer class="px-6 py-10 border-t border-ivory/10 text-center mt-16">
-        <a href="/" class="inline-block opacity-80 hover:opacity-100 transition-opacity mb-6">
-            <img src="/images/logo.png" alt="Dialed By H" class="h-7 sm:h-8 w-auto object-contain mx-auto">
-        </a>
-        <p class="text-[10px] text-muted/40 font-inter max-w-lg mx-auto mb-4 leading-relaxed" style="text-transform: none; font-style: italic;">Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p>
-        <div class="flex justify-center gap-6 text-[10px] text-muted/40 font-space uppercase tracking-widest">
-            <a href="/journal/" class="hover:text-muted transition-colors">Journal</a>
-            <a href="/inventory" class="hover:text-muted transition-colors">Inventory</a>
-            <a href="/about" class="hover:text-muted transition-colors">About</a>
-            <a href="/privacy" class="hover:text-muted transition-colors">Privacy</a>
-        </div>
-    </footer>
-
-    <!-- FLOATING WHATSAPP -->
-    <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer"
-       id="floating-wa"
-       aria-label="Message Henry on WhatsApp"
-       class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] w-14 h-14 sm:w-[58px] sm:h-[58px] rounded-full flex items-center justify-center shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95"
-       style="background:#25D366;">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff" aria-hidden="true">
-            <path d="M20.52 3.48A11.86 11.86 0 0 0 12.05 0C5.5 0 .16 5.33.16 11.88a11.8 11.8 0 0 0 1.64 6l-1.74 6.36 6.51-1.71a11.86 11.86 0 0 0 5.48 1.4h.01c6.55 0 11.89-5.33 11.89-11.88 0-3.18-1.24-6.17-3.43-8.57Zm-8.47 18.3h-.01a9.86 9.86 0 0 1-5.03-1.38l-.36-.21-3.86 1.01 1.03-3.77-.23-.39a9.82 9.82 0 0 1-1.51-5.26c0-5.43 4.43-9.86 9.87-9.86 2.63 0 5.1 1.03 6.96 2.89a9.79 9.79 0 0 1 2.89 6.98c0 5.44-4.43 9.87-9.87 9.87Zm5.41-7.39c-.3-.15-1.75-.86-2.02-.96s-.47-.15-.67.15-.77.96-.94 1.16-.35.22-.64.07a8.08 8.08 0 0 1-2.37-1.46 8.94 8.94 0 0 1-1.65-2.05c-.17-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.48-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37s-1.05 1.03-1.05 2.51 1.08 2.91 1.23 3.11c.15.2 2.12 3.24 5.13 4.54.72.31 1.28.5 1.72.63.72.23 1.38.2 1.9.12.58-.09 1.75-.71 2-1.4.25-.69.25-1.27.17-1.39-.07-.12-.27-.2-.57-.35Z"/>
-        </svg>
-    </a>
-
-    <!-- TRIVIA STATE MACHINE -->
-    <script>
+<!--dbh:footer-->
+<footer class="sf">
+  <div class="sf__grid">
+    <div><a href="/" aria-label="Dialed by H home"><img class="cm" src="/assets/brand/combination-mark-cream.svg" alt="Dialed by H" width="930" height="142"></a><ul>
+        <li><span>Text</span><a href="sms:+19146211848">+1.914.621.1848</a></li>
+        <li><span>WhatsApp</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">+1.914.621.1848</a></li>
+        <li><span>Email</span><a href="mailto:henry@dialedbyhenry.com">henry@dialedbyhenry.com</a></li>
+        <li><span>Instagram</span><a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener noreferrer">@dialedbyh</a></li>
+        <li><span>LinkedIn</span><a href="https://www.linkedin.com/company/dialedbyh/" target="_blank" rel="noopener noreferrer">DialedbyH</a></li></ul></div>
+    <div><span class="sf__label">Menu</span><ul><li><a href="/">Home</a></li><li><a href="/buy/">Sourcing Catalogue</a></li><li><a href="/trade" data-modal="trade">Trade</a></li><li><a href="/sell" data-modal="sell">Sell</a></li><li><a href="/source" data-modal="source">Concierge</a></li></ul></div>
+    <div><span class="sf__label">Company</span><ul><li><a href="/about/">About</a></li><li><a href="/process/">Process</a></li><li><a href="/journal/">Journal</a></li><li><a href="/trivia/">Trivia</a></li><li><a href="/boston">Boston Watch Dealer</a></li><li><a href="/privacy">Privacy &amp; Terms</a></li></ul></div>
+    <div><span class="sf__label">Brands</span><ul><li><a href="/rolex">Rolex</a></li><li><a href="/patek-philippe">Patek Philippe</a></li><li><a href="/audemars-piguet">Audemars Piguet</a></li><li><a href="/richard-mille">Richard Mille</a></li><li><a href="/vacheron-constantin">Vacheron Constantin</a></li><li><a href="/cartier">Cartier</a></li><li><a href="/fp-journe">F.P. Journe</a></li><li><a href="/a-lange-sohne">A. Lange &amp; S&ouml;hne</a></li></ul></div>
+  </div>
+  <div class="sf__legal"><p>Dialed By H is an independent sourcing firm and is not an authorized dealer for any watch brand. All brand names, logos, and trademarks referenced on this site belong to their respective owners and are used for identification purposes only.</p></div>
+  <div class="sf__copy">&copy; Dialed by H &middot; dialedbyhenry.com</div>
+</footer>
+<div class="floats">
+  <a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2.2c-5.4 0-9.8 4.36-9.8 9.72 0 1.72.46 3.39 1.32 4.86L2.2 21.8l5.16-1.34a9.85 9.85 0 0 0 4.68 1.18c5.4 0 9.8-4.36 9.8-9.72s-4.4-9.72-9.8-9.72zm0 17.79c-1.47 0-2.9-.39-4.15-1.12l-.3-.18-3.06.8.82-2.96-.2-.3a8.02 8.02 0 0 1-1.25-4.31c0-4.45 3.65-8.06 8.14-8.06s8.14 3.61 8.14 8.06-3.65 8.07-8.14 8.07zm4.46-6.04c-.24-.12-1.45-.71-1.67-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.97-1.2-.73-.64-1.22-1.44-1.36-1.68-.14-.24-.02-.37.1-.49.11-.11.24-.29.37-.43.12-.14.16-.24.24-.41.08-.16.04-.3-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.24-.86.83-.86 2.03s.88 2.36 1 2.52c.12.16 1.73 2.63 4.19 3.69.59.25 1.05.4 1.4.51.59.19 1.13.16 1.55.1.47-.07 1.45-.59 1.66-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/></svg></a>
+  <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener noreferrer" aria-label="DM on Instagram"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.3" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg></a>
+</div>
+<!--/dbh:footer-->
+<!--dbh:scripts-->
+<script defer src="/assets/inquiry-schema.js?v=1"></script>
+<script defer src="/assets/inquiry-tracking.js?v=1"></script>
+<script defer src="/assets/modals.js?v=3"></script>
+<script>
+(function(){
+  var sheet=document.getElementById('sheet'),o=document.getElementById('menu-open'),c=document.getElementById('menu-close');
+  if(!sheet||!o||!c)return;
+  function open(){sheet.classList.add('is-open');o.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
+  function close(){sheet.classList.remove('is-open');o.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+  o.addEventListener('click',open);c.addEventListener('click',close);
+  sheet.addEventListener('click',function(e){if(e.target.closest('a'))close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+})();
+</script>
+<!--/dbh:scripts-->
+<script>
     (function () {
         // QUESTION BANK
         // a: correct index (0-3), c: choices, q: question, e: explanation
@@ -1203,13 +1035,5 @@
         renderBestScores();
     })();
     </script>
-
-    <!-- Lucide icons -->
-    <script>
-        if (window.lucide && typeof window.lucide.createIcons === 'function') {
-            try { window.lucide.createIcons(); } catch (e) { /* no-op */ }
-        }
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

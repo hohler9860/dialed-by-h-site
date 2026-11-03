@@ -63,35 +63,37 @@ function stickerFor(seed) {
 
 function confirmEmailHtml({ confirmUrl, email }) {
     return `
-    <div style="max-width: 600px; margin: 0 auto; padding: 44px 32px; background: #ffffff; color: #0a0a0a; -webkit-text-fill-color: #0a0a0a;">
+    <div style="background: #252522; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 44px 32px; background: #252522; color: #F7F3E9; -webkit-text-fill-color: #F7F3E9;">
         <div style="text-align: center; margin-bottom: 32px;">
             <img src="https://www.dialedbyhenry.com/images/email/logo-plaque.png" alt="Dialed By H" width="252" style="display: inline-block; border: none;">
         </div>
-        <div style="border-top: 1px solid #e5e5e5; padding-top: 36px;">
+        <div style="border-top: 1px solid #52514E; padding-top: 36px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
                 <tr>
                     <td style="vertical-align: top;">
-                        <p style="font-family: 'Courier New', Courier, monospace; font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: #4a4a4a; -webkit-text-fill-color: #4a4a4a; margin: 0 0 18px;">Off-Catalog &mdash; The Journal</p>
-                        <h1 style="font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.05; text-transform: uppercase; color: #0a0a0a; -webkit-text-fill-color: #0a0a0a; margin: 0;">Confirm your spot.</h1>
+                        <p style="font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, 'Courier New', monospace; font-size: 10px; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; color: #999791; -webkit-text-fill-color: #999791; margin: 0 0 18px;">Off-Catalog &mdash; The Journal</p>
+                        <h1 style="font-family: 'Suisse Intl', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 500; letter-spacing: -0.5px; line-height: 1.05; color: #F7F3E9; -webkit-text-fill-color: #F7F3E9; margin: 0;">Confirm your spot.</h1>
                     </td>
                     <td width="104" style="vertical-align: top; padding-left: 18px;">
                         <img src="${stickerFor(email)}" alt="" width="104" style="display: block; border: none;">
                     </td>
                 </tr>
             </table>
-            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.75; color: #1a1a1a; -webkit-text-fill-color: #1a1a1a; margin: 24px 0 28px;">
+            <p style="font-family: 'Suisse Works', Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.75; color: #D8D5CE; -webkit-text-fill-color: #D8D5CE; margin: 24px 0 28px;">
                 One click and you're on the list for Off-Catalog, the journal from Dialed By H. Market notes, sourcing stories, and the occasional rare reference. No spam, ever.
             </p>
-            <a href="${confirmUrl}" style="display: inline-block; background: #0a0a0a; color: #ffffff; -webkit-text-fill-color: #ffffff; padding: 18px 46px; text-decoration: none; font-family: 'Courier New', Courier, monospace; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; border-radius: 0;">
+            <a href="${confirmUrl}" style="display: inline-block; background: #F7F3E9; color: #252522; -webkit-text-fill-color: #252522; padding: 18px 46px; text-decoration: none; font-family: 'Suisse Intl', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 0;">
                 Confirm Subscription
             </a>
-            <p style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #4a4a4a; -webkit-text-fill-color: #4a4a4a; margin: 32px 0 0;">
+            <p style="font-family: 'Suisse Works', Georgia, 'Times New Roman', serif; font-size: 13px; line-height: 1.6; color: #999791; -webkit-text-fill-color: #999791; margin: 32px 0 0;">
                 If you didn't sign up for this, ignore this email.
             </p>
         </div>
-        <div style="border-top: 1px solid #e5e5e5; margin-top: 36px; padding-top: 16px; text-align: center;">
-            <p style="font-family: 'Courier New', Courier, monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: #4a4a4a; -webkit-text-fill-color: #4a4a4a; margin: 0;">&copy; 2026 Dialed By H &mdash; dialedbyhenry.com</p>
+        <div style="border-top: 1px solid #52514E; margin-top: 36px; padding-top: 16px; text-align: center;">
+            <p style="font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #999791; -webkit-text-fill-color: #999791; margin: 0;">&copy; 2026 Dialed By H &mdash; dialedbyhenry.com</p>
         </div>
+    </div>
     </div>
     `;
 }

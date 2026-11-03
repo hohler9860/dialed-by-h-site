@@ -10,14 +10,27 @@
   var IG = 'https://www.instagram.com/dialedbyh';
 
   var MODELS = {
-    'Rolex': ['Daytona', 'Submariner', 'GMT-Master II', 'Datejust', 'Day-Date', 'Explorer', 'Oyster Perpetual', 'Sky-Dweller', 'Other'],
-    'Audemars Piguet': ['Royal Oak', 'Royal Oak Offshore', 'Royal Oak Concept', 'Code 11.59', 'Other'],
-    'Patek Philippe': ['Nautilus', 'Aquanaut', 'Calatrava', 'Grand Complications', 'Complications', 'Other'],
-    'Richard Mille': ['RM 011', 'RM 035', 'RM 055', 'RM 067', 'RM 72-01', 'Other'],
-    'Cartier': ['Santos', 'Tank', 'Ballon Bleu', 'Crash', 'Other'],
-    'Omega': ['Speedmaster', 'Seamaster', 'Other'],
+    'Rolex': ['Daytona', 'Submariner', 'GMT-Master II', 'Explorer', 'Explorer II', 'Datejust', 'Day-Date', 'Sky-Dweller', 'Yacht-Master', 'Sea-Dweller', 'Oyster Perpetual', 'Land-Dweller', 'Milgauss', 'Air-King', 'Cellini', 'Other'],
+    'Patek Philippe': ['Nautilus', 'Aquanaut', 'Calatrava', 'Grand Complications', 'Complications', 'Twenty~4', 'Golden Ellipse', 'Other'],
+    'Audemars Piguet': ['Royal Oak', 'Royal Oak Offshore', 'Royal Oak Concept', 'Code 11.59', 'Millenary', 'Other'],
+    'Richard Mille': ['RM 11', 'RM 35', 'RM 55', 'RM 67', 'RM 17', 'RM 27', 'RM 72', 'Other'],
+    'F.P. Journe': ['Chronometre Bleu', 'Chronometre Souverain', 'Octa', 'Tourbillon Souverain', 'Centigraphe', 'Elegante', 'Other'],
+    'Vacheron Constantin': ['Overseas', 'Patrimony', 'Traditionnelle', 'Historiques', 'Fiftysix', 'Other'],
+    'A. Lange & S\u00f6hne': ['Lange 1', 'Saxonia', 'Zeitwerk', 'Datograph', '1815', 'Odysseus', 'Other'],
+    'Omega': ['Speedmaster', 'Seamaster', 'Constellation', 'De Ville', 'Aqua Terra', 'Planet Ocean', 'Other'],
+    'Cartier': ['Santos', 'Tank', 'Ballon Bleu', 'Panthere', 'Pasha', 'Drive', 'Crash', 'Other'],
+    'IWC': ['Portugieser', 'Pilot', 'Aquatimer', 'Ingenieur', 'Portofino', 'Other'],
+    'Panerai': ['Luminor', 'Submersible', 'Radiomir', 'Due', 'Other'],
+    'Hublot': ['Big Bang', 'Classic Fusion', 'Spirit of Big Bang', 'Other'],
+    'Tudor': ['Black Bay', 'Pelagos', 'Ranger', '1926', 'Other'],
+    'Breitling': ['Navitimer', 'Chronomat', 'Superocean', 'Avenger', 'Premier', 'Other'],
+    'Jaeger-LeCoultre': ['Reverso', 'Master', 'Polaris', 'Atmos', 'Other'],
+    'Blancpain': ['Fifty Fathoms', 'Villeret', 'Ladybird', 'Other'],
+    'Breguet': ['Classique', 'Marine', 'Tradition', 'Type XX', 'Other'],
+    'Girard-Perregaux': ['Laureato', '1966', 'Bridges', 'Other'],
     'Other': ['Other']
   };
+
 
   var CSS = [
     '@font-face{font-family:"Suisse Intl";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntl-Regular.woff2) format("woff2")}',
@@ -81,9 +94,7 @@
       (opts.autocomplete ? ' autocomplete="' + opts.autocomplete + '"' : '') + '>';
   }
 
-  // Field order mirrors the Request to Source card exactly, so all three
-  // forms read as one system. Sell and Trade add price + reason before the
-  // details box.
+  // All three forms ask the same questions, so they read as one system.
   function formFields(kind) {
     var brands = Object.keys(MODELS).map(function (b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
     var html =
@@ -134,7 +145,21 @@
       '</button>' + inner + '</div>';
   }
 
-  function open(kind) {
+  // Add catalogue values missing from the curated menus so the exact watch is
+  // kept. DOM properties keep URL text inert.
+  function selectValue(select, value) {
+    if (!value) return;
+    var found = [].some.call(select.options, function (o) { return o.value === value; });
+    if (!found) {
+      var option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    }
+    select.value = value;
+  }
+
+  function open(kind, prefill) {
     ensureCss();
     close();
     var modal = document.createElement('div');
@@ -171,6 +196,12 @@
           : '<option value="">Select Brand First</option>';
         model.disabled = !brand.value;
       });
+      if (prefill) {
+        selectValue(brand, prefill.brand);
+        brand.dispatchEvent(new Event('change'));
+        selectValue(model, prefill.model);
+        if (prefill.ref) modal.querySelector('[name="reference"]').value = prefill.ref;
+      }
 
       modal.querySelector('form').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -217,6 +248,7 @@
           })
         }).then(function (r) {
           if (!r.ok) throw new Error(r.status);
+          if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[kind] || 'BUY' });
           // Thank-you with the Instagram follow. Most visitors from search
           // have never seen the account; this is the moment they are paying
           // attention.
@@ -262,40 +294,26 @@
   }
 
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
-  // Sell and Trade are the SAME card as Request to Source: the homepage
-  // renders all three from one template (app.openModal). On the homepage we
-  // call it directly; on any other page we go to /sell or /trade, which is
-  // the homepage with that form open. Nothing else gets a chance to drift.
-  // The homepage declares `const app` (a global lexical binding, not a
-  // window property), so look it up by name, not on window.
-  function homeApp() {
-    try { if (typeof app !== 'undefined' && app && typeof app.openModal === 'function') return app; } catch (e) {}
-    return (window.app && typeof window.app.openModal === 'function') ? window.app : null;
-  }
-  function openKind(kind, fromUrl) {
-    // The old homepage rendered Sell/Trade through its own app.openModal; the
-    // new pages have no such app, so this card is the one and only form.
-    if ((kind === 'sell' || kind === 'trade') && homeApp()) {
-      homeApp().openModal(kind.toUpperCase());
-      return;
-    }
-    open(kind);
-  }
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-modal]');
     if (!t) return;
     e.preventDefault();
-    openKind(t.getAttribute('data-modal'));
+    var d = t.dataset;
+    open(d.modal, (d.brand || d.model || d.ref) ? { brand: d.brand, model: d.model, ref: d.ref } : null);
   });
 
-  // Own URL for each form: /sell and /trade load the page with that form
-  // open (Vercel rewrites both to the homepage), and #sell / #trade work on
-  // any page. /source is handled by the homepage's own modal already.
+  // Own URL for each form: /sell and /trade load the homepage with that form
+  // open, and #sell, #trade, #source and ?source work on any page. /source
+  // itself is the link-in-bio page, so it only opens the card when a link hands
+  // it a specific watch to prefill.
   function deepLink() {
     var path = (location.pathname || '').replace(/\/+$/, '');
-    var kind = (path === '/sell' || path === '/trade') ? path.slice(1)
-      : (/^#(sell|trade)$/.test(location.hash) ? location.hash.slice(1) : null);
-    if (kind) openKind(kind, true);
+    var q = new URLSearchParams(location.search);
+    var watch = { brand: q.get('brand') || '', model: q.get('model') || '', ref: q.get('reference') || '' };
+    var hasWatch = !!(watch.brand || watch.model || watch.ref);
+    if (path === '/sell' || path === '/trade') return open(path.slice(1));
+    if (/^#(sell|trade)$/.test(location.hash)) return open(location.hash.slice(1));
+    if (location.hash === '#source' || q.has('source') || (path === '/source' && hasWatch)) open('source', hasWatch ? watch : null);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', deepLink);
   else deepLink();

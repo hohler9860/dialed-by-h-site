@@ -2,11 +2,11 @@
 //
 // One page per brand, server-rendered from the live catalogue, so Google gets
 // a real "Rolex for sale Boston" page with the actual pieces on it, and every
-// watch page gets a parent to sit under. The chrome (head assets, header,
-// footer, modals) is lifted from the watch page renderer at load time rather
-// than duplicated, so the two can never drift apart.
+// watch page gets a parent to sit under. The chrome comes from
+// lib/brand-chrome.js, shared with every other page.
 
-const { renderWatchPage, SITE_URL } = require('./_render');
+const chrome = require('../lib/brand-chrome');
+const { SITE_URL } = require('./_render');
 
 function escHtml(s) {
     return String(s == null ? '' : s)
@@ -16,25 +16,6 @@ function escHtml(s) {
 const escAttr = escHtml;
 
 // ── chrome, borrowed from a throwaway watch page ──
-let CHROME = null;
-function chrome() {
-    if (CHROME) return CHROME;
-    const html = renderWatchPage({
-        slug: 'x', name: 'x', brand: 'x', image: 'https://example.com/x.webp', images: [],
-    }, []);
-    const headStart = html.indexOf('<link rel="stylesheet"');
-    const headEnd = html.indexOf('</head>');
-    const bodyStart = html.indexOf('<body');
-    const mainStart = html.indexOf('<main');
-    const mainEnd = html.indexOf('</main>') + '</main>'.length;
-    CHROME = {
-        headAssets: html.slice(headStart, headEnd),      // stylesheet + all page CSS
-        header: html.slice(bodyStart, mainStart),        // <body> ... header/nav
-        footer: html.slice(mainEnd),                     // footer, floats, modals, scripts
-    };
-    return CHROME;
-}
-
 // ── brand copy, Henry's voice ──
 // slug → page. `match` is tested against piece.brand so alternate spellings
 // (F.P.Journe / F.P. Journe) land on one page.
@@ -184,7 +165,6 @@ function renderBrandPage(slug, all = []) {
     pieces.sort((x, y) => String(y.addedAt || '').localeCompare(String(x.addedAt || '')));
     const shown = pieces.slice(0, 48);
     const canonical = `${SITE_URL}/${slug}`;
-    const c = chrome();
 
     const ld = [
         {
@@ -225,11 +205,7 @@ function renderBrandPage(slug, all = []) {
         },
     ];
 
-    const name = p => `${p.brand} ${p.nickname || p.model || p.name}`.trim();
-    const grid = shown.map(p => `<article class="pt-item"><a href="/watch/${escAttr(p.slug)}" aria-label="${escAttr(name(p))}${p.ref ? ' ' + escAttr(p.ref) : ''}">
-<div class="pt-item__media"><img src="${escAttr(p.imageThumb || p.image)}"${p.imageMedium ? ` srcset="${escAttr(p.imageThumb || p.image)} 300w, ${escAttr(p.imageMedium)} 600w" sizes="(max-width:820px) 45vw, 240px"` : ''} alt="${escAttr(name(p))}${p.ref ? ' Ref. ' + escAttr(p.ref) : ''}" loading="lazy" width="300" height="300" decoding="async"></div>
-<div class="pt-item__row"><span>${escHtml(name(p))}</span><span class="pt-item__meta">${escHtml(p.year || '')}</span></div>
-</a></article>`).join('');
+    const grid = shown.map(p => chrome.watchTile(p, escAttr)).join('');
 
     const others = BRAND_SLUGS.filter(s => s !== slug).map(s => `<a href="/${s}">${escHtml(BRANDS[s].name)}</a>`).join(' &middot; ');
 
@@ -237,10 +213,7 @@ function renderBrandPage(slug, all = []) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5" />
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-fpj-192.png?v=5" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=6">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${escHtml(b.title)}</title>
 <meta name="description" content="${escAttr(b.description)}">
 <meta name="author" content="Henry Ohler">
@@ -254,58 +227,20 @@ ${shown[0] ? `<meta property="og:image" content="${escAttr(shown[0].imageMedium 
 <meta property="og:site_name" content="Dialed By H">
 <meta name="twitter:card" content="summary_large_image">
 ${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
-${c.headAssets}
-<style>
-/* Brand pages are the Buy page scoped to one brand: same type, same rails,
-   same cards. Anything that only exists here (FAQ, cities) uses the same
-   mono/hairline language, nothing heavier. */
-.pt-buy{padding:120px 0 110px;font-family:var(--pt-mono);background:#fff;color:#000}
-.pt-buy .container{max-width:1360px;margin:0 auto;padding:0 40px}
-@media(max-width:820px){.pt-buy{padding:96px 0 70px}.pt-buy .container{padding:0 20px}}
-.pt-crumb{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.45);display:block;margin-bottom:16px}
-.pt-crumb a{color:inherit;text-decoration:none}
-.pt-buy h1{font-family:var(--pt-serif);font-weight:700;font-variation-settings:"wdth" 120;font-size:clamp(48px,6vw,88px);text-transform:uppercase;letter-spacing:-.01em;line-height:1;margin:0 0 16px;max-width:16ch}
-.pt-dmline{font-size:12px;color:rgba(0,0,0,.5);margin:0 0 42px;max-width:900px;line-height:1.7}
-.pt-dmline a{color:#000;text-decoration:underline;text-underline-offset:3px}
-.pt-fbar{display:flex;flex-wrap:wrap;gap:8px 26px;border-top:1px solid rgba(0,0,0,.14);border-bottom:1px solid rgba(0,0,0,.14);padding:15px 2px;align-items:center}
-.pt-fbtn{background:none;border:none;padding:0;font-family:var(--pt-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#000;cursor:pointer;display:inline-flex;gap:8px;align-items:center;text-decoration:none}
-.pt-fbtn .n{color:rgba(0,0,0,.35)}
-.pt-fbtn:hover{text-decoration:underline;text-underline-offset:4px}
-.pt-count{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.4);padding:18px 2px 46px;display:block}
-.pt-count a{color:inherit}
-.pt-grid12{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:34px 18px}
-.pt-item a{display:block;text-decoration:none;color:inherit}
-.pt-item__media{position:relative;width:100%;aspect-ratio:1/1;background:#0d0d0d;overflow:hidden}
-.pt-item__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0d0d0d}
-.pt-item__row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;min-width:0}
-.pt-item__row span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pt-item__meta{color:rgba(0,0,0,.4);font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
-.pt-item a:hover .pt-item__row span:first-child{text-decoration:underline;text-underline-offset:4px}
-@media(max-width:820px){.pt-grid12{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px}.pt-item{min-width:0}}
-.bp-sec{margin-top:84px}
-.bp-sec h2{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.4);padding-bottom:14px;border-bottom:1px solid rgba(0,0,0,.14);margin:0;font-weight:400}
-.bp-copy{font-size:12px;line-height:1.8;color:rgba(0,0,0,.6);max-width:760px;margin-top:18px}
-.bp-copy p+p{margin-top:12px}
-.bp-copy a{color:#000;text-decoration:underline;text-underline-offset:3px}
-.bp-faq details{border-bottom:1px solid rgba(0,0,0,.14);padding:16px 2px}
-.bp-faq summary{cursor:pointer;font-size:11px;letter-spacing:.12em;text-transform:uppercase;list-style:none;display:flex;justify-content:space-between;gap:20px}
-.bp-faq summary::-webkit-details-marker{display:none}
-.bp-faq summary:after{content:'+';color:rgba(0,0,0,.35)}
-.bp-faq details[open] summary:after{content:'\\2013'}
-.bp-faq p{font-size:12px;line-height:1.8;margin:12px 0 4px;max-width:70ch;color:rgba(0,0,0,.6)}
-</style></style>
+<link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin>
+${chrome.headAssets()}
+${chrome.pixel()}
 </head>
 `;
 
     const wa = `https://wa.me/19146211848?text=${encodeURIComponent(`Hi Henry, I'm looking for a ${b.name}.`)}`;
-    const main = `<main class="pt-buy">
-<div class="container">
-<span class="pt-crumb"><a href="/">Home</a> / <a href="/buy/">Buy</a> / ${escHtml(b.name)}</span>
-<h1 data-hsst>${escHtml(b.h1)}</h1>
+    const main = `<main class="pg">
+<nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/buy/">Sourcing Catalogue</a> / ${escHtml(b.name)}</nav>
+<h1 class="pg-h1">${escHtml(b.h1)}</h1>
 <p class="pt-dmline">${escHtml(b.intro[0] || '')} See something you like? Fastest way is a DM &mdash; <a href="${wa}" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the ${escHtml(b.name)} you're hunting isn't here, I can find it.</p>
 <div class="pt-fbar">
 <a class="pt-fbtn" href="/buy/">All brands <i>&rarr;</i></a>
-<a class="pt-fbtn" href="/source">Request to source <span class="n">+</span></a>
+<a class="pt-fbtn" href="/source" data-modal="source" data-brand="${escAttr(b.name)}">Request to source <span class="n">+</span></a>
 <a class="pt-fbtn" href="/sell" data-modal="sell">Sell my ${escHtml(b.name)} <span class="n">+</span></a>
 </div>
 <span class="pt-count">${pieces.length} ${escHtml(b.name)} piece${pieces.length === 1 ? '' : 's'} in the network${pieces.length > shown.length ? ', newest ' + shown.length + ' shown' : ''} &middot; <a href="/buy/">full catalogue</a></span>
@@ -327,10 +262,10 @@ ${c.headAssets}
 </section>
 
 <p class="pt-dmline" style="margin:72px 0 0">Browse by brand: ${others}</p>
-</div>
 </main>`;
 
-    return head + c.header + main + c.footer;
+    return head + '<body>\n' + chrome.header('Sourcing Catalogue') + '\n' + main + '\n' +
+        chrome.footer() + '\n' + chrome.floats() + '\n' + chrome.scripts() + '\n</body>\n</html>';
 }
 
 module.exports = { renderBrandPage, BRANDS, BRAND_SLUGS };

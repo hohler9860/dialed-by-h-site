@@ -63,7 +63,7 @@ function injectUnsubscribeFooter(baseHtml) {
     // The base template ends with: <a href="https://www.dialedbyhenry.com/privacy.html" ...>Privacy &amp; Terms</a>
     return baseHtml.replace(
         /(Privacy\s*&amp;\s*Terms<\/a>)/,
-        `$1 &nbsp;·&nbsp; <a href="${UNSUB_PLACEHOLDER}" style="color:inherit;text-decoration:none;font-family:'Space Grotesk','Arial','Helvetica',sans-serif;letter-spacing:2.5px;text-transform:uppercase;font-size:10px">Unsubscribe</a>`
+        `$1 &nbsp;·&nbsp; <a href="${UNSUB_PLACEHOLDER}" style="color:inherit;text-decoration:none;font-family:'Suisse Intl Mono','SF Mono',Menlo,'Courier New',monospace;letter-spacing:1px;text-transform:uppercase;font-size:10px">Unsubscribe</a>`
     );
 }
 

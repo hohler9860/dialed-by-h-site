@@ -235,6 +235,7 @@ ${shown[0] ? `<meta property="og:image" content="${escAttr(shown[0].imageMedium 
 <meta name="twitter:card" content="summary_large_image">
 ${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
 <link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin>
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 ${chrome.headAssets()}
 ${chrome.pixel()}
 </head>
@@ -243,7 +244,7 @@ ${chrome.pixel()}
     const wa = `https://wa.me/19146211848?text=${encodeURIComponent(`Hi Henry, I'm looking for a ${b.name}.`)}`;
     const main = `<main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/buy/">Sourcing Catalogue</a> / ${escHtml(b.name)}</nav>
-<h1 class="pg-h1">${twoTone(b.h1)}</h1>
+<h1 class="pg-h1" data-su="chars">${twoTone(b.h1)}</h1>
 <p class="pt-dmline">${escHtml(b.intro[0] || '')} See something you like? Fastest way is a DM &mdash; <a href="${wa}" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the ${escHtml(b.name)} you're hunting isn't here, I can find it.</p>
 <div class="pt-fbar">
 <a class="pt-fbtn" href="/buy/">All brands <i>&rarr;</i></a>
@@ -272,7 +273,7 @@ ${chrome.pixel()}
 </main>`;
 
     return head + '<body>\n' + chrome.header('Sourcing Catalogue') + '\n' + main + '\n' +
-        chrome.footer() + '\n' + chrome.floats() + '\n' + chrome.scripts() + '\n</body>\n</html>';
+        chrome.footer() + '\n' + chrome.floats() + '\n' + chrome.scripts() + '\n<script src="/assets/slide-up.js?v=2"></script>\n</body>\n</html>';
 }
 
 module.exports = { renderBrandPage, BRANDS, BRAND_SLUGS };

@@ -217,6 +217,9 @@ button{font:inherit;color:inherit}
 .su-in .su__c>span{animation:su .5s cubic-bezier(.625,.05,0,1) both;animation-delay:calc(var(--b,0ms) + var(--su-extra,0ms) + var(--c,0)*var(--su-step,30ms))}
 [data-su=words]{--su-extra:180ms;--su-step:14ms}
 @keyframes su{from{transform:translateY(140%)}to{transform:none}}
+.sheet .su{display:inline-block;white-space:nowrap}
+.sheet .su__c{white-space:pre}
+.sheet .su__c>span{transform:none;animation:su .5s cubic-bezier(.625,.05,0,1) both;animation-delay:calc(120ms + var(--r,0)*60ms + var(--c,0)*22ms)}
 /* ── process ── */
 .st{display:grid;grid-template-columns:minmax(0,120px) minmax(0,220px) minmax(0,1fr);gap:20px 28px;align-items:baseline;border-top:1px solid var(--grey-light);padding:28px 2px}
 .st:first-of-type{margin-top:clamp(24px,3vw,44px)}

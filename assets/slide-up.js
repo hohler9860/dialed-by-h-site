@@ -45,6 +45,9 @@
     if (!counters.has(group)) counters.set(group, { n: 0 });
     var mode = el.getAttribute('data-su');
     if (mode === 'chars') {
+      // A long headline keeps the same overall pace, so it never drags.
+      var length = el.textContent.trim().length;
+      if (length > 20 && !el.closest('[data-su-group]')) el.style.setProperty('--su-step', Math.max(10, Math.round(600 / length)) + 'ms');
       // Letter-by-letter spans read badly aloud, so screen readers get one plain copy.
       var copy = document.createElement('span');
       copy.className = 'su-sr';

@@ -64,6 +64,7 @@
     '.dbh-lm__submit:disabled{opacity:.6;cursor:default}',
     '.dbh-lm__link--ghost{border-color:var(--lm-light)}',
     '.dbh-lm__link--ghost:hover{background:var(--lm-ink);color:var(--lm-paper);border-color:var(--lm-ink)}',
+    '.dbh-lm__or{display:block;font-family:var(--lm-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--lm-mid);margin:20px 0 20px}',
     '.dbh-lm__lead{font-family:var(--lm-works);font-size:15px;line-height:1.55;color:var(--lm-dark);margin:0 0 22px}',
     '.dbh-lm__err{font-family:var(--lm-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8a3a2f;margin:12px 0 0;display:none;line-height:1.5}'
   ].join('\n');
@@ -177,10 +178,18 @@
     } else {
       var cfg = FORMS[kind];
       if (!cfg) return;
+      // The Concierge is where the bio link lands, so WhatsApp sits above the form.
+      var piece = prefill && [prefill.brand, prefill.model].filter(Boolean).join(' ');
+      if (piece && prefill.ref) piece += ' (Ref. ' + prefill.ref + ')';
+      var waText = piece ? "Hi Henry, I'm interested in the " + piece + '.' : "Hi Henry, I'm looking to source a watch.";
+      var waLine = kind === 'source'
+        ? '<a class="dbh-lm__link" href="' + WA + '?text=' + encodeURIComponent(waText) + '" target="_blank" rel="noopener">WhatsApp me</a>' +
+          '<span class="dbh-lm__or">Or send me the details</span>'
+        : '';
       modal.innerHTML = card(
         '<span class="dbh-lm__eyebrow">' + esc(cfg.eyebrow) + '</span>' +
         '<h2 class="dbh-lm__title">' + esc(cfg.title) + '</h2>' +
-        '<p class="dbh-lm__sub">' + esc(cfg.sub) + '</p>' +
+        '<p class="dbh-lm__sub">' + esc(cfg.sub) + '</p>' + waLine +
         '<form novalidate>' + formFields(kind) +
         '<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">' +
         '<button type="submit" class="dbh-lm__submit">Send</button>' +

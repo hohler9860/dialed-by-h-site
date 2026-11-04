@@ -24,6 +24,7 @@
 window.dbhInventory = fetch('/api/get-inventory?grid=1');
 window.dbhInventory.catch(function () {});
 </script>
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 <!--dbh:head-->
 <link rel="icon" href="/favicon.ico?v=6" sizes="48x48">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5">
@@ -32,7 +33,7 @@ window.dbhInventory.catch(function () {});
 <meta name="theme-color" content="#F7F3E9">
 <link rel="preload" href="/assets/fonts/suisse/SuisseWorks-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Medium.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/dbh-brand.css?v=8">
+<link rel="stylesheet" href="/assets/dbh-brand.css?v=9">
 <script>
 if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -65,7 +66,7 @@ fbq('track', 'PageView');
 <!--/dbh:header-->
 <main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / Sourcing Catalogue</nav>
-<h1 class="pg-h1"><span class="h-lead">Available</span> for sourcing</h1>
+<h1 class="pg-h1" data-su="chars"><span class="h-lead">Available</span> for sourcing</h1>
 <p class="pt-dmline">See something you like? Fastest way is a DM &mdash; <a href="https://wa.me/19146211848" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the piece you're hunting isn't here, I can find it. That's the job.</p>
 <div class="pt-search">
 <input id="pt-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search" aria-label="Search pieces">
@@ -101,12 +102,26 @@ fbq('track', 'PageView');
 <!--dbh:scripts-->
 <script defer src="/assets/inquiry-schema.js?v=1"></script>
 <script defer src="/assets/inquiry-tracking.js?v=1"></script>
-<script defer src="/assets/modals.js?v=4"></script>
+<script defer src="/assets/modals.js?v=5"></script>
 <script>
 (function(){
   var sheet=document.getElementById('sheet'),o=document.getElementById('menu-open'),c=document.getElementById('menu-close');
   if(!sheet||!o||!c)return;
-  function open(){sheet.classList.add('is-open');o.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
+  function suMenu(){
+    if(sheet.dataset.su||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    sheet.dataset.su='1';
+    [].forEach.call(sheet.querySelectorAll('nav li'),function(li,r){
+      li.style.setProperty('--r',r);
+      [li.querySelector('.n'),li.querySelector('a')].forEach(function(el){
+        var t=el.textContent,w=document.createElement('span');
+        if(el.tagName==='A')el.setAttribute('aria-label',t);
+        w.className='su';w.setAttribute('aria-hidden','true');
+        Array.from(t).forEach(function(ch,c){var a=document.createElement('span'),b=document.createElement('span');a.className='su__c';a.style.setProperty('--c',c);b.textContent=ch;a.appendChild(b);w.appendChild(a);});
+        el.textContent='';el.appendChild(w);
+      });
+    });
+  }
+  function open(){suMenu();sheet.classList.add('is-open');o.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
   function close(){sheet.classList.remove('is-open');o.setAttribute('aria-expanded','false');document.body.style.overflow='';}
   o.addEventListener('click',open);c.addEventListener('click',close);
   sheet.addEventListener('click',function(e){if(e.target.closest('a'))close();});
@@ -124,5 +139,6 @@ document.addEventListener('error',function(e){
 </script>
 <!--/dbh:scripts-->
 <script src="/assets/buy.js?v=2"></script>
+<script src="/assets/slide-up.js?v=2"></script>
 </body>
 </html>

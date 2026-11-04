@@ -277,6 +277,7 @@ h1,h2,h3,p{margin:0}
 .su__c{display:inline-block;overflow:hidden;vertical-align:bottom;white-space:pre;padding-block:.2em;margin-block:-.2em}
 .su__c>span{display:inline-block;animation:su .5s cubic-bezier(.625,.05,0,1) both;animation-delay:calc(200ms + var(--r)*80ms + var(--c)*30ms)}
 @keyframes su{from{transform:translateY(140%)}to{transform:none}}
+.sheet .su__c>span{animation-delay:calc(120ms + var(--r,0)*60ms + var(--c,0)*22ms)}
 @media(prefers-reduced-motion:reduce){.su__c>span{animation:none}}
 .block{position:absolute;left:calc(20*var(--u));bottom:calc(20*var(--u));width:calc(437*var(--u));display:flex;flex-direction:column;gap:calc(32*var(--u))}
 .txt{display:flex;flex-direction:column;gap:calc(15*var(--u))}
@@ -308,6 +309,10 @@ h1{font-family:var(--works);font-weight:400;font-size:calc(34*var(--u));line-hei
 .on-cream .btn:hover{background:var(--charcoal);color:var(--cream)}
 .on-dark .btn:hover{background:var(--cream);color:var(--charcoal)}
 /* ---------- ticker (cream strip, same marquee as before, CSS driven) ---------- */
+.pov{background:var(--cream);color:var(--charcoal);padding:calc(96*var(--u)) calc(20*var(--u))}
+.pov p{font-family:var(--intl);font-weight:500;font-size:max(22px,calc(30*var(--u)));line-height:1.13;letter-spacing:-.012em;max-width:24em;text-wrap:pretty}
+.pov .h-lead{color:var(--grey-mid)}
+@media(max-width:899px){.pov{padding:56px 20px}.pov p{font-size:clamp(23px,6vw,32px);max-width:none}}
 .ticker{background:var(--cream);color:var(--charcoal);border-top:1px solid var(--grey-light);border-bottom:1px solid var(--grey-light);padding:22px 0;overflow:hidden;contain:layout style}
 .ticker__track{display:flex;width:max-content;animation:tick var(--tdur,180s) linear infinite;will-change:transform}
 .ticker:hover .ticker__track{animation-play-state:paused}
@@ -444,6 +449,7 @@ footer a:hover{opacity:.55}
 </div>
 
 <main>
+<section class="pov" aria-label="Our point of view"><p><span class="h-lead">Bringing a more personal point of view</span> to buying, selling, and collecting exceptional watches.</p></section>
 <div class="ticker" aria-label="Recently sourced">
   <div class="ticker__track" id="ticker"><div class="ticker__half" id="tick-a"></div><div class="ticker__half" id="tick-b"></div></div>
 </div>
@@ -505,7 +511,7 @@ footer a:hover{opacity:.55}
 
 <script defer src="/assets/inquiry-schema.js?v=1"></script>
 <script defer src="/assets/inquiry-tracking.js?v=1"></script>
-<script defer src="/assets/modals.js?v=4"></script>
+<script defer src="/assets/modals.js?v=5"></script>
 <script>
 (function(){
   var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});};
@@ -516,7 +522,21 @@ footer a:hover{opacity:.55}
   if(s.length>1){(window.requestIdleCallback||setTimeout)(function(){hydrate(1);hydrate(2);});if(!rm)setInterval(next,5500);}
   // Mobile menu
   var sheet=document.getElementById('sheet'),o=document.getElementById('menu-open'),c=document.getElementById('menu-close');
-  function open(){sheet.classList.add('is-open');o.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
+  function suMenu(){
+    if(sheet.dataset.su||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    sheet.dataset.su='1';
+    [].forEach.call(sheet.querySelectorAll('nav li'),function(li,r){
+      li.style.setProperty('--r',r);
+      [li.querySelector('.n'),li.querySelector('a')].forEach(function(el){
+        var t=el.textContent,w=document.createElement('span');
+        if(el.tagName==='A')el.setAttribute('aria-label',t);
+        w.className='su';w.setAttribute('aria-hidden','true');
+        Array.from(t).forEach(function(ch,c){var a=document.createElement('span'),b=document.createElement('span');a.className='su__c';a.style.setProperty('--c',c);b.textContent=ch;a.appendChild(b);w.appendChild(a);});
+        el.textContent='';el.appendChild(w);
+      });
+    });
+  }
+  function open(){suMenu();sheet.classList.add('is-open');o.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
   function close(){sheet.classList.remove('is-open');o.setAttribute('aria-expanded','false');document.body.style.overflow='';}
   o.addEventListener('click',open);c.addEventListener('click',close);
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});

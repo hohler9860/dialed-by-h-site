@@ -294,7 +294,7 @@ async function sendTaxReminders() {
       ${due.map(line).join("")}
       <div style="margin-top:20px;font-size:12px;color:#888">Full calendar is on the Books tab of the admin. These reminders come from lib/tax-calendar.js; if a date is wrong, fix it there.</div>
     </div>`;
-    const r = await resend.emails.send({ from: "Dialed By H <inquiries@mail.dialedbyhenry.com>", to, subject, html });
+    const r = await resend.emails.send({ from: "Dialed by H <inquiries@mail.dialedbyhenry.com>", to, subject, html });
     if (r.error) throw new Error("Resend: " + (r.error.message || JSON.stringify(r.error)));
     return due.map(o => o.key + "@" + o.days);
 }

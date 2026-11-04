@@ -44,7 +44,7 @@ function fourOhFour() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Piece not found | Dialed By H</title>
+<title>Piece not found | Dialed by H</title>
 <meta name="robots" content="noindex, nofollow">
 ${chrome.headAssets()}
 ${chrome.pixel()}
@@ -76,8 +76,12 @@ function renderWatchPage(w, all = []) {
     const displayName = w.name + (w.nickname ? ` "${w.nickname}"` : '');
     const canonical = `${SITE_URL}/watch/${w.slug}`;
     const img = normUrl(w.image);
-    const title = `${displayName}${w.ref ? ' ' + w.ref : ''} | Dialed By H`;
-    const description = `${displayName}${w.ref ? ' (Ref. ' + w.ref + ')' : ''} — ${w.brand} available through Dialed By H, a nationwide US luxury watch concierge based in Boston, New York City, and Miami. Authenticated, with fully insured shipping anywhere in the United States. Inquire for pricing and availability.`;
+    // Links to a watch preview as a branded card. The 16 pieces without a cutout keep their photo.
+    const hasCard = /-cutout\.webp$/.test(w.imageCutout || '');
+    const shareImg = hasCard ? `${SITE_URL}/share/watch/${w.slug}.jpg` : img;
+    const title = `${displayName}${w.ref ? ' ' + w.ref : ''} | Dialed by H`;
+    const brandName = displayName.toLowerCase().startsWith(String(w.brand || '').toLowerCase()) ? displayName : `${w.brand} ${displayName}`;
+    const description = `${brandName}${w.ref ? ' (Ref. ' + w.ref + ')' : ''}, available through Dialed by H, a nationwide US luxury watch concierge based in Boston, New York City, and Miami. Authenticated, with fully insured shipping anywhere in the United States. Inquire for pricing and availability.`;
 
     const specs = [
         ['Brand', w.brand], ['Model', w.model], ['Reference', w.ref], ['Nickname', w.nickname],
@@ -105,7 +109,7 @@ function renderWatchPage(w, all = []) {
             priceCurrency: 'USD',
             url: canonical,
             seller: {
-                '@type': 'Organization', name: 'Dialed By H', url: SITE_URL,
+                '@type': 'Organization', name: 'Dialed by H', url: SITE_URL,
                 areaServed: { '@type': 'Country', name: 'United States' },
             },
         },
@@ -158,13 +162,13 @@ ${w.tags ? `<meta name="keywords" content="${escAttr(w.tags)}">` : ''}
 <meta property="og:url" content="${canonical}">
 <meta property="og:title" content="${escAttr(displayName)}${w.ref ? ' - ' + escAttr(w.ref) : ''}">
 <meta property="og:description" content="${escAttr(description)}">
-<meta property="og:image" content="${escAttr(img)}">
-<meta property="og:image:alt" content="${escAttr(displayName)}">
-<meta property="og:site_name" content="Dialed By H">
+<meta property="og:image" content="${escAttr(shareImg)}">
+${hasCard ? '<meta property="og:image:type" content="image/jpeg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n' : ''}<meta property="og:image:alt" content="${escAttr(displayName)}">
+<meta property="og:site_name" content="Dialed by H">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escAttr(displayName)}">
 <meta name="twitter:description" content="${escAttr(description)}">
-<meta name="twitter:image" content="${escAttr(img)}">
+<meta name="twitter:image" content="${escAttr(shareImg)}">
 
 <script type="application/ld+json">${JSON.stringify(productLD)}</script>
 <script type="application/ld+json">${JSON.stringify(breadcrumbLD)}</script>

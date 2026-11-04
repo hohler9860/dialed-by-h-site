@@ -267,6 +267,36 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') return handleAdmin(req, res);
 
+    // ── Share card (JPEG): the image a link preview shows for one watch ──
+    if (q.shareCard) {
+        const fallback = () => {
+            res.setHeader('Cache-Control', 'public, max-age=300');
+            res.setHeader('Location', '/images/og-share-v3.png');
+            return res.status(302).end();
+        };
+        try {
+            const slug = String(q.shareCard).trim().toLowerCase();
+            const piece = (await fetchAllPieces()).find(p => p.slug === slug);
+            if (!piece || !/-cutout\.webp$/.test(piece.imageCutout || '')) return fallback();
+            const photo = await fetch(piece.imageCutout);
+            if (!photo.ok) return fallback();
+            const { watchCard } = require('../lib/share-card');
+            const card = await watchCard({
+                brand: piece.brand,
+                model: piece.nickname || piece.model || piece.name,
+                ref: piece.ref,
+                year: piece.year,
+                cutout: Buffer.from(await photo.arrayBuffer()),
+            });
+            res.setHeader('Content-Type', 'image/jpeg');
+            res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=2592000, stale-while-revalidate=604800');
+            return res.status(200).end(card);
+        } catch (err) {
+            console.error('[get-inventory:shareCard] error:', err && err.message);
+            return fallback();
+        }
+    }
+
     // ── Sitemap (XML) ──
     if (q.sitemap) {
         try {

@@ -22,8 +22,8 @@ const escAttr = escHtml;
 const BRANDS = {
     'rolex': {
         name: 'Rolex', match: /^rolex$/i,
-        title: 'Rolex Watches for Sale in Boston | Submariner, Daytona, GMT, Datejust | Dialed By H',
-        description: 'Buy, sell or source a Rolex in Boston with Dialed By H. Submariner, Daytona, GMT-Master II, Datejust and Day-Date, new and pre-owned, authenticated, with in-person handover in Boston, NYC and Miami.',
+        title: 'Rolex Watches for Sale in Boston | Submariner, Daytona, GMT, Datejust | Dialed by H',
+        description: 'Buy, sell or source a Rolex in Boston with Dialed by H. Submariner, Daytona, GMT-Master II, Datejust and Day-Date, new and pre-owned, authenticated, with in-person handover in Boston, NYC and Miami.',
         h1: 'Rolex in Boston, without the waitlist',
         intro: [
             'Every Rolex on this page is a piece I can actually get you, not a catalog photo. Submariner, Daytona, GMT-Master II, Datejust, Day-Date, Sky-Dweller, the discontinued references and the ones your AD keeps saying are "allocated."',
@@ -32,7 +32,7 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Rolex in Boston? I pay dealer prices, in person, same day, with a wire you can watch land.',
         faq: [
-            ['Can I buy a Rolex in Boston without a waitlist?', 'Yes. Dialed By H sources Rolex from a dealer network rather than an authorized dealer allocation, so steel sports models like the Submariner, Daytona and GMT-Master II are available within days, not years. You pay market price rather than retail, and you get the watch now.'],
+            ['Can I buy a Rolex in Boston without a waitlist?', 'Yes. Dialed by H sources Rolex from a dealer network rather than an authorized dealer allocation, so steel sports models like the Submariner, Daytona and GMT-Master II are available within days, not years. You pay market price rather than retail, and you get the watch now.'],
             ['Are the Rolex watches authenticated?', 'Every Rolex I sell is inspected and authenticated before it changes hands. Serial and reference are checked, the movement is verified, and box and papers are confirmed where they are included. Full-set pieces are described as full set; watch-only pieces are described as watch only.'],
             ['Can I sell my Rolex in Boston?', 'Yes. Send the reference, condition and whether you have box and papers, and I will give you a real number the same day. Boston clients can meet in person; everyone else ships fully insured with a label I send.'],
             ['Do you trade Rolex?', 'Yes. Trade your current Rolex toward another Rolex, or toward Patek Philippe, Audemars Piguet or Richard Mille. I quote the trade value and the difference up front.'],
@@ -41,8 +41,8 @@ const BRANDS = {
     },
     'patek-philippe': {
         name: 'Patek Philippe', match: /^patek/i,
-        title: 'Patek Philippe for Sale in Boston | Nautilus, Aquanaut, Calatrava | Dialed By H',
-        description: 'Source a Patek Philippe in Boston through Dialed By H. Nautilus, Aquanaut, Calatrava, Complications and Grand Complications, authenticated and delivered in person in Boston, NYC and Miami.',
+        title: 'Patek Philippe for Sale in Boston | Nautilus, Aquanaut, Calatrava | Dialed by H',
+        description: 'Source a Patek Philippe in Boston through Dialed by H. Nautilus, Aquanaut, Calatrava, Complications and Grand Complications, authenticated and delivered in person in Boston, NYC and Miami.',
         h1: 'Patek Philippe in Boston',
         intro: [
             'Nautilus, Aquanaut, Calatrava, annual calendars, perpetual calendars. If Patek made it and it is on the market somewhere, I can usually find it. These are the pieces I currently have access to through my dealer network.',
@@ -51,7 +51,7 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Patek in Boston? I buy Nautilus, Aquanaut and complications outright, or consign for a lower fee than the auction houses.',
         faq: [
-            ['Can I buy a Patek Philippe Nautilus in Boston?', 'Yes. Dialed By H sources Nautilus and Aquanaut references through a network of dealers and private collectors, so you are not waiting on an authorized dealer allocation. Pricing is market, and every piece is authenticated before handover.'],
+            ['Can I buy a Patek Philippe Nautilus in Boston?', 'Yes. Dialed by H sources Nautilus and Aquanaut references through a network of dealers and private collectors, so you are not waiting on an authorized dealer allocation. Pricing is market, and every piece is authenticated before handover.'],
             ['Do the Patek Philippe watches come with papers?', 'Most do, and the listing says exactly what is included. For older pieces without papers, an Extract from the Archives can be arranged through Patek Philippe to confirm the watch.'],
             ['Can I sell or consign a Patek Philippe in Boston?', 'Yes. I buy outright or consign. Consignment gets you closer to full market value; outright is faster. Tell me the reference and condition and I will lay out both numbers.'],
             ['Where do you meet in Boston?', 'In person, at a location that suits you, or at a bank if you prefer to complete the wire on the spot. I also hand over in New York and Miami regularly.'],
@@ -59,8 +59,8 @@ const BRANDS = {
     },
     'audemars-piguet': {
         name: 'Audemars Piguet', match: /^audemars/i,
-        title: 'Audemars Piguet Royal Oak for Sale in Boston | Dialed By H',
-        description: 'Buy or sell an Audemars Piguet Royal Oak or Royal Oak Offshore in Boston with Dialed By H. Steel, gold, ceramic, chronographs and perpetual calendars, authenticated and delivered in person.',
+        title: 'Audemars Piguet Royal Oak for Sale in Boston | Dialed by H',
+        description: 'Buy or sell an Audemars Piguet Royal Oak or Royal Oak Offshore in Boston with Dialed by H. Steel, gold, ceramic, chronographs and perpetual calendars, authenticated and delivered in person.',
         h1: 'Audemars Piguet in Boston',
         intro: [
             'Royal Oak 15500, 15510, 16202, Offshore, Concept, Code 11.59. AP is the brand I move the most of, and the one where knowing the reference matters more than anywhere else.',
@@ -69,7 +69,7 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Royal Oak in Boston? I pay real money for 15500, 15510, 26240 and Offshores, in person, same day.',
         faq: [
-            ['Can I buy an Audemars Piguet Royal Oak in Boston?', 'Yes. Dialed By H sources Royal Oak and Royal Oak Offshore references through a dealer network, in steel, gold and ceramic, including current production and discontinued references.'],
+            ['Can I buy an Audemars Piguet Royal Oak in Boston?', 'Yes. Dialed by H sources Royal Oak and Royal Oak Offshore references through a dealer network, in steel, gold and ceramic, including current production and discontinued references.'],
             ['How do you check a Royal Oak is genuine?', 'Serial and case number verification, movement inspection, bracelet and clasp originality, and a condition grade that calls out polishing. A watch that has been polished is sold as polished.'],
             ['Can I sell my Royal Oak in Boston?', 'Yes. Send the reference, dial, bracelet and whether you have box and papers, and I will give you a number the same day. Boston and New York clients can meet in person.'],
             ['Do you trade Rolex for Audemars Piguet?', 'Yes, both directions. I quote the trade value and the difference up front so there is no surprise.'],
@@ -77,8 +77,8 @@ const BRANDS = {
     },
     'richard-mille': {
         name: 'Richard Mille', match: /^richard/i,
-        title: 'Richard Mille for Sale in Boston | RM 011, RM 035, RM 055, RM 67 | Dialed By H',
-        description: 'Source a Richard Mille in Boston through Dialed By H. RM 011, RM 035, RM 055, RM 67-02 and more, authenticated with full documentation, delivered in person in Boston, NYC and Miami.',
+        title: 'Richard Mille for Sale in Boston | RM 011, RM 035, RM 055, RM 67 | Dialed by H',
+        description: 'Source a Richard Mille in Boston through Dialed by H. RM 011, RM 035, RM 055, RM 67-02 and more, authenticated with full documentation, delivered in person in Boston, NYC and Miami.',
         h1: 'Richard Mille in Boston',
         intro: [
             'RM 011, RM 035, RM 055, RM 67-02, RM 72-01. Richard Mille is a small market with big numbers, and the difference between a good deal and a bad one is knowing who you are buying from.',
@@ -87,15 +87,15 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Richard Mille? I buy outright with a same-day wire, or place it privately with a buyer from the network.',
         faq: [
-            ['Can I buy a Richard Mille in Boston?', 'Yes. Dialed By H sources Richard Mille through a private dealer network. Pieces come with warranty card, box and full documentation, and are handed over in person in Boston, New York or Miami.'],
+            ['Can I buy a Richard Mille in Boston?', 'Yes. Dialed by H sources Richard Mille through a private dealer network. Pieces come with warranty card, box and full documentation, and are handed over in person in Boston, New York or Miami.'],
             ['How do you authenticate a Richard Mille?', 'Warranty card and serials are matched to the case and strap, the movement is inspected, and service history is confirmed. A piece that cannot be fully documented is not offered.'],
             ['Can I sell my Richard Mille in Boston?', 'Yes. Outright purchase with a same-day wire, or a private placement with a collector from the network for a higher number. Tell me the reference and I will give you both.'],
         ],
     },
     'vacheron-constantin': {
         name: 'Vacheron Constantin', match: /^vacheron/i,
-        title: 'Vacheron Constantin Overseas for Sale in Boston | Dialed By H',
-        description: 'Buy or sell a Vacheron Constantin Overseas, Patrimony or Historiques in Boston with Dialed By H. Authenticated, delivered in person in Boston, NYC and Miami.',
+        title: 'Vacheron Constantin Overseas for Sale in Boston | Dialed by H',
+        description: 'Buy or sell a Vacheron Constantin Overseas, Patrimony or Historiques in Boston with Dialed by H. Authenticated, delivered in person in Boston, NYC and Miami.',
         h1: 'Vacheron Constantin in Boston',
         intro: [
             'Overseas in steel, rose gold and the chronograph, Patrimony, Historiques, the 222. Vacheron is the quiet one of the big three and the one serious collectors end up at.',
@@ -103,14 +103,14 @@ const BRANDS = {
         ],
         sellLine: 'Selling an Overseas in Boston? I buy outright or consign, and I know exactly what the rose gold ones are trading at this week.',
         faq: [
-            ['Can I buy a Vacheron Constantin Overseas in Boston?', 'Yes. Dialed By H sources Overseas references in steel and gold, including the chronograph and the perpetual calendar, through a dealer network, with in-person handover in Boston.'],
+            ['Can I buy a Vacheron Constantin Overseas in Boston?', 'Yes. Dialed by H sources Overseas references in steel and gold, including the chronograph and the perpetual calendar, through a dealer network, with in-person handover in Boston.'],
             ['Can I sell my Vacheron Constantin in Boston?', 'Yes. Send the reference and condition and I will give you an outright number and a consignment number the same day.'],
         ],
     },
     'cartier': {
         name: 'Cartier', match: /^cartier$/i,
-        title: 'Cartier Watches for Sale in Boston | Santos, Tank, Panthère, Crash | Dialed By H',
-        description: 'Buy or sell a Cartier Santos, Tank, Panthère, Ballon Bleu or Crash in Boston with Dialed By H. Authenticated, delivered in person in Boston, NYC and Miami.',
+        title: 'Cartier Watches for Sale in Boston | Santos, Tank, Panthère, Crash | Dialed by H',
+        description: 'Buy or sell a Cartier Santos, Tank, Panthère, Ballon Bleu or Crash in Boston with Dialed by H. Authenticated, delivered in person in Boston, NYC and Miami.',
         h1: 'Cartier in Boston',
         intro: [
             'Santos, Tank, Panthère, Ballon Bleu, Crash, and the Privé pieces that never make it to the boutique floor. Cartier is the brand that gets the most "where did you get that" and the one with the most fakes on the market.',
@@ -118,14 +118,14 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Cartier in Boston? Gold Santos, Panthère and Crash are in demand. Send the reference and I will give you a number today.',
         faq: [
-            ['Can I buy a Cartier watch in Boston?', 'Yes. Dialed By H sources Cartier Santos, Tank, Panthère, Ballon Bleu and Crash references, in steel and gold, with in-person handover in Boston.'],
+            ['Can I buy a Cartier watch in Boston?', 'Yes. Dialed by H sources Cartier Santos, Tank, Panthère, Ballon Bleu and Crash references, in steel and gold, with in-person handover in Boston.'],
             ['How do you spot a fake Cartier?', 'Case construction, dial printing, movement, and hallmarks on gold pieces. Every Cartier is inspected before it is offered, and papers are confirmed where they are included.'],
         ],
     },
     'fp-journe': {
         name: 'F.P. Journe', match: /^f\.?p\.?\s*journe/i,
-        title: 'F.P. Journe for Sale in Boston | Chronomètre Bleu, Résonance, Tourbillon | Dialed By H',
-        description: 'Source an F.P. Journe in Boston through Dialed By H. Chronomètre Bleu, Chronomètre Souverain, Résonance and Tourbillon Souverain, authenticated and delivered in person.',
+        title: 'F.P. Journe for Sale in Boston | Chronomètre Bleu, Résonance, Tourbillon | Dialed by H',
+        description: 'Source an F.P. Journe in Boston through Dialed by H. Chronomètre Bleu, Chronomètre Souverain, Résonance and Tourbillon Souverain, authenticated and delivered in person.',
         h1: 'F.P. Journe in Boston',
         intro: [
             'Chronomètre Bleu, Chronomètre Souverain, Résonance, Tourbillon Souverain, Élégante. Journe is the independent that turned into a blue-chip, and the pieces trade hands quietly between collectors who know each other.',
@@ -133,14 +133,14 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Journe? I can place it privately with a collector for a better number than you will get anywhere public.',
         faq: [
-            ['Can I buy an F.P. Journe in Boston?', 'Yes. Dialed By H sources F.P. Journe through a private collector and dealer network, with papers verified, and in-person handover in Boston, New York or Miami.'],
+            ['Can I buy an F.P. Journe in Boston?', 'Yes. Dialed by H sources F.P. Journe through a private collector and dealer network, with papers verified, and in-person handover in Boston, New York or Miami.'],
             ['Can I sell my F.P. Journe?', 'Yes. Private placement usually gets the best number for Journe. Tell me the reference and I will tell you what it is trading at.'],
         ],
     },
     'a-lange-sohne': {
         name: 'A. Lange & Söhne', match: /lange/i,
-        title: 'A. Lange & Söhne for Sale in Boston | Lange 1, Zeitwerk, Datograph | Dialed By H',
-        description: 'Source an A. Lange & Söhne in Boston through Dialed By H. Lange 1, Zeitwerk, Datograph, Saxonia and Odysseus, authenticated and delivered in person.',
+        title: 'A. Lange & Söhne for Sale in Boston | Lange 1, Zeitwerk, Datograph | Dialed by H',
+        description: 'Source an A. Lange & Söhne in Boston through Dialed by H. Lange 1, Zeitwerk, Datograph, Saxonia and Odysseus, authenticated and delivered in person.',
         h1: 'A. Lange & Söhne in Boston',
         intro: [
             'Lange 1, Zeitwerk, Datograph, Saxonia, Odysseus. Lange is the German answer to Patek and the pieces I get the most questions about from collectors who already own everything else.',
@@ -148,7 +148,7 @@ const BRANDS = {
         ],
         sellLine: 'Selling a Lange in Boston? Outright or consignment, with a real number the same day.',
         faq: [
-            ['Can I buy an A. Lange & Söhne in Boston?', 'Yes. Dialed By H sources Lange 1, Zeitwerk, Datograph, Saxonia and Odysseus references through a dealer network, with in-person handover in Boston.'],
+            ['Can I buy an A. Lange & Söhne in Boston?', 'Yes. Dialed by H sources Lange 1, Zeitwerk, Datograph, Saxonia and Odysseus references through a dealer network, with in-person handover in Boston.'],
         ],
     },
 };
@@ -177,7 +177,7 @@ function renderBrandPage(slug, all = []) {
         {
             '@context': 'https://schema.org', '@type': 'CollectionPage',
             name: b.title, url: canonical, description: b.description,
-            isPartOf: { '@type': 'WebSite', name: 'Dialed By H', url: SITE_URL },
+            isPartOf: { '@type': 'WebSite', name: 'Dialed by H', url: SITE_URL },
             about: { '@type': 'Brand', name: b.name },
             mainEntity: {
                 '@type': 'ItemList', numberOfItems: pieces.length,
@@ -204,7 +204,7 @@ function renderBrandPage(slug, all = []) {
         },
         {
             '@context': 'https://schema.org', '@type': 'LocalBusiness',
-            '@id': `${SITE_URL}/#business`, name: 'Dialed By H', url: SITE_URL,
+            '@id': `${SITE_URL}/#business`, name: 'Dialed by H', url: SITE_URL,
             description: `Independent luxury watch dealer in Boston specializing in ${b.name}.`,
             address: { '@type': 'PostalAddress', addressLocality: 'Boston', addressRegion: 'MA', addressCountry: 'US' },
             areaServed: [{ '@type': 'City', name: 'Boston' }, { '@type': 'City', name: 'New York City' }, { '@type': 'City', name: 'Miami' }],
@@ -230,9 +230,12 @@ function renderBrandPage(slug, all = []) {
 <meta property="og:url" content="${canonical}">
 <meta property="og:title" content="${escAttr(b.title)}">
 <meta property="og:description" content="${escAttr(b.description)}">
-${shown[0] ? `<meta property="og:image" content="${escAttr(shown[0].imageMedium || shown[0].image)}">` : ''}
-<meta property="og:site_name" content="Dialed By H">
+<meta property="og:image" content="${SITE_URL}/images/share/${slug}.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Dialed by H">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${SITE_URL}/images/share/${slug}.jpg">
 ${ld.map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')}
 <link rel="preconnect" href="https://untnrofsnmoyxdidxbdj.supabase.co" crossorigin>
 <script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
@@ -245,7 +248,7 @@ ${chrome.pixel()}
     const main = `<main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/buy/">Sourcing Catalogue</a> / ${escHtml(b.name)}</nav>
 <h1 class="pg-h1" data-su="chars">${twoTone(b.h1)}</h1>
-<p class="pt-dmline">${escHtml(b.intro[0] || '')} See something you like? Fastest way is a DM &mdash; <a href="${wa}" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the ${escHtml(b.name)} you're hunting isn't here, I can find it.</p>
+<p class="pt-dmline">${escHtml(b.intro[0] || '')} See something you like? Fastest way is a DM on <a href="${wa}" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the ${escHtml(b.name)} you're hunting isn't here, I can find it.</p>
 <div class="pt-fbar">
 <a class="pt-fbtn" href="/buy/">All brands <i>&rarr;</i></a>
 <a class="pt-fbtn" href="/source" data-modal="source" data-brand="${escAttr(b.name)}">Request to source <span class="n">+</span></a>
@@ -255,7 +258,7 @@ ${chrome.pixel()}
 <div class="pt-grid12">${grid}</div>
 
 <section class="bp-sec">
-<h2>About ${escHtml(b.name)} at Dialed By H</h2>
+<h2>About ${escHtml(b.name)} at Dialed by H</h2>
 <div class="bp-copy">${b.intro.slice(1).map(p => `<p>${escHtml(p)}</p>`).join('')}<p>${escHtml(b.sellLine)} <a href="/sell" data-modal="sell">Get a number today</a>.</p></div>
 </section>
 

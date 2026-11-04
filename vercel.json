@@ -78,6 +78,10 @@
       "destination": "/api/get-inventory?slug=:slug"
     },
     {
+      "source": "/share/watch/:slug.jpg",
+      "destination": "/api/get-inventory?shareCard=:slug"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/get-inventory?sitemap=1"
     },
@@ -241,7 +245,8 @@
   ],
   "functions": {
     "api/*.js": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "assets/{fonts/suisse/*.ttf,brand/wordmark-charcoal.svg,brand/logomark-charcoal.svg}"
     }
   }
 }

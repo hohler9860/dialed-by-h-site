@@ -34,7 +34,7 @@ function fourOhFourHtml() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Article not found | Off-Catalog by Dialed By H</title>
+<title>Article not found | Off-Catalog by Dialed by H</title>
 <meta name="robots" content="noindex, nofollow">
 ${chrome.headAssets()}
 ${chrome.pixel()}
@@ -58,8 +58,8 @@ function renderArticleHtml(a) {
     a = { ...a, hero_image_url: journalImage(a) };
     const title       = a.title || "Untitled";
     const subtitle    = a.subtitle || "";
-    const seoTitle    = a.seo_title || `${title} | Off-Catalog by Dialed By H`;
-    const description = a.seo_description || a.excerpt || subtitle || "Read the latest from Off-Catalog, the journal by Dialed By H.";
+    const seoTitle    = a.seo_title || `${title} | Off-Catalog by Dialed by H`;
+    const description = a.seo_description || a.excerpt || subtitle || "Read the latest from Off-Catalog, the journal by Dialed by H.";
     const heroUrl     = a.hero_image_url || "https://www.dialedbyhenry.com/images/og-share-v3.png";
     const canonical   = `${SITE_URL}/journal/${a.slug}`;
     const pubDate     = a.published_at;
@@ -79,7 +79,7 @@ function renderArticleHtml(a) {
         author: { "@type": "Person", name: a.author_name || "Henry Ohler" },
         publisher: {
             "@type": "Organization",
-            name: "Dialed By H",
+            name: "Dialed by H",
             logo: { "@type": "ImageObject", url: `${SITE_URL}/images/logo-dbh.png` },
         },
         mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
@@ -113,7 +113,7 @@ function renderArticleHtml(a) {
 <meta property="og:description" content="${escAttr(description)}">
 <meta property="og:image" content="${escAttr(heroUrl)}">
 <meta property="og:image:alt" content="${escAttr(a.hero_alt || title)}">
-<meta property="og:site_name" content="Dialed By H">
+<meta property="og:site_name" content="Dialed by H">
 <meta property="article:author" content="${escAttr(a.author_name || "Henry Ohler")}">
 ${pubDate ? `<meta property="article:published_time" content="${escAttr(pubDate)}">` : ""}
 ${category ? `<meta property="article:section" content="${escAttr(category)}">` : ""}
@@ -143,7 +143,7 @@ ${a.hero_image_url ? `<div class="pa-banner"><img src="${escAttr(heroUrl)}" alt=
 <h1 class="pa-title">${escHtml(title)}</h1>
 ${subtitle ? `<p class="pa-sub">${escHtml(subtitle)}</p>` : ""}
 
-<div class="pa-heroline"><span>By ${escHtml(a.author_name || "Henry Ohler")}</span><span>Dialed By H</span></div>
+<div class="pa-heroline"><span>By ${escHtml(a.author_name || "Henry Ohler")}</span><span>Dialed by H</span></div>
 <div class="pa-body">${contentHtml}</div>
 <div class="pa-cta">
 <h3>Get the next one</h3>

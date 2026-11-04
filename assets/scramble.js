@@ -10,7 +10,7 @@
   function palette(el) {
     var c = getComputedStyle(el).color.match(/\d+/g) || [0, 0, 0];
     var lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
-    return lum > 128 ? ['#ffffff', '#8a8a85'] : ['#2b2b28', '#8a8a85'];
+    return lum > 128 ? ['#F7F3E9', '#999791'] : ['#252522', '#999791'];
   }
 
   var registry = [];

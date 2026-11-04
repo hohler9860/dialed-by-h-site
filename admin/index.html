@@ -4560,7 +4560,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         }
         var row = document.querySelector('tr[data-wid="' + l.id + '"]');
         if (row) {
-            var rn = row.querySelector('.tname'), rs = row.querySelector('.tsub');
+            var rn = row.querySelector('.wcell .tname'), rs = row.querySelector('.wcell .tsub');
             if (rn) rn.textContent = name || '\u2014';
             if (rs) rs.textContent = l.reference || 'no ref';
             if (row.cells[2]) row.cells[2].textContent = specOf(l) || '\u2014';

@@ -295,17 +295,24 @@ h1{font-family:var(--works);font-weight:400;font-size:calc(34*var(--u));line-hei
 .cta:hover{color:var(--grey-light)}
 .menu{display:none;position:absolute;right:calc(110*var(--u));top:calc(28*var(--u));font-family:var(--intl);font-size:calc(14*var(--u));letter-spacing:.03em;text-transform:uppercase;background:none;border:0;color:var(--cream);cursor:pointer;padding:0}
 @media(max-width:899px){
-  .hnav{display:none}.menu{display:block}
-  .wm{width:calc(280*var(--u))}.lm{width:calc(56*var(--u))}
-  .block{bottom:calc(28*var(--u));width:calc(600*var(--u))}
+  /* The logo files carry empty margins (30 of 791 and 30.8 of 145 units), so they are offset
+     by that amount to put the visible artwork on the margin. All three share one centre line. */
+  .hero{--bar:max(24px,calc(44*var(--u)));--wm:calc(280*var(--u));--lm:calc(56*var(--u))}
+  .hnav{display:none}
+  .wm,.lm,.menu{top:var(--bar);transform:translateY(-50%)}
+  .wm{width:var(--wm);left:calc(var(--gutter) - var(--wm)*.03793)}
+  .lm{width:var(--lm);right:calc(var(--gutter) - var(--lm)*.2124)}
+  .menu{display:block;font-size:max(11px,calc(14*var(--u)));line-height:1;padding:15px 10px;right:calc(var(--gutter) + var(--lm)*.5807 + 14px - 10px)}
+  .block{left:var(--gutter);bottom:calc(28*var(--u));width:calc(100vw - var(--gutter)*2 - 46px - 12px)}
   h1{font-size:calc(44*var(--u))}.sub{font-size:calc(22*var(--u))}.cta{font-size:calc(15*var(--u))}
 }
 /* mobile menu sheet */
 .sheet{position:fixed;inset:0;z-index:50;background:var(--charcoal);color:var(--cream);display:none;flex-direction:column;justify-content:space-between;padding:max(22px,env(safe-area-inset-top,0px)) var(--gutter) max(24px,env(safe-area-inset-bottom,0px))}
 .sheet.is-open{display:flex}
 .sheet header{display:flex;justify-content:space-between;align-items:center}
-.sheet .wm2{width:200px;height:auto;color:var(--cream)}
+.sheet .wm2{width:calc(280*var(--u));margin-left:calc(280*var(--u)*-.03793);height:auto;color:var(--cream)}
 .sheet header button{background:none;border:0;color:var(--cream);font-family:var(--intl);font-size:13px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;padding:0}
+@media(max-width:899px){.sheet{padding-top:max(calc(max(24px,calc(44*var(--u))) - 19.82*var(--u)),env(safe-area-inset-top,0px))}.sheet header button{line-height:1;position:relative;top:2px}}
 .sheet ol{list-style:none;margin:0;padding:0;display:grid;gap:18px}
 .sheet li{display:flex;align-items:baseline;gap:22px}
 .sheet .n{font-family:var(--intl);font-size:12px;letter-spacing:.03em;width:30px}
@@ -389,6 +396,7 @@ footer a:hover{opacity:.55}
 .floats a{width:46px;height:46px;border-radius:50%;background:rgba(37,37,34,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--cream);border:1px solid rgba(247,243,233,.4);display:flex;align-items:center;justify-content:center;transition:transform .25s,background .25s}
 .floats a:hover{transform:scale(1.06);background:rgba(37,37,34,.72)}
 .floats svg{width:23px;height:23px}
+@media(max-width:899px){.floats{right:max(var(--gutter),env(safe-area-inset-right,0px))}}
 [hidden]{display:none!important}
     </style>
     <!-- Meta Pixel Code -->
@@ -409,7 +417,7 @@ footer a:hover{opacity:.55}
 </head>
 <body>
 <section class="hero" aria-label="Dialed by H">
-  <img class="slide is-on" alt="" src="/assets/hero/01.webp" srcset="/assets/hero/01-m.webp 960w, /assets/hero/01.webp 1920w" sizes="100vw" fetchpriority="high"><img class="slide" alt="" data-src="/assets/hero/02.webp" data-m="/assets/hero/02-m.webp"><img class="slide" alt="" data-src="/assets/hero/03.webp" data-m="/assets/hero/03-m.webp"><img class="slide" alt="" data-src="/assets/hero/04.webp" data-m="/assets/hero/04-m.webp"><img class="slide" alt="" data-src="/assets/hero/05.webp" data-m="/assets/hero/05-m.webp"><img class="slide" alt="" data-src="/assets/hero/06.webp" data-m="/assets/hero/06-m.webp"><img class="slide" alt="" data-src="/assets/hero/07.webp" data-m="/assets/hero/07-m.webp"><img class="slide" alt="" data-src="/assets/hero/08.webp" data-m="/assets/hero/08-m.webp"><img class="slide" alt="" data-src="/assets/hero/09.webp" data-m="/assets/hero/09-m.webp"><img class="slide" alt="" data-src="/assets/hero/10.webp" data-m="/assets/hero/10-m.webp"><img class="slide" alt="" data-src="/assets/hero/11.webp" data-m="/assets/hero/11-m.webp"><img class="slide" alt="" data-src="/assets/hero/12.webp" data-m="/assets/hero/12-m.webp"><img class="slide" alt="" data-src="/assets/hero/13.webp" data-m="/assets/hero/13-m.webp"><img class="slide" alt="" data-src="/assets/hero/14.webp" data-m="/assets/hero/14-m.webp"><img class="slide" alt="" data-src="/assets/hero/15.webp" data-m="/assets/hero/15-m.webp">
+  <picture><source media="(orientation: portrait)" type="image/avif" srcset="/assets/hero/01-p.avif"><source media="(orientation: portrait)" type="image/webp" srcset="/assets/hero/01-p.webp"><img class="slide is-on" alt="" src="/assets/hero/01.webp" fetchpriority="high"></picture><img class="slide" alt="" data-src="/assets/hero/02.webp" data-p="/assets/hero/02-p"><img class="slide" alt="" data-src="/assets/hero/03.webp" data-p="/assets/hero/03-p"><img class="slide" alt="" data-src="/assets/hero/04.webp" data-p="/assets/hero/04-p"><img class="slide" alt="" data-src="/assets/hero/05.webp" data-p="/assets/hero/05-p"><img class="slide" alt="" data-src="/assets/hero/06.webp" data-p="/assets/hero/06-p"><img class="slide" alt="" data-src="/assets/hero/07.webp" data-p="/assets/hero/07-p"><img class="slide" alt="" data-src="/assets/hero/08.webp" data-p="/assets/hero/08-p"><img class="slide" alt="" data-src="/assets/hero/09.webp" data-p="/assets/hero/09-p"><img class="slide" alt="" data-src="/assets/hero/10.webp" data-p="/assets/hero/10-p"><img class="slide" alt="" data-src="/assets/hero/11.webp" data-p="/assets/hero/11-p"><img class="slide" alt="" data-src="/assets/hero/12.webp" data-p="/assets/hero/12-p"><img class="slide" alt="" data-src="/assets/hero/13.webp" data-p="/assets/hero/13-p"><img class="slide" alt="" data-src="/assets/hero/14.webp" data-p="/assets/hero/14-p"><img class="slide" alt="" data-src="/assets/hero/15.webp" data-p="/assets/hero/15-p">
   <div class="veil"></div>
   <svg class="wm" role="img" aria-label="Dialed by H" viewBox="0 0 791 112" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M751.867 30.0803H760.267V81.5999H751.867V58.1601H716.828V81.5999H708.428V30.0803H716.828V50.3202H751.867V30.0803Z" fill="currentColor"/>
@@ -519,8 +527,10 @@ footer a:hover{opacity:.55}
 (function(){
   var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});};
   // Hero rotation. Photo 1 ships in the HTML; the rest load after the page is idle.
-  var s=[].slice.call(document.querySelectorAll('.slide')),i=0,rm=matchMedia('(prefers-reduced-motion: reduce)').matches,mob=matchMedia('(max-width: 760px)').matches;
-  function hydrate(k){var el=s[k];if(el.dataset.src){el.src=mob?el.dataset.m:el.dataset.src;delete el.dataset.src;}}
+  var s=[].slice.call(document.querySelectorAll('.slide')),i=0,rm=matchMedia('(prefers-reduced-motion: reduce)').matches,tall=matchMedia('(orientation: portrait)').matches;
+  // Later slides follow whichever format the browser chose for the first one.
+  var ext=/\.avif/.test(s[0].currentSrc||'')?'.avif':'.webp';
+  function hydrate(k){var el=s[k];if(el.dataset.src){el.src=tall?el.dataset.p+ext:el.dataset.src;delete el.dataset.src;}}
   function next(){var k=(i+1)%s.length;hydrate(k);hydrate((k+1)%s.length);s[i].classList.remove('is-on');i=k;s[i].classList.add('is-on');}
   if(s.length>1){(window.requestIdleCallback||setTimeout)(function(){hydrate(1);hydrate(2);});if(!rm)setInterval(next,5500);}
   // Mobile menu

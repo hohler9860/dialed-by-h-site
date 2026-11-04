@@ -52,7 +52,7 @@ button{font:inherit;color:inherit}
 .sh nav a:hover{color:var(--grey-dark)}
 .sh nav li.is-here a{text-decoration:underline;text-underline-offset:.3em;text-decoration-thickness:1px}
 .sh .menu{display:none;font-family:var(--intl);font-size:12px;letter-spacing:.04em;text-transform:uppercase;background:none;border:0;cursor:pointer;padding:6px 0}
-@media(max-width:1023px){.sh nav,.sh__mark{display:none}.sh .menu{display:block}}
+@media(max-width:1023px){.sh nav,.sh__mark{display:none}.sh .menu{display:block;padding:12px 10px;margin:-12px -10px}}
 .sheet{position:fixed;inset:0;z-index:50;background:var(--charcoal);color:var(--cream);display:none;flex-direction:column;justify-content:space-between;padding:max(22px,env(safe-area-inset-top,0px)) var(--gutter) max(24px,env(safe-area-inset-bottom,0px))}
 .sheet.is-open{display:flex}
 .sheet header{display:flex;justify-content:space-between;align-items:center}
@@ -380,3 +380,13 @@ button{font:inherit;color:inherit}
 .tv-best-v{font-family:var(--intl);font-weight:500;font-size:14px}
 .tv-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
 .hidden{display:none!important}
+
+/* Phones: the wordmark file has an empty margin, so offset it to put the letters on the page
+   margin, and keep the logo in exactly the same spot when the menu opens. */
+@media(max-width:1023px){
+.sh .wm{margin-left:calc(clamp(150px,13vw,210px)*-.03793)}
+.sh .menu,.sheet header button{line-height:1;position:relative;top:1px}
+.sheet{padding-top:max(18px,env(safe-area-inset-top,0px))}
+.sheet .wm2{width:clamp(150px,13vw,210px);margin-left:calc(clamp(150px,13vw,210px)*-.03793)}
+.floats{right:max(var(--gutter),env(safe-area-inset-right,0px))}
+}

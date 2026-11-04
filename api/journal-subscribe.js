@@ -66,7 +66,7 @@ function confirmEmailHtml({ confirmUrl, email }) {
     <div style="background: #252522; margin: 0; padding: 0;">
     <div style="max-width: 600px; margin: 0 auto; padding: 44px 32px; background: #252522; color: #F7F3E9; -webkit-text-fill-color: #F7F3E9;">
         <div style="text-align: center; margin-bottom: 32px;">
-            <img src="https://www.dialedbyhenry.com/images/email/logo-plaque.png" alt="Dialed By H" width="252" style="display: inline-block; border: none;">
+            <img src="https://www.dialedbyhenry.com/images/email/logo-plaque.png" alt="Dialed by H" width="252" style="display: inline-block; border: none;">
         </div>
         <div style="border-top: 1px solid #52514E; padding-top: 36px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
@@ -81,7 +81,7 @@ function confirmEmailHtml({ confirmUrl, email }) {
                 </tr>
             </table>
             <p style="font-family: 'Suisse Works', Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.75; color: #D8D5CE; -webkit-text-fill-color: #D8D5CE; margin: 24px 0 28px;">
-                One click and you're on the list for Off-Catalog, the journal from Dialed By H. Market notes, sourcing stories, and the occasional rare reference. No spam, ever.
+                One click and you're on the list for Off-Catalog, the journal from Dialed by H. Market notes, sourcing stories, and the occasional rare reference. No spam, ever.
             </p>
             <a href="${confirmUrl}" style="display: inline-block; background: #F7F3E9; color: #252522; -webkit-text-fill-color: #252522; padding: 18px 46px; text-decoration: none; font-family: 'Suisse Intl', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 400; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 0;">
                 Confirm Subscription
@@ -91,7 +91,7 @@ function confirmEmailHtml({ confirmUrl, email }) {
             </p>
         </div>
         <div style="border-top: 1px solid #52514E; margin-top: 36px; padding-top: 16px; text-align: center;">
-            <p style="font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #999791; -webkit-text-fill-color: #999791; margin: 0;">&copy; 2026 Dialed By H &mdash; dialedbyhenry.com</p>
+            <p style="font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #999791; -webkit-text-fill-color: #999791; margin: 0;">&copy; 2026 Dialed by H &mdash; dialedbyhenry.com</p>
         </div>
     </div>
     </div>

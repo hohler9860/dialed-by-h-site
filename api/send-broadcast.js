@@ -102,7 +102,7 @@ module.exports = async (req, res) => {
     if (payload.testEmail) {
       console.log("[broadcast] TEST MODE -sending to:", payload.testEmail);
       const result = await getResend().emails.send({
-        from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+        from: "Henry at Dialed by H <inquiries@mail.dialedbyhenry.com>",
         replyTo: "henry@dialedbyhenry.com",
         to: payload.testEmail,
         subject: payload.subject,
@@ -168,7 +168,7 @@ module.exports = async (req, res) => {
       const results = await Promise.allSettled(
         batch.map(sub =>
           getResend().emails.send({
-            from: "Henry at Dialed By H <inquiries@mail.dialedbyhenry.com>",
+            from: "Henry at Dialed by H <inquiries@mail.dialedbyhenry.com>",
             replyTo: "henry@dialedbyhenry.com",
             to: sub.email,
             subject: payload.subject,

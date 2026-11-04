@@ -334,7 +334,7 @@ module.exports = async (req, res) => {
 
         emailPromises.push(
           getResend().emails.send({
-            from: "Dialed By H <inquiries@mail.dialedbyhenry.com>",
+            from: "Dialed by H <inquiries@mail.dialedbyhenry.com>",
             to: toEmail,
             subject: template.subject,
             html: template.body,

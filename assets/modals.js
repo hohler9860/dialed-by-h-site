@@ -1,4 +1,4 @@
-/* Dialed By H — popup request forms (Sell / Trade / Source) + Buy DM prompt.
+/* Dialed by H — popup request forms (Sell / Trade / Source) + Buy DM prompt.
    One design for all three: the light "Request to Source" card. Rendered by
    this script on every page that includes it, so the look cannot drift per
    page again. Styles are injected here (prefixed .dbh-lm) and do not depend
@@ -173,7 +173,7 @@
         '<h2 class="dbh-lm__title">Looking to buy?</h2>' +
         '<p class="dbh-lm__sub">Fastest way is a DM.</p>' +
         '<p class="dbh-lm__lead">Tell me what you\'re after and I\'ll come back with what I can find.</p>' +
-        '<a class="dbh-lm__link" href="' + WA + '?text=' + encodeURIComponent("Hi Henry — I'm looking to buy a watch.") + '" target="_blank" rel="noopener">WhatsApp me</a>' +
+        '<a class="dbh-lm__link" href="' + WA + '?text=' + encodeURIComponent("Hi Henry, I'm looking to buy a watch.") + '" target="_blank" rel="noopener">WhatsApp me</a>' +
         '<a class="dbh-lm__link dbh-lm__link--ghost" href="' + IG + '" target="_blank" rel="noopener">DM on Instagram</a>');
     } else {
       var cfg = FORMS[kind];
@@ -265,12 +265,12 @@
             '<span class="dbh-lm__eyebrow">Received</span>' +
             '<h2 class="dbh-lm__title">Got it.</h2>' +
             '<p class="dbh-lm__sub">I\'ll be in touch shortly.</p>' +
-            '<p class="dbh-lm__lead">In the meantime, follow Dialed By H on Instagram. That\'s where every new piece shows up first.</p>' +
+            '<p class="dbh-lm__lead">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
             '<a class="dbh-lm__link" href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>');
           modal.querySelector('.dbh-lm__close').addEventListener('click', close);
         }).catch(function () {
           if (window.dbhTracking) window.dbhTracking.error(form);
-          var lines = [cfg.title + ' — Dialed By H'];
+          var lines = [cfg.title + ', Dialed by H'];
           var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
           Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
           window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');

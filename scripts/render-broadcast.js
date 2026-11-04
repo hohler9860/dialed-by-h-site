@@ -52,7 +52,7 @@ const examples = {
     ctaUrl: "https://www.dialedbyhenry.com/journal/",
   },
   announcement: {
-    previewText: "Big things coming to Dialed By H this month.",
+    previewText: "Big things coming to Dialed by H this month.",
     tag: "ANNOUNCEMENT",
     headline: "Expanding the Collection",
     body: "I\u2019m adding Cartier, A. Lange, and F.P. Journe to the sourcing portfolio this month. If any of these brands have been on your radar, now is the time to reach out.",

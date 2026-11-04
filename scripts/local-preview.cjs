@@ -17,7 +17,8 @@ for (const k of Object.keys(process.env)) if (/RESEND|TWILIO|EVOLUTION|WHATSAPP|
 process.env.VERCEL_ENV = 'development';
 
 // Read-only guard: reads go through, anything that would write or send is answered locally.
-const READ_ONLY_RPC = /\/rpc\/(inquiry_analytics)\b/;
+// These calls use POST but only read: the database confirmed them as read-only, and signing only makes photo links.
+const READ_ONLY_RPC = /\/rpc\/(inquiry_analytics|day_summary|identity_health)\b|\/storage\/v1\/object\/sign\//;
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (input, opts = {}) => {
     const target = String(input && input.url ? input.url : input);

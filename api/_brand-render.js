@@ -155,6 +155,13 @@ const BRANDS = {
 
 const BRAND_SLUGS = Object.keys(BRANDS);
 
+// Grey lead-in, charcoal payoff: "Rolex in Boston," / "without the waitlist",
+// "Cartier" / "in Boston". The words never change, only where the colour turns.
+function twoTone(h1) {
+    const m = String(h1).match(/^(.+?,)\s+(.+)$/) || String(h1).match(/^(.+?)\s+(in Boston)$/);
+    return m ? `<span class="h-lead">${escHtml(m[1])}</span> ${escHtml(m[2])}` : escHtml(h1);
+}
+
 function brandOf(slug) { return BRANDS[String(slug || '').toLowerCase()] || null; }
 
 function renderBrandPage(slug, all = []) {
@@ -236,7 +243,7 @@ ${chrome.pixel()}
     const wa = `https://wa.me/19146211848?text=${encodeURIComponent(`Hi Henry, I'm looking for a ${b.name}.`)}`;
     const main = `<main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/buy/">Sourcing Catalogue</a> / ${escHtml(b.name)}</nav>
-<h1 class="pg-h1">${escHtml(b.h1)}</h1>
+<h1 class="pg-h1">${twoTone(b.h1)}</h1>
 <p class="pt-dmline">${escHtml(b.intro[0] || '')} See something you like? Fastest way is a DM &mdash; <a href="${wa}" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the ${escHtml(b.name)} you're hunting isn't here, I can find it.</p>
 <div class="pt-fbar">
 <a class="pt-fbtn" href="/buy/">All brands <i>&rarr;</i></a>

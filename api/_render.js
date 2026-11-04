@@ -222,6 +222,11 @@ document.querySelectorAll('.pt-thumbs button').forEach(function (b) {
 </html>`;
 }
 
+// The date every page last changed because of a template. Bump it after a change that
+// touches all pages, so Google knows to look again. Newer rows keep their own date.
+const SITE_UPDATED = '2026-11-03';
+const newestDate = (...dates) => dates.map(d => String(d || '').slice(0, 10)).reduce((a, b) => (b > a ? b : a), SITE_UPDATED);
+
 function renderSitemap(pieces, articles = []) {
     const CORE = [
         { loc: '/', changefreq: 'daily', priority: '1.0' },
@@ -244,15 +249,15 @@ function renderSitemap(pieces, articles = []) {
         { loc: '/patek-philippe-boston', changefreq: 'monthly', priority: '0.7' },
         { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
     ];
-    const tag = ({ loc, changefreq, priority }) =>
-        `  <url><loc>${SITE_URL}${loc}</loc>${changefreq ? `<changefreq>${changefreq}</changefreq>` : ''}${priority ? `<priority>${priority}</priority>` : ''}</url>`;
+    const tag = ({ loc, changefreq, priority, lastmod }) =>
+        `  <url><loc>${SITE_URL}${loc}</loc><lastmod>${lastmod || SITE_UPDATED}</lastmod>${changefreq ? `<changefreq>${changefreq}</changefreq>` : ''}${priority ? `<priority>${priority}</priority>` : ''}</url>`;
     const watchTags = (pieces || [])
         .filter(p => p.image && p.slug)
-        .map(p => tag({ loc: `/watch/${p.slug}`, changefreq: 'weekly', priority: '0.8' }))
+        .map(p => tag({ loc: `/watch/${p.slug}`, changefreq: 'weekly', priority: '0.8', lastmod: newestDate(p.addedAt, p.updatedAt) }))
         .join('\n');
     const articleTags = articles
         .filter(a => a.status === 'published' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(a.slug || ''))
-        .map(a => tag({ loc: `/journal/${a.slug}`, changefreq: 'monthly', priority: '0.8' }))
+        .map(a => tag({ loc: `/journal/${a.slug}`, changefreq: 'monthly', priority: '0.8', lastmod: newestDate(a.updated_at) }))
         .join('\n');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

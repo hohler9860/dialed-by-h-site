@@ -99,6 +99,7 @@ function mapRow(r) {
         // When the piece landed in the catalog. The homepage ticker leads with
         // new stock, which it cannot do from array position alone.
         addedAt: r.created_at || '',
+        updatedAt: r.updated_at || '',
     };
     out.slug = pieceSlug(out);
     return out;

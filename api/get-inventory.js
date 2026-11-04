@@ -302,7 +302,7 @@ module.exports = async (req, res) => {
         try {
             const [pieces, articles] = await Promise.all([
                 fetchAllPieces(),
-                sbFetch('/rest/v1/journal_articles?status=eq.published&select=slug,status&order=published_at.desc&limit=1000')
+                sbFetch('/rest/v1/journal_articles?status=eq.published&select=slug,status,updated_at&order=published_at.desc&limit=1000')
                     .then(r => r.json())
                     .catch(err => {
                         console.error('[get-inventory:sitemap:journal]', err.message);

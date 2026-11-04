@@ -22,7 +22,7 @@
 <meta name="theme-color" content="#F7F3E9">
 <link rel="preload" href="/assets/fonts/suisse/SuisseWorks-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Medium.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/dbh-brand.css?v=5">
+<link rel="stylesheet" href="/assets/dbh-brand.css?v=6">
 <script>
 if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -54,18 +54,18 @@ fbq('track', 'PageView');
 </div>
 <!--/dbh:header-->
 <main class="pg">
-<nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / About</nav>
-<h1 class="pg-h1">About me</h1>
+<nav class="crumb" aria-label="Breadcrumb"><a href="/"><span data-scramble data-delay="150">Home</span></a> / <span data-scramble data-delay="210">About</span></nav>
+<h1 class="pg-h1" data-hsst>About me</h1>
 <div class="ab-cols">
-<div class="ab-side">
-<span>Dialed By H</span>
-<span>Henry Ohler</span>
+<div class="ab-side ab-reveal">
+<span data-scramble data-delay="250">Dialed By H</span>
+<span data-scramble data-delay="400">Henry Ohler</span>
 <div class="ab-photo">
 <img src="/assets/dbh/Henry.webp" alt="Henry Ohler" width="1200" height="1600">
 <img class="ab-sig" src="/assets/dbh/henry-sig-black.png" alt="" aria-hidden="true">
 </div>
 </div>
-<div class="ab-body">
+<div class="ab-body ab-reveal">
 <p>I&rsquo;m Henry. Dialed By H started because I was obsessed with watches before I ever sold one.</p>
 <p>I came in as a collector first. Years of learning references, watching the market, and figuring out which pieces are actually worth chasing past the hype. Friends started asking me to find watches they couldn&rsquo;t get to or didn&rsquo;t trust buying alone. That&rsquo;s how this started.</p>
 <p>That trust is what built Dialed By H.</p>
@@ -126,5 +126,15 @@ document.addEventListener('error',function(e){
 },true);
 </script>
 <!--/dbh:scripts-->
+<script src="/assets/scramble.js?v=2"></script>
+<script src="/assets/hsst.js"></script>
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.ab-reveal'));
+  if(!window.IntersectionObserver){els.forEach(function(el){el.classList.add('is-in')});return;}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;setTimeout(function(){el.classList.add('is-in')},70*(els.indexOf(el)%5));io.unobserve(el)}})},{threshold:.12});
+  els.forEach(function(el){io.observe(el)});
+})();
+</script>
 </body>
 </html>

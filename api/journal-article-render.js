@@ -160,6 +160,7 @@ ${subtitle ? `<p class="pa-sub">${escHtml(subtitle)}</p>` : ""}
 ${chrome.footer()}
 ${chrome.floats()}
 ${chrome.scripts()}
+<script defer src="/assets/journal-paper.js?v=1"></script>
 <script>
 (function () {
     const form = document.getElementById("oc-end-form");

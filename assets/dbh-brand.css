@@ -200,7 +200,7 @@ button{font:inherit;color:inherit}
 .hsst-char{display:inline-block;white-space:pre}
 @keyframes hsstFadeIn{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.ab-reveal{opacity:1;transform:none;transition:none}.ab-sig{opacity:1;-webkit-mask-image:none;mask-image:none;transition:none}}
-@media(prefers-reduced-motion:reduce){.ab-body{font-family:var(--works);font-size:clamp(17px,1.3vw,20px);line-height:1.5;max-width:60ch}
+.ab-body{font-family:var(--works);font-size:clamp(17px,1.3vw,20px);line-height:1.5;max-width:60ch}
 .ab-body p+p{text-indent:2.2em}
 .ab-body .actions{margin-top:32px;text-indent:0}
 .ab-body .actions .btn{min-width:0;padding-inline:22px}

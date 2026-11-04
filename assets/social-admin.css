@@ -12,7 +12,7 @@
 .social a{text-decoration:underline;text-underline-offset:3px}
 .social-table-wrap{overflow-x:auto;border-top:1px solid var(--line)}
 .social-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
-.social-table th{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;padding:10px 10px 10px 0;border-bottom:1px solid var(--line);color:var(--l2);white-space:nowrap;background:var(--b1)}
+.social-table th{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;padding:10px 10px 10px 0;border-bottom:1px solid var(--line);color:var(--l2);white-space:nowrap;background:var(--b1);line-height:1.1;}
 .social-table td{vertical-align:top;padding:11px 10px 11px 0;border-bottom:1px solid var(--line);min-width:120px}
 .social-table tbody tr:hover td{background:rgba(var(--label-d),.04)}
 .social-table td:first-child{width:40%;min-width:260px}
@@ -22,7 +22,7 @@
 .social-actions .btn{font-size:11px;padding:7px 9px}
 .social-event{border-top:1px solid var(--line);padding:12px 0}
 .social-event p{margin:4px 0;font-size:13px}
-.social label{display:block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--l2);margin:18px 0 8px}
+.social label{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--l2);margin:18px 0 8px;line-height:1.1;}
 .social textarea{width:100%;display:block;resize:vertical;line-height:1.6}
 .social .err{font-size:13px;overflow-wrap:anywhere}
 .social .btn:focus-visible,.social a:focus-visible{outline:2px dotted var(--l1);outline-offset:3px}
@@ -39,11 +39,11 @@
 .social label.social-check{display:flex;align-items:flex-start;gap:10px;font-family:inherit;font-size:13px;text-transform:none;letter-spacing:0;line-height:1.5;color:var(--l1)}
 .social-check input{width:16px;height:16px;margin:2px 0 0;flex-shrink:0;accent-color:var(--l1)}
 .social-sources{max-height:240px;overflow:auto;padding:0 14px;border:1px solid var(--line)}
-.social-code{font-family:var(--mono);font-size:12px!important;overflow-wrap:anywhere}.social-copy{font-size:16px}
+.social-code{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere;line-height:1.2;letter-spacing:.06em;}.social-copy{font-size:16px}
 .social-form-actions{margin-top:24px}.social-job{padding:12px;border:1px solid var(--line)}
 @media(max-width:600px){.social-row{flex-direction:column;gap:8px}.social-times{grid-template-columns:repeat(2,minmax(0,1fr))}.social-subnav .btn{font-size:11px;padding:10px}.social .bar{gap:8px}.social h2{font-size:24px}}
 
-.social-setup-steps{margin:24px 0;padding-left:24px;max-width:850px}.social-setup-steps li{padding:0 0 24px 12px}.social-setup-steps li::marker{font-family:var(--mono);font-size:13px}.social-setup-steps code{overflow-wrap:anywhere}.social-setup-steps h3{margin-top:0}
+.social-setup-steps{margin:24px 0;padding-left:24px;max-width:850px}.social-setup-steps li{padding:0 0 24px 12px}.social-setup-steps li::marker{font-family:var(--mono);font-size:13px;line-height:1.3;letter-spacing:.01em;}.social-setup-steps code{overflow-wrap:anywhere}.social-setup-steps h3{margin-top:0}
 
 .social-image-picker{border:1px solid var(--line);padding:16px;margin:24px 0}
 .social-image-picker .bar>.ctl{flex:1;width:auto;min-width:140px}

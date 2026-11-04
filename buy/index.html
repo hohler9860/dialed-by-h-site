@@ -24,6 +24,7 @@
 window.dbhInventory = fetch('/api/get-inventory?grid=1');
 window.dbhInventory.catch(function () {});
 </script>
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 <!--dbh:head-->
 <link rel="icon" href="/favicon.ico?v=6" sizes="48x48">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-fpj-32.png?v=5">
@@ -65,7 +66,7 @@ fbq('track', 'PageView');
 <!--/dbh:header-->
 <main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / Sourcing Catalogue</nav>
-<h1 class="pg-h1"><span class="h-lead">Available</span> for sourcing</h1>
+<h1 class="pg-h1" data-su="chars"><span class="h-lead">Available</span> for sourcing</h1>
 <p class="pt-dmline">See something you like? Fastest way is a DM &mdash; <a href="https://wa.me/19146211848" target="_blank" rel="noopener">WhatsApp</a> or <a href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">Instagram</a>. And if the piece you're hunting isn't here, I can find it. That's the job.</p>
 <div class="pt-search">
 <input id="pt-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search" aria-label="Search pieces">
@@ -124,5 +125,6 @@ document.addEventListener('error',function(e){
 </script>
 <!--/dbh:scripts-->
 <script src="/assets/buy.js?v=2"></script>
+<script src="/assets/slide-up.js?v=2"></script>
 </body>
 </html>

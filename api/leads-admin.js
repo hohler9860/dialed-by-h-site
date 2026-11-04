@@ -1421,13 +1421,20 @@ module.exports = async (req, res) => {
         if (action === "correct-listing") {
             const { listing_id, field, value } = body;
             if (!listing_id || !field) return res.status(400).json({ error: "Missing listing_id or field" });
+            let cleaned = value == null ? "" : String(value).trim();
+            // The database only takes a plain number, so accept prices the way people type them.
+            if (field === "price_usd" && cleaned) {
+                cleaned = cleaned.replace(/[$,\s]/g, "").replace(/usd$/i, "");
+                if (/^\d+(\.\d+)?k$/i.test(cleaned)) cleaned = String(parseFloat(cleaned) * 1000);
+                if (!/^\d+(\.\d+)?$/.test(cleaned)) return res.status(400).json({ error: "Enter the price as a number, like 120000" });
+            }
             const out = await supabase("rpc/correct_listing", {
                 method: "POST",
                 headers: { "Content-Profile": "wholesale", "Accept-Profile": "wholesale" },
                 body: JSON.stringify({
                     p_listing_id: Number(listing_id),
                     p_field: String(field),
-                    p_value: value == null ? "" : String(value),
+                    p_value: cleaned,
                 }),
             });
             const r = Array.isArray(out) ? out[0] : out;

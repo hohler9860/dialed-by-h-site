@@ -3858,7 +3858,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         var corrected = l.corrected_fields || [];
 
         return '<p class="count" style="margin-top:14px">Fix anything the model got wrong. ' +
-          'Corrections apply everywhere immediately and are kept as training data.</p>' +
+          'Each change saves on its own when you leave the field or press Enter, and is marked saved. Corrections apply everywhere immediately and are kept as training data.</p>' +
           '<div class="dgrid">' + EDIT.map(function (e) {
               var was = corrected.indexOf(e[0]) >= 0;
               var input = e[3]
@@ -3875,28 +3875,32 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
           }).join('') + '</div>';
     }
 
+    function wcRefText(l) {
+        var meta = [l.year, (l.condition || '').replace(/_/g, ' '),
+                    (l.set_completeness || '').replace(/_/g, ' ')]
+                   .filter(function (x) { return x && x !== 'UNKNOWN'; }).join(' · ');
+        return [l.reference || 'no ref', l.nickname, fxOriginal(l), meta].filter(Boolean).join(' · ');
+    }
+    function wcFacts(l) {
+        return esc([l.dial_color, l.dial_material].filter(Boolean).join(' ') || '') +
+            (l.bracelet ? '<br>' + esc(l.bracelet) : '') +
+            (l.case_material ? '<br>' + esc(String(l.case_material).replace(/_/g, ' ')) +
+                (l.case_size_mm ? ' ' + esc(l.case_size_mm) + 'mm' : '') : '') +
+            '<br>' + esc(l.seller_name || 'unknown seller') +
+            '<br>' + esc(WS.names[l.group_jid] || '') +
+            '<br>' + esc(fmtAgo(l.message_ts)) + ' · ' + esc(l.listing_type || '');
+    }
+
     var WCARD_CAP = 1000;
     function wsCards(list) {
         var shown = list.slice(0, WCARD_CAP);
         if (!shown.length) return '<p class="count" style="padding:28px 0">Nothing matches those filters.</p>';
         return '<div class="wcards">' + shown.map(function (l) {
             var name = [l.brand, l.model].filter(Boolean).join(' ') || 'Unidentified';
-            var meta = [l.year, (l.condition || '').replace(/_/g, ' '),
-                        (l.set_completeness || '').replace(/_/g, ' ')]
-                       .filter(function (x) { return x && x !== 'UNKNOWN'; }).join(' · ');
             // Rendered hidden in every card so a click only flips a class.
             // Repainting the grid made every image re-request and the whole
             // page flash; this touches nothing but the one card.
-            var detail =
-                '<div class="wc-detail">' +
-                    esc([l.dial_color, l.dial_material].filter(Boolean).join(' ') || '') +
-                    (l.bracelet ? '<br>' + esc(l.bracelet) : '') +
-                    (l.case_material ? '<br>' + esc(String(l.case_material).replace(/_/g, ' ')) +
-                        (l.case_size_mm ? ' ' + esc(l.case_size_mm) + 'mm' : '') : '') +
-                    '<br>' + esc(l.seller_name || 'unknown seller') +
-                    '<br>' + esc(WS.names[l.group_jid] || '') +
-                    '<br>' + esc(fmtAgo(l.message_ts)) + ' · ' + esc(l.listing_type || '') +
-                '</div>';
+            var detail = '<div class="wc-detail"><div class="wc-facts">' + wcFacts(l) + '</div></div>';
             // No DEAL badge (Henry, 2026-09-20): we do not know the market well
             // enough to label a listing a deal. Only demand types get a tag.
             var tag = l.listing_type === 'WTB' || l.listing_type === 'NTQ' ? l.listing_type : '';
@@ -3911,10 +3915,7 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     '<span class="wc-name">' + esc(name) + '</span>' +
                     '<span class="wc-price">' + esc(money(l.price_usd)) + '</span>' +
                 '</div>' +
-                '<div class="wc-ref">' + esc(l.reference || 'no ref') +
-                    (l.nickname ? ' · ' + esc(l.nickname) : '') +
-                    (fxOriginal(l) ? ' · ' + esc(fxOriginal(l)) : '') +
-                    (meta ? ' · ' + esc(meta) : '') + '</div>' +
+                '<div class="wc-ref">' + esc(wcRefText(l)) + '</div>' +
                 detail +
             '</div>';
         }).join('') + '</div>' +
@@ -4511,6 +4512,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
         [].forEach.call(view.querySelectorAll('.js-ww'), function (el) {
             var evt = el.tagName === 'SELECT' ? 'change' : 'blur';
+            if (el.tagName !== 'SELECT') el.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+            });
             el.addEventListener(evt, async function () {
                 var id = this.dataset.id, field = this.dataset.field, val = this.value;
                 var row = WW.filter(function (x) { return x.id === id; })[0];
@@ -4532,6 +4536,39 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
         });
     }
 
+    // A correction used to save with nothing on screen changing, which read as a failed
+    // save: the watch kept its old name until the next reload. These update what is
+    // showing and mark the field, without repainting the grid.
+    function wsMarkSaved(input) {
+        var label = input.parentNode && input.parentNode.previousElementSibling;
+        if (!label) return;
+        var tag = label.querySelector('.tag');
+        if (!tag) { tag = document.createElement('span'); tag.className = 'tag warm'; label.appendChild(document.createTextNode(' ')); label.appendChild(tag); }
+        tag.textContent = 'saved';
+        clearTimeout(tag._t);
+        tag._t = setTimeout(function () { tag.textContent = 'fixed'; }, 2000);
+    }
+    function wsShowSaved(l) {
+        var name = [l.brand, l.model].filter(Boolean).join(' ');
+        var card = document.querySelector('.wcard[data-wcard="' + l.id + '"]');
+        if (card) {
+            var cn = card.querySelector('.wc-name'), cp = card.querySelector('.wc-price'), cr = card.querySelector('.wc-ref'), cf = card.querySelector('.wc-facts');
+            if (cn) cn.textContent = name || 'Unidentified';
+            if (cp) cp.textContent = money(l.price_usd);
+            if (cr) cr.textContent = wcRefText(l);
+            if (cf) cf.innerHTML = wcFacts(l);
+        }
+        var row = document.querySelector('tr[data-wid="' + l.id + '"]');
+        if (row) {
+            var rn = row.querySelector('.tname'), rs = row.querySelector('.tsub');
+            if (rn) rn.textContent = name || '\u2014';
+            if (rs) rs.textContent = l.reference || 'no ref';
+            if (row.cells[2]) row.cells[2].textContent = specOf(l) || '\u2014';
+            var rp = row.cells[3] && row.cells[3].querySelector('.tmono');
+            if (rp) rp.textContent = money(l.price_usd);
+        }
+    }
+
     // Corrections save on blur (text) or change (select) so a fix is one
     // action, not type-then-click. Clicks inside must not collapse the row
     // or card. Scoped so panels injected later (card opens) can bind too.
@@ -4541,6 +4578,9 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
             el.dataset.bound = '1';
             el.addEventListener('click', function (e) { e.stopPropagation(); });
             var evt = el.tagName === 'SELECT' ? 'change' : 'blur';
+            if (el.tagName !== 'SELECT') el.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+            });
             el.addEventListener(evt, async function (e) {
                 e.stopPropagation();
                 var id = Number(this.dataset.id), field = this.dataset.field, val = this.value;
@@ -4552,8 +4592,17 @@ table.bk-tbl tbody tr:hover td { background: rgba(var(--label-d),.04); }
                     var r = await A.adminFetchTo('/api/leads-admin', 'correct-listing',
                                                  { listing_id: id, field: field, value: val });
                     // keep the in-memory row in step so a repaint does not revert it
-                    WS.listings.forEach(function (x) { if (x.id === id) x[field] = r.now; });
+                    var saved = null;
+                    WS.listings.forEach(function (x) {
+                        if (x.id !== id) return;
+                        x[field] = r.now;
+                        x.corrected_fields = (x.corrected_fields || []).filter(function (f) { return f !== field; }).concat(field);
+                        saved = x;
+                    });
+                    if (node.tagName !== 'SELECT') node.value = r.now == null ? '' : r.now;
                     node.style.opacity = '1';
+                    if (saved) wsShowSaved(saved);
+                    wsMarkSaved(node);
                 } catch (err) {
                     node.style.opacity = '1';
                     alert('Could not save: ' + err.message);

@@ -25,6 +25,10 @@ globalThis.fetch = async (input, opts = {}) => {
     const method = String((opts && opts.method) || (input && input.method) || 'GET').toUpperCase();
     if (method === 'GET' || method === 'HEAD' || READ_ONLY_RPC.test(target)) return realFetch(input, opts);
     if (SHOW_ADMIN_TEST) console.log('blocked', method, target.replace(/\?.*$/, '').slice(0, 90));
+    if (/\/rpc\/correct_listing\b/.test(target)) {
+        const { p_field, p_value } = JSON.parse(opts.body || '{}');
+        return new Response(JSON.stringify([{ c_ok: true, c_field: p_field, c_was: null, c_now: p_value || null }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
     return new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } });
 };
 

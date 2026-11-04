@@ -385,7 +385,7 @@ button{font:inherit;color:inherit}
    margin, and keep the logo in exactly the same spot when the menu opens. */
 @media(max-width:1023px){
 .sh .wm{margin-left:calc(clamp(150px,13vw,210px)*-.03793)}
-.sh .menu,.sheet header button{line-height:1}
+.sh .menu,.sheet header button{line-height:1;position:relative;top:1px}
 .sheet{padding-top:max(18px,env(safe-area-inset-top,0px))}
 .sheet .wm2{width:clamp(150px,13vw,210px);margin-left:calc(clamp(150px,13vw,210px)*-.03793)}
 .floats{right:max(var(--gutter),env(safe-area-inset-right,0px))}

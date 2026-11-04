@@ -43,7 +43,7 @@ ${chrome.pixel()}
 ${chrome.header('Journal')}
 <main class="e404">
   <span class="k">Off-Catalog</span>
-  <h1 class="pg-h1">Article not found</h1>
+  <h1 class="pg-h1"><span class="h-lead">Article</span> not found</h1>
   <p>That piece either moved or never existed. Head back to the journal.</p>
   <div class="actions"><a class="btn btn--solid" href="/journal/">Back to Off-Catalog</a><a class="btn" href="/">Back to home</a></div>
 </main>

@@ -53,7 +53,7 @@ ${chrome.pixel()}
 ${chrome.header('Sourcing Catalogue')}
 <main class="e404">
   <span class="k">Not found</span>
-  <h1 class="pg-h1">Piece not found</h1>
+  <h1 class="pg-h1"><span class="h-lead">Piece</span> not found</h1>
   <p>This piece may no longer be available for sourcing.</p>
   <div class="actions"><a class="btn btn--solid" href="/buy/">Browse all pieces</a><a class="btn" href="/">Back to home</a></div>
 </main>

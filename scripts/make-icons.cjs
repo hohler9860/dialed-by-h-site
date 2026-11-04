@@ -57,10 +57,12 @@ async function svgIcon(markFile, color, shape, fill) {
     fs.writeFileSync('favicon-dbh-192.png', await disc(cream, 192, 0.8));
     fs.writeFileSync('favicon.png', await disc(cream, 512, 0.8));
     fs.writeFileSync('favicon.svg', await svgIcon(SRC.cream, CREAM, `<circle cx="32" cy="32" r="32" fill="${CHARCOAL}"/>`, 0.8));
-    fs.writeFileSync('apple-touch-icon.png', await tile(cream, 1024, 0.62, CHARCOAL));
+    // Safari keeps Favorites tiles at 144px and shrinks whatever it is given with a crude
+    // filter, so a 1024px source comes out jagged. 288px is an exact double and shrinks
+    // cleanly, and it is still sharp on a phone home screen or in the Dock.
+    fs.writeFileSync('apple-touch-icon.png', await tile(cream, 288, 0.62, CHARCOAL));
     // The admin stays inverted so it is easy to tell apart on a home screen.
     fs.writeFileSync('admin/favicon.svg', await svgIcon(SRC.charcoal, CHARCOAL, `<rect width="64" height="64" rx="8" fill="${CREAM}"/>`, 0.8));
-    fs.writeFileSync('admin/icon-1024.png', await tile(charcoal, 1024, 0.62, CREAM));
-    fs.writeFileSync('admin/icon-180.png', await tile(charcoal, 180, 0.62, CREAM));
+    fs.writeFileSync('admin/icon-288.png', await tile(charcoal, 288, 0.62, CREAM));
     console.log('icons written');
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -131,7 +131,7 @@
     el.classList.remove('is-open');
     document.body.style.overflow = prevOverflow;
     if (urlBefore && window.history && history.replaceState) {
-      var back = (urlBefore === '/sell' || urlBefore === '/trade') ? '/' : urlBefore;
+      var back = /^\/(sell|trade|source)\/?([?#]|$)/.test(urlBefore) ? '/' : urlBefore;
       history.replaceState(history.state, '', back);
       urlBefore = '';
     }
@@ -277,9 +277,9 @@
     });
     document.body.appendChild(modal);
     current = modal;
-    if ((kind === 'sell' || kind === 'trade') && window.history && history.replaceState) {
+    if (FORMS[kind] && window.history && history.replaceState) {
       if (!urlBefore) urlBefore = location.pathname + location.search + location.hash;
-      history.replaceState(history.state, '', '/' + kind);
+      if (location.pathname.replace(/\/+$/, '') !== '/' + kind) history.replaceState(history.state, '', '/' + kind);
     }
     prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -302,10 +302,9 @@
     open(d.modal, (d.brand || d.model || d.ref) ? { brand: d.brand, model: d.model, ref: d.ref } : null);
   });
 
-  // Own URL for each form: /sell and /trade load the homepage with that form
-  // open, and #sell, #trade, #source and ?source work on any page. /source
-  // itself is the link-in-bio page, so it only opens the card when a link hands
-  // it a specific watch to prefill.
+  // Own URL for each form: /source, /sell and /trade load the homepage with that
+  // form open, and #source, #sell, #trade and ?source work on any page. A watch
+  // named in the query (?brand=&model=&reference=) prefills the Concierge card.
   function deepLink() {
     var path = (location.pathname || '').replace(/\/+$/, '');
     var q = new URLSearchParams(location.search);
@@ -313,7 +312,7 @@
     var hasWatch = !!(watch.brand || watch.model || watch.ref);
     if (path === '/sell' || path === '/trade') return open(path.slice(1));
     if (/^#(sell|trade)$/.test(location.hash)) return open(location.hash.slice(1));
-    if (location.hash === '#source' || q.has('source') || (path === '/source' && hasWatch)) open('source', hasWatch ? watch : null);
+    if (path === '/source' || location.hash === '#source' || q.has('source')) open('source', hasWatch ? watch : null);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', deepLink);
   else deepLink();

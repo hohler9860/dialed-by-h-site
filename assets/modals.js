@@ -103,7 +103,7 @@
       field('Email', text('email', { type: 'email', required: true, autocomplete: 'email' })) +
       field('Phone (Mobile)', text('phone', { type: 'tel', required: true, autocomplete: 'tel', placeholder: '+1 ...' })) +
       field('Preferred Contact',
-        '<select name="preferred" required><option value="">Select</option><option>WhatsApp</option><option>iMessage</option><option>Email</option><option>Instagram DM</option></select>') +
+        '<select name="preferred" required><option value="">Select</option><option>WhatsApp</option><option>iMessage</option><option>Email</option>' + (kind === 'source' ? '' : '<option>Instagram DM</option>') + '</select>') +
       '<label class="dbh-lm__check"><input type="checkbox" name="textok"> OK to text me about this request</label>' +
       field('Where are you based?', text('location', { required: true, autocomplete: 'address-level2', placeholder: 'City, or city and state' })) +
       field('Brand', '<select name="brand" class="js-brand" required><option value="">Select Brand</option>' + brands + '</select>') +

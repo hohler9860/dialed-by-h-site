@@ -49,15 +49,6 @@ fbq('track', 'PageView');
 .mast{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:44px}
 .mast h1{font-family:var(--intl);font-weight:500;font-size:clamp(40px,5.4vw,78px);line-height:.9;letter-spacing:-.04em;margin-top:14px;white-space:nowrap}
 .mast p{font-family:var(--works);font-size:16px;line-height:1.25;color:var(--grey-dark);max-width:38ch;margin-bottom:4px;letter-spacing:-.01em}
-.feat{position:relative;display:flex;align-items:center;justify-content:center;min-height:540px;padding:70px 48px;background:var(--charcoal);color:var(--cream);text-align:center;isolation:isolate;overflow:hidden}
-.feat>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .8s ease}
-.feat:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(37,37,34,.35),rgba(37,37,34,.7));z-index:-1}
-.feat:hover>img{transform:scale(1.025)}
-.feat__copy{max-width:920px}
-.feat .k{color:var(--grey-light)}
-.feat h2{font-family:var(--works);font-weight:400;font-size:clamp(30px,3.8vw,56px);line-height:1.1;letter-spacing:-.04em;margin:22px 0;text-wrap:balance}
-.feat p{font-family:var(--works);font-size:16px;line-height:1.25;max-width:640px;margin:0 auto 30px;color:var(--grey-light);letter-spacing:-.01em}
-.feat .link{color:var(--cream);display:inline-block}
 .lbl{display:flex;justify-content:space-between;gap:20px;margin:62px 0 28px;padding-bottom:16px;border-bottom:1px solid var(--grey-light)}
 .lbl h2{font-family:var(--intl);font-weight:500;font-size:16px;letter-spacing:-.01em;line-height:1.2}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px 30px}
@@ -70,10 +61,9 @@ fbq('track', 'PageView');
 .card p{font-family:var(--works);font-size:15px;line-height:1.4;color:var(--grey-dark);margin:0 0 22px;letter-spacing:0}
 .card .link{margin-top:auto}
 #pt-journal:empty{min-height:60vh}
-@media(min-width:1500px){.feat{min-height:600px}}
-@media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mast p{max-width:28ch}.feat{min-height:480px}}
-@media(max-width:640px){.mast{display:block;margin-bottom:28px}.mast p{margin-top:18px;max-width:none}.feat{padding:40px 22px;min-height:440px}.feat h2{font-size:30px}.feat p{font-size:15px}.lbl{margin-top:40px}.lbl>.k{display:none}.grid{grid-template-columns:1fr;gap:40px}.card__art img{height:230px}.card h3{font-size:24px}}
-@media(prefers-reduced-motion:reduce){.feat>img,.card__art img{transition:none}}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mast p{max-width:28ch}}
+@media(max-width:640px){.mast{display:block;margin-bottom:28px}.mast p{margin-top:18px;max-width:none}.lbl{margin-top:40px}.lbl>.k{display:none}.grid{grid-template-columns:1fr;gap:40px}.card__art img{height:230px}.card h3{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.card__art img{transition:none}}
 </style>
 </head>
 <body>
@@ -95,7 +85,6 @@ fbq('track', 'PageView');
     <div><span class="k">The journal by Dialed by H</span><h1><span class="h-lead">Off-</span>Catalog</h1></div>
     <p>Watches worth a closer look.<br>Stories, releases and notes from the market.</p>
   </div>
-  <section id="journal-feature" aria-label="Latest story" hidden></section>
   <div class="lbl"><h2>All stories</h2><span class="k">From the desk of Henry Ohler</span></div>
   <div class="grid" id="pt-journal" aria-live="polite"></div>
 </main>
@@ -167,11 +156,6 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
     var arts = Array.isArray(d) ? d : (d.articles || []);
     if (!arts.length) { wrap.innerHTML = '<p class="k">No articles yet.</p>'; return; }
     function esc(v){return String(v || '').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
-    var latest = arts[0], feature = document.getElementById('journal-feature');
-    feature.hidden = false;
-    feature.innerHTML = '<a class="feat" href="/journal/' + encodeURIComponent(latest.slug) + '">' +
-      (latest.hero_image_url ? '<img src="' + esc(latest.hero_image_url) + '" alt="" fetchpriority="high">' : '') +
-      '<div class="feat__copy"><span class="k">Latest story &middot; ' + esc(latest.category || 'Journal') + '</span><h2>' + esc(latest.title) + '</h2><p>' + esc(latest.subtitle || latest.excerpt) + '</p><span class="link">Read the story</span></div></a>';
     var usedStickers = [];
     // keyword-matched stickers: if the article is about a watch we have as a
     // sticker, use that exact sticker; otherwise fall back to the hashed pick.

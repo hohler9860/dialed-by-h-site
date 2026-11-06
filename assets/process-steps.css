@@ -1,0 +1,35 @@
+/* Process page stepper. Everything sits on one centre line: the object, then the number, title
+   and copy under it, then a hairline running down to the next object. Scrolling draws the line.
+   Type per the brand guidelines at a 1920 canvas: Intl Medium headline (120/82%), Mono eyebrow
+   (16/110%/12%), Works serif title (40/90%), Works body (16/125%/-1%). All text is charcoal.
+   Figma sets the headline and title at -4%, but the web fonts run wider, so -5% and -4.5% match its render.
+   Text rises by the word, never the letter, because letter masks switch off the font's kerning.
+   Without .is-live (no JS, or reduced motion) everything is simply drawn in full. */
+.pg--steps{--node:clamp(104px,11vw,168px);--title:clamp(28px,2.6vw,40px)}
+.pg--steps .crumb,.pg--steps .pg-h1{text-align:center;margin-inline:auto}
+.pg--steps .pg-h1{--su-extra:0ms;--su-step:90ms;font-size:clamp(52px,6.25vw,120px);line-height:.82;letter-spacing:-.05em;margin-bottom:0}
+/* room inside each word's mask so tight tracking never clips a letter's edge */
+.pg--steps .su__c{padding-inline:.06em;margin-inline:-.06em}
+.ps{list-style:none;margin:clamp(40px,5vw,72px) 0 0;padding:0}
+.ps__step{display:flex;flex-direction:column;align-items:center;text-align:center}
+
+/* the objects: real photos cut out on transparency, grey until the line reaches them */
+.ps__node{position:relative;z-index:1;display:block;height:calc(var(--node)*var(--k,1))}
+.ps__node>img{display:block;height:100%;width:auto;max-width:none;transition:filter .5s ease}
+[data-state=inactive] .ps__node>img{filter:grayscale(1) contrast(.5) brightness(1.32)}
+
+/* the words */
+.ps__text{width:100%;margin-top:clamp(20px,2.4vw,32px)}
+.ps__no{display:block;font-family:var(--mono);font-size:16px;line-height:1.1;letter-spacing:.12em;padding-left:.12em;margin-bottom:10px}
+.ps__t{font-family:var(--works);font-weight:400;font-size:var(--title);line-height:.9;letter-spacing:-.045em;margin:0 0 clamp(12px,1.4vw,18px)}
+.ps__d{font-family:var(--works);font-size:16px;line-height:1.25;letter-spacing:-.01em;max-width:46ch;margin:0 auto;text-wrap:balance}
+/* line by line: the script gives each piece of text its line number in --c */
+.is-live [data-su]{--su-extra:0ms;--su-step:120ms}
+
+/* the line: tucks a few pixels behind the next object so the two always meet */
+.ps__sep{display:block;width:1px;height:clamp(110px,24vh,240px);margin:clamp(28px,3vw,44px) 0 -6px;background:var(--grey-light);overflow:hidden}
+.ps__fill{display:block;width:100%;height:100%;background:var(--charcoal);transform-origin:50% 0}
+.is-live .ps__fill{transform:scaleY(0)}
+
+.ps-cta{justify-content:center;margin-top:clamp(32px,3.4vw,48px)}
+

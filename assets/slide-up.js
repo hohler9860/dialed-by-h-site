@@ -77,6 +77,7 @@
       io.unobserve(e.target);
     });
   }, { threshold: 0.15 });
-  groups.forEach(function (g) { io.observe(g); });
+  // Groups marked data-su-hold are played by their own page script instead.
+  groups.forEach(function (g) { if (!g.hasAttribute('data-su-hold')) io.observe(g); });
   ready();
 })();

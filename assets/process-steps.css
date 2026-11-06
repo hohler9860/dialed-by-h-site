@@ -1,47 +1,35 @@
-/* Process page stepper. One hairline runs down the page and scrolling draws it, from
-   icon to icon. Type follows the guidelines: Mono eyebrow, Intl Medium headline, Works
-   body with the 48px first-line indent. Without .is-live (no JS, or reduced motion)
-   the whole thing is simply drawn in full, so nothing is ever hidden. */
-.pg--steps{--node:clamp(76px,9.2vw,132px);--title:clamp(32px,4.4vw,64px);--col:clamp(16px,3vw,44px)}
-.ps{list-style:none;margin:clamp(36px,5vw,72px) 0 0;padding:0}
-.ps__step{position:relative;display:grid;grid-template-columns:var(--node) minmax(0,1fr);column-gap:var(--col);min-height:max(340px,58vh)}
-.ps__step:last-child{min-height:0}
+/* Process page stepper. Everything sits on one centre line: the object, then the number, title
+   and copy under it, then a hairline running down to the next object. Scrolling draws the line.
+   Type: Mono eyebrow, Intl Medium headline, Works body. Without .is-live (no JS, or reduced
+   motion) the whole thing is simply drawn in full, so nothing is ever hidden. */
+.pg--steps{--node:clamp(104px,11vw,168px);--title:clamp(32px,4.4vw,64px)}
+.pg--steps .crumb,.pg--steps .pg-h1{text-align:center;margin-inline:auto}
+.ps{list-style:none;margin:clamp(40px,5vw,72px) 0 0;padding:0}
+.ps__step{display:flex;flex-direction:column;align-items:center;text-align:center}
 
-/* the line: one segment per step, each running from this icon's centre to the next */
-.ps__sep{position:absolute;top:calc(var(--node)/2);left:calc(var(--node)/2 - .5px);width:1px;height:100%;background:var(--grey-light);overflow:hidden}
+/* the objects: real photos cut out on transparency, grey until the line reaches them */
+.ps__node{position:relative;z-index:1;display:block;height:calc(var(--node)*var(--k,1))}
+.ps__node img{display:block;height:100%;width:auto;max-width:none;transition:filter .5s ease}
+[data-state=inactive] .ps__node img{filter:grayscale(1) contrast(.5) brightness(1.32)}
+
+/* the words */
+.ps__text{width:100%;margin-top:clamp(20px,2.4vw,32px);transition:color .35s ease}
+.ps__no{display:block;font-family:var(--mono);font-size:16px;line-height:1.1;letter-spacing:.12em;text-indent:.12em;margin-bottom:10px}
+.ps__t{font-family:var(--intl);font-weight:500;font-size:var(--title);line-height:1;letter-spacing:-.04em;margin:0 0 clamp(12px,1.4vw,18px)}
+.ps__d{font-family:var(--works);font-size:16px;line-height:1.25;letter-spacing:-.01em;max-width:46ch;margin:0 auto;text-wrap:balance}
+[data-state=completed] .ps__text{color:var(--grey-dark)}
+[data-state=inactive] .ps__text{color:var(--grey-mid)}
+/* line by line: the script gives each piece of text its line number in --c */
+.is-live [data-su]{--su-extra:0ms;--su-step:120ms}
+
+/* the line: tucks a few pixels behind the next object so the two always meet */
+.ps__sep{display:block;width:1px;height:clamp(110px,24vh,240px);margin:clamp(28px,3vw,44px) 0 -6px;background:var(--grey-light);overflow:hidden}
 .ps__fill{display:block;width:100%;height:100%;background:var(--charcoal);transform-origin:50% 0}
 .is-live .ps__fill{transform:scaleY(0)}
 
-/* the icons, three states as in a stepper: upcoming, current, done */
-.ps__node{--line:var(--charcoal);--body:var(--cream);--edge:var(--charcoal);position:relative;z-index:1;display:block;width:var(--node);height:var(--node);overflow:visible;fill:none;stroke:var(--line);stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round}
-.ps__node *{vector-effect:non-scaling-stroke;transition:fill .35s ease,stroke .35s ease}
-.ps__node .bd{fill:var(--body);stroke:var(--edge)}
-.ps__node .s{fill:var(--line);stroke:none}
-.ps__node .spin{transition:transform .9s cubic-bezier(.625,.05,0,1)}
-[data-state=inactive] .ps__node{--line:var(--grey-mid);--edge:var(--grey-mid)}
-[data-state=inactive] .ps__node .spin{transform:rotate(-90deg)}
-[data-state=active] .ps__node{--line:var(--cream);--body:var(--charcoal)}
-
-/* real objects: cut out on transparency, grey until the line reaches them. Tall ones overhang
-   the box evenly, so the line still lands on their centre. */
-.ps__node--photo img{position:absolute;left:50%;top:50%;height:var(--h,100%);width:auto;max-width:none;transform:translate(-50%,-50%);transition:filter .5s ease}
-[data-state=inactive] .ps__node--photo img{filter:grayscale(1) contrast(.5) brightness(1.32)}
-
-/* the words */
-.ps__text{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-areas:"t no" "t d";grid-template-rows:auto 1fr;column-gap:var(--col);align-content:start;padding-top:calc((var(--node) - var(--title))/2);transition:color .35s ease}
-.ps__no{grid-area:no;display:block;font-family:var(--mono);font-size:16px;line-height:1.1;letter-spacing:.12em;margin-bottom:10px}
-.ps__t{grid-area:t;font-family:var(--intl);font-weight:500;font-size:var(--title);line-height:1;letter-spacing:-.04em;margin:0}
-.ps__d{grid-area:d;font-family:var(--works);font-size:16px;line-height:1.25;letter-spacing:-.01em;max-width:54ch;text-indent:3em}
-.ps__d .su__c{text-indent:0}
-[data-state=completed] .ps__text{color:var(--grey-dark)}
-[data-state=inactive] .ps__text{color:var(--grey-mid)}
-
-.ps-cta{margin-top:clamp(40px,4vw,56px);padding-left:calc(var(--node) + var(--col))}
+.ps-cta{justify-content:center;margin-top:clamp(32px,3.4vw,48px)}
 
 @media(max-width:860px){
-  .pg--steps{--title:min(32px,8.2vw);--node:clamp(64px,19.5vw,76px)}
-  .ps__step{min-height:max(320px,56vh)}
-  .ps__text{grid-template-columns:minmax(0,1fr);grid-template-areas:"no" "t" "d";grid-template-rows:none;padding-top:6px}
-  .ps__t{letter-spacing:-.03em;line-height:1.1;margin-bottom:12px}
-  .ps__no{font-size:14px;margin:4px 0 10px}
+  .ps__t{letter-spacing:-.03em;line-height:1.1}
+  .ps__no{font-size:14px}
 }

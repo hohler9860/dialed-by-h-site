@@ -275,11 +275,12 @@ h1,h2,h3,p{margin:0}
 .veil{position:absolute;inset:0;background:rgba(0,0,0,.05);pointer-events:none}
 .wm{position:absolute;left:calc(20*var(--u));top:calc(20*var(--u));width:calc(339*var(--u));height:auto;color:var(--cream)}
 .lm{position:absolute;right:calc(20*var(--u));top:calc(20*var(--u));width:calc(62*var(--u));height:auto;color:var(--cream)}
-.hnav{position:absolute;left:calc(1287*var(--u));top:calc(20*var(--u))}
-.hnav ol{list-style:none;margin:0;padding:0;display:grid;row-gap:calc(20*var(--u) - 15.5*var(--u)*.9)}
-.hnav li{display:flex;align-items:center;gap:calc(32*var(--u));line-height:.9;height:calc(15.5*var(--u)*.9)}
-.hnav .n{font-family:var(--intl);font-size:calc(11*var(--u));letter-spacing:.03em;text-transform:uppercase;width:calc(15*var(--u));flex:none}
-.hnav a{font-family:var(--works);font-size:calc(15.5*var(--u));white-space:nowrap}
+/* Hero text scales with the window, so each size keeps a floor to stay readable on small laptops and phones. */
+.hnav{position:absolute;left:calc(1287*var(--u));top:calc(20*var(--u));--nf:max(13px,calc(18*var(--u)))}
+.hnav ol{list-style:none;margin:0;padding:0;display:grid;row-gap:calc(var(--nf)*.38)}
+.hnav li{display:flex;align-items:center;gap:calc(32*var(--u));line-height:.9;height:calc(var(--nf)*.9)}
+.hnav .n{font-family:var(--intl);font-size:max(10px,calc(12.5*var(--u)));letter-spacing:.03em;text-transform:uppercase;width:max(14px,calc(17*var(--u)));flex:none}
+.hnav a{font-family:var(--works);font-size:var(--nf);white-space:nowrap}
 .hnav a:hover{color:var(--grey-light)}
 .su{display:inline-block;white-space:nowrap}
 .su__c{display:inline-block;overflow:hidden;vertical-align:bottom;white-space:pre;padding-block:.2em;margin-block:-.2em}
@@ -287,11 +288,11 @@ h1,h2,h3,p{margin:0}
 @keyframes su{from{transform:translateY(140%)}to{transform:none}}
 .sheet .su__c>span{animation-delay:calc(120ms + var(--r,0)*60ms + var(--c,0)*22ms)}
 @media(prefers-reduced-motion:reduce){.su__c>span{animation:none}}
-.block{position:absolute;left:calc(20*var(--u));bottom:calc(20*var(--u));width:calc(437*var(--u));display:flex;flex-direction:column;gap:calc(32*var(--u))}
-.txt{display:flex;flex-direction:column;gap:calc(15*var(--u))}
-h1{font-family:var(--works);font-weight:400;font-size:calc(40*var(--u));line-height:.95;letter-spacing:-.04em;white-space:nowrap}
-.sub{font-family:var(--works);font-size:calc(15.5*var(--u));line-height:1.25;letter-spacing:-.01em}
-.cta{font-family:var(--intl);font-size:calc(11.5*var(--u));letter-spacing:.03em;text-transform:uppercase;line-height:.9;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:1px;width:max-content}
+.block{position:absolute;left:calc(20*var(--u));bottom:calc(20*var(--u));width:max(360px,calc(508*var(--u)));display:flex;flex-direction:column;gap:calc(36*var(--u))}
+.txt{display:flex;flex-direction:column;gap:calc(17*var(--u))}
+h1{font-family:var(--works);font-weight:400;font-size:calc(46*var(--u));line-height:.95;letter-spacing:-.04em;white-space:nowrap}
+.sub{font-family:var(--works);font-size:max(13px,calc(18*var(--u)));line-height:1.25;letter-spacing:-.01em}
+.cta{font-family:var(--intl);font-size:max(11px,calc(13*var(--u)));letter-spacing:.03em;text-transform:uppercase;line-height:.9;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:1px;width:max-content}
 .cta:hover{color:var(--grey-light)}
 .menu{display:none;position:absolute;right:calc(110*var(--u));top:calc(28*var(--u));font-family:var(--intl);font-size:calc(14*var(--u));letter-spacing:0;text-transform:none;background:none;border:0;color:var(--cream);cursor:pointer;padding:0}
 @media(max-width:899px){
@@ -304,8 +305,10 @@ h1{font-family:var(--works);font-weight:400;font-size:calc(40*var(--u));line-hei
   .lm{width:var(--lm);right:calc(var(--gutter) - var(--lm)*.2124)}
   .menu{display:block;font-size:14px;line-height:1;padding:15px 10px;margin-top:1px;right:calc(var(--gutter) + var(--lm)*.5807 + 14px - 10px)}
   .block{left:var(--gutter);bottom:calc(28*var(--u));width:calc(100vw - var(--gutter)*2 - 46px - 12px)}
-  h1{font-size:calc(44*var(--u))}.sub{font-size:calc(22*var(--u))}.cta{font-size:calc(15*var(--u))}
+  h1{font-size:calc(50*var(--u))}.sub{font-size:max(13px,calc(25*var(--u)))}.cta{font-size:max(11px,calc(17*var(--u)))}
 }
+/* The smallest phones: keep the headline and link clear of the floating buttons. */
+@media(max-width:340px){h1{font-size:calc(47*var(--u))}.cta{width:auto;line-height:1.2}}
 /* mobile menu sheet */
 .sheet{position:fixed;inset:0;z-index:50;background:var(--charcoal);color:var(--cream);display:none;flex-direction:column;justify-content:space-between;padding:max(22px,env(safe-area-inset-top,0px)) var(--gutter) max(24px,env(safe-area-inset-bottom,0px))}
 .sheet.is-open{display:flex}

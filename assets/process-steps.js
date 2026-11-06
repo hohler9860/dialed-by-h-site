@@ -84,14 +84,17 @@
     });
     var height = clamp(half * 0.28, 140, 210), col = height * 0.6, spread = 26, gap = height * 0.1;
     var inner = clear + 24 + col / 2;
-    var perSide = Math.min(3, Math.floor((half - edge - clear - 24 + spread) / (col + spread)));
-    var rising = perSide < 2;
+    // One column a side up to 6 watches, two up to 12, then three, so the stacks stay tall.
+    var wanted = Math.min(3, Math.ceil(items.length / 6));
+    var fits = Math.floor((half - edge - clear - 24 + spread) / (col + spread));
+    var perSide = Math.min(wanted, fits), rising = fits < Math.min(wanted, 2);
     if (rising) {
-      perSide = 2; spread = 8; gap = 8;
-      col = Math.min(64, (half - edge - main.width / 2 - 16) / 2); height = col / 0.6;
-      inner = main.width / 2 + 8 + col / 2;
+      perSide = Math.min(wanted, 2); spread = 8; gap = 10;
+      var free = half - edge - main.width / 2;
+      if (perSide === 1) { height = Math.min(main.height * 0.8, (free - 8) / 0.6); col = height * 0.6; inner = main.width / 2 + free / 2; }
+      else { col = Math.min(64, (free - 16) / 2); height = col / 0.6; inner = main.width / 2 + 8 + col / 2; }
     }
-    var columns = perSide * 2, pitch = height + gap, tallest = Math.ceil(items.length / columns) * pitch + pitch / 4, centre;
+    var columns = perSide * 2, pitch = height + gap, tallest = Math.ceil(items.length / columns) * pitch - gap, centre;
     wallHeight = rising ? tallest - main.height : 0;
     if (rising) {
       var top = lineIn.getBoundingClientRect().top, extra = Math.max(0, tallest - (main.bottom - top));
@@ -105,7 +108,7 @@
       var slot = i % columns, row = Math.floor(i / columns), along = Math.floor(slot / 2);
       var inColumn = Math.floor(items.length / columns) + (items.length % columns > slot ? 1 : 0);
       item.style.setProperty('--x', (slot % 2 ? 1 : -1) * (inner + along * (col + spread)) + 'px');
-      item.style.setProperty('--y', centre + (row - (inColumn - 1) / 2) * pitch + (along % 2 ? pitch / 4 : 0) + 'px');
+      item.style.setProperty('--y', centre + (row - (inColumn - 1) / 2) * pitch + 'px');
       item.style.setProperty('--d', i * 45 + 'ms');
     });
   }

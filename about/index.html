@@ -57,17 +57,18 @@ fbq('track', 'PageView');
 <!--/dbh:header-->
 <main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/"><span data-scramble data-delay="150">Home</span></a> / <span data-scramble data-delay="210">About</span></nav>
-<h1 class="pg-h1"><span class="h-lead" data-hsst>About</span> <span data-hsst>me</span></h1>
+<h1 class="pg-h1"><span data-hsst>About</span> <span data-hsst>me</span></h1>
 <div class="ab-cols">
-<div class="ab-side ab-reveal">
+<div class="ab-group ab-reveal">
+<img src="/assets/dbh/about-steps.webp" alt="Henry Ohler, on the left, sitting on stone steps and looking at a watch in its green box" width="1300" height="1371">
+<div class="ab-mark"><img class="ab-logo" src="/assets/brand/logomark-charcoal.svg" alt="" aria-hidden="true" width="145" height="142"></div>
+</div>
+<div class="ab-text ab-reveal">
+<div class="ab-side">
 <span data-scramble data-delay="250">Dialed by H</span>
 <span data-scramble data-delay="400">Henry Ohler</span>
-<div class="ab-photo">
-<img src="/assets/dbh/Henry.webp" alt="Henry Ohler" width="1200" height="1600">
-<img class="ab-sig" src="/assets/dbh/henry-sig-black.png" alt="" aria-hidden="true">
 </div>
-</div>
-<div class="ab-body ab-reveal">
+<div class="ab-body">
 <p>I&rsquo;m Henry. Dialed by H started because I was obsessed with watches before I ever sold one.</p>
 <p>I came in as a collector first. Years of learning references, watching the market, and figuring out which pieces are actually worth chasing past the hype. Friends started asking me to find watches they couldn&rsquo;t get to or didn&rsquo;t trust buying alone. That&rsquo;s how this started.</p>
 <p>That trust is what built Dialed by H.</p>
@@ -78,6 +79,7 @@ fbq('track', 'PageView');
 <a class="btn" href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">@dialedbyh</a>
 <a class="btn" href="https://www.linkedin.com/in/henry-ohler-a72386267/" target="_blank" rel="noopener">LinkedIn</a>
 <a class="btn" href="mailto:henry@dialedbyhenry.com">Email</a>
+</div>
 </div>
 </div>
 </div>
@@ -147,9 +149,13 @@ document.addEventListener('error',function(e){
 <script>
 (function(){
   var els=[].slice.call(document.querySelectorAll('.ab-reveal'));
-  if(!window.IntersectionObserver){els.forEach(function(el){el.classList.add('is-in')});return;}
+  var logo=document.querySelector('.ab-mark');
+  if(!window.IntersectionObserver){els.concat(logo).forEach(function(el){el.classList.add('is-in')});return;}
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;setTimeout(function(){el.classList.add('is-in')},70*(els.indexOf(el)%5));io.unobserve(el)}})},{threshold:.12});
   els.forEach(function(el){io.observe(el)});
+  // The logo waits until it is actually on screen: on a phone the page can open with it near the fold.
+  var lo=new IntersectionObserver(function(es){if(es[0].isIntersecting){logo.classList.add('is-in');lo.disconnect()}},{threshold:.6});
+  lo.observe(logo);
 })();
 </script>
 </body>

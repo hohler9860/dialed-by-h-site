@@ -11,7 +11,7 @@
   var nodes = steps.map(function (s) { return s.querySelector('.ps__node'); });
   var seps = steps.map(function (s) { return s.querySelector('.ps__sep'); });
   var fills = steps.map(function (s) { return s.querySelector('.ps__fill'); });
-  var tops = [], starts = [], ends = [], endScroll = 1, tip = null, current = -1, revealed = -1, raf = 0, width = innerWidth, fontsIn = false, wallHeight = 0, lastFrame = 0;
+  var tops = [], starts = [], ends = [], endScroll = 1, tip = null, current = -1, revealed = -1, raf = 0, width = innerWidth, fontsIn = false, lastFrame = 0;
 
   list.classList.add('is-live');
   steps.forEach(function (s) { s.setAttribute('data-state', 'inactive'); s.setAttribute('data-su-hold', ''); });
@@ -51,7 +51,7 @@
   }
 
   // The line starts empty at the top of the page and has reached the last object when that object
-  // is about halfway up the screen. It runs on behind each object and its text, which leaves a beat to
+  // is halfway up the screen. It runs on behind each object and its text, which leaves a beat to
   // read before it comes back out underneath. A light ease keeps mouse wheels from looking steppy.
   function frame(now) {
     var elapsed = lastFrame ? Math.min(now - lastFrame, 100) : 16;
@@ -65,63 +65,12 @@
   }
   function schedule() { if (!raf) raf = requestAnimationFrame(frame); }
 
-  // Sets where each extra Delivery watch ends up. Slots fill outward from the main watch, left then
-  // right, then start a new row, so more watches make the stacks taller. With room beside the text
-  // they sit either side of it and stay above the footer. Otherwise (phones) they rise beside the
-  // line above the main watch, and that line grows to make room for them.
-  function layoutBurst() {
-    var burst = list.querySelector('[data-burst]');
-    if (!burst) return;
-    var items = [].slice.call(burst.children), half = document.documentElement.clientWidth / 2, edge = 14;
-    var lineIn = seps[last - 1];
-    lineIn.style.height = '';
-    var main = nodes[last].getBoundingClientRect(), mainY = main.top + main.height / 2;
-    var clear = 0, range = document.createRange();
-    [steps[last - 1], steps[last]].forEach(function (s) {
-      clear = Math.max(clear, s.querySelector('.ps__d').getBoundingClientRect().width / 2);
-      range.selectNodeContents(s.querySelector('.ps__t'));
-      clear = Math.max(clear, range.getBoundingClientRect().width / 2);
-    });
-    var height = clamp(half * 0.28, 140, 210), col = height * 0.6, spread = 26, gap = height * 0.1;
-    var inner = clear + 24 + col / 2;
-    // One column a side up to 6 watches, two up to 12, then three, so the stacks stay tall.
-    var wanted = Math.min(3, Math.ceil(items.length / 6));
-    var fits = Math.floor((half - edge - clear - 24 + spread) / (col + spread));
-    var perSide = Math.min(wanted, fits), rising = fits < Math.min(wanted, 2);
-    if (rising) {
-      perSide = Math.min(wanted, 2); spread = 8; gap = 10;
-      var free = half - edge - main.width / 2;
-      if (perSide === 1) { height = Math.min(main.height * 0.8, (free - 8) / 0.6); col = height * 0.6; inner = main.width / 2 + free / 2; }
-      else { col = Math.min(64, (free - 16) / 2); height = col / 0.6; inner = main.width / 2 + 8 + col / 2; }
-    }
-    var columns = perSide * 2, pitch = height + gap, tallest = Math.ceil(items.length / columns) * pitch - gap, centre;
-    wallHeight = rising ? tallest - main.height : 0;
-    if (rising) {
-      var top = lineIn.getBoundingClientRect().top, extra = Math.max(0, tallest - (main.bottom - top));
-      if (extra) lineIn.style.height = lineIn.offsetHeight + extra + 'px';
-      centre = (top + main.bottom + extra) / 2 - (mainY + extra);
-    } else {
-      centre = Math.min(0, document.querySelector('footer').getBoundingClientRect().top - mainY - 20 - tallest / 2);
-    }
-    burst.style.setProperty('--watch', height + 'px');
-    items.forEach(function (item, i) {
-      var slot = i % columns, row = Math.floor(i / columns), along = Math.floor(slot / 2);
-      var inColumn = Math.floor(items.length / columns) + (items.length % columns > slot ? 1 : 0);
-      item.style.setProperty('--x', (slot % 2 ? 1 : -1) * (inner + along * (col + spread)) + 'px');
-      item.style.setProperty('--y', centre + (row - (inColumn - 1) / 2) * pitch + 'px');
-      item.style.setProperty('--d', i * 45 + 'ms');
-    });
-  }
-
   function measure() {
-    layoutBurst();
     tops = nodes.map(pageTop);
     starts = seps.map(function (s) { return s ? pageTop(s) : 0; });
     ends = seps.map(function (s) { return s ? pageTop(s) + s.offsetHeight : 0; });
     var room = document.documentElement.scrollHeight - innerHeight;
-    // On phones the main watch stops a little lower, so the wall above it clears the header.
-    var stopAt = clamp(wallHeight + 78, innerHeight * 0.5, innerHeight * 0.62);
-    endScroll = clamp(tops[last] - stopAt, 1, Math.max(room, 1));
+    endScroll = clamp(tops[last] - innerHeight * 0.5, 1, Math.max(room, 1));
     schedule();
   }
 

@@ -360,7 +360,7 @@
     var act = activeFilters();
     count.textContent = renderList.length + ' of ' + INV.length + ' pieces'
       + (searchQ ? ' \u00b7 "' + searchQ + '"' : '')
-      + (act.length ? ' \u2014 filtered' : '');
+      + (act.length ? ' · filtered' : '');
     document.getElementById('pt-clear').classList.toggle('is-visible', act.length > 0 || !!searchQ);
     fbar.querySelectorAll('.pt-fbtn').forEach(function (b) {
       var nEl = b.querySelector('.n');

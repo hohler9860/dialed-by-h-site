@@ -220,7 +220,7 @@ document.querySelectorAll('.pt-thumbs button').forEach(function (b) {
 
 // The date every page last changed because of a template. Bump it after a change that
 // touches all pages, so Google knows to look again. Newer rows keep their own date.
-const SITE_UPDATED = '2026-11-03';
+const SITE_UPDATED = '2026-11-06';
 const newestDate = (...dates) => dates.map(d => String(d || '').slice(0, 10)).reduce((a, b) => (b > a ? b : a), SITE_UPDATED);
 
 function renderSitemap(pieces, articles = []) {

@@ -127,8 +127,21 @@
       op.value = o[0]; op.textContent = o[1];
       sort.appendChild(op);
     });
-    sort.addEventListener('change', function () { sortMode = sort.value; render(); });
+    // A menu is as wide as its longest option, which would stop its text short of the right
+    // edge. On wide screens it hugs the current label instead (phones use the full column).
+    function fitSort() {
+      var m = document.createElement('span');
+      m.className = 'pt-sort';
+      m.style.cssText = 'position:absolute;visibility:hidden;width:auto;margin:0;white-space:nowrap';
+      m.textContent = sort.options[sort.selectedIndex].textContent;
+      fbar.appendChild(m);
+      sort.style.setProperty('--sort-w', Math.ceil(m.getBoundingClientRect().width) + 'px');
+      fbar.removeChild(m);
+    }
+    sort.addEventListener('change', function () { sortMode = sort.value; fitSort(); render(); });
     fbar.appendChild(sort);
+    fitSort();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSort);
   }
 
   // Drill-down panels: Model appears once a brand is checked; Case Size once

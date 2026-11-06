@@ -63,7 +63,48 @@
   }
   function schedule() { if (!raf) raf = requestAnimationFrame(frame); }
 
+  // Sets where each extra Delivery watch ends up. Slots fill left inner, right inner, left outer,
+  // right outer, then a new row, so more watches make the stacks taller. With room beside the
+  // text they sit either side of it, above the footer. Otherwise (phones) they rise beside the line, above the main
+  // watch, and any that cannot fit are left out.
+  function layoutBurst() {
+    var burst = list.querySelector('[data-burst]');
+    if (!burst) return;
+    var items = [].slice.call(burst.children), half = document.documentElement.clientWidth / 2, edge = 14;
+    var main = nodes[last].getBoundingClientRect(), mainY = main.top + main.height / 2;
+    var clear = 0, range = document.createRange();
+    [steps[last - 1], steps[last]].forEach(function (s) {
+      clear = Math.max(clear, s.querySelector('.ps__d').getBoundingClientRect().width / 2);
+      range.selectNodeContents(s.querySelector('.ps__t'));
+      clear = Math.max(clear, range.getBoundingClientRect().width / 2);
+    });
+    var height, col, inner, outer, gap, centre = 0, room;
+    if (half - edge - clear >= 218) {
+      height = clamp(half * 0.28, 140, 210); col = height * 0.6; gap = height * 0.1;
+      inner = clear + 24 + col / 2; outer = inner + col + 26;
+      room = 2 * (document.querySelector('footer').getBoundingClientRect().top - mainY - 20); // stay above the footer
+    } else {
+      col = Math.min(64, (half - edge - main.width / 2 - 16) / 2); height = col / 0.6; gap = 8;
+      inner = main.width / 2 + 8 + col / 2; outer = inner + col + 8;
+      var top = seps[last - 1].getBoundingClientRect().top;
+      room = main.bottom - top; centre = (top + main.bottom) / 2 - mainY;
+    }
+    var pitch = height + gap, maxRows = Math.max(1, Math.floor(room / pitch));
+    var shown = Math.min(items.length, maxRows * 4);
+    burst.style.setProperty('--watch', height + 'px');
+    items.forEach(function (item, i) {
+      item.hidden = i >= shown;
+      if (item.hidden) return;
+      var slot = i % 4, row = Math.floor(i / 4), inColumn = Math.floor(shown / 4) + (shown % 4 > slot ? 1 : 0);
+      var shift = slot > 1 && (inColumn + 0.5) * pitch <= room ? pitch / 2 : 0;
+      item.style.setProperty('--x', (slot % 2 ? 1 : -1) * (slot < 2 ? inner : outer) + 'px');
+      item.style.setProperty('--y', centre + (row - (inColumn - 1) / 2) * pitch + shift - (shift ? pitch / 4 : 0) + 'px');
+      item.style.setProperty('--d', i * 40 + 'ms');
+    });
+  }
+
   function measure() {
+    layoutBurst();
     tops = nodes.map(pageTop);
     starts = seps.map(function (s) { return s ? pageTop(s) : 0; });
     ends = seps.map(function (s) { return s ? pageTop(s) + s.offsetHeight : 0; });

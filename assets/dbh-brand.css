@@ -191,11 +191,11 @@ button{font:inherit;color:inherit}
 .gone p{font-family:var(--works);font-size:16px;color:var(--grey-dark);line-height:1.25;letter-spacing:-.01em}
 
 /* ── about: one photo with the logo in its center, text alongside ── */
-.ab-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(28px,4.4vw,64px);align-items:start;margin-top:clamp(24px,3vw,44px)}
+.ab-cols{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,13fr);gap:clamp(28px,4.4vw,64px);align-items:start;margin-top:clamp(24px,3vw,44px)}
 .ab-side{display:grid;gap:3px;margin-bottom:18px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-dark);line-height:1.1}
 .ab-group{position:relative}
 .ab-group>img{width:100%;height:auto}
-.ab-mark{position:absolute;left:50%;top:50%;width:22%;transform:translate(-50%,-50%)}
+.ab-mark{position:absolute;left:50%;top:50%;width:27%;transform:translate(-50%,-50%)}
 .ab-logo{width:100%;height:auto;opacity:0;pointer-events:none;-webkit-mask-image:linear-gradient(105deg,#000 45%,transparent 55%);mask-image:linear-gradient(105deg,#000 45%,transparent 55%);-webkit-mask-size:260% 100%;mask-size:260% 100%;-webkit-mask-position:96% 0;mask-position:96% 0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;transition:opacity .01s linear .55s,-webkit-mask-position 1.5s cubic-bezier(.6,.05,.3,1) .6s,mask-position 1.5s cubic-bezier(.6,.05,.3,1) .6s}
 .ab-logo.is-in{opacity:1;-webkit-mask-position:0% 0;mask-position:0% 0}
 .ab-reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .9s cubic-bezier(.19,1,.22,1)}

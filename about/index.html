@@ -57,11 +57,11 @@ fbq('track', 'PageView');
 <!--/dbh:header-->
 <main class="pg">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/"><span data-scramble data-delay="150">Home</span></a> / <span data-scramble data-delay="210">About</span></nav>
-<h1 class="pg-h1"><span class="h-lead" data-hsst>About</span> <span data-hsst>me</span></h1>
+<h1 class="pg-h1"><span data-hsst>About</span> <span data-hsst>me</span></h1>
 <div class="ab-cols">
 <div class="ab-group ab-reveal">
 <img src="/assets/dbh/about-steps.webp" alt="Henry Ohler, on the left, sitting on stone steps and looking at a watch in its green box" width="1300" height="1371">
-<div class="ab-mark"><img class="ab-logo" src="/assets/brand/logomark-cream.svg" alt="" aria-hidden="true" width="145" height="142"></div>
+<div class="ab-mark"><img class="ab-logo" src="/assets/brand/logomark-charcoal.svg" alt="" aria-hidden="true" width="145" height="142"></div>
 </div>
 <div class="ab-text ab-reveal">
 <div class="ab-side">
@@ -153,9 +153,9 @@ document.addEventListener('error',function(e){
   if(!window.IntersectionObserver){els.concat(logo).forEach(function(el){el.classList.add('is-in')});return;}
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var el=e.target;setTimeout(function(){el.classList.add('is-in')},70*(els.indexOf(el)%5));io.unobserve(el)}})},{threshold:.12});
   els.forEach(function(el){io.observe(el)});
-  // The logo waits until it is actually on screen: on a phone it sits well below the top of the photos.
+  // The logo waits until its tile is actually on screen. The tile is watched, not the image, because the tile clips the file's empty margins.
   var lo=new IntersectionObserver(function(es){if(es[0].isIntersecting){logo.classList.add('is-in');lo.disconnect()}},{threshold:.6});
-  lo.observe(logo);
+  lo.observe(logo.parentNode);
 })();
 </script>
 </body>

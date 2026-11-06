@@ -47,3 +47,25 @@ test('tops up from what is left when a brand is small, and skips pieces with no 
 });
 
 test('copes with no catalogue', () => { assert.deepStrictEqual(pickRelated(piece('Rolex', 'Sub', 'A'), []), []); });
+
+test('prefers other models at a similar price, and never mixes in a far-off one while a closer one exists', () => {
+  const w = piece('Rolex', 'Cosmograph Daytona', 'PLAT');
+  const cheap = piece('Rolex', 'Air-King', 'CHEAP'), close = piece('Rolex', 'Day-Date 40', 'GOLD'), closer = piece('Rolex', 'Yacht-Master', 'WG');
+  const bands = { refs: { plat: 5, cheap: 1, gold: 4, wg: 5 }, models: {} };
+  assert.deepStrictEqual(pickRelated(w, [w, cheap, close, closer], 2, bands).map((p) => p.ref), ['WG', 'GOLD']);
+});
+
+test('uses the model band when a reference has no price, and picks the closest within a model', () => {
+  const w = piece('Patek Philippe', 'Nautilus', 'N');
+  const lowCal = piece('Patek Philippe', 'Calatrava', 'LOW'), highCal = piece('Patek Philippe', 'Calatrava', 'HIGH');
+  const bands = { refs: { n: 5, low: 2, high: 5 }, models: {} };
+  assert.deepStrictEqual(pickRelated(w, [w, lowCal, highCal], 1, bands).map((p) => p.ref), ['HIGH']);
+  const tank = piece('Cartier', 'Tank', 'T'), santos = piece('Cartier', 'Santos', 'S'), crash = piece('Cartier', 'Crash', 'C');
+  assert.deepStrictEqual(pickRelated(tank, [tank, santos, crash], 1, { refs: {}, models: { 'cartier|tank': 2, 'cartier|santos': 2, 'cartier|crash': 6 } }).map((p) => p.model), ['Santos']);
+});
+
+test('a watch with no price data still gets a full, varied row', () => {
+  const w = piece('F.P. Journe', '', 'X');
+  const got = pickRelated(w, [w, piece('F.P. Journe', 'Octa', 'A'), piece('F.P. Journe', 'Centigraphe', 'B')], 4, { refs: { a: 6 }, models: {} });
+  assert.strictEqual(got.length, 2);
+});

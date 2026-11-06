@@ -4,6 +4,7 @@
 // Watch pages use the shared brand chrome and stylesheet (lib/brand-chrome.js,
 // assets/dbh-brand.css); inquiries open the shared card from assets/modals.js.
 const chrome = require('../lib/brand-chrome');
+const { pickRelated } = require('../lib/related-pieces');
 const SITE_URL = process.env.SITE_URL || 'https://www.dialedbyhenry.com';
 const WA_NUMBER = '19146211848';
 
@@ -65,14 +66,9 @@ ${chrome.scripts()}
 }
 
 function renderWatchPage(w, all = []) {
-    // Related pieces: same model family first, then same brand — server-rendered
-    // links so crawlers index the internal mesh (and buyers keep browsing).
-    const fam = m => String(m || '').replace(/\s\d{2}(\.\d)?$/, '');
-    const pool = all.filter(p => p.slug !== w.slug && p.image);
-    const related = [
-        ...pool.filter(p => p.brand === w.brand && fam(p.model) === fam(w.model)),
-        ...pool.filter(p => p.brand === w.brand && fam(p.model) !== fam(w.model)),
-    ].slice(0, 4);
+    // Other models and specifics from the same brand. Server-rendered links, so crawlers
+    // index the internal mesh and buyers keep browsing.
+    const related = pickRelated(w, all);
     const displayName = w.name + (w.nickname ? ` "${w.nickname}"` : '');
     const canonical = `${SITE_URL}/watch/${w.slug}`;
     const img = normUrl(w.image);

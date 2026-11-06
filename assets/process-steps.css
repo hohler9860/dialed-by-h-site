@@ -31,13 +31,13 @@
    stacks at its sides, then each stack expands vertically. The script works out where they sit
    for the screen and the number of watches, so adding one only means adding it to the HTML.
    Decorative, so without .is-live they are simply not shown. */
-.ps-burst{--ease:cubic-bezier(.625,.05,0,1);display:none;position:absolute;left:50%;top:50%;width:0;height:0;z-index:-1;pointer-events:none}
+.ps-burst{--ease:cubic-bezier(.625,.05,0,1);--soft:cubic-bezier(.4,0,.15,1);display:none;position:absolute;left:50%;top:50%;width:0;height:0;z-index:-1;pointer-events:none}
 .is-live .ps-burst{display:block}
 .ps-burst__x,.ps-burst__y{position:absolute;left:0;top:0;display:block;transition:transform .4s var(--ease)}
 .ps-burst img{position:absolute;left:0;top:0;display:block;height:var(--watch,180px);width:auto;max-width:none;transform:translate(-50%,-50%) scale(.6);opacity:0;transition:transform .4s var(--ease),opacity .25s ease}
-[data-state=active] .ps-burst__x{transform:translate3d(var(--x,0),0,0);transition:transform .6s var(--ease) calc(.55s + var(--d,0ms))}
-[data-state=active] .ps-burst__y{transform:translate3d(0,var(--y,0),0);transition:transform .85s var(--ease) calc(.9s + var(--d,0ms))}
-[data-state=active] .ps-burst img{transform:translate(-50%,-50%) scale(1);opacity:1;transition:transform .6s var(--ease) calc(.55s + var(--d,0ms)),opacity .3s ease calc(.55s + var(--d,0ms))}
+[data-state=active] .ps-burst__x{transform:translate3d(var(--x,0),0,0);transition:transform 1s var(--soft) calc(.6s + var(--d,0ms))}
+[data-state=active] .ps-burst__y{transform:translate3d(0,var(--y,0),0);transition:transform 1.5s var(--soft) calc(1.25s + var(--d,0ms))}
+[data-state=active] .ps-burst img{transform:translate(-50%,-50%) scale(1);opacity:1;transition:transform 1s var(--soft) calc(.6s + var(--d,0ms)),opacity .5s ease calc(.6s + var(--d,0ms))}
 
 .ps-cta{justify-content:center;margin-top:clamp(32px,3.4vw,48px)}
 

@@ -106,7 +106,7 @@
       var inColumn = Math.floor(items.length / columns) + (items.length % columns > slot ? 1 : 0);
       item.style.setProperty('--x', (slot % 2 ? 1 : -1) * (inner + along * (col + spread)) + 'px');
       item.style.setProperty('--y', centre + (row - (inColumn - 1) / 2) * pitch + (along % 2 ? pitch / 4 : 0) + 'px');
-      item.style.setProperty('--d', i * 30 + 'ms');
+      item.style.setProperty('--d', i * 45 + 'ms');
     });
   }
 

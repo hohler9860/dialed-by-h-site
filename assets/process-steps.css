@@ -1,9 +1,10 @@
 /* Process page stepper. Everything sits on one centre line: the object, then the number, title
    and copy under it, then a hairline running down to the next object. Scrolling draws the line.
-   Type: Mono eyebrow, Intl Medium headline, Works body. Without .is-live (no JS, or reduced
+   Type: Mono eyebrow, Works serif headline, Works body. Without .is-live (no JS, or reduced
    motion) the whole thing is simply drawn in full, so nothing is ever hidden. */
 .pg--steps{--node:clamp(104px,11vw,168px);--title:clamp(32px,4.4vw,64px)}
 .pg--steps .crumb,.pg--steps .pg-h1{text-align:center;margin-inline:auto}
+.pg--steps .pg-h1{font-family:var(--works);font-weight:400;line-height:1.1}
 .ps{list-style:none;margin:clamp(40px,5vw,72px) 0 0;padding:0}
 .ps__step{display:flex;flex-direction:column;align-items:center;text-align:center}
 
@@ -15,7 +16,7 @@
 /* the words */
 .ps__text{width:100%;margin-top:clamp(20px,2.4vw,32px);transition:color .35s ease}
 .ps__no{display:block;font-family:var(--mono);font-size:16px;line-height:1.1;letter-spacing:.12em;text-indent:.12em;margin-bottom:10px}
-.ps__t{font-family:var(--intl);font-weight:500;font-size:var(--title);line-height:1;letter-spacing:-.04em;margin:0 0 clamp(12px,1.4vw,18px)}
+.ps__t{font-family:var(--works);font-weight:400;font-size:var(--title);line-height:1.1;letter-spacing:-.04em;margin:0 0 clamp(12px,1.4vw,18px)}
 .ps__d{font-family:var(--works);font-size:16px;line-height:1.25;letter-spacing:-.01em;max-width:46ch;margin:0 auto;text-wrap:balance}
 [data-state=completed] .ps__text{color:var(--grey-dark)}
 [data-state=inactive] .ps__text{color:var(--grey-mid)}
@@ -30,6 +31,5 @@
 .ps-cta{justify-content:center;margin-top:clamp(32px,3.4vw,48px)}
 
 @media(max-width:860px){
-  .ps__t{letter-spacing:-.03em;line-height:1.1}
   .ps__no{font-size:14px}
 }

@@ -62,7 +62,7 @@ fbq('track', 'PageView');
 .card .link{margin-top:auto}
 #pt-journal:empty{min-height:60vh}
 @media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mast p{max-width:28ch}}
-@media(max-width:640px){.mast{display:block;margin-bottom:28px}.mast p{margin-top:18px;max-width:none}.lbl{margin-top:40px}.lbl>.k{display:none}.grid{grid-template-columns:1fr;gap:40px}.card__art img{height:230px}.card h3{font-size:24px}}
+@media(max-width:640px){.mast{display:block;margin-bottom:28px}.mast p{margin-top:18px;max-width:none}.lbl{margin-top:40px}.grid{grid-template-columns:1fr;gap:40px}.card__art img{height:230px}.card h3{font-size:24px}}
 @media(prefers-reduced-motion:reduce){.card__art img{transition:none}}
 </style>
 </head>
@@ -82,10 +82,10 @@ fbq('track', 'PageView');
 <!--/dbh:header-->
 <main class="jp">
   <div class="mast">
-    <div><span class="k">The journal by Dialed by H</span><h1><span class="h-lead">Off-</span>Catalog</h1></div>
+    <div><span class="k">The journal by Dialed by H</span><h1>Off-Catalog</h1></div>
     <p>Watches worth a closer look.<br>Stories, releases and notes from the market.</p>
   </div>
-  <div class="lbl"><h2>All stories</h2><span class="k">From the desk of Henry Ohler</span></div>
+  <div class="lbl"><h2>All stories</h2></div>
   <div class="grid" id="pt-journal" aria-live="polite"></div>
 </main>
 <!--dbh:footer-->
@@ -202,7 +202,7 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
       var txt = (a.title || '') + ' ' + (a.subtitle || '');
       var h = 0;
       for (var i = 0; i < a.slug.length; i++) { h = (h * 31 + a.slug.charCodeAt(i)) >>> 0; }
-      var curated = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches": 159, "the-watches-that-caught-our-eye-at-the-2026-us-open": 145, "travis-scotts-watches-go-well-beyond-the-obvious-flex": 146, "geneva-watch-days-2026-plus-the-recent-releases-worth-a-look": 147, "rolex-gets-complicated-the-three-new-perpetual-padellone-models": 148, "serena-williams-just-made-the-royal-oak-her-own": 149, "kruk-designs-luxury-watch-rolls-leather-goods": 150, "fp-journe-14-million-phillips-auction-independents": 151, "tudor-black-bay-chrono-39-bumblebee": 152, "ap-royal-oak-offshore-summer-chronographs": 153, "royal-pop-launch-was-a-mess": 154, "the-royal-pop-is-going-to-be-louder-than-the-moonswatch": 155, "my-day-at-watches-and-wonders-2026": 156, "rolex-just-dropped-at-watches-and-wonders-2026": 157, "what-rolex-is-probably-dropping-at-watches-and-wonders-2026": 158};
+      var curated = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches": 160, "the-watches-that-caught-our-eye-at-the-2026-us-open": 145, "travis-scotts-watches-go-well-beyond-the-obvious-flex": 146, "geneva-watch-days-2026-plus-the-recent-releases-worth-a-look": 147, "rolex-gets-complicated-the-three-new-perpetual-padellone-models": 148, "serena-williams-just-made-the-royal-oak-her-own": 149, "kruk-designs-luxury-watch-rolls-leather-goods": 150, "fp-journe-14-million-phillips-auction-independents": 151, "tudor-black-bay-chrono-39-bumblebee": 152, "ap-royal-oak-offshore-summer-chronographs": 153, "royal-pop-launch-was-a-mess": 154, "the-royal-pop-is-going-to-be-louder-than-the-moonswatch": 155, "my-day-at-watches-and-wonders-2026": 156, "rolex-just-dropped-at-watches-and-wonders-2026": 157, "what-rolex-is-probably-dropping-at-watches-and-wonders-2026": 158};
       var idx = curated[a.slug] ? curated[a.slug] - 1 : -1;
       for (var si = 0; idx === -1 && si < SPECIALS.length; si++) {
         if (SPECIALS[si].re.test(txt)) {

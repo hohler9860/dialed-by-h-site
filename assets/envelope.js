@@ -81,8 +81,8 @@
   function field(name, label, hint, attrs, cls) {
     return '<label class="ec__f' + (cls ? ' ' + cls : '') + '"><span class="ec__l">' + label + '</span><input name="' + name + '" placeholder="' + hint + '" aria-label="' + label + '" ' + attrs + '></label>';
   }
-  function menu(name, label, cls, options, attrs) {
-    return '<label class="ec__f ec__f--half"><span class="ec__l">' + label + '</span><select name="' + name + '" aria-label="' + label + '"' + (cls ? ' class="' + cls + '"' : '') + ' ' + (attrs || '') + '>' + options + '</select></label>';
+  function menu(name, label, cls, options, attrs, extra) {
+    return '<label class="ec__f ec__f--half"><span class="ec__l">' + label + '</span><select name="' + name + '" aria-label="' + label + '"' + (cls ? ' class="' + cls + '"' : '') + ' ' + (attrs || '') + '>' + options + '</select>' + (extra || '') + '</label>';
   }
   function cardHtml(M, prefill) {
     var K = KINDS[kind], cfg = M.FORMS[kind];
@@ -100,7 +100,7 @@
         menu('preferred', 'Preferred contact', '', '<option value="">Preferred contact</option><option>WhatsApp</option><option>iMessage</option><option>Email</option>' + (kind === 'source' ? '' : '<option>Instagram DM</option>'), 'required') +
         field('location', 'Where are you based?', 'Where are you based? (city / state)', 'type="text" required autocomplete="address-level2"') +
         menu('brand', 'Brand', 'js-brand', '<option value="">Brand</option>' + M.brandOptions(), 'required') +
-        menu('model', 'Model', 'js-model', '<option value="">' + modelHint + '</option>', 'disabled data-empty="' + modelHint + '" data-ready="Model"') +
+        menu('model', 'Model', 'js-model', '<option value="">' + modelHint + '</option>', 'disabled data-empty="' + modelHint + '" data-ready="Model"', '<span class="ec__gate"></span><span class="ec__need" role="status"></span>') +
         field('reference', 'Reference number', 'Reference number (if known)', 'type="text"') +
         '<label class="ec__f ec__f--wide"><span class="ec__l">Additional details</span><textarea name="details" rows="1" placeholder="Additional details (condition, box &amp; papers)" aria-label="Additional details"></textarea></label>' +
       '</div>' +
@@ -140,8 +140,20 @@
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
     placeLocation();
     M.wireForm(form, kind, M.FORMS[kind], prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
+    // A locked menu can't report a tap, so an invisible layer over it does, on screens where the hint has no room.
+    // The layer must go the moment Model unlocks or it would block the menu. Set from here, not with a CSS
+    // :disabled sibling rule, which Safari's engine doesn't update when the menu unlocks.
+    var brandF = form.querySelector('[name=brand]').closest('.ec__f'), model = form.querySelector('[name=model]'), modelF = model.closest('.ec__f'), need = modelF.querySelector('.ec__need'), gate = modelF.querySelector('.ec__gate');
+    var syncGate = function () { gate.hidden = !model.disabled; };
+    gate.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!model.disabled) return syncGate();
+      need.textContent = 'Please select brand first';
+      modelF.classList.add('needs-brand'); brandF.classList.add('is-missing');
+    });
     var refresh = function () {
-      syncLabels();
+      syncLabels(); syncGate();
+      if (form.querySelector('[name=brand]').value) { modelF.classList.remove('needs-brand'); need.textContent = ''; }
       [].forEach.call(form.querySelectorAll('.is-missing'), function (f) { var c = f.querySelector('input,select'); if (c && c.value) f.classList.remove('is-missing'); });
     };
     form.addEventListener('input', refresh); form.addEventListener('change', refresh);
@@ -150,7 +162,7 @@
       if (getComputedStyle(form.querySelector('.js-err')).display === 'none') return;
       [].forEach.call(form.querySelectorAll('[required]'), function (c) { if (!c.value.trim()) c.closest('.ec__f').classList.add('is-missing'); });
     });
-    syncLabels();
+    syncLabels(); syncGate();
     if (window.dbhTracking) window.dbhTracking.open(form, KINDS[kind].track);
   }
 

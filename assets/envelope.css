@@ -96,7 +96,8 @@
 .ec__shadow{position:absolute;inset:0;box-shadow:0 16px 48px rgba(37,37,34,.26),0 2px 6px rgba(37,37,34,.1);opacity:0;pointer-events:none}
 .env.is-landed .ec__shadow{opacity:1}
 .env__close{position:absolute;z-index:2;top:calc(var(--top) - 13px);right:4px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;background:none;border:0;color:var(--ink);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s ease}
-.env__close svg{display:block;width:13px;height:13px}
+/* The backing hides field lines passing under the X when the card scrolls on the smallest phones. */
+.env__close svg{display:block;width:13px;height:13px;background:var(--paper);box-shadow:0 0 0 6px var(--paper)}
 .env.is-landed .env__close{opacity:1;pointer-events:auto}
 @media(hover:hover){.env__close:hover svg{opacity:.55}}
 .env__close:focus-visible{outline:1px solid currentColor;outline-offset:-8px}
@@ -111,6 +112,11 @@
 @media(min-width:385px){.ec__f--half{grid-column:auto}}
 .ec__l{position:absolute;left:0;top:0;font-family:var(--mono);font-size:10px;line-height:1.1;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;opacity:0;transition:opacity .2s ease;pointer-events:none}
 .ec__f.has-value .ec__l{opacity:1}
+/* Tapping Model before Brand says so, in the label's spot. Only while the menu is locked. */
+.ec__gate{position:absolute;inset:0;z-index:1;display:block;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ec__gate[hidden]{display:none}
+.ec__need{position:absolute;left:0;top:0;font-size:12px;line-height:1.1;white-space:nowrap;color:#8a3a2f;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.ec__f.needs-brand .ec__need{opacity:1}
 .ec input[type=text],.ec input[type=email],.ec input[type=tel],.ec select,.ec textarea{position:absolute;left:0;right:0;bottom:0;display:block;width:100%;height:36px;margin:0;padding:0;background:transparent;border:0;border-bottom:1px solid var(--rule);border-radius:0;outline:none;box-shadow:none;color:var(--ink);font-family:var(--intl);font-weight:400;font-size:16px;line-height:normal;letter-spacing:0;text-overflow:ellipsis;-webkit-appearance:none;appearance:none;transition:border-color .2s ease}
 .ec input:focus,.ec select:focus,.ec textarea:focus{border-bottom-color:var(--ink)}
 .ec input::placeholder,.ec textarea::placeholder{color:var(--ink);opacity:1}
@@ -159,6 +165,7 @@
   .ec__l{top:calc(var(--c)*34);font-size:max(9px,calc(var(--c)*13))}
   .ec input[type=text],.ec input[type=email],.ec input[type=tel],.ec select,.ec textarea{height:calc(var(--c)*59);padding-top:calc(var(--c)*2);font-size:max(14px,calc(var(--c)*23));border-bottom-width:max(1px,calc(var(--c)*1.5))}
   .ec select{padding-right:calc(var(--c)*30);background-position:right calc(var(--c)*9) center;background-size:max(9px,calc(var(--c)*11)) max(6px,calc(var(--c)*7))}
+  .ec__gate{display:none}
   .ec__f--wide{grid-column:1/-1;height:calc(var(--c)*98);padding:0}
   .ec textarea{position:absolute;bottom:0;height:calc(var(--c)*59);min-height:0;max-height:none;padding-top:calc(var(--c)*19.5);field-sizing:fixed}
   .ec__check{gap:calc(var(--c)*11.25);margin:calc(var(--c)*30) 0 0;font-size:max(12px,calc(var(--c)*18))}

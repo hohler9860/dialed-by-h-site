@@ -1,93 +1,88 @@
 /* Sealed envelope that opens over the page. Every size is in --u, one unit of the 1173 x 1341
-   artwork, so the layers stay locked together at any screen size. Only transform and opacity
-   animate, so the browser's graphics chip does the work and it stays smooth on phones. --x and
-   --y (-1 to 1) carry the pointer for the desktop parallax. --pace slows the whole thing. */
-.env{--u:calc(min(86vw,58svh,620px)/572);--pace:1;--x:0;--y:0;--ease-rise:cubic-bezier(.16,.84,.3,1);--ease-open:cubic-bezier(.5,.02,.18,1);
+   artwork, so the layers stay locked together at any screen size. The envelope and seal are one
+   solid object; the parallax comes from the shadow and light moving at their own speeds behind it,
+   the seal's real depth as the flap turns, and the mouse on desktop. Only transform and opacity
+   animate, so it stays smooth on phones. The flap's motion and light are in assets/envelope.js. */
+.env{--u:calc(min(86vw,58svh,620px)/572);--pace:1;--x:0;--y:0;--ease-rise:cubic-bezier(.16,.84,.3,1);
   position:fixed;inset:0;z-index:60;display:grid;place-items:center;overflow:hidden;cursor:default}
 .env[hidden]{display:none}
 .env *{box-sizing:border-box}
 .env__scrim{position:absolute;inset:0;background:#252522}
 /* A whisper of grain over the light, so its gradient can't show as rings on dark screens. */
 .env__grain{position:absolute;inset:0;background:url(/assets/envelope/grain.png);opacity:.022;pointer-events:none}
+.env__glow-p,.env__glow-d{position:absolute;inset:0}
 .env__glow{position:absolute;left:50%;top:50%;width:calc(var(--u)*1500);height:calc(var(--u)*1500);margin:calc(var(--u)*-750) 0 0 calc(var(--u)*-750);background:radial-gradient(closest-side,rgba(247,243,233,.075),rgba(247,243,233,0));
   transform:translate3d(calc(var(--x)*var(--u)*-26),calc(var(--y)*var(--u)*-20),0)}
 
-/* The stage is exactly the body's box. It slides down as the flap rises, to keep the pair centred. */
-.env__stage{position:relative;width:calc(var(--u)*572);height:calc(var(--u)*370);perspective:calc(var(--u)*2400);perspective-origin:50% 20%}
+/* The stage is exactly the body's box. It slides down as the flap rises, to keep the pair centred.
+   The camera sits level with the fold, so the flap is truly edge-on at 90 degrees. */
+.env__stage-fade{position:relative;display:block}
+.env__stage{position:relative;width:calc(var(--u)*572);height:calc(var(--u)*366);perspective:calc(var(--u)*2400);perspective-origin:50% 0}
+
+/* Resting shadow on the table: a wide soft one plus a tight dark one where the paper meets it. */
+.env__shadow-d,.env__shadow-r,.env__shadow-p{position:absolute;inset:0}
+.env__shadow-p{transform:translate3d(calc(var(--x)*var(--u)*-20),calc(var(--y)*var(--u)*-14),0)}
 .env__shadow{position:absolute;inset:calc(var(--u)*22) calc(var(--u)*10) calc(var(--u)*-26);background:#000;opacity:.55;filter:blur(calc(var(--u)*30));border-radius:calc(var(--u)*12)}
-.env__shadow-p{position:absolute;inset:0;transform:translate3d(calc(var(--x)*var(--u)*-20),calc(var(--y)*var(--u)*-14),0)}
-.env__tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(calc(var(--y)*-2.4deg)) rotateY(calc(var(--x)*3.2deg))}
+.env__shadow2{position:absolute;inset:calc(var(--u)*4) calc(var(--u)*2) calc(var(--u)*-5);background:#000;opacity:.5;filter:blur(calc(var(--u)*5))}
+
+.env__drift,.env__rise,.env__tilt{position:absolute;inset:0;transform-style:preserve-3d}
+.env__tilt{transform:rotateX(calc(var(--y)*-2.4deg)) rotateY(calc(var(--x)*3.2deg))}
 .env__body{position:absolute;inset:0}
 .env__body img{display:block;width:100%;height:100%}
 
-/* The shadow the flap throws on the body while it is still folded down. */
-.env__cast{position:absolute;left:calc(var(--u)*9.67);top:0;width:calc(var(--u)*553);height:calc(var(--u)*324);transform-origin:50% 0;opacity:.2;filter:blur(calc(var(--u)*5));transform:translate3d(0,calc(var(--u)*2),.5px)}
-.env__cast i{display:block;width:100%;height:100%;background:#3b3323;clip-path:polygon(0 0,100% 0,100% 13%,51.5% 100%,48.5% 100%,0 13%)}
-
-.env__flap-p{position:absolute;left:calc(var(--u)*9.67);top:0;width:calc(var(--u)*553);height:calc(var(--u)*324);transform-style:preserve-3d;transform:translateZ(1px)}
+/* Flap geometry, shared by the flap and every shadow it throws. The fold sits a hair inside the
+   body's top edge, so paper always overlaps paper and no gap can open at any angle. */
+.env__flap-p,.env__cast,.env__cast2{position:absolute;left:calc(var(--u)*1.6);top:calc(var(--u)*1.5);width:calc(var(--u)*568.8);height:calc(var(--u)*324)}
+.env__flap-p{transform-style:preserve-3d;transform:translateZ(1px)}
 .env__flap{position:absolute;inset:0;transform-origin:50% 0;transform-style:preserve-3d;will-change:transform}
-/* Faces must stay flat: Safari won't hide a layer's reverse side if its children have their own 3D. */
-.env__face{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+
+/* What the flap throws on the body: tight while it lies close, wide and soft once it lifts. */
+.env__cast,.env__cast2{transform-origin:50% 0;transform:translateZ(.5px)}
+.env__cast{opacity:.3;filter:blur(calc(var(--u)*2.5))}
+.env__cast2{opacity:.12;filter:blur(calc(var(--u)*20))}
+.env__cast i,.env__cast2 i,.env__tablecast i{display:block;width:100%;height:100%;background:#2b2518}
+.env__cast i,.env__cast2 i{clip-path:polygon(0 0,100% 0,100% 13%,51.5% 100%,48.5% 100%,0 13%)}
+/* Once it's past the vertical, its shadow lands on the table above the envelope instead. */
+.env__tablecast{position:absolute;left:calc(var(--u)*1.6);bottom:calc(100% - var(--u)*1.5);width:calc(var(--u)*568.8);height:calc(var(--u)*324);transform-origin:50% 100%;opacity:0;filter:blur(calc(var(--u)*7))}
+.env__tablecast i{background:#000;clip-path:polygon(48.5% 0,51.5% 0,100% 87%,100% 100%,0 100%,0 87%)}
+
+/* Soft crease where the opened flap folds into the body. */
+.env__crease{position:absolute;left:0;right:0;top:0;height:calc(var(--u)*9);background:linear-gradient(180deg,rgba(45,38,25,.2),rgba(45,38,25,0));opacity:0;transform:translateZ(.6px)}
+/* Paper has thickness: this is the sheet's edge, seen for the instant the flap is edge-on. */
+.env__edge{position:absolute;left:calc(var(--u)*1.6);top:calc(var(--u)*.7);width:calc(var(--u)*568.8);height:calc(var(--u)*1.6);background:#d9d3c5;opacity:0;transform:translateZ(1.5px)}
+
+/* Faces stay flat and swap by opacity exactly at 90 degrees, when neither can be seen. Safari's
+   engine doesn't reliably hide a layer's reverse side, so nothing here depends on that. */
+.env__face{position:absolute;inset:0}
 .env__face img{display:block;position:absolute}
 .env__face>img.env__paper{inset:0;width:100%;height:100%}
-.env__face--back{transform:rotateX(180deg);visibility:hidden}
-/* Shading is a dark copy of the flap's shape whose opacity changes, instead of a filter redrawn every frame. */
-.env__shade{position:absolute;inset:0;background:linear-gradient(180deg,#3b3323,#1d1a12);-webkit-mask-size:100% 100%;mask-size:100% 100%;opacity:0}
-.env__face--front .env__shade{-webkit-mask-image:url(/assets/envelope/flap-outside.webp);mask-image:url(/assets/envelope/flap-outside.webp)}
-.env__face--back .env__shade{-webkit-mask-image:url(/assets/envelope/flap-inside.webp);mask-image:url(/assets/envelope/flap-inside.webp);background:linear-gradient(0deg,#3b3323,#1d1a12)}
-/* The seal stands proud of the paper, so it really shifts against it as the flap turns. */
-.env__seal-p{position:absolute;inset:0;transform:translateZ(calc(var(--u)*9));-webkit-backface-visibility:hidden;backface-visibility:hidden}
-.env__seal{display:block;position:absolute;left:calc(var(--u)*231.5);top:calc(var(--u)*266);width:calc(var(--u)*90);height:auto}
-.env__seal-back{left:calc(var(--u)*231.5);top:calc(var(--u)*-29.6);width:calc(var(--u)*90);height:auto}
+.env__face--back{transform:rotateX(180deg);opacity:0}
+.env__shade{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;opacity:0}
+.env__face--front .env__shade{background:linear-gradient(180deg,#221d12,#2f291c);-webkit-mask-image:url(/assets/envelope/flap-outside.webp);mask-image:url(/assets/envelope/flap-outside.webp)}
+.env__face--back .env__shade{background:linear-gradient(0deg,#221d12,#2f291c);-webkit-mask-image:url(/assets/envelope/flap-inside.webp);mask-image:url(/assets/envelope/flap-inside.webp)}
+.env__fold{position:absolute;left:0;right:0;bottom:0;height:calc(var(--u)*7);background:linear-gradient(0deg,rgba(45,38,25,.15),rgba(45,38,25,0))}
+.env__fold--top{top:0;bottom:auto;background:linear-gradient(180deg,rgba(45,38,25,.08),rgba(45,38,25,0))}
+/* The wax stands proud of the paper, so it really shifts against it as the flap turns. */
+.env__seal-p{position:absolute;inset:0;transform:translateZ(calc(var(--u)*9))}
+.env__seal-shadow{position:absolute;left:50%;top:calc(var(--u)*268);width:calc(var(--u)*92);height:calc(var(--u)*90);margin-left:calc(var(--u)*-46);border-radius:50%;background:#1a160d;opacity:.34;filter:blur(calc(var(--u)*4));transform:translate3d(0,calc(var(--u)*3),calc(var(--u)*-9))}
+.env__seal{display:block;position:absolute;left:50%;top:calc(var(--u)*266);width:calc(var(--u)*90);height:auto;margin-left:calc(var(--u)*-45)}
+.env__seal-back{left:50%;top:calc(var(--u)*-29.6);width:calc(var(--u)*90);height:auto;margin-left:calc(var(--u)*-45)}
 
-/* ── the sequence: arrive, settle, open ── */
+/* Arrival. The whole envelope moves as one; the shadow and light travel less, which reads as depth. */
 .env.is-playing .env__scrim{animation:env-fade calc(500ms*var(--pace)) ease-out both}
 .env.is-playing .env__glow-p{animation:env-rise-glow calc(1500ms*var(--pace)) var(--ease-rise) both}
 .env.is-playing .env__stage-fade{animation:env-fade calc(520ms*var(--pace)) ease-out calc(100ms*var(--pace)) both}
-/* Parallax: nearer layers travel further on the way in. Same time, different distance. */
+.env.is-playing .env__rise{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both;--from:calc(var(--u)*70);--scale:1}
 .env.is-playing .env__shadow-r{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both;--from:calc(var(--u)*34);--scale:.94}
-.env.is-playing .env__body{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both;--from:calc(var(--u)*70);--scale:1}
-.env.is-playing .env__flap-r{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both;--from:calc(var(--u)*92);--scale:1}
-.env.is-playing .env__seal-r{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both,env-press calc(420ms*var(--pace)) ease-in-out calc(1220ms*var(--pace)) both;--from:calc(var(--u)*122);--scale:1.05}
-.env.is-playing .env__flap{animation:env-open calc(1650ms*var(--pace)) linear calc(1560ms*var(--pace)) both}
-.env.is-playing .env__face--front,.env.is-playing .env__seal-p{animation:env-show-front calc(1650ms*var(--pace)) linear calc(1560ms*var(--pace)) both}
-.env.is-playing .env__face--back{animation:env-show-back calc(1650ms*var(--pace)) linear calc(1560ms*var(--pace)) both}
-.env.is-playing .env__drift{animation:env-drift calc(1650ms*var(--pace)) var(--ease-open) calc(1560ms*var(--pace)) both}
-.env.is-playing .env__shadow-d{animation:env-drift-shadow calc(1950ms*var(--pace)) var(--ease-open) calc(1560ms*var(--pace)) both}
-.env.is-playing .env__glow-d{animation:env-drift-glow calc(2300ms*var(--pace)) var(--ease-open) calc(1560ms*var(--pace)) both}
-.env.is-playing .env__face--front .env__shade{animation:env-shade-front calc(825ms*var(--pace)) ease-in calc(1560ms*var(--pace)) both}
-.env.is-playing .env__face--back .env__shade{animation:env-shade-back calc(825ms*var(--pace)) ease-out calc(2385ms*var(--pace)) both}
-.env.is-playing .env__cast{animation:env-cast calc(825ms*var(--pace)) ease-in calc(1560ms*var(--pace)) both}
-.env__flap-r,.env__drift{display:block;transform-style:preserve-3d}
-.env__shadow-r,.env__seal-r,.env__shadow-d,.env__glow-p,.env__glow-d,.env__stage-fade{display:block}
-.env__shadow-r,.env__shadow-d,.env__glow-p,.env__glow-d,.env__flap-r,.env__drift{position:absolute;inset:0}
-.env__stage-fade{position:relative}
-.env__seal-r{position:absolute;inset:0}
-
 @keyframes env-fade{from{opacity:0}to{opacity:1}}
 @keyframes env-rise{from{transform:translate3d(0,var(--from),0) scale(var(--scale))}to{transform:none}}
 @keyframes env-rise-glow{from{opacity:0;transform:translate3d(0,calc(var(--u)*22),0)}to{opacity:1;transform:none}}
-@keyframes env-press{0%,100%{transform:none}45%{transform:scale(.97)}}
-/* Two halves meeting at exactly 90 degrees, edge-on, so the faces can swap unseen. The curves are
-   matched at the join (same speed either side), so the turn stays one continuous move. */
-@keyframes env-open{0%{transform:rotateX(0);animation-timing-function:cubic-bezier(.5,.02,.75,.5)}50%{transform:rotateX(90deg);animation-timing-function:cubic-bezier(.25,.5,.2,1)}100%{transform:rotateX(180deg)}}
-@keyframes env-show-front{0%,49.9%{visibility:visible}50%,100%{visibility:hidden}}
-@keyframes env-show-back{0%,49.9%{visibility:hidden}50%,100%{visibility:visible}}
-@keyframes env-drift{from{transform:none}to{transform:translate3d(0,calc(var(--u)*150),0)}}
-/* The shadow and the light lag behind the envelope, and that lag reads as depth. */
-@keyframes env-drift-shadow{from{transform:none}to{transform:translate3d(0,calc(var(--u)*150),0)}}
-@keyframes env-drift-glow{from{transform:none}to{transform:translate3d(0,calc(var(--u)*36),0)}}
-@keyframes env-shade-front{from{opacity:0}to{opacity:.22}}
-@keyframes env-shade-back{from{opacity:.26}to{opacity:0}}
-@keyframes env-cast{from{opacity:.2;transform:translate3d(0,calc(var(--u)*2),.5px) scaleY(1)}55%{opacity:.34}to{opacity:0;transform:translate3d(0,calc(var(--u)*2),.5px) scaleY(.05)}}
 
 /* Reduced motion: no travel at all, the open envelope simply fades in. */
-@media(prefers-reduced-motion:reduce){
-  .env.is-playing *{animation:none!important}
-  .env.is-playing .env__flap{transform:rotateX(180deg)}
-  .env.is-playing .env__face--front,.env.is-playing .env__seal-p{visibility:hidden}
-  .env.is-playing .env__face--back{visibility:visible}
-  .env.is-playing .env__cast{opacity:0}
-  .env.is-playing .env__drift,.env.is-playing .env__shadow-d{transform:translate3d(0,calc(var(--u)*150),0)}
-  .env.is-playing .env__scrim{animation:env-fade 200ms ease-out both!important}
-}
+.env.is-instant .env__flap{transform:rotateX(177deg)}
+.env.is-instant .env__face--front,.env.is-instant .env__seal-p,.env.is-instant .env__cast,.env.is-instant .env__cast2{opacity:0}
+.env.is-instant .env__face--back{opacity:1}
+.env.is-instant .env__crease{opacity:1}
+.env.is-instant .env__tablecast{opacity:.5}
+.env.is-instant .env__drift,.env.is-instant .env__shadow-d{transform:translate3d(0,calc(var(--u)*148),0)}
+@media(prefers-reduced-motion:reduce){.env.is-playing *{animation:none!important}.env.is-playing .env__scrim{animation:env-fade 200ms ease-out both!important}}

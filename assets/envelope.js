@@ -1,5 +1,5 @@
 /* Concierge envelope. dbhEnvelope.open(prefill, {onClose}) plays it over the current page and lands
-   on the working card, about 1.3 seconds from start to finish. People tap this to send a request,
+   on the working card, about 1.75 seconds from start to finish. People tap this to send a request,
    so the animation must never feel like a wait: timing changes go in the constants below. The
    opening runs off one number, the flap's angle, and the light and shadows are worked out from it.
    Then the card rises out of the pocket and comes forward to full size as the envelope falls away.
@@ -9,8 +9,8 @@
    and the CARD section of envelope.css. Field names must stay as they are. */
 (function () {
   var B = '/assets/envelope/', FILES = ['body.webp', 'body-front.webp', 'lip.webp', 'flap-outside.webp', 'flap-inside.webp', 'seal.webp', 'request-to-source.webp', 'wordmark.svg'];
-  var OPEN_AT = 230, OPEN_FOR = 620, END_ANGLE = 177, DRIFT = 148;
-  var RISE_AT = 620, RISE_FOR = 460, GROW_AT = 800, GROW_FOR = 480, FALL_AT = 740, FALL_FOR = 440, END = GROW_AT + GROW_FOR;
+  var OPEN_AT = 310, OPEN_FOR = 840, END_ANGLE = 177, DRIFT = 148;
+  var RISE_AT = 840, RISE_FOR = 620, GROW_AT = 1085, GROW_FOR = 665, FALL_AT = 1000, FALL_FOR = 600, END = GROW_AT + GROW_FOR;
   var SEAT_W = 494, SEAT_TOP = 8, SEAT_H = 350; // the card in the pocket, in artwork units. It really fits inside.
   var WIDE = '(min-width:820px) and (min-height:640px)'; // same as the media query in envelope.css
   // Light from above and in front of the page, as (down the screen, towards the viewer).
@@ -51,6 +51,8 @@
       '<div class="env__stage env__stage--front">' +
         wrap('<img class="env__layer" src="' + B + 'lip.webp" alt="" width="571" height="366"><img class="env__layer" src="' + B + 'body-front.webp" alt="" width="1143" height="732"><div class="env__crease env__crease--front"></div><div class="env__cast2"><i></i></div><div class="env__cast"><i></i></div><div class="env__edge"></div>' + flapShut()) + '</div>';
     document.body.appendChild(el);
+    var wide = matchMedia(WIDE);
+    if (wide.addEventListener) wide.addEventListener('change', placeLocation);
     // Tap during the animation to skip it. Once landed, tapping outside the card closes it.
     el.addEventListener('pointerdown', function () {
       if (landed) return;
@@ -101,6 +103,13 @@
       '</form></div></div>' +
       '<button type="button" class="env__close" aria-label="Close"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M1 1l11 11M12 1L1 12"/></svg></button>';
   }
+  // On a phone the full-width rows stay together and the paired rows stay together, so the form reads
+  // in clean blocks instead of zig-zagging. The DOM moves too, so Next on the keyboard follows the eye.
+  function placeLocation() {
+    if (!form) return;
+    var loc = form.querySelector('[name=location]'), next = form.querySelector(matchMedia(WIDE).matches ? '[name=brand]' : '[name=phone]');
+    if (loc && next) next.closest('.ec__f').parentNode.insertBefore(loc.closest('.ec__f'), next.closest('.ec__f'));
+  }
   function syncLabels() {
     [].forEach.call(card.querySelectorAll('.ec__f'), function (f) {
       var c = f.querySelector('input,select,textarea');
@@ -120,6 +129,7 @@
     var scroll = root.querySelector('.env__scroll');
     scroll.innerHTML = '<article class="ec">' + cardHtml(M, prefill) + '</article>';
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
+    placeLocation();
     M.wireForm(form, 'source', M.FORMS.source, prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
     var refresh = function () {
       syncLabels();

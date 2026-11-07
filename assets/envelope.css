@@ -1,62 +1,52 @@
-/* Sealed envelope that opens over the page. Every size is in --u, one unit of the 1173 x 1341
-   artwork, so the layers stay locked together at any screen size. The envelope and seal are one
-   solid object; the parallax comes from the shadow and light moving at their own speeds behind it,
-   the seal's real depth as the flap turns, and the mouse on desktop. Only transform and opacity
-   animate, so it stays smooth on phones. The flap's motion and light are in assets/envelope.js. */
-.env{--u:calc(min(86vw,58svh,620px)/572);--pace:1;--x:0;--y:0;--ease-rise:cubic-bezier(.16,.84,.3,1);
-  position:fixed;inset:0;z-index:60;display:grid;place-items:center;overflow:hidden;cursor:default}
+/* Concierge envelope. Two halves of the envelope sandwich the card: the back stage (z 2) and the
+   front stage (z 4), with the card's scroller between them (z 3). The stacking is plain DOM order,
+   so it's the same in every browser. --u is one unit of the 1173 x 1341 artwork, so layers stay
+   locked together at any size. The envelope and seal move as one solid object. Motion lives in
+   assets/envelope.js. The card itself is the section marked CARD below: replace that section and
+   cardHtml() in the script to change its design. */
+@font-face{font-family:"Suisse Intl";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntl-Regular.woff2) format("woff2")}
+@font-face{font-family:"Suisse Works";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseWorks-Regular.woff2) format("woff2")}
+@font-face{font-family:"Suisse Intl Mono";font-weight:400;font-style:normal;font-display:swap;src:url(/assets/fonts/suisse/SuisseIntlMono-Regular.woff2) format("woff2")}
+.env{--vh:1vh;--u:calc(min(86vw,calc(var(--vh)*58),620px)/572);--pace:1;--x:0;--y:0;--ease-rise:cubic-bezier(.16,.84,.3,1);
+  --ink:#252522;--paper:#F7F3E9;--rule:#A8A59E;--intl:"Suisse Intl","Helvetica Neue",Arial,sans-serif;--works:"Suisse Works",Georgia,"Times New Roman",serif;--mono:"Suisse Intl Mono","SF Mono",Menlo,monospace;
+  position:fixed;inset:0;z-index:60;display:grid;place-items:center;overflow:hidden;cursor:default;transition:opacity .22s ease}
+@supports(height:1svh){.env{--vh:1svh}}
+@media(max-height:500px){.env{--u:calc(min(86vw,calc(var(--vh)*68),620px)/572)}}
 .env[hidden]{display:none}
+.env.is-closing{opacity:0;pointer-events:none}
 .env *{box-sizing:border-box}
-.env__scrim{position:absolute;inset:0;background:#252522}
+.env__scrim{position:absolute;inset:0;background:var(--ink)}
 /* A whisper of grain over the light, so its gradient can't show as rings on dark screens. */
 .env__grain{position:absolute;inset:0;background:url(/assets/envelope/grain.png);opacity:.022;pointer-events:none}
 .env__glow-p,.env__glow-d{position:absolute;inset:0}
 .env__glow{position:absolute;left:50%;top:50%;width:calc(var(--u)*1500);height:calc(var(--u)*1500);margin:calc(var(--u)*-750) 0 0 calc(var(--u)*-750);background:radial-gradient(closest-side,rgba(247,243,233,.075),rgba(247,243,233,0));
   transform:translate3d(calc(var(--x)*var(--u)*-26),calc(var(--y)*var(--u)*-20),0)}
 
-/* The stage is exactly the body's box. It slides down as the flap rises, to keep the pair centred.
-   The camera sits level with the fold, so the flap is truly edge-on at 90 degrees. */
-.env__stage-fade{position:relative;display:block}
-.env__stage{position:relative;width:calc(var(--u)*572);height:calc(var(--u)*366);perspective:calc(var(--u)*2400);perspective-origin:50% 0}
-
+/* ── the two halves of the envelope ── */
+.env__stage{grid-area:1/1;position:relative;width:calc(var(--u)*572);height:calc(var(--u)*366);pointer-events:none}
+.env__stage--back{z-index:2}
+.env__stage--front{z-index:4}
+.env__fall,.env__drift,.env__rise,.env__tilt{position:absolute;inset:0}
+.env__tilt{transform:perspective(calc(var(--u)*2400)) rotateX(calc(var(--y)*-2.4deg)) rotateY(calc(var(--x)*3.2deg))}
+.env.is-landed .env__stage{visibility:hidden}
 /* Resting shadow on the table: a wide soft one plus a tight dark one where the paper meets it. */
 .env__shadow-d,.env__shadow-r,.env__shadow-p{position:absolute;inset:0}
 .env__shadow-p{transform:translate3d(calc(var(--x)*var(--u)*-20),calc(var(--y)*var(--u)*-14),0)}
 .env__shadow{position:absolute;inset:calc(var(--u)*22) calc(var(--u)*10) calc(var(--u)*-26);background:#000;opacity:.55;filter:blur(calc(var(--u)*30));border-radius:calc(var(--u)*12)}
 .env__shadow2{position:absolute;inset:calc(var(--u)*4) calc(var(--u)*2) calc(var(--u)*-5);background:#000;opacity:.5;filter:blur(calc(var(--u)*5))}
-
-.env__drift,.env__rise,.env__tilt{position:absolute;inset:0;transform-style:preserve-3d}
-.env__tilt{transform:rotateX(calc(var(--y)*-2.4deg)) rotateY(calc(var(--x)*3.2deg))}
-.env__body{position:absolute;inset:0}
-.env__body img{display:block;width:100%;height:100%}
+.env__layer{position:absolute;inset:0;display:block;width:100%;height:100%}
 
 /* Flap geometry, shared by the flap and every shadow it throws. The fold sits a hair inside the
    body's top edge, so paper always overlaps paper and no gap can open at any angle. */
 .env__flap-p,.env__cast,.env__cast2{position:absolute;left:calc(var(--u)*1.6);top:calc(var(--u)*1.5);width:calc(var(--u)*568.8);height:calc(var(--u)*324)}
-.env__flap-p{transform-style:preserve-3d;transform:translateZ(1px)}
+/* One rotator for each side of the flap. The shut side sits above the card's layer and the open
+   side below it, and they swap at exactly 90 degrees, when the flap is edge-on and neither shows. */
 .env__flap{position:absolute;inset:0;transform-origin:50% 0;transform-style:preserve-3d;will-change:transform}
-
-/* What the flap throws on the body: tight while it lies close, wide and soft once it lifts. */
-.env__cast,.env__cast2{transform-origin:50% 0;transform:translateZ(.5px)}
-.env__cast{opacity:.3;filter:blur(calc(var(--u)*2.5))}
-.env__cast2{opacity:.12;filter:blur(calc(var(--u)*20))}
-.env__cast i,.env__cast2 i,.env__tablecast i{display:block;width:100%;height:100%;background:#2b2518}
-.env__cast i,.env__cast2 i{clip-path:polygon(0 0,100% 0,100% 13%,51.5% 100%,48.5% 100%,0 13%)}
-/* Once it's past the vertical, its shadow lands on the table above the envelope instead. */
-.env__tablecast{position:absolute;left:calc(var(--u)*1.6);bottom:calc(100% - var(--u)*1.5);width:calc(var(--u)*568.8);height:calc(var(--u)*324);transform-origin:50% 100%;opacity:0;filter:blur(calc(var(--u)*7))}
-.env__tablecast i{background:#000;clip-path:polygon(48.5% 0,51.5% 0,100% 87%,100% 100%,0 100%,0 87%)}
-
-/* Soft crease where the opened flap folds into the body. */
-.env__crease{position:absolute;left:0;right:0;top:0;height:calc(var(--u)*9);background:linear-gradient(180deg,rgba(45,38,25,.2),rgba(45,38,25,0));opacity:0;transform:translateZ(.6px)}
-/* Paper has thickness: this is the sheet's edge, seen for the instant the flap is edge-on. */
-.env__edge{position:absolute;left:calc(var(--u)*1.6);top:calc(var(--u)*.7);width:calc(var(--u)*568.8);height:calc(var(--u)*1.6);background:#d9d3c5;opacity:0;transform:translateZ(1.5px)}
-
-/* Faces stay flat and swap by opacity exactly at 90 degrees, when neither can be seen. Safari's
-   engine doesn't reliably hide a layer's reverse side, so nothing here depends on that. */
+.env__flap--open{visibility:hidden}
 .env__face{position:absolute;inset:0}
 .env__face img{display:block;position:absolute}
 .env__face>img.env__paper{inset:0;width:100%;height:100%}
-.env__face--back{transform:rotateX(180deg);opacity:0}
+.env__face--back{transform:rotateX(180deg)}
 .env__shade{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;opacity:0}
 .env__face--front .env__shade{background:linear-gradient(180deg,#221d12,#2f291c);-webkit-mask-image:url(/assets/envelope/flap-outside.webp);mask-image:url(/assets/envelope/flap-outside.webp)}
 .env__face--back .env__shade{background:linear-gradient(0deg,#221d12,#2f291c);-webkit-mask-image:url(/assets/envelope/flap-inside.webp);mask-image:url(/assets/envelope/flap-inside.webp)}
@@ -68,21 +58,112 @@
 .env__seal{display:block;position:absolute;left:50%;top:calc(var(--u)*266);width:calc(var(--u)*90);height:auto;margin-left:calc(var(--u)*-45)}
 .env__seal-back{left:50%;top:calc(var(--u)*-29.6);width:calc(var(--u)*90);height:auto;margin-left:calc(var(--u)*-45)}
 
+/* What the flap throws on the body: tight while it lies close, wide and soft once it lifts. */
+.env__cast,.env__cast2{transform-origin:50% 0}
+.env__cast{opacity:.3;filter:blur(calc(var(--u)*2.5))}
+.env__cast2{opacity:.12;filter:blur(calc(var(--u)*20))}
+.env__cast i,.env__cast2 i,.env__tablecast i{display:block;width:100%;height:100%;background:#2b2518}
+.env__cast i,.env__cast2 i{clip-path:polygon(0 0,100% 0,100% 13%,51.5% 100%,48.5% 100%,0 13%)}
+/* Once it's past the vertical, its shadow lands on the table above the envelope instead. */
+.env__tablecast{position:absolute;left:calc(var(--u)*1.6);bottom:calc(100% - var(--u)*1.5);width:calc(var(--u)*568.8);height:calc(var(--u)*324);transform-origin:50% 100%;opacity:0;filter:blur(calc(var(--u)*7))}
+.env__tablecast i{background:#000;clip-path:polygon(48.5% 0,51.5% 0,100% 87%,100% 100%,0 100%,0 87%)}
+/* Soft crease where the opened flap folds into the body. The front copy skips the pocket opening, so it never lies across the card. */
+.env__crease{position:absolute;left:0;right:0;top:0;height:calc(var(--u)*9);background:linear-gradient(180deg,rgba(45,38,25,.2),rgba(45,38,25,0));opacity:0}
+.env__crease--front{clip-path:polygon(0 0,calc(var(--u)*52.6) 0,calc(var(--u)*61.6) 100%,calc(var(--u)*510.4) 100%,calc(var(--u)*519.4) 0,100% 0,100% 100%,0 100%)}
+/* Paper has thickness: this is the sheet's edge, seen for the instant the flap is edge-on. */
+.env__edge{position:absolute;left:calc(var(--u)*1.6);top:calc(var(--u)*.7);width:calc(var(--u)*568.8);height:calc(var(--u)*1.6);background:#d9d3c5;opacity:0}
+
 /* Arrival. The whole envelope moves as one; the shadow and light travel less, which reads as depth. */
 .env.is-playing .env__scrim{animation:env-fade calc(500ms*var(--pace)) ease-out both}
 .env.is-playing .env__glow-p{animation:env-rise-glow calc(1500ms*var(--pace)) var(--ease-rise) both}
-.env.is-playing .env__stage-fade{animation:env-fade calc(520ms*var(--pace)) ease-out calc(100ms*var(--pace)) both}
+.env.is-playing .env__stage{animation:env-fade calc(520ms*var(--pace)) ease-out calc(100ms*var(--pace)) both}
 .env.is-playing .env__rise{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both;--from:calc(var(--u)*70);--scale:1}
 .env.is-playing .env__shadow-r{animation:env-rise calc(1150ms*var(--pace)) var(--ease-rise) calc(100ms*var(--pace)) both;--from:calc(var(--u)*34);--scale:.94}
 @keyframes env-fade{from{opacity:0}to{opacity:1}}
 @keyframes env-rise{from{transform:translate3d(0,var(--from),0) scale(var(--scale))}to{transform:none}}
 @keyframes env-rise-glow{from{opacity:0;transform:translate3d(0,calc(var(--u)*22),0)}to{opacity:1;transform:none}}
-
-/* Reduced motion: no travel at all, the open envelope simply fades in. */
-.env.is-instant .env__flap{transform:rotateX(177deg)}
-.env.is-instant .env__face--front,.env.is-instant .env__seal-p,.env.is-instant .env__cast,.env.is-instant .env__cast2{opacity:0}
-.env.is-instant .env__face--back{opacity:1}
-.env.is-instant .env__crease{opacity:1}
-.env.is-instant .env__tablecast{opacity:.5}
-.env.is-instant .env__drift,.env.is-instant .env__shadow-d{transform:translate3d(0,calc(var(--u)*148),0)}
 @media(prefers-reduced-motion:reduce){.env.is-playing *{animation:none!important}.env.is-playing .env__scrim{animation:env-fade 200ms ease-out both!important}}
+
+.env__close{position:absolute;z-index:6;top:max(8px,env(safe-area-inset-top,0px));right:8px;min-width:44px;min-height:44px;padding:0 12px;background:none;border:0;color:var(--paper);font-family:var(--intl);font-size:16px;line-height:1;cursor:pointer}
+.env__close:hover{text-decoration:underline;text-underline-offset:.25em;text-decoration-thickness:1px}
+.env__close:focus-visible{outline:1px solid currentColor;outline-offset:-6px}
+
+/* ── the scroller the card lands in ── */
+.env__scroll{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none;padding:calc(env(safe-area-inset-top,0px) + 56px) 16px calc(env(safe-area-inset-bottom,0px) + 28px)}
+.env.is-landed .env__scroll{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;pointer-events:auto}
+
+/* ══ CARD ══ Phones and small windows first: one column that scrolls, with 16px fields so iOS doesn't zoom. */
+.ec{position:relative;width:100%;max-width:560px;margin:0 auto;padding:28px 24px;background:var(--paper);color:var(--ink);transform-origin:0 0;visibility:hidden;font-family:var(--intl);-webkit-font-smoothing:antialiased;cursor:auto}
+.env.is-playing .ec,.env.is-landed .ec{visibility:visible}
+.ec__shadow{position:absolute;inset:0;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;pointer-events:none}
+.env.is-landed .ec__shadow{opacity:1}
+.ec__mark{display:block;width:82%;height:auto;margin:0 auto}
+.ec__title{margin:18px 0 0;font-weight:400;font-size:0;line-height:0}
+.ec__hand{display:block;width:62%;height:auto;margin:0 auto}
+.ec__sub{margin:0 auto;max-width:27ch;font-family:var(--works);font-weight:400;font-size:17px;line-height:1.25;letter-spacing:0;text-align:center;text-wrap:balance}
+.ec__form{margin:14px 0 0}
+.ec__grid{display:grid;grid-template-columns:minmax(0,1fr)}
+.ec__f{position:relative;display:block;height:62px}
+.ec__l{position:absolute;left:0;top:8px;font-family:var(--mono);font-size:10px;line-height:1.1;letter-spacing:.12em;text-transform:uppercase;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.ec__f.has-value .ec__l{opacity:1}
+.ec input[type=text],.ec input[type=email],.ec input[type=tel],.ec select,.ec textarea{position:absolute;left:0;right:0;bottom:0;display:block;width:100%;height:42px;margin:0;padding:0;background:transparent;border:0;border-bottom:1px solid var(--rule);border-radius:0;outline:none;box-shadow:none;color:var(--ink);font-family:var(--intl);font-weight:400;font-size:16px;line-height:1.2;letter-spacing:0;-webkit-appearance:none;appearance:none;transition:border-color .2s ease}
+.ec input:focus,.ec select:focus,.ec textarea:focus{border-bottom-color:var(--ink)}
+.ec input::placeholder,.ec textarea::placeholder{color:var(--ink);opacity:1}
+.ec input:-webkit-autofill{-webkit-text-fill-color:var(--ink);box-shadow:inset 0 0 0 100px var(--paper);caret-color:var(--ink)}
+.ec select{cursor:pointer;padding-right:26px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='11' height='7' fill='none'><path d='M1 1l4.5 4.5L10 1' stroke='%23252522' stroke-width='1'/></svg>") no-repeat right 4px center}
+.ec select:disabled{opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink);cursor:default}
+.ec textarea{resize:none;padding-top:13px;overflow:auto;field-sizing:content;max-height:120px;min-height:42px;height:auto;position:relative;bottom:auto}
+.ec__f--wide{height:auto;padding-top:20px}
+/* Missing answers get a coloured rule, so they're findable when the message itself is off screen. */
+.ec__f.is-missing input,.ec__f.is-missing select{border-bottom-color:#8a3a2f}
+/* The long hints need room on the narrowest phones. */
+@media(max-width:400px){.ec textarea{min-height:66px}}
+@media(max-width:340px){.env__scroll{padding-left:8px;padding-right:8px}.ec{padding-left:16px;padding-right:16px}}
+.ec__check{display:flex;align-items:center;justify-content:center;gap:10px;margin:22px 0 0;font-size:14px;line-height:1.2;cursor:pointer}
+.ec__check input{-webkit-appearance:none;appearance:none;flex:none;width:18px;height:18px;margin:0;background:transparent;border:1px solid var(--ink);border-radius:0;cursor:pointer}
+.ec__check input:checked{background:var(--ink);box-shadow:inset 0 0 0 3px var(--paper)}
+.ec__check input:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
+.ec__send{display:flex;align-items:center;justify-content:center;width:min(240px,100%);height:52px;margin:20px auto 0;padding:0;background:transparent;border:1px solid var(--ink);border-radius:0;color:var(--ink);font-family:var(--intl);font-weight:400;font-size:18px;line-height:1;text-decoration:none;cursor:pointer;transition:background .2s ease,color .2s ease}
+@media(hover:hover){.ec__send:hover{background:var(--ink);color:var(--paper)}}
+.ec__send:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+.ec__send:disabled{opacity:.6;cursor:default}
+.ec__wa{margin:18px 0 0;font-size:14px;line-height:1.2;text-align:center}
+.ec__wa a{color:inherit;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:1px}
+.ec__err{display:none;margin:14px 0 0;font-family:var(--mono);font-size:11px;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;text-align:center;color:#8a3a2f}
+.ec__hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.ec__thanks{padding:34px 0 16px;text-align:center}
+.ec__thanks h2{margin:0;font-family:var(--works);font-weight:400;font-size:40px;line-height:1.1;letter-spacing:-.04em}
+.ec__thanks .ec__lede{margin:10px 0 0;font-family:var(--works);font-size:17px;line-height:1.25}
+.ec__thanks .ec__note{max-width:40ch;margin:22px auto 0;font-family:var(--works);font-size:15px;line-height:1.4}
+
+/* Big enough for the design as drawn: everything is a share of its 1480 x 1050 artboard. */
+@media(min-width:1000px) and (min-height:640px){
+  .env__scroll{display:grid;place-items:center;padding:0}
+  .ec{--c:min(calc((100vw - 144px)/1480),calc((var(--vh)*100 - 64px)/1050));width:calc(var(--c)*1480);height:calc(var(--c)*1050);max-width:none;margin:0;padding:0}
+  .ec__shadow{box-shadow:0 calc(var(--c)*30) calc(var(--c)*90) rgba(0,0,0,.5)}
+  .ec__mark{width:calc(var(--c)*1000);margin:calc(var(--c)*50) auto 0}
+  .ec__title{margin:calc(var(--c)*52.6) 0 0}
+  .ec__hand{width:calc(var(--c)*438.5);margin:0 auto;position:relative;left:calc(var(--c)*1.75)}
+  .ec__sub{max-width:none;margin:calc(var(--c)*-6.5) 0 0;font-size:calc(var(--c)*26);text-wrap:nowrap}
+  .ec__form{margin:calc(var(--c)*10.75) calc(var(--c)*180) 0}
+  .ec__grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:calc(var(--c)*70)}
+  .ec__f{height:calc(var(--c)*110)}
+  .ec__l{top:calc(var(--c)*34);font-size:max(10px,calc(var(--c)*13))}
+  .ec input[type=text],.ec input[type=email],.ec input[type=tel],.ec select,.ec textarea{height:calc(var(--c)*59);font-size:max(16px,calc(var(--c)*23));border-bottom-width:max(1px,calc(var(--c)*1.5))}
+  .ec select{padding-right:calc(var(--c)*30);background-position:right calc(var(--c)*9) center;background-size:calc(var(--c)*11) calc(var(--c)*7)}
+  .ec__f--wide{grid-column:1/-1;height:calc(var(--c)*98);padding:0}
+  .ec textarea{position:absolute;bottom:0;height:calc(var(--c)*59);min-height:0;max-height:none;padding-top:calc(var(--c)*18.5);field-sizing:fixed}
+  .ec__check{gap:calc(var(--c)*10.75);margin:calc(var(--c)*30) 0 0;font-size:max(12px,calc(var(--c)*18))}
+  .ec__check input{width:calc(var(--c)*18.5);height:calc(var(--c)*18.5);border-width:max(1px,calc(var(--c)*1.5))}
+  .ec__check span{position:relative;top:calc(var(--c)*2)}
+  .ec__send{width:calc(var(--c)*280);height:calc(var(--c)*54);margin:calc(var(--c)*23.15) auto 0;font-size:calc(var(--c)*26);border-width:max(1px,calc(var(--c)*1.5))}
+  .ec__wa{margin:calc(var(--c)*23) 0 0;font-size:max(12px,calc(var(--c)*16))}
+  .ec__err{position:absolute;left:0;right:0;bottom:calc(var(--c)*8);margin:0;font-size:max(10px,calc(var(--c)*13))}
+  .ec__thanks{padding:calc(var(--c)*215) calc(var(--c)*180) 0}
+  .ec__thanks h2{font-size:calc(var(--c)*64)}
+  .ec__thanks .ec__lede{margin-top:calc(var(--c)*16);font-size:calc(var(--c)*26)}
+  .ec__thanks .ec__note{margin-top:calc(var(--c)*44);font-size:calc(var(--c)*23)}
+  .ec__thanks .ec__send{margin-top:calc(var(--c)*44);width:calc(var(--c)*340)}
+  .env__close{top:16px;right:16px}
+}
+/* ══ END CARD ══ */

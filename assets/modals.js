@@ -4,7 +4,9 @@
    page again. Styles are injected here (prefixed .dbh-lm) and do not depend
    on the page's own stylesheet.
    Submits to /api/submit-form; if that fails, falls back to a prefilled
-   WhatsApp message so no request is ever lost. */
+   WhatsApp message so no request is ever lost.
+   Concierge (source) opens the envelope in assets/envelope.js, which loads on
+   demand and uses the same wireForm. If it can't load, the popup opens instead. */
 (function () {
   var WA = 'https://wa.me/19146211848';
   var IG = 'https://www.instagram.com/dialedbyh';
@@ -125,17 +127,26 @@
   var prevOverflow = '';
   var urlBefore = '';
 
+  // Each form has its own URL while open, and leaves the page's URL as it found it on close.
+  function setUrl(kind) {
+    if (!window.history || !history.replaceState) return;
+    if (!urlBefore) urlBefore = location.pathname + location.search + location.hash;
+    if (location.pathname.replace(/\/+$/, '') !== '/' + kind) history.replaceState(history.state, '', '/' + kind);
+  }
+  function restoreUrl() {
+    if (!urlBefore || !window.history || !history.replaceState) return;
+    var back = /^\/(sell|trade|source)\/?([?#]|$)/.test(urlBefore) ? '/' : urlBefore;
+    history.replaceState(history.state, '', back);
+    urlBefore = '';
+  }
+
   function close() {
     if (!current) return;
     var el = current;
     current = null;
     el.classList.remove('is-open');
     document.body.style.overflow = prevOverflow;
-    if (urlBefore && window.history && history.replaceState) {
-      var back = /^\/(sell|trade|source)\/?([?#]|$)/.test(urlBefore) ? '/' : urlBefore;
-      history.replaceState(history.state, '', back);
-      urlBefore = '';
-    }
+    restoreUrl();
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 260);
   }
 
@@ -160,7 +171,125 @@
     select.value = value;
   }
 
+  function waHref(prefill) {
+    var piece = prefill && [prefill.brand, prefill.model].filter(Boolean).join(' ');
+    if (piece && prefill.ref) piece += ' (Ref. ' + prefill.ref + ')';
+    var text = piece ? "Hi Henry, I'm interested in the " + piece + '.' : "Hi Henry, I'm looking to source a watch.";
+    return WA + '?text=' + encodeURIComponent(text);
+  }
+  function brandOptions() {
+    return Object.keys(MODELS).map(function (b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
+  }
+
+  // Brand and model menus, prefill, validation, sending and tracking for any request form. The
+  // popup and the Concierge card both use this, so a lead looks the same to the server from either.
+  function wireForm(form, kind, cfg, prefill, onSent, onFailed) {
+    var brand = form.querySelector('.js-brand');
+    var model = form.querySelector('.js-model');
+    var emptyLabel = model.getAttribute('data-empty') || 'Select Brand First';
+    var readyLabel = model.getAttribute('data-ready') || 'Select Model';
+    brand.addEventListener('change', function () {
+      var list = MODELS[brand.value] || [];
+      model.innerHTML = brand.value
+        ? '<option value="">' + esc(readyLabel) + '</option>' + list.map(function (m) { return '<option value="' + esc(m) + '">' + esc(m) + '</option>'; }).join('')
+        : '<option value="">' + esc(emptyLabel) + '</option>';
+      model.disabled = !brand.value;
+    });
+    if (prefill) {
+      selectValue(brand, prefill.brand);
+      brand.dispatchEvent(new Event('change'));
+      selectValue(model, prefill.model);
+      if (prefill.ref) form.querySelector('[name="reference"]').value = prefill.ref;
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (window.dbhTracking) window.dbhTracking.attempt(form);
+      var fd = new FormData(form);
+      var get = function (k) { return (fd.get(k) || '').toString().trim(); };
+      var err = form.querySelector('.js-err');
+      var missing = ['name', 'email', 'phone', 'preferred', 'location', 'brand'].filter(function (k) { return !get(k); });
+      if (missing.length) {
+        if (window.dbhTracking) window.dbhTracking.error(form);
+        err.style.display = 'block';
+        var first = form.querySelector('[name="' + missing[0] + '"]');
+        if (first) first.focus();
+        return;
+      }
+      err.style.display = 'none';
+
+      var detailParts = [];
+      [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
+        if (get(p[1])) detailParts.push(p[0] + ': ' + get(p[1]));
+      });
+      detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
+      var typeMap = { sell: 'SELL', trade: 'TRADE', source: 'BUY' };
+      var btn = form.querySelector('[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      fetch('/api/submit-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: typeMap[kind] || 'BUY',
+          fullName: get('name'),
+          email: get('email'),
+          watchName: [get('brand'), get('model')].filter(Boolean).join(' '),
+          watchBrand: get('brand'),
+          watchRef: get('reference'),
+          phone: get('phone') || null,
+          location: get('location') || null,
+          preferred: get('preferred') || null,
+          okToText: !!fd.get('textok'),
+          watchDetails: detailParts.join(' | '),
+          website: get('website'),
+          attribution: window.dbhTracking ? window.dbhTracking.context(form) : null
+        })
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[kind] || 'BUY' });
+        onSent();
+      }).catch(function () {
+        if (window.dbhTracking) window.dbhTracking.error(form);
+        var lines = [cfg.title + ', Dialed by H'];
+        var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
+        Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
+        window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
+        onFailed();
+      });
+    });
+  }
+
+  // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
+  var ENVELOPE_VERSION = '2', envelopeLoad;
+  function loadEnvelope() {
+    if (window.dbhEnvelope) return Promise.resolve();
+    if (envelopeLoad) return envelopeLoad;
+    envelopeLoad = new Promise(function (resolve, reject) {
+      if (!Element.prototype.animate) return reject(new Error('no animation support'));
+      var pending = 2, done = function () { if (!--pending) resolve(); };
+      var css = document.createElement('link');
+      css.rel = 'stylesheet'; css.href = '/assets/envelope.css?v=' + ENVELOPE_VERSION;
+      css.onload = done; css.onerror = reject;
+      var js = document.createElement('script');
+      js.src = '/assets/envelope.js?v=' + ENVELOPE_VERSION;
+      js.onload = done; js.onerror = reject;
+      document.head.appendChild(css); document.head.appendChild(js);
+      setTimeout(function () { reject(new Error('envelope timed out')); }, 3500);
+    });
+    envelopeLoad.catch(function () { envelopeLoad = null; });
+    return envelopeLoad;
+  }
+
   function open(kind, prefill) {
+    if (kind !== 'source') return popup(kind, prefill);
+    close();
+    return loadEnvelope().then(function () {
+      setUrl('source');
+      return window.dbhEnvelope.open(prefill, { onClose: restoreUrl });
+    }).catch(function () { restoreUrl(); popup('source', prefill); });
+  }
+
+  function popup(kind, prefill) {
     ensureCss();
     close();
     var modal = document.createElement('div');
@@ -179,11 +308,8 @@
       var cfg = FORMS[kind];
       if (!cfg) return;
       // The Concierge is where the bio link lands, so WhatsApp sits above the form.
-      var piece = prefill && [prefill.brand, prefill.model].filter(Boolean).join(' ');
-      if (piece && prefill.ref) piece += ' (Ref. ' + prefill.ref + ')';
-      var waText = piece ? "Hi Henry, I'm interested in the " + piece + '.' : "Hi Henry, I'm looking to source a watch.";
       var waLine = kind === 'source'
-        ? '<a class="dbh-lm__link" href="' + WA + '?text=' + encodeURIComponent(waText) + '" target="_blank" rel="noopener">WhatsApp me</a>' +
+        ? '<a class="dbh-lm__link" href="' + waHref(prefill) + '" target="_blank" rel="noopener">WhatsApp me</a>' +
           '<span class="dbh-lm__or">Or send me the details</span>'
         : '';
       modal.innerHTML = card(
@@ -193,90 +319,21 @@
         '<form novalidate>' + formFields(kind) +
         '<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">' +
         '<button type="submit" class="dbh-lm__submit">Send</button>' +
-        '<p class="dbh-lm__err">Please fill in your name, email, phone, preferred contact, location and brand.</p>' +
+        '<p class="dbh-lm__err js-err">Please fill in your name, email, phone, preferred contact, location and brand.</p>' +
         '</form>');
 
-      var brand = modal.querySelector('.js-brand');
-      var model = modal.querySelector('.js-model');
-      brand.addEventListener('change', function () {
-        var list = MODELS[brand.value] || [];
-        model.innerHTML = brand.value
-          ? '<option value="">Select Model</option>' + list.map(function (m) { return '<option value="' + esc(m) + '">' + esc(m) + '</option>'; }).join('')
-          : '<option value="">Select Brand First</option>';
-        model.disabled = !brand.value;
-      });
-      if (prefill) {
-        selectValue(brand, prefill.brand);
-        brand.dispatchEvent(new Event('change'));
-        selectValue(model, prefill.model);
-        if (prefill.ref) modal.querySelector('[name="reference"]').value = prefill.ref;
-      }
-
-      modal.querySelector('form').addEventListener('submit', function (e) {
-        e.preventDefault();
-        var form = e.target;
-        if (window.dbhTracking) window.dbhTracking.attempt(form);
-        var fd = new FormData(form);
-        var get = function (k) { return (fd.get(k) || '').toString().trim(); };
-        var err = form.querySelector('.dbh-lm__err');
-        var missing = ['name', 'email', 'phone', 'preferred', 'location', 'brand'].filter(function (k) { return !get(k); });
-        if (missing.length) {
-          if (window.dbhTracking) window.dbhTracking.error(form);
-          err.style.display = 'block';
-          var first = form.querySelector('[name="' + missing[0] + '"]');
-          if (first) first.focus();
-          return;
-        }
-        err.style.display = 'none';
-
-        var detailParts = [];
-        [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
-          if (get(p[1])) detailParts.push(p[0] + ': ' + get(p[1]));
-        });
-        detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
-        var typeMap = { sell: 'SELL', trade: 'TRADE', source: 'BUY' };
-        var btn = form.querySelector('.dbh-lm__submit');
-        btn.disabled = true; btn.textContent = 'Sending…';
-        fetch('/api/submit-form', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: typeMap[kind] || 'BUY',
-            fullName: get('name'),
-            email: get('email'),
-            watchName: [get('brand'), get('model')].filter(Boolean).join(' '),
-            watchBrand: get('brand'),
-            watchRef: get('reference'),
-            phone: get('phone') || null,
-            location: get('location') || null,
-            preferred: get('preferred') || null,
-            okToText: !!fd.get('textok'),
-            watchDetails: detailParts.join(' | '),
-            website: get('website'),
-            attribution: window.dbhTracking ? window.dbhTracking.context(form) : null
-          })
-        }).then(function (r) {
-          if (!r.ok) throw new Error(r.status);
-          if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[kind] || 'BUY' });
-          // Thank-you with the Instagram follow. Most visitors from search
-          // have never seen the account; this is the moment they are paying
-          // attention.
-          modal.innerHTML = card(
-            '<span class="dbh-lm__eyebrow">Received</span>' +
-            '<h2 class="dbh-lm__title">Got it.</h2>' +
-            '<p class="dbh-lm__sub">I\'ll be in touch shortly.</p>' +
-            '<p class="dbh-lm__lead">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
-            '<a class="dbh-lm__link" href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>');
-          modal.querySelector('.dbh-lm__close').addEventListener('click', close);
-        }).catch(function () {
-          if (window.dbhTracking) window.dbhTracking.error(form);
-          var lines = [cfg.title + ', Dialed by H'];
-          var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
-          Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
-          window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
-          close();
-        });
-      });
+      wireForm(modal.querySelector('form'), kind, cfg, prefill, function () {
+        // Thank-you with the Instagram follow. Most visitors from search
+        // have never seen the account; this is the moment they are paying
+        // attention.
+        modal.innerHTML = card(
+          '<span class="dbh-lm__eyebrow">Received</span>' +
+          '<h2 class="dbh-lm__title">Got it.</h2>' +
+          '<p class="dbh-lm__sub">I\'ll be in touch shortly.</p>' +
+          '<p class="dbh-lm__lead">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
+          '<a class="dbh-lm__link" href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>');
+        modal.querySelector('.dbh-lm__close').addEventListener('click', close);
+      }, close);
     }
 
     modal.querySelector('.dbh-lm__close').addEventListener('click', close);
@@ -286,10 +343,7 @@
     });
     document.body.appendChild(modal);
     current = modal;
-    if (FORMS[kind] && window.history && history.replaceState) {
-      if (!urlBefore) urlBefore = location.pathname + location.search + location.hash;
-      if (location.pathname.replace(/\/+$/, '') !== '/' + kind) history.replaceState(history.state, '', '/' + kind);
-    }
+    if (FORMS[kind]) setUrl(kind);
     prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     requestAnimationFrame(function () {
@@ -311,6 +365,16 @@
     open(d.modal, (d.brand || d.model || d.ref) ? { brand: d.brand, model: d.model, ref: d.ref } : null);
   });
 
+  // Get the envelope ready the moment someone reaches for a Concierge link, so it opens without a wait.
+  var readied = false;
+  ['pointerover', 'touchstart', 'focusin'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      if (readied || !e.target.closest || !e.target.closest('[data-modal="source"]')) return;
+      readied = true;
+      loadEnvelope().then(function () { window.dbhEnvelope.preload(); }).catch(function () {});
+    }, { passive: true });
+  });
+
   // Own URL for each form: /source, /sell and /trade load the homepage with that
   // form open, and #source, #sell, #trade and ?source work on any page. A watch
   // named in the query (?brand=&model=&reference=) prefills the Concierge card.
@@ -326,5 +390,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', deepLink);
   else deepLink();
 
-  window.DBHModals = { open: open, close: close };
+  window.DBHModals = { open: open, close: close, popup: popup, wireForm: wireForm, brandOptions: brandOptions, waHref: waHref, FORMS: FORMS, instagram: IG };
 })();

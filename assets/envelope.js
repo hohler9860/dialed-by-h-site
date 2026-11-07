@@ -1,4 +1,5 @@
-/* Concierge envelope. dbhEnvelope.open(prefill, {onClose}) plays it over the current page and lands
+/* Request envelope, used by Concierge, Sell and Trade. Each has its own script line, wording and seal
+   (KINDS below), with everything else shared. dbhEnvelope.open(prefill, {kind, onClose}) plays it over the current page and lands
    on the working card, about 1.75 seconds from start to finish. People tap this to send a request,
    so the animation must never feel like a wait: timing changes go in the constants below. The
    opening runs off one number, the flap's angle, and the light and shadows are worked out from it.
@@ -8,22 +9,29 @@
    lead looks the same to the server either way. To change the card's design, edit cardHtml() here
    and the CARD section of envelope.css. Field names must stay as they are. */
 (function () {
-  var B = '/assets/envelope/', FILES = ['body.webp', 'body-front.webp', 'lip.webp', 'flap-outside.webp', 'flap-inside.webp', 'seal.webp', 'request-to-source.webp', 'wordmark.svg'];
+  var B = '/assets/envelope/', FILES = ['body.webp', 'body-front.webp', 'lip.webp', 'flap-outside.webp', 'flap-inside.webp', 'wordmark.svg'];
+  // The script is La Belle Aurore, set as images by make-card-art.py. hw is its width on the card's artboard.
+  var KINDS = {
+    source: { seal: 'seal.webp', hand: 'request-to-source.webp', w: 883, track: 'BUY' },
+    sell: { seal: 'seal-burgundy.webp', hand: 'request-to-sell.webp', w: 753, track: 'SELL' },
+    trade: { seal: 'seal-burgundy.webp', hand: 'request-to-trade.webp', w: 828, track: 'TRADE' }
+  };
   var OPEN_AT = 310, OPEN_FOR = 840, END_ANGLE = 177, DRIFT = 148;
   var RISE_AT = 840, RISE_FOR = 620, GROW_AT = 1085, GROW_FOR = 665, FALL_AT = 1000, FALL_FOR = 600, END = GROW_AT + GROW_FOR;
   var SEAT_W = 494, SEAT_TOP = 8, SEAT_H = 350; // the card in the pocket, in artwork units. It really fits inside.
   var WIDE = '(min-width:820px) and (min-height:640px)'; // same as the media query in envelope.css
   // Light from above and in front of the page, as (down the screen, towards the viewer).
   var LIGHT_Y = -0.45, LIGHT_Z = 0.89;
-  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, decoded;
+  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, kind = 'source', decoded = {};
 
-  function preload() {
-    if (decoded) return decoded;
-    decoded = Promise.all(FILES.map(function (f) {
+  function preload(k) {
+    k = KINDS[k] ? k : 'source';
+    if (decoded[k]) return decoded[k];
+    decoded[k] = Promise.all(FILES.concat(KINDS[k].seal, KINDS[k].hand).map(function (f) {
       var i = new Image(); i.src = B + f;
       return i.decode ? i.decode().catch(function () {}) : Promise.resolve();
     }));
-    return decoded;
+    return decoded[k];
   }
 
   function flapShut() {
@@ -77,18 +85,19 @@
     return '<label class="ec__f ec__f--half"><span class="ec__l">' + label + '</span><select name="' + name + '" aria-label="' + label + '"' + (cls ? ' class="' + cls + '"' : '') + ' ' + (attrs || '') + '>' + options + '</select></label>';
   }
   function cardHtml(M, prefill) {
+    var K = KINDS[kind], cfg = M.FORMS[kind];
     // On a phone the model menu shares a row with the brand, so its hint has to be the short one.
     var modelHint = !matchMedia(WIDE).matches && matchMedia('(min-width:385px)').matches ? 'Model' : 'Model (select brand first)';
     return '<div class="ec__shadow"></div><div class="ec__in">' +
       '<img class="ec__mark" src="' + B + 'wordmark.svg" alt="Dialed by H" width="730" height="52">' +
       '<div class="ec__body">' +
-      '<h2 class="ec__title"><img class="ec__hand" src="' + B + 'request-to-source.webp" alt="Request to source" width="877" height="194"></h2>' +
-      '<p class="ec__sub">Tell me the piece. I\'ll text you back, usually within a few hours.</p>' +
+      '<h2 class="ec__title"><img class="ec__hand" style="--hw:' + (K.w / 2) + '" src="' + B + K.hand + '" alt="' + cfg.title + '" width="' + K.w + '" height="194"></h2>' +
+      '<p class="ec__sub">' + cfg.sub + '</p>' +
       '<form class="ec__form" novalidate><div class="ec__grid">' +
         field('name', 'Full name', 'Full name', 'type="text" required autocomplete="name"') +
         field('email', 'Email', 'Email', 'type="email" required autocomplete="email" inputmode="email"') +
         field('phone', 'Mobile phone', 'Mobile phone', 'type="tel" required autocomplete="tel" inputmode="tel"', 'ec__f--half') +
-        menu('preferred', 'Preferred contact', '', '<option value="">Preferred contact</option><option>WhatsApp</option><option>iMessage</option><option>Email</option>', 'required') +
+        menu('preferred', 'Preferred contact', '', '<option value="">Preferred contact</option><option>WhatsApp</option><option>iMessage</option><option>Email</option>' + (kind === 'source' ? '' : '<option>Instagram DM</option>'), 'required') +
         field('location', 'Where are you based?', 'Where are you based? (city / state)', 'type="text" required autocomplete="address-level2"') +
         menu('brand', 'Brand', 'js-brand', '<option value="">Brand</option>' + M.brandOptions(), 'required') +
         menu('model', 'Model', 'js-model', '<option value="">' + modelHint + '</option>', 'disabled data-empty="' + modelHint + '" data-ready="Model"') +
@@ -98,7 +107,7 @@
       '<label class="ec__check"><input type="checkbox" name="textok"><span>OK to text me about this request</span></label>' +
       '<input type="text" name="website" class="ec__hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<button type="submit" class="ec__send">Send</button>' +
-      '<p class="ec__wa">Or message me on <a href="' + M.waHref(prefill) + '" target="_blank" rel="noopener">WhatsApp</a></p>' +
+      '<p class="ec__wa">Or message me on <a href="' + M.waHref(prefill, kind) + '" target="_blank" rel="noopener">WhatsApp</a></p>' +
       '<p class="ec__err js-err" role="alert">Please fill in your name, email, phone, preferred contact, location and brand.</p>' +
       '</form></div></div>' +
       '<button type="button" class="env__close" aria-label="Close"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M1 1l11 11M12 1L1 12"/></svg></button>';
@@ -124,13 +133,13 @@
       '<a class="ec__send" href="' + M.instagram + '" target="_blank" rel="noopener">Follow @dialedbyh</a></div>';
   }
   function ensureCard(prefill) {
-    var M = window.DBHModals, key = JSON.stringify(prefill || {});
+    var M = window.DBHModals, key = kind + JSON.stringify(prefill || {});
     if (card && !sent && key === lastKey) return; // closing and reopening keeps what they've typed
     var scroll = root.querySelector('.env__scroll');
     scroll.innerHTML = '<article class="ec">' + cardHtml(M, prefill) + '</article>';
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
     placeLocation();
-    M.wireForm(form, 'source', M.FORMS.source, prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
+    M.wireForm(form, kind, M.FORMS[kind], prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
     var refresh = function () {
       syncLabels();
       [].forEach.call(form.querySelectorAll('.is-missing'), function (f) { var c = f.querySelector('input,select'); if (c && c.value) f.classList.remove('is-missing'); });
@@ -142,7 +151,7 @@
       [].forEach.call(form.querySelectorAll('[required]'), function (c) { if (!c.value.trim()) c.closest('.ec__f').classList.add('is-missing'); });
     });
     syncLabels();
-    if (window.dbhTracking) window.dbhTracking.open(form, 'BUY');
+    if (window.dbhTracking) window.dbhTracking.open(form, KINDS[kind].track);
   }
 
   // Timing curves.
@@ -261,9 +270,12 @@
     if (root && !root.hidden) return Promise.resolve();
     root = root || build();
     optsClose = opts && opts.onClose;
+    kind = opts && KINDS[opts.kind] ? opts.kind : 'source';
+    root.setAttribute('aria-label', window.DBHModals.FORMS[kind].title);
+    [].forEach.call(root.querySelectorAll('.env__seal,.env__seal-back'), function (s) { s.src = B + KINDS[kind].seal; });
     lastFocus = document.activeElement;
     // On a slow connection don't make anyone wait or watch half an envelope: go straight to the form.
-    return Promise.race([preload().then(function () { return true; }), new Promise(function (r) { setTimeout(r, 450, false); })]).then(function (ready) {
+    return Promise.race([preload(kind).then(function () { return true; }), new Promise(function (r) { setTimeout(r, 450, false); })]).then(function (ready) {
       var still = !ready || matchMedia('(prefers-reduced-motion: reduce)').matches;
       ensureCard(prefill);
       root.style.setProperty('--pace', pace);

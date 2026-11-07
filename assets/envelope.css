@@ -102,8 +102,8 @@
 .env__close:focus-visible{outline:1px solid currentColor;outline-offset:-8px}
 .ec__mark{display:block;width:76%;height:auto;margin:0 auto}
 .ec__title{margin:calc(var(--gap)*.7) 0 0;font-weight:400;font-size:0;line-height:0}
-.ec__hand{display:block;width:58%;height:auto;margin:0 auto}
-.ec__sub{margin:2px auto 0;max-width:30ch;font-family:var(--works);font-weight:400;font-size:16px;line-height:1.22;letter-spacing:0;text-align:center;text-wrap:balance}
+.ec__hand{display:block;width:calc(58%*var(--hw)/442);height:auto;margin:0 auto}
+.ec__sub{margin:8px auto 0;max-width:30ch;font-family:var(--works);font-weight:400;font-size:16px;line-height:1.22;letter-spacing:0;text-align:center;text-wrap:balance}
 .ec__form{margin:calc(var(--gap)*.4) 0 0}
 .ec__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:14px}
 .ec__f{position:relative;display:block;grid-column:1/-1;height:var(--row)}
@@ -149,9 +149,10 @@
   .ec__in,.env.is-landed .ec__in{padding:0;overflow:hidden}
   .env__close{top:0;right:0}
   .ec__mark{width:calc(var(--c)*1000);margin:calc(var(--c)*50) auto 0}
-  .ec__title{margin:calc(var(--c)*52.6) 0 0}
-  .ec__hand{width:calc(var(--c)*438.5);margin:0 auto;position:relative;left:calc(var(--c)*1.75)}
-  .ec__sub{max-width:none;margin:calc(var(--c)*-6.5) 0 0;font-size:calc(var(--c)*26);line-height:1.25;text-wrap:nowrap}
+  /* The script sits 18 units higher than the artboard draws it, Henry's call, so the q's tail clears the line below. */
+  .ec__title{margin:calc(var(--c)*33.6) 0 0}
+  .ec__hand{width:calc(var(--c)*var(--hw));margin:0 auto;position:relative;left:calc(var(--c)*1.25)}
+  .ec__sub{max-width:none;margin:calc(var(--c)*12.5) 0 0;font-size:calc(var(--c)*26);line-height:1.25;text-wrap:nowrap}
   .ec__form{margin:calc(var(--c)*10.75) calc(var(--c)*180) 0}
   .ec__grid{column-gap:calc(var(--c)*70)}
   .ec__f,.ec__f--half{grid-column:auto;height:calc(var(--c)*110)}

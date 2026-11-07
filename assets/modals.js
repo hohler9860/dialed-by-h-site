@@ -5,8 +5,9 @@
    on the page's own stylesheet.
    Submits to /api/submit-form; if that fails, falls back to a prefilled
    WhatsApp message so no request is ever lost.
-   Concierge (source) opens the envelope in assets/envelope.js, which loads on
-   demand and uses the same wireForm. If it can't load, the popup opens instead. */
+   Concierge, Sell and Trade open the envelope in assets/envelope.js, which
+   loads on demand and uses the same wireForm. If it can't load, the popup opens
+   instead. */
 (function () {
   var WA = 'https://wa.me/19146211848';
   var IG = 'https://www.instagram.com/dialedbyh';
@@ -171,10 +172,13 @@
     select.value = value;
   }
 
-  function waHref(prefill) {
+  function waHref(prefill, kind) {
     var piece = prefill && [prefill.brand, prefill.model].filter(Boolean).join(' ');
     if (piece && prefill.ref) piece += ' (Ref. ' + prefill.ref + ')';
-    var text = piece ? "Hi Henry, I'm interested in the " + piece + '.' : "Hi Henry, I'm looking to source a watch.";
+    var verb = kind === 'sell' || kind === 'trade' ? kind : '';
+    var text = piece
+      ? (verb ? "Hi Henry, I'd like to " + verb + ' my ' + piece + '.' : "Hi Henry, I'm interested in the " + piece + '.')
+      : "Hi Henry, I'm looking to " + (verb || 'source') + ' a watch.';
     return WA + '?text=' + encodeURIComponent(text);
   }
   function brandOptions() {
@@ -281,12 +285,12 @@
   }
 
   function open(kind, prefill) {
-    if (kind !== 'source') return popup(kind, prefill);
+    if (!FORMS[kind]) return popup(kind, prefill);
     close();
     return loadEnvelope().then(function () {
-      setUrl('source');
-      return window.dbhEnvelope.open(prefill, { onClose: restoreUrl });
-    }).catch(function () { restoreUrl(); popup('source', prefill); });
+      setUrl(kind);
+      return window.dbhEnvelope.open(prefill, { kind: kind, onClose: restoreUrl });
+    }).catch(function () { restoreUrl(); popup(kind, prefill); });
   }
 
   function popup(kind, prefill) {
@@ -367,21 +371,23 @@
 
   // Get the envelope ready before anyone taps, so it opens without a wait: once the page has finished
   // and gone quiet, or the moment someone reaches for a Concierge link, whichever comes first.
-  var readied = false;
-  function ready() {
-    if (readied) return;
-    readied = true;
-    loadEnvelope().then(function () { window.dbhEnvelope.preload(); }).catch(function () {});
+  var readied = {};
+  function ready(kind) {
+    if (readied[kind]) return;
+    readied[kind] = true;
+    loadEnvelope().then(function () { window.dbhEnvelope.preload(kind); }).catch(function () {});
   }
   ['pointerover', 'touchstart', 'focusin'].forEach(function (ev) {
     document.addEventListener(ev, function (e) {
-      if (e.target.closest && e.target.closest('[data-modal="source"]')) ready();
+      var t = e.target.closest && e.target.closest('[data-modal]');
+      if (t && FORMS[t.dataset.modal]) ready(t.dataset.modal);
     }, { passive: true });
   });
   addEventListener('load', function () {
     var net = navigator.connection;
     if (net && (net.saveData || /2g/.test(net.effectiveType || ''))) return;
-    if (window.requestIdleCallback) requestIdleCallback(ready, { timeout: 4000 }); else setTimeout(ready, 1500);
+    var soon = function () { ready('source'); };
+    if (window.requestIdleCallback) requestIdleCallback(soon, { timeout: 4000 }); else setTimeout(soon, 1500);
   });
 
   // Own URL for each form: /source, /sell and /trade load the homepage with that

@@ -260,7 +260,7 @@
   }
 
   // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
-  var ENVELOPE_VERSION = '2', envelopeLoad;
+  var ENVELOPE_VERSION = '3', envelopeLoad;
   function loadEnvelope() {
     if (window.dbhEnvelope) return Promise.resolve();
     if (envelopeLoad) return envelopeLoad;
@@ -365,14 +365,23 @@
     open(d.modal, (d.brand || d.model || d.ref) ? { brand: d.brand, model: d.model, ref: d.ref } : null);
   });
 
-  // Get the envelope ready the moment someone reaches for a Concierge link, so it opens without a wait.
+  // Get the envelope ready before anyone taps, so it opens without a wait: once the page has finished
+  // and gone quiet, or the moment someone reaches for a Concierge link, whichever comes first.
   var readied = false;
+  function ready() {
+    if (readied) return;
+    readied = true;
+    loadEnvelope().then(function () { window.dbhEnvelope.preload(); }).catch(function () {});
+  }
   ['pointerover', 'touchstart', 'focusin'].forEach(function (ev) {
     document.addEventListener(ev, function (e) {
-      if (readied || !e.target.closest || !e.target.closest('[data-modal="source"]')) return;
-      readied = true;
-      loadEnvelope().then(function () { window.dbhEnvelope.preload(); }).catch(function () {});
+      if (e.target.closest && e.target.closest('[data-modal="source"]')) ready();
     }, { passive: true });
+  });
+  addEventListener('load', function () {
+    var net = navigator.connection;
+    if (net && (net.saveData || /2g/.test(net.effectiveType || ''))) return;
+    if (window.requestIdleCallback) requestIdleCallback(ready, { timeout: 4000 }); else setTimeout(ready, 1500);
   });
 
   // Own URL for each form: /source, /sell and /trade load the homepage with that

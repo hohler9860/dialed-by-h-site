@@ -1,19 +1,21 @@
-/* Concierge envelope. dbhEnvelope.open(prefill, {onClose}) plays it and lands on the working card.
-   The opening runs off one number, the flap's angle, and the light and shadows are worked out from
-   it. Then the card rises out of the pocket and comes forward to full size as the envelope falls
-   away. Tap anywhere during the animation to skip to the form. The form's logic (validation,
+/* Concierge envelope. dbhEnvelope.open(prefill, {onClose}) plays it over the current page and lands
+   on the working card, about 1.3 seconds from start to finish. People tap this to send a request,
+   so the animation must never feel like a wait: timing changes go in the constants below. The
+   opening runs off one number, the flap's angle, and the light and shadows are worked out from it.
+   Then the card rises out of the pocket and comes forward to full size as the envelope falls away.
+   Tap anywhere during the animation to skip to the form. The form's logic (validation,
    tracking, sending, fallback) is wireForm in assets/modals.js, shared with Sell and Trade, so a
    lead looks the same to the server either way. To change the card's design, edit cardHtml() here
    and the CARD section of envelope.css. Field names must stay as they are. */
 (function () {
-  var B = '/assets/envelope/', FILES = ['body.webp', 'body-front.webp', 'lip.webp', 'flap-outside.webp', 'flap-inside.webp', 'seal.webp', 'request-to-source.webp', 'wordmark.svg', 'grain.png'];
-  var OPEN_AT = 1450, OPEN_FOR = 1750, END_ANGLE = 177, DRIFT = 148;
-  var RISE_AT = 3000, RISE_FOR = 1050, GROW_AT = 3500, GROW_FOR = 1050, FALL_AT = 3350, FALL_FOR = 1000, END = GROW_AT + GROW_FOR;
+  var B = '/assets/envelope/', FILES = ['body.webp', 'body-front.webp', 'lip.webp', 'flap-outside.webp', 'flap-inside.webp', 'seal.webp', 'request-to-source.webp', 'wordmark.svg'];
+  var OPEN_AT = 230, OPEN_FOR = 620, END_ANGLE = 177, DRIFT = 148;
+  var RISE_AT = 620, RISE_FOR = 460, GROW_AT = 800, GROW_FOR = 480, FALL_AT = 740, FALL_FOR = 440, END = GROW_AT + GROW_FOR;
   var SEAT_W = 494, SEAT_TOP = 8, SEAT_H = 350; // the card in the pocket, in artwork units. It really fits inside.
-  var WIDE = '(min-width:1000px) and (min-height:640px)';
+  var WIDE = '(min-width:820px) and (min-height:640px)'; // same as the media query in envelope.css
   // Light from above and in front of the page, as (down the screen, towards the viewer).
   var LIGHT_Y = -0.45, LIGHT_Z = 0.89;
-  var root, card, form, raf = 0, tx = 0, ty = 0, x = 0, y = 0, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, decoded;
+  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, decoded;
 
   function preload() {
     if (decoded) return decoded;
@@ -40,41 +42,42 @@
     el.className = 'env'; el.hidden = true;
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Concierge');
     el.tabIndex = -1; el.setAttribute('data-lenis-prevent', '');
-    var wrap = function (inner) { return '<div class="env__fall"><div class="env__drift"><div class="env__rise"><div class="env__tilt">' + inner + '</div></div></div></div>'; };
+    var wrap = function (inner) { return '<div class="env__fall"><div class="env__drift"><div class="env__rise">' + inner + '</div></div></div>'; };
     el.innerHTML =
-      '<div class="env__scrim"></div><div class="env__grain"></div>' +
-      '<div class="env__glow-d"><div class="env__glow-p"><div class="env__glow"></div></div></div>' +
-      '<div class="env__stage env__stage--back"><div class="env__fall"><div class="env__shadow-d"><div class="env__shadow-r"><div class="env__shadow-p"><div class="env__shadow"></div><div class="env__shadow2"></div></div></div></div></div>' +
+      '<div class="env__scrim"></div>' +
+      '<div class="env__stage env__stage--back"><div class="env__fall"><div class="env__shadow-d"><div class="env__shadow-r"><div class="env__shadow"></div><div class="env__shadow2"></div></div></div></div>' +
         wrap('<div class="env__tablecast"><i></i></div><img class="env__layer" src="' + B + 'body.webp" alt="" width="1143" height="732"><div class="env__crease"></div>' + flapOpen()) + '</div>' +
       '<div class="env__scroll"></div>' +
       '<div class="env__stage env__stage--front">' +
-        wrap('<img class="env__layer" src="' + B + 'lip.webp" alt="" width="571" height="366"><img class="env__layer" src="' + B + 'body-front.webp" alt="" width="1143" height="732"><div class="env__crease env__crease--front"></div><div class="env__cast2"><i></i></div><div class="env__cast"><i></i></div><div class="env__edge"></div>' + flapShut()) + '</div>' +
-      '<button type="button" class="env__close">Close</button>';
+        wrap('<img class="env__layer" src="' + B + 'lip.webp" alt="" width="571" height="366"><img class="env__layer" src="' + B + 'body-front.webp" alt="" width="1143" height="732"><div class="env__crease env__crease--front"></div><div class="env__cast2"><i></i></div><div class="env__cast"><i></i></div><div class="env__edge"></div>' + flapShut()) + '</div>';
     document.body.appendChild(el);
-    el.querySelector('.env__close').addEventListener('click', close);
     // Tap during the animation to skip it. Once landed, tapping outside the card closes it.
-    el.addEventListener('pointerdown', function (e) {
-      if (landed || e.target.closest('.env__close')) return;
+    el.addEventListener('pointerdown', function () {
+      if (landed) return;
       skipGuard = true; setTimeout(function () { skipGuard = false; }, 450);
       skip();
     });
     el.addEventListener('click', function (e) {
-      if (!landed || skipGuard || e.target.closest('.ec') || e.target.closest('.env__close')) return;
-      close();
+      if (!landed || skipGuard) return;
+      if (e.target.closest('.env__close') || !e.target.closest('.ec')) close();
     });
+    // The page is in view now, so it mustn't scroll under a finger on iOS, which can ignore the lock.
+    el.addEventListener('touchmove', function (e) { if (!e.target.closest('.ec__in')) e.preventDefault(); }, { passive: false });
     return el;
   }
 
   // ── the card. Placeholders are the labels, as drawn; a small label fades in once a field has a
   // value, so a filled-in form still says what each answer is.
-  function field(name, label, hint, attrs) {
-    return '<label class="ec__f"><span class="ec__l">' + label + '</span><input name="' + name + '" placeholder="' + hint + '" aria-label="' + label + '" ' + attrs + '></label>';
+  function field(name, label, hint, attrs, cls) {
+    return '<label class="ec__f' + (cls ? ' ' + cls : '') + '"><span class="ec__l">' + label + '</span><input name="' + name + '" placeholder="' + hint + '" aria-label="' + label + '" ' + attrs + '></label>';
   }
   function menu(name, label, cls, options, attrs) {
-    return '<label class="ec__f"><span class="ec__l">' + label + '</span><select name="' + name + '" aria-label="' + label + '"' + (cls ? ' class="' + cls + '"' : '') + ' ' + (attrs || '') + '>' + options + '</select></label>';
+    return '<label class="ec__f ec__f--half"><span class="ec__l">' + label + '</span><select name="' + name + '" aria-label="' + label + '"' + (cls ? ' class="' + cls + '"' : '') + ' ' + (attrs || '') + '>' + options + '</select></label>';
   }
   function cardHtml(M, prefill) {
-    return '<div class="ec__shadow"></div>' +
+    // On a phone the model menu shares a row with the brand, so its hint has to be the short one.
+    var modelHint = !matchMedia(WIDE).matches && matchMedia('(min-width:385px)').matches ? 'Model' : 'Model (select brand first)';
+    return '<div class="ec__shadow"></div><div class="ec__in">' +
       '<img class="ec__mark" src="' + B + 'wordmark.svg" alt="Dialed by H" width="730" height="52">' +
       '<div class="ec__body">' +
       '<h2 class="ec__title"><img class="ec__hand" src="' + B + 'request-to-source.webp" alt="Request to source" width="877" height="194"></h2>' +
@@ -82,11 +85,11 @@
       '<form class="ec__form" novalidate><div class="ec__grid">' +
         field('name', 'Full name', 'Full name', 'type="text" required autocomplete="name"') +
         field('email', 'Email', 'Email', 'type="email" required autocomplete="email" inputmode="email"') +
-        field('phone', 'Mobile phone', 'Mobile phone', 'type="tel" required autocomplete="tel" inputmode="tel"') +
+        field('phone', 'Mobile phone', 'Mobile phone', 'type="tel" required autocomplete="tel" inputmode="tel"', 'ec__f--half') +
         menu('preferred', 'Preferred contact', '', '<option value="">Preferred contact</option><option>WhatsApp</option><option>iMessage</option><option>Email</option>', 'required') +
         field('location', 'Where are you based?', 'Where are you based? (city / state)', 'type="text" required autocomplete="address-level2"') +
         menu('brand', 'Brand', 'js-brand', '<option value="">Brand</option>' + M.brandOptions(), 'required') +
-        menu('model', 'Model', 'js-model', '<option value="">Model (select brand first)</option>', 'disabled data-empty="Model (select brand first)" data-ready="Model"') +
+        menu('model', 'Model', 'js-model', '<option value="">' + modelHint + '</option>', 'disabled data-empty="' + modelHint + '" data-ready="Model"') +
         field('reference', 'Reference number', 'Reference number (if known)', 'type="text"') +
         '<label class="ec__f ec__f--wide"><span class="ec__l">Additional details</span><textarea name="details" rows="1" placeholder="Additional details (condition, box &amp; papers)" aria-label="Additional details"></textarea></label>' +
       '</div>' +
@@ -95,7 +98,8 @@
       '<button type="submit" class="ec__send">Send</button>' +
       '<p class="ec__wa">Or message me on <a href="' + M.waHref(prefill) + '" target="_blank" rel="noopener">WhatsApp</a></p>' +
       '<p class="ec__err js-err" role="alert">Please fill in your name, email, phone, preferred contact, location and brand.</p>' +
-      '</form></div>';
+      '</form></div></div>' +
+      '<button type="button" class="env__close" aria-label="Close"><svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M1 1l11 11M12 1L1 12"/></svg></button>';
   }
   function syncLabels() {
     [].forEach.call(card.querySelectorAll('.ec__f'), function (f) {
@@ -116,7 +120,7 @@
     var scroll = root.querySelector('.env__scroll');
     scroll.innerHTML = '<article class="ec">' + cardHtml(M, prefill) + '</article>';
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
-    M.wireForm(form, 'source', M.FORMS.source, prefill, function () { showSent(M); scroll.scrollTop = 0; }, close);
+    M.wireForm(form, 'source', M.FORMS.source, prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
     var refresh = function () {
       syncLabels();
       [].forEach.call(form.querySelectorAll('.is-missing'), function (f) { var c = f.querySelector('input,select'); if (c && c.value) f.classList.remove('is-missing'); });
@@ -167,13 +171,12 @@
       var lift = a < 45 ? 0.12 + 0.03 * Math.sin(rad(a * 2)) : 0.15 * clamp((100 - a) / 55, 0, 1);
       return { opacity: lift, transform: 'scaleY(' + Math.max(reach(a), 0.001).toFixed(4) + ')' };
     });
-    track(q('.env__tablecast'), function (a) { return { opacity: 0.5 * clamp((a - 116) / 61, 0, 1), transform: 'scaleY(' + Math.max(-reach(a), 0.001).toFixed(4) + ')' }; });
+    track(q('.env__tablecast'), function (a) { return { opacity: 0.22 * clamp((a - 116) / 61, 0, 1), transform: 'scaleY(' + Math.max(-reach(a), 0.001).toFixed(4) + ')' }; });
     track(qq('.env__crease'), function (a) { return { opacity: clamp((a - 60) / 40, 0, 1) }; });
     track(q('.env__edge'), function (a) { return { opacity: clamp(1 - Math.abs(a - 90) / 6, 0, 1) }; });
     track(qq('.env__drift'), function (a, p) { return { transform: 'translate3d(0,calc(var(--u)*' + (DRIFT * flapEase(p)).toFixed(2) + '),0)' }; });
-    // The shadow follows a beat late and the light hardly moves. That lag is the parallax.
+    // The shadow follows a beat late. That lag is the parallax.
     track(q('.env__shadow-d'), function (a, p) { return { transform: 'translate3d(0,calc(var(--u)*' + (DRIFT * flapEase(clamp((p - 0.07) / 0.93, 0, 1))).toFixed(2) + '),0)' }; });
-    track(q('.env__glow-d'), function (a, p) { return { transform: 'translate3d(0,calc(var(--u)*' + (36 * flapEase(p)).toFixed(2) + '),0)' }; });
 
     // Swap sides at the frame the flap is exactly edge-on.
     var lo = 0, hi = 1, mid;
@@ -198,7 +201,7 @@
       if (m.stack) {
         // A phone's card is much longer than the envelope, so it's trimmed at the envelope's bottom edge until that has dropped away.
         var bottom = S.top + S.height - 6 * u + driftAt(t) + fallAt(t);
-        f.clipPath = 'inset(0 0 ' + Math.max(0, F.height - (bottom - st.y) / st.s).toFixed(1) + 'px 0)';
+        f.clipPath = 'inset(-80px -80px ' + Math.max(-80, F.height - (bottom - st.y) / st.s).toFixed(1) + 'px -80px)';
       } else if (swapAt === null && st.y + st.s * F.height < S.top + driftAt(t) + fallAt(t)) swapAt = off;
       frames.push(f); shadow.push({ offset: off, opacity: st.e2 });
     }
@@ -220,9 +223,6 @@
     landed = true;
     running.forEach(function (a) { a.cancel(); }); running = [];
     root.classList.add('is-landed');
-    removeEventListener('pointermove', onMove);
-    cancelAnimationFrame(raf); raf = 0; tx = ty = x = y = 0;
-    root.style.removeProperty('--x'); root.style.removeProperty('--y');
     if (matchMedia(WIDE + ' and (hover:hover)').matches && !sent) {
       var first = card.querySelector('input[name="name"]');
       if (first && !first.value) first.focus({ preventScroll: true });
@@ -234,18 +234,6 @@
     land();
   }
 
-  // Desktop only: the envelope tilts and the shadow and light drift with the mouse. Eased, so it never jerks.
-  function follow() {
-    raf = 0;
-    x += (tx - x) * .08; y += (ty - y) * .08;
-    root.style.setProperty('--x', x.toFixed(4)); root.style.setProperty('--y', y.toFixed(4));
-    if (Math.abs(tx - x) > .001 || Math.abs(ty - y) > .001) raf = requestAnimationFrame(follow);
-  }
-  function onMove(e) {
-    if (e.pointerType && e.pointerType !== 'mouse') return;
-    tx = (e.clientX / innerWidth - .5) * 2; ty = (e.clientY / innerHeight - .5) * 2;
-    if (!raf) raf = requestAnimationFrame(follow);
-  }
   // Rotating a phone or resizing mid-animation would leave the path aiming at the old layout, so finish it.
   var openWidth = 0;
   function onResize() { if (!landed && innerWidth !== openWidth) skip(); }
@@ -264,33 +252,33 @@
     root = root || build();
     optsClose = opts && opts.onClose;
     lastFocus = document.activeElement;
-    return Promise.race([preload(), new Promise(function (r) { setTimeout(r, 450); })]).then(function () {
-      var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // On a slow connection don't make anyone wait or watch half an envelope: go straight to the form.
+    return Promise.race([preload().then(function () { return true; }), new Promise(function (r) { setTimeout(r, 450, false); })]).then(function (ready) {
+      var still = !ready || matchMedia('(prefers-reduced-motion: reduce)').matches;
       ensureCard(prefill);
       root.style.setProperty('--pace', pace);
       root.classList.remove('is-playing', 'is-landed', 'is-closing'); root.hidden = false; landed = false;
-      var scroll = root.querySelector('.env__scroll'); scroll.scrollTop = 0;
+      card.querySelector('.ec__in').scrollTop = 0;
       var m = { S: root.querySelector('.env__stage--front').getBoundingClientRect(), F: card.getBoundingClientRect(), stack: !matchMedia(WIDE).matches };
       m.u = m.S.width / 572;
       void root.offsetWidth; // so the sequence restarts from the top on every open
       root.classList.add('is-playing');
-      document.documentElement.style.overflow = 'hidden';
+      // Locking the scroll removes the scrollbar on some computers, so hold its place: the page is in view.
+      var html = document.documentElement, bar = innerWidth - html.clientWidth;
+      html.style.overflow = 'hidden'; if (bar > 0) html.style.paddingRight = bar + 'px';
       root.focus({ preventScroll: true });
       addEventListener('keydown', onKey);
       openWidth = innerWidth; addEventListener('resize', onResize);
       if (still) return land();
       playOpening(m);
-      if (matchMedia('(hover: hover)').matches) addEventListener('pointermove', onMove, { passive: true });
     });
   }
   function close() {
     if (!root || root.hidden) return;
-    removeEventListener('keydown', onKey); removeEventListener('pointermove', onMove); removeEventListener('resize', onResize);
-    cancelAnimationFrame(raf); raf = 0; tx = ty = x = y = 0;
+    removeEventListener('keydown', onKey); removeEventListener('resize', onResize);
     running.forEach(function (a) { a.cancel(); }); running = [];
-    root.style.removeProperty('--x'); root.style.removeProperty('--y');
     root.classList.add('is-closing');
-    document.documentElement.style.overflow = '';
+    document.documentElement.style.overflow = ''; document.documentElement.style.paddingRight = '';
     var el = root;
     setTimeout(function () { if (el.classList.contains('is-closing')) { el.hidden = true; el.classList.remove('is-playing', 'is-landed', 'is-closing'); } }, 230);
     if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });

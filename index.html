@@ -418,6 +418,37 @@ footer a:hover{opacity:.55}
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=798516899968965&ev=PageView&noscript=1"/></noscript>
     <!-- End Meta Pixel Code -->
     <script defer src="/_vercel/insights/script.js"></script>
+<script>/* Preview only: ?anim=a|b|c picks a hero menu animation to compare. Without it the page is unchanged. */(function(){var a=new URLSearchParams(location.search).get('anim');if(/^[abc]$/.test(a))document.documentElement.setAttribute('data-anim',a);})();</script>
+<style>
+html[data-anim] .hnav{visibility:hidden}
+html[data-anim] .hnav.is-built{visibility:visible}
+.hnav .vx{display:inline-block;position:relative;white-space:nowrap}
+/* A. Focus: blur and loose tracking settle into place, line by line */
+html[data-anim=a] .hnav .vx{animation:vfocus 1.15s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(180ms + var(--r)*110ms + var(--k,0)*60ms)}
+@keyframes vfocus{from{opacity:0;filter:blur(7px);letter-spacing:.22em}to{opacity:1;filter:blur(0);letter-spacing:inherit}}
+html[data-anim=a] .hnav a .vx::after,html[data-anim=b] .hnav a .vx::after{content:"";position:absolute;left:0;right:0;bottom:-.18em;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .6s cubic-bezier(.65,0,.35,1)}
+html[data-anim=a] .hnav a:hover .vx::after,html[data-anim=b] .hnav a:hover .vx::after{transform:scaleX(1);transform-origin:left}
+html[data-anim] .hnav a:hover{color:inherit}
+/* B. Sweep: a hairline crosses each line like a seconds hand and leaves the text behind it */
+html[data-anim=b] .hnav .vx{clip-path:inset(-.3em 100% -.3em 0);animation:vsweep .95s cubic-bezier(.65,0,.35,1) both;animation-delay:calc(220ms + var(--r)*95ms + var(--k,0)*70ms)}
+@keyframes vsweep{to{clip-path:inset(-.3em -.1em -.3em 0)}}
+html[data-anim=b] .hnav .vb-line{position:absolute;top:-.12em;bottom:-.12em;width:1px;background:currentColor;left:0;opacity:0;pointer-events:none;animation:vline .95s cubic-bezier(.65,0,.35,1) both;animation-delay:inherit}
+@keyframes vline{0%{left:0;opacity:0}12%{opacity:.9}80%{opacity:.9}100%{left:100%;opacity:0}}
+/* C. Date wheel: each item flips up into its window like a date disc; on hover the word rolls over */
+html[data-anim=c] .hnav .vx{perspective:420px}
+html[data-anim=c] .hnav .vc{display:inline-block;transform-origin:50% 100%;animation:vwheel .9s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(200ms + var(--r)*100ms + var(--k,0)*55ms);backface-visibility:hidden}
+@keyframes vwheel{from{opacity:0;transform:rotateX(-92deg) translateY(.35em)}60%{opacity:1}to{opacity:1;transform:none}}
+html[data-anim=c] .hnav .vc__win{display:inline-block;overflow:hidden;vertical-align:bottom;height:1.12em;line-height:1.12em;padding-inline:.02em}
+html[data-anim=c] .hnav .vc__in{display:flex;flex-direction:column;transition:transform .55s cubic-bezier(.65,0,.35,1)}
+html[data-anim=c] .hnav a:hover .vc__in{transform:translateY(-50%)}
+/* preview switcher */
+.vpick{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;display:none;gap:4px;align-items:center;background:rgba(37,37,34,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px;font-family:var(--intl);font-size:13px;color:var(--cream)}
+html[data-anim] .vpick{display:flex}
+.vpick a,.vpick button{color:var(--cream);background:none;border:1px solid transparent;padding:7px 11px;font:inherit;cursor:pointer;white-space:nowrap}
+.vpick a[aria-current]{border-color:var(--cream)}
+.vpick button{border-left:1px solid rgba(247,243,233,.25)}
+@media(prefers-reduced-motion:reduce){html[data-anim] .hnav .vx,html[data-anim] .hnav .vc,html[data-anim] .hnav .vb-line{animation:none}html[data-anim=b] .hnav .vx{clip-path:none}}
+</style>
 </head>
 <body>
 <section class="hero" aria-label="Dialed by H">
@@ -574,6 +605,29 @@ footer a:hover{opacity:.55}
   // FAQ accordion, one open at a time (same behaviour as before)
   var items=document.querySelectorAll('.faq__item');
   items.forEach(function(it){var btn=it.querySelector('.faq__q');btn.addEventListener('click',function(){var was=it.classList.contains('is-open');items.forEach(function(x){x.classList.remove('is-open');x.querySelector('.faq__q').setAttribute('aria-expanded','false');});if(!was){it.classList.add('is-open');btn.setAttribute('aria-expanded','true');}});});
+})();
+</script>
+<div class="vpick" aria-label="Animation preview"><a href="?anim=a">A · Focus</a><a href="?anim=b">B · Sweep</a><a href="?anim=c">C · Date wheel</a><button type="button" id="vreplay">Replay</button></div>
+<script>
+/* Preview only: rebuilds the hero menu labels for the chosen animation (?anim=a|b|c). */
+(function(){
+  var mode = document.documentElement.getAttribute('data-anim'), nav = document.querySelector('.hnav');
+  if (!mode || !nav) return;
+  var items = [].map.call(nav.querySelectorAll('li'), function(li){ return { li: li, n: li.querySelector('.n').textContent.trim(), a: li.querySelector('a') }; });
+  items.forEach(function(it){ it.label = it.a.getAttribute('aria-label') || it.a.textContent.trim(); });
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function wrap(text, k){
+    if (mode === 'c') return '<span class="vx" style="--k:' + k + '"><span class="vc"><span class="vc__win"><span class="vc__in"><span>' + esc(text) + '</span><span aria-hidden="true">' + esc(text) + '</span></span></span></span></span>';
+    return '<span class="vx" style="--k:' + k + '">' + esc(text) + (mode === 'b' ? '<span class="vb-line" aria-hidden="true"></span>' : '') + '</span>';
+  }
+  function build(){
+    nav.classList.remove('is-built');
+    items.forEach(function(it){ it.li.querySelector('.n').innerHTML = wrap(it.n, 0); it.a.innerHTML = wrap(it.label, 1); });
+    void nav.offsetWidth; nav.classList.add('is-built');
+  }
+  build();
+  [].forEach.call(document.querySelectorAll('.vpick a'), function(x){ if (x.getAttribute('href') === '?anim=' + mode) x.setAttribute('aria-current', 'true'); });
+  document.getElementById('vreplay').addEventListener('click', build);
 })();
 </script>
 </body>

@@ -42,5 +42,5 @@
       else e.target.addEventListener('load', function () { check(e.target); }, { once: true });
     });
   }, { rootMargin: '800px' });
-  document.querySelectorAll('.pa-body img').forEach(function (img) { io.observe(img); });
+  document.querySelectorAll('.pa-body img, .jr-body img').forEach(function (img) { io.observe(img); });
 })();

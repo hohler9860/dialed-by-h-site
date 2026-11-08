@@ -28,6 +28,59 @@ function formatPubDate(iso) {
     } catch { return ""; }
 }
 
+function monthYear(iso) {
+    if (!iso) return "";
+    try { return new Date(iso).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" }); } catch { return ""; }
+}
+
+function metaHtml(iso, minutes) {
+    const m = parseInt(minutes, 10);
+    return `<span class="jr-meta"><span>${escHtml(monthYear(iso))}</span>${m ? `<i aria-hidden="true">&bull;</i><span>${m} Min Read</span>` : ""}</span>`;
+}
+
+// Henry's own stories sign off with the wordmark; anyone else gets a plain byline.
+function bylineHtml(author) {
+    const name = String(author || "").trim();
+    if (name && !/^(henry ohler|dialed by h)$/i.test(name)) return `<p class="jr-by">By ${escHtml(name)}</p>`;
+    return `<p class="jr-by">From the desk of <img src="/assets/brand/wordmark-charcoal.svg" alt="Dialed by H" width="791" height="112"></p>`;
+}
+
+// Back-to-back photos sit side by side, the way A Collected Man pairs images.
+function pairFigures(html) {
+    const fig = '<figure class="journal-figure[^"]*">(?:(?!<\\/figure>)[\\s\\S])*<\\/figure>';
+    return String(html || "").replace(new RegExp(`(${fig})\\s*(${fig})`, "g"), '<div class="jr-pair">$1$2</div>');
+}
+
+// Photo credit lines ("Cover photo: Hodinkee.", "Photos, including cover: ...") read as captions, not body copy.
+function markCredits(html) {
+    return String(html || "").replace(/<p>((?:Cover photo|Cover image|Photos?(?:, including cover)?|Photography|Images?):\s[\s\S]*?)<\/p>/gi, '<p class="jr-credit">$1</p>');
+}
+
+function relatedHtml(list) {
+    if (!list || !list.length) return "";
+    const cards = list.map((r) => {
+        const img = journalImage(r);
+        const ex = r.subtitle || r.excerpt || "";
+        return `<a class="jr-card" href="/journal/${encodeURIComponent(r.slug)}"><div class="jr-card__img">${img ? `<img src="${escAttr(img)}" alt="" loading="lazy" decoding="async">` : ""}</div><div class="jr-card__txt"><span class="jr-dot" aria-hidden="true"></span><h3>${escHtml(r.title)}</h3>${ex ? `<p>${escHtml(ex)}</p>` : ""}${metaHtml(r.published_at, r.reading_time_minutes)}</div></a>`;
+    }).join("");
+    return `<section class="jr-more" aria-labelledby="jr-more-h"><div class="jr-more__in"><h2 id="jr-more-h">Further Reading</h2><div class="jr-more__grid">${cards}</div></div></section>`;
+}
+
+// Three other stories: same category first, then the newest.
+async function fetchRelated(article) {
+    try {
+        const sel = "slug,title,subtitle,excerpt,hero_image_url,content_html,category,published_at,reading_time_minutes";
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/journal_articles?select=${sel}&status=eq.published&slug=neq.${encodeURIComponent(article.slug)}&order=published_at.desc&limit=24`, {
+            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        });
+        if (!r.ok) return [];
+        const rows = await r.json();
+        const same = rows.filter((x) => article.category && x.category === article.category);
+        const rest = rows.filter((x) => !same.includes(x));
+        return same.concat(rest).slice(0, 3);
+    } catch { return []; }
+}
+
 function fourOhFourHtml() {
     return `<!DOCTYPE html>
 <html lang="en">
@@ -54,7 +107,7 @@ ${chrome.scripts()}
 </html>`;
 }
 
-function renderArticleHtml(a) {
+function renderArticleHtml(a, related) {
     a = { ...a, hero_image_url: journalImage(a) };
     const title       = a.title || "Untitled";
     const subtitle    = a.subtitle || "";
@@ -127,40 +180,40 @@ ${category ? `<meta property="article:section" content="${escAttr(category)}">` 
 <script type="application/ld+json">${JSON.stringify(jsonLdBreadcrumb)}</script>
 
 ${chrome.headAssets()}
+<link rel="stylesheet" href="/assets/journal-article.css?v=1">
 ${chrome.pixel()}
 </head>
 <body>
 ${chrome.header('Journal')}
-<main class="pa-page${a.hero_image_url ? ' has-hero' : ''}">
-${a.hero_image_url ? `<div class="pa-banner"><img src="${escAttr(heroUrl)}" alt="${escAttr(a.hero_alt || title)}" fetchpriority="high"></div>` : ""}
-<article class="pa-paper">
-<a class="pa-crumb" href="/journal/">&larr; Off-Catalog</a>
-<div class="pa-meta">
-    ${category ? `<span>${escHtml(category)}</span>` : ""}
-    ${pubDateText ? `<span>${escHtml(pubDateText)}</span>` : ""}
-    ${readingTime ? `<span>${readingTime} min read</span>` : ""}
-</div>
-<h1 class="pa-title">${escHtml(title)}</h1>
-${subtitle ? `<p class="pa-sub">${escHtml(subtitle)}</p>` : ""}
-
-<div class="pa-heroline"><span>By ${escHtml(a.author_name || "Henry Ohler")}</span><span>Dialed by H</span></div>
-<div class="pa-body">${contentHtml}</div>
-<div class="pa-cta">
+<main class="jr">
+<article>
+${a.hero_image_url ? `<div class="jr-hero"><img src="${escAttr(heroUrl)}" alt="${escAttr(a.hero_alt || title)}" fetchpriority="high"></div>` : ""}
+<header class="jr-head">
+${metaHtml(pubDate, readingTime)}
+<h1 class="jr-title">${escHtml(title)}</h1>
+${bylineHtml(a.author_name)}
+</header>
+${subtitle ? `<p class="jr-stand jr-col">${escHtml(subtitle)}</p>` : ""}
+<div class="jr-body">${markCredits(pairFigures(contentHtml))}</div>
+<hr class="jr-end">
+<div class="jr-cta">
 <h3>Get the next one</h3>
 <p>New writing from the desk. Unsubscribe whenever.</p>
 <form id="oc-end-form" novalidate>
 <input id="oc-end-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
+<label class="jx-vh" for="oc-end-email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
 <input id="oc-end-email" type="email" name="email" placeholder="Email address" required>
-<button type="submit">Subscribe</button>
+<button type="submit" aria-label="Subscribe">&rarr;</button>
 <p id="oc-end-msg" class="oc-end-msg" style="display:none"></p>
 </form>
 </div>
 </article>
+${relatedHtml(related)}
 </main>
 ${chrome.footer()}
 ${chrome.floats()}
 ${chrome.scripts()}
-<script defer src="/assets/journal-paper.js?v=1"></script>
+<script defer src="/assets/journal-paper.js?v=2"></script>
 <script>
 (function () {
     const form = document.getElementById("oc-end-form");
@@ -176,7 +229,7 @@ ${chrome.scripts()}
             msg.textContent = "That email doesn't look right.";
             msg.classList.add("error"); msg.style.display = "block"; return;
         }
-        btn.disabled = true; const original = btn.textContent; btn.textContent = "Sending…";
+        btn.disabled = true; const original = btn.innerHTML; btn.textContent = "…";
         try {
             const r = await fetch("/api/journal-subscribe", {
                 method: "POST",
@@ -192,7 +245,7 @@ ${chrome.scripts()}
             msg.textContent = "Something broke. Try again in a sec.";
             msg.classList.add("error"); msg.style.display = "block";
         } finally {
-            btn.disabled = false; btn.textContent = original;
+            btn.disabled = false; btn.innerHTML = original;
         }
     });
 })();
@@ -241,9 +294,10 @@ module.exports = async (req, res) => {
             body: JSON.stringify({ view_count: (article.view_count || 0) + 1 }),
         }).catch(() => { /* swallow */ });
 
+        const related = await fetchRelated(article);
         res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=3600");
         res.status(200);
-        return res.send(renderArticleHtml(article));
+        return res.send(renderArticleHtml(article, related));
     } catch (err) {
         console.error("[journal-article-render] UNHANDLED:", err.message);
         res.status(500);

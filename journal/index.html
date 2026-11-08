@@ -53,6 +53,9 @@ fbq('track', 'PageView');
 .jx-meta{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;font-family:var(--mono);font-size:11px;line-height:1.6;letter-spacing:.08em;text-transform:uppercase}
 .jx-meta i{font-style:normal}
 .jx-by{font-family:var(--works);font-size:16px;line-height:1.1;letter-spacing:-.01em}
+.jx-by--house{display:inline-flex;align-items:center;gap:.5em;white-space:nowrap}
+.jx-by--house img{display:block;height:.74em;width:auto;transform:translateY(.02em)}
+.jx-big .jx-by--house img{filter:drop-shadow(0 1px 8px rgba(37,37,34,.35))}
 
 /* lead slider */
 .jx-lead{position:relative;display:grid;grid-template:1fr/1fr;height:576px;overflow:hidden;background:var(--cream);touch-action:pan-y;--edge:var(--gutter)}
@@ -64,7 +67,7 @@ fbq('track', 'PageView');
 .jx-slide .jx-by{margin-top:36px}
 .jx-slide .jx-meta{margin-top:auto;padding-top:24px}
 .jx-slide__img{position:relative;overflow:hidden;background:var(--panel)}
-.jx-slide__img img,.jx-big img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
+.jx-slide__img img,.jx-big>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
 img.is-cut{object-fit:contain;padding:8%}
 .jx-count{position:absolute;right:24px;bottom:18px;z-index:3;display:flex;gap:6px;background:none;border:0;padding:8px 0 8px 14px;font-family:var(--intl);font-size:14px;line-height:1;color:var(--cream);text-shadow:0 1px 10px rgba(37,37,34,.45);cursor:pointer}
 .jx-count:focus-visible{outline:1px solid var(--cream);outline-offset:2px}
@@ -87,8 +90,8 @@ img.is-cut{object-fit:contain;padding:8%}
 .jx-card{display:flex;flex-direction:column;min-width:0;background:var(--cream);color:var(--charcoal);text-decoration:none}
 .jx-card__img{position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--panel)}
 .jx-card__img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
-.jx-card__img img,.jx-big img,.jx-slide__img img{transition:transform .9s cubic-bezier(.2,.7,.2,1)}
-.jx-card:hover .jx-card__img img,.jx-big:hover img{transform:scale(1.03)}
+.jx-card__img img,.jx-big>img,.jx-slide__img img{transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.jx-card:hover .jx-card__img img,.jx-big:hover>img{transform:scale(1.03)}
 .jx-card__txt{position:relative;display:flex;flex-direction:column;flex:1;padding:22px 40px 34px}
 .jx-card h3{font-family:var(--intl);font-weight:500;font-size:20px;line-height:28px;letter-spacing:-.015em;margin:0 0 24px;text-wrap:balance}
 .jx-card .jx-meta{margin-top:auto}
@@ -147,7 +150,7 @@ img.is-cut{object-fit:contain;padding:8%}
   .jx-big .jx-meta{font-size:10px}
   .jx-pager{padding-top:56px}
 }
-@media (prefers-reduced-motion:reduce){.jx-card__img img,.jx-big img,.jx-slide__img img,.jx-dot{transition:none}.jx-card:hover .jx-card__img img,.jx-big:hover img{transform:none}}
+@media (prefers-reduced-motion:reduce){.jx-card__img img,.jx-big>img,.jx-slide__img img,.jx-dot{transition:none}.jx-card:hover .jx-card__img img,.jx-big:hover>img{transform:none}}
 </style>
 </head>
 <body>
@@ -245,7 +248,7 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
   // Two names for the same thing in the data; show them as one tab.
   var ALIAS = { 'New Releases': 'Releases' };
   // Clean cutouts made for older stories, used only if a story has no cover photo.
-  var CUTOUT = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches":160,"the-watches-that-caught-our-eye-at-the-2026-us-open":145,"geneva-watch-days-2026-plus-the-recent-releases-worth-a-look":147,"rolex-gets-complicated-the-three-new-perpetual-padellone-models":148,"serena-williams-just-made-the-royal-oak-her-own":149,"kruk-designs-luxury-watch-rolls-leather-goods":150,"fp-journe-14-million-phillips-auction-independents":151,"tudor-black-bay-chrono-39-bumblebee":152,"ap-royal-oak-offshore-summer-chronographs":153,"royal-pop-launch-was-a-mess":154,"the-royal-pop-is-going-to-be-louder-than-the-moonswatch":155,"my-day-at-watches-and-wonders-2026":156,"rolex-just-dropped-at-watches-and-wonders-2026":157,"what-rolex-is-probably-dropping-at-watches-and-wonders-2026":158};
+  var CUTOUT = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches":160,"the-watches-that-caught-our-eye-at-the-2026-us-open":145,"geneva-watch-days-2026-plus-the-recent-releases-worth-a-look":147,"rolex-gets-complicated-the-three-new-perpetual-padellone-models":148,"serena-williams-just-made-the-royal-oak-her-own":149,"kruk-designs-luxury-watch-rolls-leather-goods":150,"fp-journe-14-million-phillips-auction-independents":151,"tudor-black-bay-chrono-39-bumblebee":152,"ap-royal-oak-offshore-summer-chronographs":153,"royal-pop-launch-was-a-mess":154,"the-royal-pop-is-going-to-be-louder-than-the-moonswatch":155,"my-day-at-watches-and-wonders-2026":156,"rolex-just-dropped-at-watches-and-wonders-2026":157};
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var all = [], state = { cat: ALL, sort: 'new', page: 1 };
 
@@ -254,7 +257,12 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
   function href(a){ return '/journal/' + encodeURIComponent(a.slug); }
   function when(a){ return a.published_at ? new Date(a.published_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) : ''; }
   function meta(a){ var m = parseInt(a.reading_time_minutes, 10); return '<span class="jx-meta"><span>' + esc(when(a)) + '</span>' + (m ? '<i aria-hidden="true">&bull;</i><span>' + m + ' Min Read</span>' : '') + '</span>'; }
-  function by(a){ return a.author_name ? '<span class="jx-by">By ' + esc(a.author_name) + '</span>' : ''; }
+  // Henry's own stories sign off with the wordmark instead of his name; anyone else gets a plain byline.
+  var HOUSE = /^(henry ohler|dialed by h)?$/i;
+  function by(a, tone){
+    if (!HOUSE.test(String(a.author_name || '').trim())) return '<span class="jx-by">By ' + esc(a.author_name) + '</span>';
+    return '<span class="jx-by jx-by--house">From the desk of <img src="/assets/brand/wordmark-' + (tone || 'charcoal') + '.svg" alt="Dialed by H" width="791" height="112"></span>';
+  }
   function pic(a, how){
     if (a.hero_image_url) return '<img src="' + esc(a.hero_image_url) + '" alt="" decoding="async"' + (how === 'first' ? ' fetchpriority="high"' : how === 'lead' ? ' fetchpriority="low"' : ' loading="lazy"') + '>';
     var n = CUTOUT[a.slug]; if (!n) return '';
@@ -265,7 +273,7 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
   }
   function big(a){
     var ex = a.subtitle || a.excerpt;
-    return '<a class="jx-big" href="' + href(a) + '">' + pic(a) + '<div class="jx-big__in"><span class="jx-dot" aria-hidden="true"></span><h3>' + esc(a.title) + '</h3>' + by(a) +
+    return '<a class="jx-big" href="' + href(a) + '">' + pic(a) + '<div class="jx-big__in"><span class="jx-dot" aria-hidden="true"></span><h3>' + esc(a.title) + '</h3>' + by(a, 'cream') +
       '<div class="jx-big__foot">' + (ex ? '<p>' + esc(ex) + '</p>' : '') + meta(a) + '</div></div></a>';
   }
 

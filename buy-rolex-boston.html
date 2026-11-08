@@ -156,7 +156,7 @@
 <meta name="theme-color" content="#F7F3E9">
 <link rel="preload" href="/assets/fonts/suisse/SuisseWorks-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Medium.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/dbh-brand.css?v=14">
+<link rel="stylesheet" href="/assets/dbh-brand.css?v=15">
 <script>
 if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -297,7 +297,7 @@ fbq('track', 'PageView');
         var t=el.textContent,w=document.createElement('span');
         if(el.tagName==='A')el.setAttribute('aria-label',t);
         w.className='su';w.setAttribute('aria-hidden','true');
-        Array.from(t).forEach(function(ch,c){var a=document.createElement('span'),b=document.createElement('span');a.className='su__c';a.style.setProperty('--c',c);b.textContent=ch;a.appendChild(b);w.appendChild(a);});
+        var a=document.createElement('span'),b=document.createElement('span');a.className='su__c';a.style.setProperty('--c',el.tagName==='A'?1:0);b.textContent=t;a.appendChild(b);w.appendChild(a);
         el.textContent='';el.appendChild(w);
       });
     });
@@ -335,6 +335,6 @@ document.addEventListener('error',function(e){
   });
 })();
 </script>
-<script src="/assets/slide-up.js?v=2"></script>
+<script src="/assets/slide-up.js?v=4"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
-/* Slide-up reveal, the same motion as the homepage hero nav: each piece rises out
-   of its own mask over .5s on an ease of .625,.05,0,1. Mark text with
-   data-su="chars" or data-su="words". It plays when its [data-su-group] scrolls
+/* Date-wheel reveal, the same motion as the homepage hero menu: each word flips up
+   into place like a watch date disc over .9s. Mark text with data-su ("words";
+   "chars" is read as words too, so every page moves the same way). It plays when its [data-su-group] scrolls
    into view, or on load if it has no group. The HTML stays plain text, so copy
    edits and search engines see normal sentences. Needs the small head script that
    adds .js to <html>, which keeps the text hidden until it has been split. */
@@ -43,7 +43,7 @@
   els.forEach(function (el) {
     var group = el.closest('[data-su-group]') || el;
     if (!counters.has(group)) counters.set(group, { n: 0 });
-    var mode = el.getAttribute('data-su');
+    var mode = 'words'; // one motion everywhere: word by word
     if (mode === 'chars') {
       // A long headline keeps the same overall pace, so it never drags.
       var length = el.textContent.trim().length;

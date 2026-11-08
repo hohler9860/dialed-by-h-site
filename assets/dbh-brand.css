@@ -11,7 +11,7 @@
 --gutter:clamp(20px,2.1vw,40px);--max:1360px;color-scheme:light}
 *{box-sizing:border-box;font-synthesis:none}
 html{scroll-behavior:smooth}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.su__c>span{opacity:1;transform:none;animation:none!important}}
 body{margin:0;background:var(--cream);color:var(--charcoal);font-family:var(--works);font-size:16px;line-height:1.3;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--charcoal);color:var(--cream)}
 a{color:inherit;text-decoration:none}
@@ -226,14 +226,16 @@ button{font:inherit;color:inherit}
 .js [data-su]{visibility:hidden}
 .su-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .su__w{display:inline-block;white-space:nowrap}
-.su__c{display:inline-block;overflow:hidden;vertical-align:bottom;padding-block:.2em;margin-block:-.2em}
-.su__c>span{display:inline-block;transform:translateY(140%)}
-.su-in .su__c>span{animation:su .5s cubic-bezier(.625,.05,0,1) both;animation-delay:calc(var(--b,0ms) + var(--su-extra,0ms) + var(--c,0)*var(--su-step,30ms))}
-[data-su=words]{--su-extra:180ms;--su-step:14ms}
-@keyframes su{from{transform:translateY(140%)}to{transform:none}}
+/* Text entrances site-wide use the date wheel from the homepage menu: each word (or line, or menu item)
+   flips up into place like a watch date disc, .9s on one curve. */
+.su__c{display:inline-block;vertical-align:bottom;padding-block:.2em;margin-block:-.2em;perspective:420px}
+.su__c>span{display:inline-block;opacity:0;transform:rotateX(-92deg) translateY(.35em);transform-origin:50% 100%;backface-visibility:hidden}
+.su-in .su__c>span{animation:su .9s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(var(--b,0ms) + var(--su-extra,0ms) + var(--c,0)*var(--su-step,40ms))}
+[data-su]{--su-extra:180ms;--su-step:40ms}
+@keyframes su{from{opacity:0;transform:rotateX(-92deg) translateY(.35em)}60%{opacity:1}to{opacity:1;transform:none}}
 .sheet .su{display:inline-block;white-space:nowrap}
 .sheet .su__c{white-space:pre}
-.sheet .su__c>span{transform:none;animation:su .5s cubic-bezier(.625,.05,0,1) both;animation-delay:calc(120ms + var(--r,0)*60ms + var(--c,0)*22ms)}
+.sheet .su__c>span{animation:su .9s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(120ms + var(--r,0)*100ms + var(--c,0)*55ms)}
 /* ── process ── */
 .st{display:grid;grid-template-columns:minmax(0,120px) minmax(0,220px) minmax(0,1fr);gap:20px 28px;align-items:baseline;border-top:1px solid var(--grey-light);padding:28px 2px}
 .st:first-of-type{margin-top:clamp(24px,3vw,44px)}

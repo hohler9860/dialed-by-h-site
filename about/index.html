@@ -24,7 +24,7 @@
 <meta name="theme-color" content="#F7F3E9">
 <link rel="preload" href="/assets/fonts/suisse/SuisseWorks-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/suisse/SuisseIntl-Medium.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/dbh-brand.css?v=14">
+<link rel="stylesheet" href="/assets/dbh-brand.css?v=15">
 <script>
 if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -40,6 +40,7 @@ fbq('track', 'PageView');
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 <!--/dbh:head-->
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 </head>
 <body>
 <!--dbh:header-->
@@ -56,24 +57,24 @@ fbq('track', 'PageView');
 </div>
 <!--/dbh:header-->
 <main class="pg">
-<nav class="crumb" aria-label="Breadcrumb"><a href="/"><span data-scramble data-delay="150">Home</span></a> / <span data-scramble data-delay="210">About</span></nav>
-<h1 class="pg-h1"><span data-hsst>About</span> <span data-hsst>me</span></h1>
+<nav class="crumb" aria-label="Breadcrumb"><a href="/"><span data-su="words">Home</span></a> / <span data-su="words">About</span></nav>
+<h1 class="pg-h1" data-su="words">About me</h1>
 <div class="ab-cols">
 <div class="ab-group ab-reveal">
 <img src="/assets/dbh/about-steps.webp" alt="Henry Ohler, on the left, sitting on stone steps and looking at a watch in its green box" width="1300" height="1371">
 <div class="ab-mark"><img class="ab-logo" src="/assets/brand/logomark-charcoal.svg" alt="" aria-hidden="true" width="145" height="142"></div>
 </div>
-<div class="ab-text ab-reveal">
+<div class="ab-text" data-su-group>
 <div class="ab-side">
-<span data-scramble data-delay="250">Dialed by H</span>
-<span data-scramble data-delay="400">Henry Ohler</span>
+<span data-su="words">Dialed by H</span>
+<span data-su="words">Henry Ohler</span>
 </div>
 <div class="ab-body">
-<p>I&rsquo;m Henry. Dialed by H started because I was obsessed with watches before I ever sold one.</p>
-<p>I came in as a collector first. Years of learning references, watching the market, and figuring out which pieces are actually worth chasing past the hype. Friends started asking me to find watches they couldn&rsquo;t get to or didn&rsquo;t trust buying alone. That&rsquo;s how this started.</p>
-<p>That trust is what built Dialed by H.</p>
-<p>I work with a vetted network of dealers, collectors, and private sellers across the US, Europe, and Asia. I&rsquo;m personally on every piece from sourcing through authentication, pricing, and delivery.</p>
-<p>Dialed by H isn&rsquo;t a storefront. It&rsquo;s a one-person concierge built around trust, discretion, and access. Whether you&rsquo;re chasing a hard-to-find reference or looking to move a piece from your collection, I treat every deal like it&rsquo;s mine.</p>
+<p data-su="words">I&rsquo;m Henry. Dialed by H started because I was obsessed with watches before I ever sold one.</p>
+<p data-su="words">I came in as a collector first. Years of learning references, watching the market, and figuring out which pieces are actually worth chasing past the hype. Friends started asking me to find watches they couldn&rsquo;t get to or didn&rsquo;t trust buying alone. That&rsquo;s how this started.</p>
+<p data-su="words">That trust is what built Dialed by H.</p>
+<p data-su="words">I work with a vetted network of dealers, collectors, and private sellers across the US, Europe, and Asia. I&rsquo;m personally on every piece from sourcing through authentication, pricing, and delivery.</p>
+<p data-su="words">Dialed by H isn&rsquo;t a storefront. It&rsquo;s a one-person concierge built around trust, discretion, and access. Whether you&rsquo;re chasing a hard-to-find reference or looking to move a piece from your collection, I treat every deal like it&rsquo;s mine.</p>
 <div class="actions">
 <a class="btn" href="https://wa.me/19146211848" target="_blank" rel="noopener">WhatsApp me</a>
 <a class="btn" href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">@dialedbyh</a>
@@ -122,7 +123,7 @@ fbq('track', 'PageView');
         var t=el.textContent,w=document.createElement('span');
         if(el.tagName==='A')el.setAttribute('aria-label',t);
         w.className='su';w.setAttribute('aria-hidden','true');
-        Array.from(t).forEach(function(ch,c){var a=document.createElement('span'),b=document.createElement('span');a.className='su__c';a.style.setProperty('--c',c);b.textContent=ch;a.appendChild(b);w.appendChild(a);});
+        var a=document.createElement('span'),b=document.createElement('span');a.className='su__c';a.style.setProperty('--c',el.tagName==='A'?1:0);b.textContent=t;a.appendChild(b);w.appendChild(a);
         el.textContent='';el.appendChild(w);
       });
     });
@@ -144,8 +145,6 @@ document.addEventListener('error',function(e){
 },true);
 </script>
 <!--/dbh:scripts-->
-<script src="/assets/scramble.js?v=2"></script>
-<script src="/assets/hsst.js"></script>
 <script>
 (function(){
   var els=[].slice.call(document.querySelectorAll('.ab-reveal'));
@@ -158,5 +157,6 @@ document.addEventListener('error',function(e){
   lo.observe(logo);
 })();
 </script>
+<script src="/assets/slide-up.js?v=4"></script>
 </body>
 </html>

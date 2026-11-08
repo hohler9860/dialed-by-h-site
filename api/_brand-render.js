@@ -276,7 +276,7 @@ ${chrome.pixel()}
 </main>`;
 
     return head + '<body>\n' + chrome.header('Sourcing Catalogue') + '\n' + main + '\n' +
-        chrome.footer() + '\n' + chrome.floats() + '\n' + chrome.scripts() + '\n<script src="/assets/slide-up.js?v=2"></script>\n</body>\n</html>';
+        chrome.footer() + '\n' + chrome.floats() + '\n' + chrome.scripts() + '\n<script src="/assets/slide-up.js?v=4"></script>\n</body>\n</html>';
 }
 
 module.exports = { renderBrandPage, BRANDS, BRAND_SLUGS };

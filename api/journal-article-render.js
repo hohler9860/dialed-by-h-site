@@ -181,6 +181,7 @@ ${category ? `<meta property="article:section" content="${escAttr(category)}">` 
 
 ${chrome.headAssets()}
 <link rel="stylesheet" href="/assets/journal-article.css?v=3">
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 ${chrome.pixel()}
 </head>
 <body>
@@ -190,10 +191,10 @@ ${chrome.header('Journal')}
 ${a.hero_image_url ? `<div class="jr-hero"><img src="${escAttr(heroUrl)}" alt="${escAttr(a.hero_alt || title)}" fetchpriority="high"></div>` : ""}
 <header class="jr-head">
 ${metaHtml(pubDate, readingTime)}
-<h1 class="jr-title">${escHtml(title)}</h1>
+<h1 class="jr-title" data-su="words">${escHtml(title)}</h1>
 ${bylineHtml(a.author_name)}
 </header>
-${subtitle ? `<p class="jr-stand jr-col">${escHtml(subtitle)}</p>` : ""}
+${subtitle ? `<p class="jr-stand jr-col" data-su="words">${escHtml(subtitle)}</p>` : ""}
 <div class="jr-body">${markCredits(pairFigures(contentHtml))}</div>
 <hr class="jr-end">
 <div class="jr-cta">
@@ -214,6 +215,7 @@ ${chrome.footer()}
 ${chrome.floats()}
 ${chrome.scripts()}
 <script defer src="/assets/journal-paper.js?v=2"></script>
+<script src="/assets/slide-up.js?v=4"></script>
 <script>
 (function () {
     const form = document.getElementById("oc-end-form");

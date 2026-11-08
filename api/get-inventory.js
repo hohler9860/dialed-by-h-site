@@ -335,7 +335,7 @@ module.exports = async (req, res) => {
             const pieces = await publicPieces();
             const html = renderBrandPage(String(q.brand).toLowerCase(), pieces);
             if (!html) return res.status(404).send(fourOhFour());
-            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
+            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=86400');
             return res.status(200).send(html);
         } catch (err) {
             console.error('[get-inventory:brand] error:', err && err.message);
@@ -351,7 +351,7 @@ module.exports = async (req, res) => {
             const pieces = await publicPieces();
             const piece = q.id ? pieces.find(p => p.id === q.id) : pieces.find(p => p.slug === slug);
             if (!piece || !piece.image) return res.status(404).send(fourOhFour());
-            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
+            res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=86400');
             return res.status(200).send(renderWatchPage(piece, pieces));
         } catch (err) {
             console.error('[get-inventory:watch] error:', err && err.message);
@@ -368,7 +368,7 @@ module.exports = async (req, res) => {
         res.setHeader('Access-Control-Allow-Origin', origin || '*');
     }
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=86400');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 

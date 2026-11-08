@@ -229,6 +229,8 @@ button{font:inherit;color:inherit}
 /* Text entrances site-wide use the date wheel from the homepage menu: each word (or line, or menu item)
    flips up into place like a watch date disc, .9s on one curve. */
 .su__c{display:inline-block;vertical-align:bottom;padding-block:.2em;margin-block:-.2em;perspective:420px}
+/* Word boxes must not inherit a paragraph's first-line indent, or every word gets pushed apart. */
+.su__c,.su__c>span,.su__w{text-indent:0}
 .su__c>span{display:inline-block;opacity:0;transform:rotateX(-92deg) translateY(.35em);transform-origin:50% 100%;backface-visibility:hidden}
 .su-in .su__c>span{animation:su .9s cubic-bezier(.2,.75,.25,1) both;animation-delay:calc(var(--b,0ms) + var(--su-extra,0ms) + var(--c,0)*var(--su-step,40ms))}
 [data-su]{--su-extra:180ms;--su-step:40ms}

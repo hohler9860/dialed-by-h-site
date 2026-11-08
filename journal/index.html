@@ -47,7 +47,8 @@ fbq('track', 'PageView');
 /* Journal index, laid out after A Collected Man's journal: a lead slider, filter
    tabs, then rows of three small cards and two large photo cards. Our fonts and
    colors: Works for the lead title, Intl for card titles, Mono for dates. */
-.jx{--jx-page:#EBE8DF;background:var(--jx-page);padding-bottom:clamp(72px,8vw,120px)}
+.jx{--jx-page:#EBE8DF;background:var(--cream)}
+.jx-band{background:var(--jx-page);padding-bottom:clamp(72px,8vw,120px)}
 .jx-vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .jx-wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
 .jx-meta{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;font-family:var(--mono);font-size:10px;line-height:1.6;letter-spacing:.12em;text-transform:uppercase}
@@ -58,11 +59,11 @@ fbq('track', 'PageView');
 .jx-big .jx-by--house img{filter:drop-shadow(0 1px 8px rgba(37,37,34,.35))}
 
 /* lead slider */
-.jx-lead{position:relative;display:grid;grid-template:1fr/1fr;height:576px;overflow:hidden;background:var(--cream);touch-action:pan-y;--edge:var(--gutter)}
-@supports (container-type:inline-size){.jx-lead{container-type:inline-size;--edge:max(var(--gutter),calc((100cqw - var(--max))/2 + var(--gutter)))}}
-.jx-slide{grid-area:1/1;display:grid;grid-template-columns:max(35%,calc(var(--edge) + 434px)) minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0;color:var(--charcoal);text-decoration:none;visibility:hidden;background:var(--cream)}
+/* The lead sits in the same centered column as the header and the grid (edge to edge only on phones). */
+.jx-lead{position:relative;display:grid;grid-template:1fr/1fr;width:calc(min(var(--max),100%) - 2 * var(--gutter));margin:0 auto;height:576px;overflow:hidden;background:var(--cream);touch-action:pan-y}
+.jx-slide{grid-area:1/1;display:grid;grid-template-columns:35% minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0;color:var(--charcoal);text-decoration:none;visibility:hidden;background:var(--cream)}
 .jx-slide.is-on{visibility:visible}
-.jx-slide__txt{display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:64px 24px 46px var(--edge)}
+.jx-slide__txt{display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:64px 40px 46px 0}
 .jx-slide h2{font-family:var(--intl);font-weight:500;font-size:54px;line-height:.96;letter-spacing:-.04em;margin:0;text-wrap:balance;overflow-wrap:anywhere}
 .jx-slide .jx-by{margin-top:36px}
 .jx-slide .jx-meta{margin-top:auto;padding-top:24px}
@@ -121,7 +122,7 @@ img.is-cut{object-fit:contain;padding:8%}
   .jx-big p{display:none}
 }
 @media (max-width:767px){
-  .jx-lead{height:auto}
+  .jx-lead{height:auto;width:auto;margin:0}
   .jx-slide{grid-template-columns:1fr;grid-template-rows:260px auto}
   .jx-slide__img{order:-1}
   .jx-slide__txt{padding:19px var(--gutter) 26px}
@@ -170,14 +171,14 @@ img.is-cut{object-fit:contain;padding:8%}
 <main class="jx" id="jx">
   <h1 class="jx-vh">Off-Catalog: the journal from Dialed by H</h1>
   <section class="jx-lead" id="jx-lead" aria-roledescription="carousel" aria-label="Featured stories"></section>
-  <div class="jx-wrap">
+  <div class="jx-band"><div class="jx-wrap">
     <div class="jx-bar">
       <ul class="jx-tabs" id="jx-tabs" aria-label="Filter stories"></ul>
       <div class="jx-sortwrap"><label class="jx-vh" for="jx-sort">Sort stories</label><select class="jx-sort" id="jx-sort"><option value="new">Most Recent</option><option value="old">Least Recent</option></select></div>
     </div>
     <div class="jx-grid" id="jx-grid" aria-live="polite"></div>
     <nav class="jx-pager" id="jx-pager" aria-label="Pages" hidden></nav>
-  </div>
+  </div></div>
 </main>
 <!--dbh:footer-->
 <footer class="sf">

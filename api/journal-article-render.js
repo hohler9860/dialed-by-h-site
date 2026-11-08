@@ -180,7 +180,7 @@ ${category ? `<meta property="article:section" content="${escAttr(category)}">` 
 <script type="application/ld+json">${JSON.stringify(jsonLdBreadcrumb)}</script>
 
 ${chrome.headAssets()}
-<link rel="stylesheet" href="/assets/journal-article.css?v=1">
+<link rel="stylesheet" href="/assets/journal-article.css?v=2">
 ${chrome.pixel()}
 </head>
 <body>

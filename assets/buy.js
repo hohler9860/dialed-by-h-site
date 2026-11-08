@@ -6,8 +6,8 @@
   var INV = [];
   var FACETS = [];
 
-  // curated Collection pills — must match Notion multi-select names exactly
-  var COLLECTIONS = ["Women's", '2026 Novelties', 'Classics', 'Everyday Wear', 'My Picks'];
+  // curated Collection pills: must match the names stored in pieces.collections exactly
+  var COLLECTIONS = ['Ladies', '2026 Novelties', 'Classics', 'Everyday Wear', 'My Picks'];
 
   function uniq(key) {
     var out = [];

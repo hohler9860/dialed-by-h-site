@@ -44,26 +44,110 @@ fbq('track', 'PageView');
 <script defer src="/_vercel/insights/script.js"></script>
 <!--/dbh:head-->
 <style>
-/* journal index: previous layout, new type */
-.jp{max-width:var(--max);margin:0 auto;padding:clamp(40px,5vw,72px) var(--gutter) clamp(72px,8vw,120px)}
-.mast{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:44px}
-.mast h1{font-family:var(--intl);font-weight:500;font-size:clamp(40px,5.4vw,78px);line-height:.9;letter-spacing:-.04em;margin-top:14px;white-space:nowrap}
-.mast p{font-family:var(--works);font-size:16px;line-height:1.25;color:var(--grey-dark);max-width:38ch;margin-bottom:4px;letter-spacing:-.01em}
-.lbl{display:flex;justify-content:space-between;gap:20px;margin:62px 0 28px;padding-bottom:16px;border-bottom:1px solid var(--grey-light)}
-.lbl h2{font-family:var(--intl);font-weight:500;font-size:16px;letter-spacing:-.01em;line-height:1.2}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px 30px}
-.card{display:flex;flex-direction:column;min-width:0}
-.card__art{display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;background:var(--panel);margin-bottom:22px;overflow:hidden}
-.card__art img{width:78%;height:260px;max-height:90%;object-fit:contain;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-.card:hover .card__art img{transform:scale(1.045)}
-.card .k{margin-bottom:12px}
-.card h3{font-family:var(--works);font-weight:400;font-size:clamp(22px,1.7vw,26px);line-height:1.1;letter-spacing:-.04em;margin:0 0 12px;text-wrap:balance}
-.card p{font-family:var(--works);font-size:15px;line-height:1.4;color:var(--grey-dark);margin:0 0 22px;letter-spacing:0}
-.card .link{margin-top:auto}
-#pt-journal:empty{min-height:60vh}
-@media(max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mast p{max-width:28ch}}
-@media(max-width:640px){.mast{display:block;margin-bottom:28px}.mast p{margin-top:18px;max-width:none}.lbl{margin-top:40px}.grid{grid-template-columns:1fr;gap:40px}.card__art img{height:230px}.card h3{font-size:24px}}
-@media(prefers-reduced-motion:reduce){.card__art img{transition:none}}
+/* Journal index, laid out after A Collected Man's journal: a lead slider, filter
+   tabs, then rows of three small cards and two large photo cards. Our fonts and
+   colors: Works for the lead title, Intl for card titles, Mono for dates. */
+.jx{--jx-page:#EBE8DF;background:var(--jx-page);padding-bottom:clamp(72px,8vw,120px)}
+.jx-vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.jx-wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+.jx-meta{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;font-family:var(--mono);font-size:11px;line-height:1.6;letter-spacing:.08em;text-transform:uppercase}
+.jx-meta i{font-style:normal}
+.jx-by{font-family:var(--works);font-size:16px;line-height:1.1;letter-spacing:-.01em}
+
+/* lead slider */
+.jx-lead{position:relative;display:grid;grid-template:1fr/1fr;height:576px;overflow:hidden;background:var(--cream);touch-action:pan-y;--edge:var(--gutter)}
+@supports (container-type:inline-size){.jx-lead{container-type:inline-size;--edge:max(var(--gutter),calc((100cqw - var(--max))/2 + var(--gutter)))}}
+.jx-slide{grid-area:1/1;display:grid;grid-template-columns:max(35%,calc(var(--edge) + 434px)) minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0;color:var(--charcoal);text-decoration:none;visibility:hidden;background:var(--cream)}
+.jx-slide.is-on{visibility:visible}
+.jx-slide__txt{display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:64px 24px 46px var(--edge)}
+.jx-slide h2{font-family:var(--works);font-weight:400;font-size:52px;line-height:1.1;letter-spacing:-.015em;text-transform:uppercase;margin:0;text-wrap:balance;overflow-wrap:anywhere}
+.jx-slide .jx-by{margin-top:36px}
+.jx-slide .jx-meta{margin-top:auto;padding-top:24px}
+.jx-slide__img{position:relative;overflow:hidden;background:var(--panel)}
+.jx-slide__img img,.jx-big img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+img.is-cut{object-fit:contain;padding:8%}
+.jx-count{position:absolute;right:24px;bottom:18px;z-index:3;display:flex;gap:6px;background:none;border:0;padding:8px 0 8px 14px;font-family:var(--intl);font-size:14px;line-height:1;color:var(--cream);text-shadow:0 1px 10px rgba(37,37,34,.45);cursor:pointer}
+.jx-count:focus-visible{outline:1px solid var(--cream);outline-offset:2px}
+
+/* filter tabs + sort */
+.jx-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.jx-tabs{display:flex;gap:32px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.jx-tabs::-webkit-scrollbar{display:none}
+.jx-tab{display:block;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:36px 0 32px;white-space:nowrap;cursor:pointer}
+.jx-tab[aria-pressed=true]{border-bottom-color:var(--charcoal)}
+.jx-tab:focus-visible,.jx-sort:focus-visible,.jx-pager button:focus-visible{outline:1px solid var(--charcoal);outline-offset:3px}
+.jx-sortwrap{position:relative;flex:none;padding-bottom:32px}
+.jx-sort{appearance:none;-webkit-appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23252522'/%3E%3C/svg%3E") no-repeat right center;border:0;border-radius:0;padding:0 20px 0 0;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);cursor:pointer}
+
+/* grid: rows of three small cards, then two large photo cards */
+.jx-grid{display:flex;flex-direction:column;gap:46px;padding-top:55px;min-height:40vh}
+.jx-row{display:grid;gap:16px}
+.jx-row--s{grid-template-columns:repeat(3,minmax(0,1fr))}
+.jx-row--l{grid-template-columns:repeat(2,minmax(0,1fr))}
+.jx-card{display:flex;flex-direction:column;min-width:0;background:var(--cream);color:var(--charcoal);text-decoration:none}
+.jx-card__img{position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--panel)}
+.jx-card__img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.jx-card__img img,.jx-big img,.jx-slide__img img{transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+.jx-card:hover .jx-card__img img,.jx-big:hover img{transform:scale(1.03)}
+.jx-card__txt{position:relative;display:flex;flex-direction:column;flex:1;padding:22px 40px 34px}
+.jx-card h3{font-family:var(--intl);font-weight:500;font-size:20px;line-height:28px;letter-spacing:-.015em;margin:0 0 24px;text-wrap:balance}
+.jx-card .jx-meta{margin-top:auto}
+.jx-dot{position:absolute;left:17px;top:29px;width:14px;height:14px;border:1px solid currentColor;border-radius:50%;transition:background-color .25s}
+.jx-card:hover .jx-dot,.jx-big:hover .jx-dot{background:currentColor}
+.jx-big{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;background:var(--charcoal);color:var(--cream);text-decoration:none}
+.jx-big::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(37,37,34,.66) 0,rgba(37,37,34,.22) 30%,rgba(37,37,34,0) 46%,rgba(37,37,34,0) 50%,rgba(37,37,34,.34) 70%,rgba(37,37,34,.74) 100%)}
+.jx-big__in{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;padding:43px 40px 32px;text-shadow:0 1px 14px rgba(37,37,34,.3)}
+.jx-big h3{font-family:var(--intl);font-weight:500;font-size:23px;line-height:32px;letter-spacing:-.015em;margin:0;max-width:577px;text-wrap:balance}
+.jx-big .jx-dot{top:52px}
+.jx-big .jx-by{margin-top:16px}
+.jx-big__foot{margin-top:auto}
+.jx-big p{font-family:var(--intl);font-size:16px;line-height:24px;margin:0 0 22px;max-width:577px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.jx-empty{font-family:var(--intl);font-size:16px;padding:40px 0}
+
+/* pager */
+.jx-pager{display:flex;justify-content:center;align-items:center;gap:22px;padding-top:80px;font-family:var(--intl);font-size:16px;line-height:24px}
+.jx-pager[hidden]{display:none}
+.jx-pager button{background:none;border:0;padding:6px;font:inherit;color:var(--charcoal);cursor:pointer;line-height:1}
+.jx-pager button:disabled{opacity:.25;cursor:default}
+
+@media (max-width:1199px){
+  .jx-slide{grid-template-columns:50% 50%}
+  .jx-slide__txt{padding-right:32px}
+  .jx-slide h2{font-size:41px}
+  .jx-big{aspect-ratio:auto;height:328px}
+  .jx-big p{display:none}
+}
+@media (max-width:767px){
+  .jx-lead{height:auto}
+  .jx-slide{grid-template-columns:1fr;grid-template-rows:260px auto}
+  .jx-slide__img{order:-1}
+  .jx-slide__txt{padding:19px var(--gutter) 26px}
+  .jx-slide h2{font-size:29px}
+  .jx-slide .jx-by{margin-top:19px;font-size:14px}
+  .jx-slide .jx-meta{margin-top:0;padding-top:40px;font-size:10px}
+  .jx-count{top:220px;bottom:auto;right:14px}
+  .jx-bar{flex-direction:column;align-items:stretch;gap:0}
+  .jx-tabs{gap:24px;margin:0 calc(-1 * var(--gutter));padding:0 var(--gutter)}
+  .jx-tab{font-size:13px;padding:26px 0 22px}
+  .jx-sortwrap{align-self:flex-end;padding:16px 0 0}
+  .jx-sort{font-size:13px}
+  .jx-grid,.jx-row{gap:32px}
+  .jx-grid{padding-top:32px}
+  .jx-row--s,.jx-row--l{grid-template-columns:1fr}
+  .jx-card{flex-direction:row;align-items:flex-start;gap:17px;background:none}
+  .jx-card__img{flex:0 0 104px;width:104px;height:104px;aspect-ratio:auto}
+  .jx-card__txt{padding:4px 0 0}
+  .jx-card h3{font-size:15px;line-height:22px;margin:0 0 8px}
+  .jx-card .jx-meta{margin-top:0;font-size:10px}
+  .jx-card .jx-dot{display:none}
+  .jx-big__in{padding:26px 32px 24px}
+  .jx-big h3{font-size:18px;line-height:25px}
+  .jx-big .jx-dot{width:12px;height:12px;left:11px;top:32px}
+  .jx-big .jx-by{font-size:14px;margin-top:12px}
+  .jx-big .jx-meta{font-size:10px}
+  .jx-pager{padding-top:56px}
+}
+@media (prefers-reduced-motion:reduce){.jx-card__img img,.jx-big img,.jx-slide__img img,.jx-dot{transition:none}.jx-card:hover .jx-card__img img,.jx-big:hover img{transform:none}}
 </style>
 </head>
 <body>
@@ -80,13 +164,17 @@ fbq('track', 'PageView');
   <div class="c"><span class="k">(WhatsApp)</span><a href="https://wa.me/19146211848" target="_blank" rel="noopener noreferrer">+1.914.621.1848</a></div>
 </div>
 <!--/dbh:header-->
-<main class="jp">
-  <div class="mast">
-    <div><span class="k">The journal by Dialed by H</span><h1>Off-Catalog</h1></div>
-    <p>Watches worth a closer look.<br>Stories, releases and notes from the market.</p>
+<main class="jx" id="jx">
+  <h1 class="jx-vh">Off-Catalog: the journal from Dialed by H</h1>
+  <section class="jx-lead" id="jx-lead" aria-roledescription="carousel" aria-label="Featured stories"></section>
+  <div class="jx-wrap">
+    <div class="jx-bar">
+      <ul class="jx-tabs" id="jx-tabs" aria-label="Filter stories"></ul>
+      <div class="jx-sortwrap"><label class="jx-vh" for="jx-sort">Sort stories</label><select class="jx-sort" id="jx-sort"><option value="new">Most Recent</option><option value="old">Least Recent</option></select></div>
+    </div>
+    <div class="jx-grid" id="jx-grid" aria-live="polite"></div>
+    <nav class="jx-pager" id="jx-pager" aria-label="Pages" hidden></nav>
   </div>
-  <div class="lbl"><h2>All stories</h2></div>
-  <div class="grid" id="pt-journal" aria-live="polite"></div>
 </main>
 <!--dbh:footer-->
 <footer class="sf">
@@ -151,82 +239,148 @@ document.addEventListener('error',function(e){
 <script>
 var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'https://www.dialedbyhenry.com' : '';
 (function(){
-  var wrap = document.getElementById('pt-journal');
-  fetch(API+'/api/journal-list?limit=50').then(function(r){if(!r.ok)throw new Error('Journal unavailable');return r.json()}).then(function(d){
-    var arts = Array.isArray(d) ? d : (d.articles || []);
-    if (!arts.length) { wrap.innerHTML = '<p class="k">No articles yet.</p>'; return; }
-    function esc(v){return String(v || '').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
-    var usedStickers = [];
-    // keyword-matched stickers: if the article is about a watch we have as a
-    // sticker, use that exact sticker; otherwise fall back to the hashed pick.
-    // Add new rules here as new stickers land.
-    var SPECIALS = [
-      { re: /Patek Philippe Milan 2026: Aquanaut 5167A-014/i, pool: [158] }, // Milan Aquanaut 5167A-014, w_159 (w_151 = LV x Kari Voutilainen for the Phillips auction story, 2026-11-02)
-      // Dedicated clean cutouts for all 14 published articles (2026-09-23).
-      { re: /The\ Watches\ That\ Caught\ My\ Eye\ at\ the\ 2026\ US\ Open/i, pool: [144] }, // Marta Kostyuk Patek Philippe Aquanaut — w_145
-      { re: /Travis\ Scott’s\ Watches\ Go\ Well\ Beyond\ the\ Obvious\ Flex/i, pool: [145] }, // Travis AP Cactus Jack piece unique — w_146
-      { re: /Geneva\ Watch\ Days\ 2026\ \+\ Recent\ Releases/i, pool: [146] }, // Daniel Roth Extra Plat — w_147
-      { re: /Rolex\ Gets\ Complicated:\ The\ Three\ New\ Perpetual\ Padellone\ Models/i, pool: [147] }, // Rolex Padellone platinum — w_148
-      { re: /Serena\ Williams\ Just\ Made\ the\ Royal\ Oak\ Her\ Own/i, pool: [148] }, // Serena Royal Oak — w_149
-      { re: /Kruk\ Designs:\ The\ Watch\ Roll\ Your\ Watches\ Deserve/i, pool: [149] }, // Richard Mille RM 72-01 — w_150
-      { re: /A\ Journe\ Just\ Sold\ for\ \$14\ Million\.\ Pay\ Attention\./i, pool: [150] }, // F.P. Journe Resonance — w_151
-      { re: /Tudor\ Finally\ Shrank\ the\ Black\ Bay\ Chrono,\ and\ Made\ It\ Yellow/i, pool: [151] }, // Tudor Bumblebee Chronograph — w_152
-      { re: /AP\ Brought\ the\ Offshore\ Back\ for\ Summer,\ and\ Shrank\ It\ to\ 37mm/i, pool: [152] }, // AP Offshore Chronograph — w_153
-      { re: /The\ Royal\ Pop\ Launch\ Was\ a\ Mess\.\ Here\ Is\ What\ Actually\ Happened\./i, pool: [153] }, // Royal Pop launch — w_154
-      { re: /The\ Royal\ Pop\ is\ going\ to\ be\ louder\ than\ the\ MoonSwatch/i, pool: [154] }, // Royal Pop — w_155
-      { re: /My\ Day\ at\ Watches\ and\ Wonders\ 2026/i, pool: [155] }, // Patek Nautilus 5810 — w_156
-      { re: /Rolex\ Just\ Dropped\ at\ Watches\ \&\ Wonders\ 2026\.\ Here's\ What\ I\ Actually\ Think\./i, pool: [156] }, // Rolex Day-Date Jubilee Gold — w_157
-      { re: /What\ Rolex\ Is\ \(Probably\)\ Dropping\ at\ Watches\ and\ Wonders\ 2026/i, pool: [157] }, // Rolex Oyster Perpetual jubilee motif — w_158
-      // 2026-09-23: one clean cutout per September article, cut from the
-      // article's own photos (the random pool below is low-res; never let a
-      // new article fall through to it — add a rule + sticker here instead).
-      { re: /us\s*open/i, pool: [139] },                                // w_140 - Federer's Oyster Perpetual (US Open)
-      { re: /travis\s*scott/i, pool: [140] },                           // w_141 - Cactus Jack Royal Oak
-      { re: /geneva\s*watch\s*days/i, pool: [141] },                   // w_142 - Daniel Roth Extra Plat
-      { re: /padellone|perpetual\s*pad/i, pool: [142] },                // w_143 - Perpetual Padellone Everose
-      { re: /serena/i, pool: [143] },                                    // w_144 - Serena's pink Royal Oak
-      { re: /launch\s*was\s*a\s*mess/i, pool: [130] },                // w_131 - Swatch #2 (Henry's pick for the mess piece)
-      { re: /royal\s*pop|moon\s*swatch|moonswatch/i, pool: [126] },   // w_127 - Swatch (Henry's shot)
-      { re: /offshore/i, pool: [129] },                                // w_130 - AP Offshore 42 chrono (Henry's pick)
-      { re: /tudor|black\s*bay|bumblebee/i, pool: [127] },            // w_128 - Bumblebee BB Chrono (inventory cutout)
-      { re: /kruk|watch roll/i, pool: [133] },                          // w_134 - RM 72-01 Lifestyle (catalog cutout)
-      { re: /journe|r[eé]sonance|phillips/i, pool: [131] },              // w_132 - FPJ Resonance salmon (catalog cutout)
-      { re: /nautilus|patek/i, pool: [28] },                           // w_29 - Patek
-      { re: /\(probably\)\s*dropping/i, pool: [123] },                // w_124 - OP jubilee-motif dial (2026 novelty)
-      { re: /just\s*dropped/i, pool: [124] },                         // w_125 - Day-Date 40 Jubilee Gold aventurine
-      { re: /my\s*day\s*at\s*watches/i, pool: [125] },                // w_126 - Patek Nautilus 50th 5810/1G
-      { re: /rolex|watches\s*(and|&)\s*wonders|daytona|submariner|gmt|datejust|day[-\s]*date|oyster/i, pool: [4, 17, 60] } // w_05, w_18, w_61 - Rolex
-    ];
-    wrap.innerHTML = arts.map(function(a){
-      var date = a.published_at ? new Date(a.published_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
-      var txt = (a.title || '') + ' ' + (a.subtitle || '');
-      var h = 0;
-      for (var i = 0; i < a.slug.length; i++) { h = (h * 31 + a.slug.charCodeAt(i)) >>> 0; }
-      var curated = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches": 160, "the-watches-that-caught-our-eye-at-the-2026-us-open": 145, "travis-scotts-watches-go-well-beyond-the-obvious-flex": 146, "geneva-watch-days-2026-plus-the-recent-releases-worth-a-look": 147, "rolex-gets-complicated-the-three-new-perpetual-padellone-models": 148, "serena-williams-just-made-the-royal-oak-her-own": 149, "kruk-designs-luxury-watch-rolls-leather-goods": 150, "fp-journe-14-million-phillips-auction-independents": 151, "tudor-black-bay-chrono-39-bumblebee": 152, "ap-royal-oak-offshore-summer-chronographs": 153, "royal-pop-launch-was-a-mess": 154, "the-royal-pop-is-going-to-be-louder-than-the-moonswatch": 155, "my-day-at-watches-and-wonders-2026": 156, "rolex-just-dropped-at-watches-and-wonders-2026": 157, "what-rolex-is-probably-dropping-at-watches-and-wonders-2026": 158};
-      var idx = curated[a.slug] ? curated[a.slug] - 1 : -1;
-      for (var si = 0; idx === -1 && si < SPECIALS.length; si++) {
-        if (SPECIALS[si].re.test(txt)) {
-          var pool = SPECIALS[si].pool;
-          idx = pool[h % pool.length];
-          for (var pi = 0; pi < pool.length && usedStickers.indexOf(idx) !== -1; pi++) idx = pool[(h + pi + 1) % pool.length];
-          break;
-        }
-      }
-      if (idx === -1) {
-        idx = h % 121;
-        while (usedStickers.indexOf(idx) !== -1) idx = (idx + 7) % 121;
-      }
-      usedStickers.push(idx);
-      var n = String(idx + 1); if (n.length < 2) n = '0' + n;
-      var cover = '<img src="/assets/dbh/sticker_img/w_' + n + '.webp" alt="" loading="lazy">';
-      return '<a class="card" href="/journal/' + encodeURIComponent(a.slug) + '">' +
-        '<div class="card__art">' + cover + '</div>' +
-        '<span class="k">' + esc(a.category || 'Journal') + ' &middot; ' + esc(date) + '</span>' +
-        '<h3>' + esc(a.title) + '</h3>' +
-        '<p>' + esc(a.subtitle || a.excerpt) + '</p>' +
-        '<span class="link">Read story</span></a>';
-    }).join('');
-  }).catch(function(){ wrap.innerHTML = '<p class="k">Journal unavailable right now.</p>'; });
+  var root = document.getElementById('jx'), lead = document.getElementById('jx-lead'), tabsEl = document.getElementById('jx-tabs'),
+      grid = document.getElementById('jx-grid'), pager = document.getElementById('jx-pager'), sortEl = document.getElementById('jx-sort');
+  var ALL = 'All Stories', PER = 13, FEATURED = 5;
+  // Two names for the same thing in the data; show them as one tab.
+  var ALIAS = { 'New Releases': 'Releases' };
+  // Clean cutouts made for older stories, used only if a story has no cover photo.
+  var CUTOUT = {"patek-philippe-milan-2026-aquanaut-5167a-014-and-all-13-new-watches":160,"the-watches-that-caught-our-eye-at-the-2026-us-open":145,"travis-scotts-watches-go-well-beyond-the-obvious-flex":146,"geneva-watch-days-2026-plus-the-recent-releases-worth-a-look":147,"rolex-gets-complicated-the-three-new-perpetual-padellone-models":148,"serena-williams-just-made-the-royal-oak-her-own":149,"kruk-designs-luxury-watch-rolls-leather-goods":150,"fp-journe-14-million-phillips-auction-independents":151,"tudor-black-bay-chrono-39-bumblebee":152,"ap-royal-oak-offshore-summer-chronographs":153,"royal-pop-launch-was-a-mess":154,"the-royal-pop-is-going-to-be-louder-than-the-moonswatch":155,"my-day-at-watches-and-wonders-2026":156,"rolex-just-dropped-at-watches-and-wonders-2026":157,"what-rolex-is-probably-dropping-at-watches-and-wonders-2026":158};
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var all = [], state = { cat: ALL, sort: 'new', page: 1 };
+
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function cat(a){ var c = String(a.category || 'Journal').trim(); return ALIAS[c] || c; }
+  function href(a){ return '/journal/' + encodeURIComponent(a.slug); }
+  function when(a){ return a.published_at ? new Date(a.published_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) : ''; }
+  function meta(a){ var m = parseInt(a.reading_time_minutes, 10); return '<span class="jx-meta"><span>' + esc(when(a)) + '</span>' + (m ? '<i aria-hidden="true">&bull;</i><span>' + m + ' Min Read</span>' : '') + '</span>'; }
+  function by(a){ return a.author_name ? '<span class="jx-by">By ' + esc(a.author_name) + '</span>' : ''; }
+  function pic(a, how){
+    if (a.hero_image_url) return '<img src="' + esc(a.hero_image_url) + '" alt="" decoding="async"' + (how === 'first' ? ' fetchpriority="high"' : how === 'lead' ? ' fetchpriority="low"' : ' loading="lazy"') + '>';
+    var n = CUTOUT[a.slug]; if (!n) return '';
+    return '<img class="is-cut" src="/assets/dbh/sticker_img/w_' + (n < 10 ? '0' : '') + n + '.webp" alt="" loading="lazy">';
+  }
+  function small(a){
+    return '<a class="jx-card" href="' + href(a) + '"><div class="jx-card__img">' + pic(a) + '</div><div class="jx-card__txt"><span class="jx-dot" aria-hidden="true"></span><h3>' + esc(a.title) + '</h3>' + meta(a) + '</div></a>';
+  }
+  function big(a){
+    var ex = a.subtitle || a.excerpt;
+    return '<a class="jx-big" href="' + href(a) + '">' + pic(a) + '<div class="jx-big__in"><span class="jx-dot" aria-hidden="true"></span><h3>' + esc(a.title) + '</h3>' + by(a) +
+      '<div class="jx-big__foot">' + (ex ? '<p>' + esc(ex) + '</p>' : '') + meta(a) + '</div></div></a>';
+  }
+
+  // Lead slider: the newest stories, one at a time, sliding in from the side.
+  function buildLead(list){
+    var feat = list.slice(0, FEATURED);
+    if (!feat.length) { lead.hidden = true; return; }
+    lead.innerHTML = feat.map(function(a, i){
+      return '<a class="jx-slide' + (i ? '' : ' is-on') + '" href="' + href(a) + '" role="group" aria-roledescription="slide" aria-label="' + (i + 1) + ' of ' + feat.length + '"' + (i ? ' inert' : '') + '>' +
+        '<div class="jx-slide__txt"><h2>' + esc(a.title) + '</h2>' + by(a) + meta(a) + '</div><div class="jx-slide__img">' + pic(a, i ? 'lead' : 'first') + '</div></a>';
+    }).join('') + (feat.length > 1 ? '<button type="button" class="jx-count" aria-label="Next story"><span id="jx-n">1</span><span aria-hidden="true">|</span><span>' + feat.length + '</span></button>' : '');
+    // Long titles step down in size until they fit the panel (desktop and tablet only;
+    // on phones the panel grows with the title instead).
+    function fit(){
+      [].forEach.call(lead.querySelectorAll('.jx-slide h2'), function(h){
+        h.style.fontSize = '';
+        var box = h.parentNode, base = parseFloat(getComputedStyle(h).fontSize), s = base;
+        while (box.scrollHeight > box.clientHeight + 1 && s > base * 0.62) { s -= 2; h.style.fontSize = s + 'px'; }
+      });
+    }
+    fit(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    var ft; addEventListener('resize', function(){ clearTimeout(ft); ft = setTimeout(fit, 150); });
+    if (feat.length < 2) return;
+    var slides = lead.querySelectorAll('.jx-slide'), count = lead.querySelector('.jx-count'), nEl = document.getElementById('jx-n');
+    var n = slides.length, cur = 0, busy = false, timer = null, x0 = null, y0 = 0, swallow = false;
+    function show(next, dir){
+      if (busy || next === cur) return;
+      var a = slides[cur], b = slides[next];
+      b.classList.add('is-on'); b.removeAttribute('inert'); a.setAttribute('inert', '');
+      cur = next; nEl.textContent = cur + 1;
+      if (reduce || !b.animate) { a.classList.remove('is-on'); return; }
+      busy = true;
+      var o = { duration: 900, easing: 'cubic-bezier(.65,0,.35,1)' };
+      b.animate([{ transform: 'translateX(' + (dir * 100) + '%)' }, { transform: 'translateX(0)' }], o);
+      a.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-dir * 100) + '%)' }], o).onfinish = function(){ a.classList.remove('is-on'); busy = false; };
+    }
+    function step(d){ show((cur + d + n) % n, d); }
+    function stop(){ clearInterval(timer); timer = null; }
+    function play(){ stop(); if (!reduce) timer = setInterval(function(){ if (!document.hidden) step(1); }, 6000); }
+    count.addEventListener('click', function(e){ e.preventDefault(); step(1); play(); });
+    lead.addEventListener('mouseenter', stop); lead.addEventListener('mouseleave', play);
+    lead.addEventListener('focusin', stop); lead.addEventListener('focusout', play);
+    lead.addEventListener('keydown', function(e){ if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); step(e.key === 'ArrowRight' ? 1 : -1); var f = slides[cur]; f.focus({ preventScroll: true }); } });
+    lead.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') { x0 = e.clientX; y0 = e.clientY; } });
+    lead.addEventListener('pointercancel', function(){ x0 = null; });
+    lead.addEventListener('pointerup', function(e){
+      if (x0 === null) return; var dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.4) { swallow = true; step(dx < 0 ? 1 : -1); play(); }
+    });
+    lead.addEventListener('click', function(e){ if (swallow) { e.preventDefault(); swallow = false; } }, true);
+    play();
+  }
+
+  function cats(list){
+    var c = {}; list.forEach(function(a){ var k = cat(a); c[k] = (c[k] || 0) + 1; });
+    return [ALL].concat(Object.keys(c).sort(function(x, y){ return c[y] - c[x] || x.localeCompare(y); }));
+  }
+  function buildTabs(){
+    tabsEl.innerHTML = cats(all).map(function(c){ return '<li><button type="button" class="jx-tab" data-c="' + esc(c) + '" aria-pressed="' + (c === state.cat) + '">' + esc(c) + '</button></li>'; }).join('');
+  }
+  function syncUrl(){
+    var q = new URLSearchParams();
+    if (state.cat !== ALL) q.set('category', state.cat);
+    if (state.sort === 'old') q.set('sort', 'oldest');
+    if (state.page > 1) q.set('page', state.page);
+    var s = q.toString(); history.replaceState(null, '', location.pathname + (s ? '?' + s : '') + location.hash);
+  }
+  function render(){
+    var list = all.filter(function(a){ return state.cat === ALL || cat(a) === state.cat; });
+    if (state.sort === 'old') list = list.slice().reverse();
+    var pages = Math.max(1, Math.ceil(list.length / PER));
+    state.page = Math.min(Math.max(1, state.page), pages);
+    var items = list.slice((state.page - 1) * PER, state.page * PER), html = '', i = 0, r = 0;
+    while (i < items.length) {
+      var wide = r % 2 === 1, take = wide ? 2 : 3;
+      html += '<div class="jx-row jx-row--' + (wide ? 'l' : 's') + '">' + items.slice(i, i + take).map(wide ? big : small).join('') + '</div>';
+      i += take; r++;
+    }
+    grid.innerHTML = html || '<p class="jx-empty">No stories here yet.</p>';
+    pager.hidden = pages < 2;
+    pager.innerHTML = pages < 2 ? '' : '<button type="button" data-p="-1" aria-label="Previous page"' + (state.page === 1 ? ' disabled' : '') + '>&larr;</button><span>Page ' + state.page + ' of ' + pages + '</span><button type="button" data-p="1" aria-label="Next page"' + (state.page === pages ? ' disabled' : '') + '>&rarr;</button>';
+    [].forEach.call(tabsEl.querySelectorAll('.jx-tab'), function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-c') === state.cat)); });
+    sortEl.value = state.sort;
+    syncUrl();
+  }
+  function toGrid(){ var y = tabsEl.getBoundingClientRect().top + scrollY - 90; if (scrollY > y) scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); }
+
+  tabsEl.addEventListener('click', function(e){ var b = e.target.closest('.jx-tab'); if (!b) return; state.cat = b.getAttribute('data-c'); state.page = 1; render(); });
+  sortEl.addEventListener('change', function(){ state.sort = sortEl.value; state.page = 1; render(); });
+  pager.addEventListener('click', function(e){ var b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; state.page += +b.getAttribute('data-p'); render(); toGrid(); });
+
+  // Photo storage refuses bursts, so retry a missing cover a few times with a short backoff.
+  root.addEventListener('error', function(e){
+    var i = e.target; if (!i || i.tagName !== 'IMG') return;
+    var n = +(i.dataset.retry || 0); if (n >= 3) { i.style.visibility = 'hidden'; return; }
+    var s = i.dataset.src0 || (i.dataset.src0 = i.getAttribute('src'));
+    i.dataset.retry = n + 1;
+    setTimeout(function(){ i.src = s + (s.indexOf('?') < 0 ? '?' : '&') + 'r=' + (n + 1); }, [800, 2000, 4000][n]);
+  }, true);
+
+  function load(offset, acc){
+    return fetch(API + '/api/journal-list?limit=50&offset=' + offset).then(function(r){ if (!r.ok) throw new Error('Journal unavailable'); return r.json(); }).then(function(d){
+      var got = Array.isArray(d) ? d : (d.articles || []); acc = acc.concat(got);
+      return got.length === 50 && offset < 450 ? load(offset + 50, acc) : acc;
+    });
+  }
+  var q = new URLSearchParams(location.search);
+  if (q.get('sort') === 'oldest') state.sort = 'old';
+  state.page = parseInt(q.get('page'), 10) || 1;
+  load(0, []).then(function(list){
+    all = list.filter(function(a){ return a && a.slug && a.title; });
+    if (!all.length) { lead.hidden = true; grid.innerHTML = '<p class="jx-empty">No stories yet.</p>'; return; }
+    var want = q.get('category'); if (want && cats(all).indexOf(want) > -1) state.cat = want;
+    buildLead(all); buildTabs(); render();
+  }).catch(function(){ lead.hidden = true; grid.innerHTML = '<p class="jx-empty">The journal is unavailable right now. Please try again shortly.</p>'; });
 })();
 </script>
 </body>

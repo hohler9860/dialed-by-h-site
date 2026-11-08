@@ -15,6 +15,15 @@ const { renderWatchPage, renderSitemap, fourOhFour } = require('./_render');
 const { processWatchImage, variantPath } = require('../lib/watch-image');
 const { renderBrandPage, BRAND_SLUGS } = require('./_brand-render');
 
+// Pieces hidden from the public site (lib/hidden-pieces.json). The rows stay in
+// the database and admin still lists them; every public read goes through
+// publicPieces() so a hidden piece is gone from the grid, its watch page,
+// related pieces, brand pages, the ticker, share cards and the sitemap.
+const HIDDEN = new Set(require('../lib/hidden-pieces.json').slugs);
+async function publicPieces() {
+    return (await fetchAllPieces()).filter(p => !HIDDEN.has(p.slug));
+}
+
 const BUCKET = 'pieces';
 
 // Columns the admin is allowed to write. Anything else in the payload is
@@ -276,7 +285,7 @@ module.exports = async (req, res) => {
         };
         try {
             const slug = String(q.shareCard).trim().toLowerCase();
-            const piece = (await fetchAllPieces()).find(p => p.slug === slug);
+            const piece = (await publicPieces()).find(p => p.slug === slug);
             if (!piece || !/-cutout\.webp$/.test(piece.imageCutout || '')) return fallback();
             const photo = await fetch(piece.imageCutout);
             if (!photo.ok) return fallback();
@@ -301,7 +310,7 @@ module.exports = async (req, res) => {
     if (q.sitemap) {
         try {
             const [pieces, articles] = await Promise.all([
-                fetchAllPieces(),
+                publicPieces(),
                 sbFetch('/rest/v1/journal_articles?status=eq.published&select=slug,status,updated_at&order=published_at.desc&limit=1000')
                     .then(r => r.json())
                     .catch(err => {
@@ -323,7 +332,7 @@ module.exports = async (req, res) => {
     if (q.brand) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         try {
-            const pieces = await fetchAllPieces();
+            const pieces = await publicPieces();
             const html = renderBrandPage(String(q.brand).toLowerCase(), pieces);
             if (!html) return res.status(404).send(fourOhFour());
             res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
@@ -339,7 +348,7 @@ module.exports = async (req, res) => {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         const slug = q.slug ? String(q.slug).trim().toLowerCase() : null;
         try {
-            const pieces = await fetchAllPieces();
+            const pieces = await publicPieces();
             const piece = q.id ? pieces.find(p => p.id === q.id) : pieces.find(p => p.slug === slug);
             if (!piece || !piece.image) return res.status(404).send(fourOhFour());
             res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=900, stale-while-revalidate=86400');
@@ -371,7 +380,7 @@ module.exports = async (req, res) => {
             const fresh = await fetchAllPieces({ force: true });
             return res.status(200).json({ refreshed: true, pieces: fresh.length });
         }
-        const pieces = await fetchAllPieces();
+        const pieces = await publicPieces();
 
         // ?ticker=1 — the homepage strip, and nothing else.
         //

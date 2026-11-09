@@ -92,6 +92,9 @@ function sanitizeInline(html) {
         const href = /href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs || "");
         const url = href ? (href[2] ?? href[3] ?? href[4] ?? "").trim() : "";
         if (!/^(https?:\/\/|mailto:|\/|#)/i.test(url)) return "<a>";
+        // Links to our own pages stay followed and open in place, so search engines count them.
+        // Everything else stays nofollow in a new tab. "//host" is someone else's site, not ours.
+        if (/^(\/(?!\/)|#|https?:\/\/(www\.)?dialedbyhenry\.com(\/|$))/i.test(url)) return `<a href="${escHtml(url)}">`;
         return `<a href="${escHtml(url)}" rel="noopener nofollow" target="_blank">`;
     });
 }
@@ -365,3 +368,6 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: err.message || "Server error" });
     }
 };
+
+// Exposed for tests only.
+module.exports._sanitizeInline = sanitizeInline;

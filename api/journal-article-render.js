@@ -194,7 +194,7 @@ ${metaHtml(pubDate, readingTime)}
 <h1 class="jr-title" data-su="words">${escHtml(title)}</h1>
 ${bylineHtml(a.author_name)}
 </header>
-${subtitle ? `<p class="jr-stand jr-col" data-su="words">${escHtml(subtitle)}</p>` : ""}
+${subtitle ? `<p class="jr-stand jr-col">${escHtml(subtitle)}</p>` : ""}
 <div class="jr-body">${markCredits(pairFigures(contentHtml))}</div>
 <hr class="jr-end">
 <div class="jr-cta">

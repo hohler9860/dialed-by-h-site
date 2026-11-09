@@ -43,7 +43,11 @@ fbq('track', 'PageView');
 <script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 <style>
 /* Founder story: the photo stays in place on the left while the five chapters scroll on the right. */
-@media(min-width:821px) and (min-height:760px){.ab-group{position:sticky;top:132px}}
+/* The title and photo sit together on the left and stay in place while the chapters scroll. */
+.ab-cols{margin-top:0}
+.ab-left .ab-group{margin-top:clamp(24px,3vw,44px)}
+@media(min-width:821px){.ab-text{padding-top:calc(25px + clamp(38px,5.4vw,78px)*.82 + 6px + clamp(24px,3vw,44px))}}
+@media(min-width:821px) and (min-height:800px){.ab-left{position:sticky;top:92px}}
 .ab-ch{border-top:1px solid var(--grey-light);padding-top:24px;margin-top:40px}
 .ab-ch--first{border-top:0;padding-top:0;margin-top:28px}
 .ab-ch__head{margin:0 0 12px}
@@ -73,12 +77,15 @@ fbq('track', 'PageView');
 </div>
 <!--/dbh:header-->
 <main class="pg">
+
+<div class="ab-cols">
+<div class="ab-left">
 <nav class="crumb" aria-label="Breadcrumb"><a href="/"><span data-su="words">Home</span></a> / <span data-su="words">About</span></nav>
 <h1 class="pg-h1" data-su="words">About me</h1>
-<div class="ab-cols">
 <div class="ab-group ab-reveal">
 <img src="/assets/dbh/about-steps.webp" alt="Henry Ohler, on the left, sitting on stone steps and looking at a watch in its green box" width="1300" height="1371">
 <div class="ab-mark"><img class="ab-logo" src="/assets/brand/logomark-charcoal.svg" alt="" aria-hidden="true" width="145" height="142"></div>
+</div>
 </div>
 <div class="ab-text">
 <div class="ab-side" data-su-group>
@@ -87,7 +94,7 @@ fbq('track', 'PageView');
 </div>
 <section class="ab-ch ab-ch--first" aria-label="Before I sold one"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">01</span><h2 class="ab-ch__t" data-su="words">Before I sold one</h2></header><div class="ab-body"><p>It started with a good friend and his dad, who collected mostly Rolex. I spent a lot of time with them, going to boutiques, trying things on and listening to them talk references.</p><p>Senior year of high school, I started looking for a graduation watch, and that&rsquo;s when it clicked for me. The one I couldn&rsquo;t stop thinking about was the Omega Seamaster Diver 300M 007 Edition. I never ended up buying it, but from then on I was all in.</p><p>My friend and his dad were into modern Rolex. The more time I spent around watches, the more my own taste went toward vintage, independents and ladies&rsquo; pieces.</p></div></section>
 <section class="ab-ch"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">02</span><h2 class="ab-ch__t" data-su="words">The first ask</h2></header><div class="ab-body"><p>Where I grew up in Westchester, nobody really had access to these watches. You either knew someone or you didn&rsquo;t. That gap is where Dialed by H came from.</p><p>My first deal turned out to be a big one. A mutual connection had just had a great year in business and wanted to celebrate. He loved the Royal Oak Offshore, told me exactly what he wanted, and I found it.</p></div></section>
-<section class="ab-ch"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">03</span><h2 class="ab-ch__t" data-su="words">How I work</h2></header><div class="ab-body"><p>A recent one: a referral came in looking for a rare Rolex Daytona with a Tahitian mother-of-pearl dial. I spent about two days on it and found a complete set in amazing condition.</p><blockquote class="ab-quote"><p>&ldquo;Purchasing a rare Rolex Daytona from Henry was an exceptional experience from start to finish.&rdquo;</p><footer>A client</footer></blockquote><p>Whether it takes two days or two months, once you ask me to find something, I&rsquo;m on it until it&rsquo;s on your wrist.</p></div></section>
+<section class="ab-ch"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">03</span><h2 class="ab-ch__t" data-su="words">How I work</h2></header><div class="ab-body"><p>A recent one: a referral came in looking for a rare Rolex Daytona with a Tahitian mother-of-pearl dial. I spent about two days on it and found a complete set in amazing condition.</p><blockquote class="ab-quote"><p>&ldquo;Purchasing a rare Rolex Daytona from Henry was an exceptional experience from start to finish.&rdquo;</p><footer>Chris Marotti &middot; Verified Client</footer></blockquote><p>Whether it takes two days or two months, once you ask me to find something, I&rsquo;m on it until it&rsquo;s on your wrist.</p></div></section>
 <section class="ab-ch"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">04</span><h2 class="ab-ch__t" data-su="words">Why &ldquo;Dialed&rdquo;</h2></header><div class="ab-body"><p>I&rsquo;ve always said I&rsquo;m &ldquo;dialed&rdquo; when I&rsquo;m locked in on something. Put that next to a watch dial and the H for Henry Ohler, and the name kind of made itself. The dial is the first thing you notice on a watch. I want the experience to be the same.</p></div></section>
 <section class="ab-ch"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">05</span><h2 class="ab-ch__t" data-su="words">Off the clock</h2></header><div class="ab-body"><p>I&rsquo;m 21 and in college in Boston. I grew up playing racket sports, so these days it&rsquo;s a lot of padel and tennis. I love traveling and exploring new places, which goes hand in hand with watches. This year I got to go to Geneva for the first time for Watches and Wonders.</p></div></section>
 <div class="ab-body ab-end"><div class="actions">

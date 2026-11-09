@@ -41,6 +41,28 @@ fbq('track', 'PageView');
 <script defer src="/_vercel/insights/script.js"></script>
 <!--/dbh:head-->
 <script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
+<style>
+/* Founder story: five short chapters. The first sits beside the photo; the rest follow on the same grid,
+   number and title on the left, text on the right, a hairline between them. */
+.ab-ch__head{margin:0 0 12px}
+.ab-ch__n{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-dark);line-height:1.1;margin-bottom:8px}
+.ab-ch__t{font-family:var(--intl);font-weight:500;font-size:20px;line-height:1.25;letter-spacing:0;margin:0}
+.ab-ch--first{margin-top:28px}
+.ab-story{margin-top:clamp(56px,6vw,96px)}
+.ab-row{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,13fr);gap:clamp(64px,5.6vw,80px);align-items:start;border-top:1px solid var(--grey-light);padding:28px 0 clamp(40px,4.4vw,64px)}
+.ab-row .ab-ch__head{margin:0}
+.ab-row--end{border-top:0;padding-top:0}
+.ab-row--end .actions{margin-top:0}
+.ab-quote{margin:18px 0 18px;padding:0}
+.ab-quote p{font-family:var(--works);font-size:24px;line-height:1.1;letter-spacing:-.03em;text-indent:0;max-width:26ch}
+.ab-quote footer{margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-dark);line-height:1.1}
+.ab-quote+p{text-indent:0}
+@media(max-width:820px){
+  .ab-row{grid-template-columns:minmax(0,1fr);gap:14px;padding:24px 0 36px}
+  .ab-row--end>div:first-child{display:none}
+  .ab-quote p{font-size:21px}
+}
+</style>
 </head>
 <body>
 <!--dbh:header-->
@@ -64,25 +86,25 @@ fbq('track', 'PageView');
 <img src="/assets/dbh/about-steps.webp" alt="Henry Ohler, on the left, sitting on stone steps and looking at a watch in its green box" width="1300" height="1371">
 <div class="ab-mark"><img class="ab-logo" src="/assets/brand/logomark-charcoal.svg" alt="" aria-hidden="true" width="145" height="142"></div>
 </div>
-<div class="ab-text" data-su-group>
-<div class="ab-side">
+<div class="ab-text">
+<div class="ab-side" data-su-group>
 <span data-su="words">Dialed by H</span>
 <span data-su="words">Henry Ohler</span>
 </div>
-<div class="ab-body">
-<p>I&rsquo;m Henry. Dialed by H started because I was obsessed with watches before I ever sold one.</p>
-<p>I came in as a collector first. Years of learning references, watching the market, and figuring out which pieces are actually worth chasing past the hype. Friends started asking me to find watches they couldn&rsquo;t get to or didn&rsquo;t trust buying alone. That&rsquo;s how this started.</p>
-<p>That trust is what built Dialed by H.</p>
-<p>I work with a vetted network of dealers, collectors, and private sellers across the US, Europe, and Asia. I&rsquo;m personally on every piece from sourcing through authentication, pricing, and delivery.</p>
-<p>Dialed by H isn&rsquo;t a storefront. It&rsquo;s a one-person concierge built around trust, discretion, and access. Whether you&rsquo;re chasing a hard-to-find reference or looking to move a piece from your collection, I treat every deal like it&rsquo;s mine.</p>
-<div class="actions">
+<section class="ab-ch ab-ch--first" aria-label="Before I sold one"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">01</span><h2 class="ab-ch__t" data-su="words">Before I sold one</h2></header><div class="ab-body"><p>It started with a good friend and his dad, who collected mostly Rolex. I spent a lot of time with them, going to boutiques, trying things on and listening to them talk references.</p><p>Senior year of high school, I started looking for a graduation watch, and that&rsquo;s when it clicked for me. The one I couldn&rsquo;t stop thinking about was the Omega Seamaster Diver 300M 007 Edition. I never ended up buying it, but from then on I was all in.</p><p>My friend and his dad were into modern Rolex. The more time I spent around watches, the more my own taste went toward vintage, independents and ladies&rsquo; pieces.</p></div></section>
+</div>
+</div>
+<div class="ab-story">
+<section class="ab-ch ab-row"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">02</span><h2 class="ab-ch__t" data-su="words">The first ask</h2></header><div class="ab-body"><p>Where I grew up in Westchester, nobody really had access to these watches. You either knew someone or you didn&rsquo;t. That gap is where Dialed by H came from.</p><p>My first deal turned out to be a big one. A mutual connection had just had a great year in business and wanted to celebrate. He loved the Royal Oak Offshore, told me exactly what he wanted, and I found it.</p></div></section>
+<section class="ab-ch ab-row"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">03</span><h2 class="ab-ch__t" data-su="words">How I work</h2></header><div class="ab-body"><p>A recent one: a referral came in looking for a rare Rolex Daytona with a Tahitian mother-of-pearl dial. I spent about two days on it and found a complete set in amazing condition.</p><blockquote class="ab-quote"><p>&ldquo;Purchasing a rare Rolex Daytona from Henry was an exceptional experience from start to finish.&rdquo;</p><footer>A client</footer></blockquote><p>Whether it takes two days or two months, once you ask me to find something, I&rsquo;m on it until it&rsquo;s on your wrist.</p></div></section>
+<section class="ab-ch ab-row"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">04</span><h2 class="ab-ch__t" data-su="words">Why &ldquo;Dialed&rdquo;</h2></header><div class="ab-body"><p>I&rsquo;ve always said I&rsquo;m &ldquo;dialed&rdquo; when I&rsquo;m locked in on something. Put that next to a watch dial and the H for Henry Ohler, and the name kind of made itself. The dial is the first thing you notice on a watch. I want the experience to be the same.</p></div></section>
+<section class="ab-ch ab-row"><header class="ab-ch__head" data-su-group><span class="ab-ch__n" data-su="words">05</span><h2 class="ab-ch__t" data-su="words">Off the clock</h2></header><div class="ab-body"><p>I&rsquo;m 21 and in college in Boston. I grew up playing racket sports, so these days it&rsquo;s a lot of padel and tennis. I love traveling and exploring new places, which goes hand in hand with watches. This year I got to go to Geneva for the first time for Watches and Wonders.</p></div></section>
+<div class="ab-row ab-row--end"><div></div><div class="ab-body"><div class="actions">
 <a class="btn" href="https://wa.me/19146211848" target="_blank" rel="noopener">WhatsApp me</a>
 <a class="btn" href="https://www.instagram.com/dialedbyh" target="_blank" rel="noopener">@dialedbyh</a>
 <a class="btn" href="https://www.linkedin.com/in/henry-ohler-a72386267/" target="_blank" rel="noopener">LinkedIn</a>
 <a class="btn" href="mailto:henry@dialedbyhenry.com">Email</a>
-</div>
-</div>
-</div>
+</div></div></div>
 </div>
 </main>
 <!--dbh:footer-->

@@ -91,18 +91,20 @@ function fourOhFourHtml() {
 <meta name="robots" content="noindex, nofollow">
 ${chrome.headAssets()}
 ${chrome.pixel()}
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 </head>
 <body>
 ${chrome.header('Journal')}
 <main class="e404">
   <span class="k">Off-Catalog</span>
-  <h1 class="pg-h1"><span class="h-lead">Article</span> not found</h1>
+  <h1 class="pg-h1" data-su="words"><span class="h-lead">Article</span> not found</h1>
   <p>That piece either moved or never existed. Head back to the journal.</p>
   <div class="actions"><a class="btn btn--solid" href="/journal/">Back to Off-Catalog</a><a class="btn" href="/">Back to home</a></div>
 </main>
 ${chrome.footer()}
 ${chrome.floats()}
 ${chrome.scripts()}
+<script src="/assets/slide-up.js?v=4"></script>
 </body>
 </html>`;
 }

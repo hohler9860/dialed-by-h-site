@@ -307,7 +307,6 @@ button{font:inherit;color:inherit}
 
 /* ── 404 ── */
 .e404{max-width:var(--max);margin:0 auto;min-height:62vh;padding:clamp(56px,8vw,120px) var(--gutter);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:18px}
-.e404 .num{font-family:var(--works);font-size:clamp(84px,14vw,200px);line-height:.82;letter-spacing:-.04em}
 .e404 p{font-family:var(--works);font-size:16px;max-width:44ch;line-height:1.25;letter-spacing:-.01em}
 
 /* ── journal article ── */

@@ -49,18 +49,20 @@ function fourOhFour() {
 <meta name="robots" content="noindex, nofollow">
 ${chrome.headAssets()}
 ${chrome.pixel()}
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 </head>
 <body>
 ${chrome.header('Sourcing Catalogue')}
 <main class="e404">
   <span class="k">Not found</span>
-  <h1 class="pg-h1"><span class="h-lead">Piece</span> not found</h1>
+  <h1 class="pg-h1" data-su="words"><span class="h-lead">Piece</span> not found</h1>
   <p>This piece may no longer be available for sourcing.</p>
   <div class="actions"><a class="btn btn--solid" href="/buy/">Browse all pieces</a><a class="btn" href="/">Back to home</a></div>
 </main>
 ${chrome.footer()}
 ${chrome.floats()}
 ${chrome.scripts()}
+<script src="/assets/slide-up.js?v=4"></script>
 </body>
 </html>`;
 }

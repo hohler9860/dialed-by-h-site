@@ -7,15 +7,22 @@
    Tap anywhere during the animation to skip to the form. The form's logic (validation,
    tracking, sending, fallback) is wireForm in assets/modals.js, shared with Sell and Trade, so a
    lead looks the same to the server either way. To change the card's design, edit cardHtml() here
-   and the CARD section of envelope.css. Field names must stay as they are. */
+   and the CARD section of envelope.css. Field names must stay as they are.
+   The menu's "Sell or Trade" link opens a fourth kind, selltrade: the same card with both words in
+   the script and a Sell / Trade choice under the sub line. Its art comes from the same recipe as the
+   others (make-card-art.py in the card folder; add the phrase there to regenerate). */
 (function () {
   var B = '/assets/envelope/', FILES = ['body.webp', 'body-front.webp', 'lip.webp', 'flap-outside.webp', 'flap-inside.webp', 'wordmark.svg'];
   // The script is La Belle Aurore, set as images by make-card-art.py. hw is its width on the card's artboard.
   var KINDS = {
     source: { seal: 'seal.webp', hand: 'request-to-source.webp', w: 883, track: 'BUY' },
     sell: { seal: 'seal-burgundy.webp', hand: 'request-to-sell.webp', w: 753, track: 'SELL' },
-    trade: { seal: 'seal-burgundy.webp', hand: 'request-to-trade.webp', w: 828, track: 'TRADE' }
+    trade: { seal: 'seal-burgundy.webp', hand: 'request-to-trade.webp', w: 828, track: 'TRADE' },
+    // "Sell or Trade" in the menu. The card asks which one (pick), and that answer is the lead's type.
+    selltrade: { seal: 'seal-burgundy.webp', hand: 'request-to-sell-or-trade.webp', w: 1215, track: 'SELL', pick: true }
   };
+  // That card has one more line, and its question follows the choice: selling asks why, trading asks for what.
+  var ASK = { none: 'Choose sell or trade first', sell: 'Why are you selling?', trade: 'What piece are you trading for?' };
   var OPEN_AT = 310, OPEN_FOR = 840, END_ANGLE = 177, DRIFT = 148;
   var RISE_AT = 840, RISE_FOR = 620, GROW_AT = 1085, GROW_FOR = 665, FALL_AT = 1000, FALL_FOR = 600, END = GROW_AT + GROW_FOR;
   var SEAT_W = 494, SEAT_TOP = 8, SEAT_H = 350; // the card in the pocket, in artwork units. It really fits inside.
@@ -88,12 +95,18 @@
     var K = KINDS[kind], cfg = M.FORMS[kind];
     // On a phone the model menu shares a row with the brand, so its hint has to be the short one.
     var modelHint = !matchMedia(WIDE).matches && matchMedia('(min-width:385px)').matches ? 'Model' : 'Model (select brand first)';
+    // On the Sell or Trade card's desktop layout, details shares its row with the question, so its hint is the short one.
+    var detailsHint = K.pick && matchMedia(WIDE).matches ? 'Condition, box &amp; papers' : 'Additional details (condition, box &amp; papers)';
     return '<div class="ec__shadow"></div><div class="ec__in">' +
       '<img class="ec__mark" src="' + B + 'wordmark.svg" alt="Dialed by H" width="730" height="52">' +
       '<div class="ec__body">' +
       '<h2 class="ec__title"><img class="ec__hand" style="--hw:' + (K.w / 2) + '" src="' + B + K.hand + '" alt="' + cfg.title + '" width="' + K.w + '" height="194"></h2>' +
       '<p class="ec__sub">' + cfg.sub + '</p>' +
-      '<form class="ec__form" novalidate><div class="ec__grid">' +
+      '<form class="ec__form" novalidate>' +
+      (K.pick ? '<div class="ec__pick" role="radiogroup" aria-label="Sell or trade">' +
+        '<label class="ec__check"><input type="radio" name="deal" value="sell"><span>Sell</span></label>' +
+        '<label class="ec__check"><input type="radio" name="deal" value="trade"><span>Trade</span></label></div>' : '') +
+      '<div class="ec__grid">' +
         field('name', 'Full name', 'Full name', 'type="text" required autocomplete="name"') +
         field('email', 'Email', 'Email', 'type="email" required autocomplete="email" inputmode="email"') +
         field('phone', 'Mobile phone', 'Mobile phone', 'type="tel" required autocomplete="tel" inputmode="tel"', 'ec__f--half') +
@@ -102,7 +115,8 @@
         menu('brand', 'Brand', 'js-brand', '<option value="">Brand</option>' + M.brandOptions(), 'required') +
         menu('model', 'Model', 'js-model', '<option value="">' + modelHint + '</option>', 'disabled data-empty="' + modelHint + '" data-ready="Model"', '<span class="ec__gate"></span><span class="ec__need" role="status"></span>') +
         field('reference', 'Reference number', 'Reference number (if known)', 'type="text"') +
-        '<label class="ec__f ec__f--wide"><span class="ec__l">Additional details</span><textarea name="details" rows="1" placeholder="Additional details (condition, box &amp; papers)" aria-label="Additional details"></textarea></label>' +
+        (K.pick ? field('ask', ASK.none, ASK.none, 'type="text" autocomplete="off" maxlength="200"', 'ec__f--ask') : '') +
+        '<label class="ec__f ec__f--wide"><span class="ec__l">Additional details</span><textarea name="details" rows="1" placeholder="' + detailsHint + '" aria-label="Additional details"></textarea></label>' +
       '</div>' +
       '<label class="ec__check"><input type="checkbox" name="textok"><span>OK to text me about this request</span></label>' +
       '<input type="text" name="website" class="ec__hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
@@ -136,7 +150,7 @@
     var M = window.DBHModals, key = kind + JSON.stringify(prefill || {});
     if (card && !sent && key === lastKey) return; // closing and reopening keeps what they've typed
     var scroll = root.querySelector('.env__scroll');
-    scroll.innerHTML = '<article class="ec">' + cardHtml(M, prefill) + '</article>';
+    scroll.innerHTML = '<article class="ec' + (KINDS[kind].pick ? ' ec--pick' : '') + '">' + cardHtml(M, prefill) + '</article>';
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
     placeLocation();
     M.wireForm(form, kind, M.FORMS[kind], prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
@@ -151,16 +165,36 @@
       need.textContent = 'Please select brand first';
       modelF.classList.add('needs-brand'); brandF.classList.add('is-missing');
     });
+    var err = form.querySelector('.js-err'), pick = form.querySelector('.ec__pick'), picked = function () { return form.querySelector('[name=deal]:checked'); };
+    // The extra line asks the question that fits the choice. An answer typed for the other one is cleared.
+    var ask = form.querySelector('[name=ask]');
+    var syncAsk = function () {
+      var d = picked();
+      if (!ask || !d) return;
+      if (ask.dataset.q && ask.dataset.q !== d.value) ask.value = '';
+      ask.dataset.q = d.value;
+      ask.placeholder = ASK[d.value]; ask.setAttribute('aria-label', ASK[d.value]);
+      ask.closest('.ec__f').querySelector('.ec__l').textContent = ASK[d.value];
+    };
     var refresh = function () {
-      syncLabels(); syncGate();
+      syncAsk(); syncLabels(); syncGate();
       if (form.querySelector('[name=brand]').value) { modelF.classList.remove('needs-brand'); need.textContent = ''; }
-      [].forEach.call(form.querySelectorAll('.is-missing'), function (f) { var c = f.querySelector('input,select'); if (c && c.value) f.classList.remove('is-missing'); });
+      [].forEach.call(form.querySelectorAll('.ec__f.is-missing'), function (f) { var c = f.querySelector('input,select'); if (c && c.value) f.classList.remove('is-missing'); });
+      if (pick && picked()) {
+        pick.classList.remove('is-missing');
+        card.querySelector('.ec__wa a').href = M.waHref(prefill, picked().value);
+      }
+      // Once nothing is missing any more the message goes, and the WhatsApp line it stood in for comes back.
+      if (form.classList.contains('is-err') && !form.querySelector('.is-missing')) { err.style.display = 'none'; form.classList.remove('is-err'); }
     };
     form.addEventListener('input', refresh); form.addEventListener('change', refresh);
     // Runs after wireForm's own check: if that stopped the send, mark what's missing.
     form.addEventListener('submit', function () {
-      if (getComputedStyle(form.querySelector('.js-err')).display === 'none') return;
+      var stopped = getComputedStyle(err).display !== 'none';
+      form.classList.toggle('is-err', stopped);
+      if (!stopped) return;
       [].forEach.call(form.querySelectorAll('[required]'), function (c) { if (!c.value.trim()) c.closest('.ec__f').classList.add('is-missing'); });
+      if (pick && !picked()) pick.classList.add('is-missing');
     });
     syncLabels(); syncGate();
     if (window.dbhTracking) window.dbhTracking.open(form, KINDS[kind].track);

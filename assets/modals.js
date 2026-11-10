@@ -7,7 +7,8 @@
    WhatsApp message so no request is ever lost.
    Concierge, Sell and Trade open the envelope in assets/envelope.js, which
    loads on demand and uses the same wireForm. If it can't load, the popup opens
-   instead. */
+   instead. "Sell or Trade" in the menu opens one card for both ("selltrade"),
+   where the visitor says which; it sends as a normal SELL or TRADE lead. */
 (function () {
   var WA = 'https://wa.me/19146211848';
   var IG = 'https://www.instagram.com/dialedbyh';
@@ -62,6 +63,7 @@
     '.dbh-lm__check{display:flex;align-items:center;gap:12px;font-family:var(--lm-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--lm-dark);cursor:pointer;margin:2px 0 22px;line-height:1.1}',
     '.dbh-lm__check input{appearance:none;-webkit-appearance:none;width:13px;height:13px;border:1px solid var(--lm-dark);background:transparent;margin:0;flex-shrink:0;cursor:pointer}',
     '.dbh-lm__check input:checked{background:var(--lm-ink);border-color:var(--lm-ink)}',
+    '.dbh-lm__pick{display:flex;gap:28px}',
     '.dbh-lm__submit,.dbh-lm__link{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;padding:14px 24px;border:1px solid var(--lm-ink);background:transparent;color:var(--lm-ink);font-family:var(--lm-intl);font-size:16px;font-weight:400;letter-spacing:0;text-transform:none;text-decoration:none;cursor:pointer;transition:background .25s ease,color .25s ease;line-height:1}',
     '.dbh-lm__submit:hover,.dbh-lm__link:hover{background:var(--lm-ink);color:var(--lm-paper)}',
     '.dbh-lm__submit:disabled{opacity:.6;cursor:default}',
@@ -102,6 +104,7 @@
   function formFields(kind) {
     var brands = Object.keys(MODELS).map(function (b) { return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join('');
     var html =
+      (kind === 'selltrade' ? '<div class="dbh-lm__pick" role="radiogroup" aria-label="Sell or trade"><label class="dbh-lm__check"><input type="radio" name="deal" value="sell"> Sell</label><label class="dbh-lm__check"><input type="radio" name="deal" value="trade"> Trade</label></div>' : '') +
       field('Full Name', text('name', { required: true, autocomplete: 'name' })) +
       field('Email', text('email', { type: 'email', required: true, autocomplete: 'email' })) +
       field('Phone (Mobile)', text('phone', { type: 'tel', required: true, autocomplete: 'tel', placeholder: '+1 ...' })) +
@@ -112,8 +115,10 @@
       field('Brand', '<select name="brand" class="js-brand" required><option value="">Select Brand</option>' + brands + '</select>') +
       field('Model', '<select name="model" class="js-model" disabled><option value="">Select Brand First</option></select>') +
       field('Reference Number (if known)', text('reference', { placeholder: 'e.g. 126500LN' })) +
-      // Sell and Trade ask exactly what Source asks. No price, no reason:
-      // Henry's call, the conversation happens over text.
+      (kind === 'selltrade' ? field('Why are you selling, or what piece are you trading for?', text('ask')) : '') +
+      // Sell and Trade ask exactly what Source asks, no price: the conversation
+      // happens over text. The one addition (Henry, 11-09) is the line above on
+      // the Sell or Trade card: why they're selling, or the piece they want.
       field('Additional Details', '<textarea name="details" placeholder="Condition, box &amp; papers, etc."></textarea>');
     return html;
   }
@@ -121,6 +126,8 @@
   var FORMS = {
     sell:   { eyebrow: 'Sell',      title: 'Request to sell',   sub: "Quick form. I'll text you back, usually within a few hours." },
     trade:  { eyebrow: 'Trade',     title: 'Request to trade',  sub: "Quick form. I'll text you back, usually within a few hours." },
+    // "Sell or Trade" in the menu: one card, and they say which on it.
+    selltrade: { eyebrow: 'Sell or Trade', title: 'Request to sell or trade', sub: "Quick form. I'll text you back, usually within a few hours." },
     source: { eyebrow: 'Concierge', title: 'Request to source', sub: "Tell me the piece. I'll text you back, usually within a few hours." }
   };
 
@@ -129,10 +136,12 @@
   var urlBefore = '';
 
   // Each form has its own URL while open, and leaves the page's URL as it found it on close.
+  // The "Sell or Trade" card has no page of its own, so it borrows /sell.
   function setUrl(kind) {
     if (!window.history || !history.replaceState) return;
+    var path = '/' + (kind === 'selltrade' ? 'sell' : kind);
     if (!urlBefore) urlBefore = location.pathname + location.search + location.hash;
-    if (location.pathname.replace(/\/+$/, '') !== '/' + kind) history.replaceState(history.state, '', '/' + kind);
+    if (location.pathname.replace(/\/+$/, '') !== path) history.replaceState(history.state, '', path);
   }
   function restoreUrl() {
     if (!urlBefore || !window.history || !history.replaceState) return;
@@ -175,7 +184,7 @@
   function waHref(prefill, kind) {
     var piece = prefill && [prefill.brand, prefill.model].filter(Boolean).join(' ');
     if (piece && prefill.ref) piece += ' (Ref. ' + prefill.ref + ')';
-    var verb = kind === 'sell' || kind === 'trade' ? kind : '';
+    var verb = kind === 'sell' || kind === 'trade' ? kind : kind === 'selltrade' ? 'sell or trade' : '';
     var text = piece
       ? (verb ? "Hi Henry, I'd like to " + verb + ' my ' + piece + '.' : "Hi Henry, I'm interested in the " + piece + '.')
       : "Hi Henry, I'm looking to " + (verb || 'source') + ' a watch.';
@@ -206,6 +215,7 @@
       if (prefill.ref) form.querySelector('[name="reference"]').value = prefill.ref;
     }
 
+    var errText = form.querySelector('.js-err').textContent;
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (window.dbhTracking) window.dbhTracking.attempt(form);
@@ -213,8 +223,12 @@
       var get = function (k) { return (fd.get(k) || '').toString().trim(); };
       var err = form.querySelector('.js-err');
       var missing = ['name', 'email', 'phone', 'preferred', 'location', 'brand'].filter(function (k) { return !get(k); });
+      // The "Sell or Trade" card asks which one first. That answer is the lead's type.
+      var unpicked = !!form.querySelector('[name="deal"]') && !get('deal');
+      if (unpicked) missing.unshift('deal');
       if (missing.length) {
         if (window.dbhTracking) window.dbhTracking.error(form);
+        err.textContent = unpicked ? 'Please choose sell or trade.' : errText;
         err.style.display = 'block';
         var first = form.querySelector('[name="' + missing[0] + '"]');
         if (first) first.focus();
@@ -222,19 +236,22 @@
       }
       err.style.display = 'none';
 
+      var typeMap = { sell: 'SELL', trade: 'TRADE', selltrade: 'SELL', source: 'BUY' };
+      var as = get('deal') || kind;
+      // The Sell or Trade card's extra line: why they're selling, or the piece they want in trade.
+      var askLabel = as === 'trade' ? 'Trading for' : 'Reason for selling';
       var detailParts = [];
-      [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
+      [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], [askLabel, 'ask'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
         if (get(p[1])) detailParts.push(p[0] + ': ' + get(p[1]));
       });
       detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
-      var typeMap = { sell: 'SELL', trade: 'TRADE', source: 'BUY' };
       var btn = form.querySelector('[type="submit"]');
       btn.disabled = true; btn.textContent = 'Sending…';
       fetch('/api/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: typeMap[kind] || 'BUY',
+          type: typeMap[as] || 'BUY',
           fullName: get('name'),
           email: get('email'),
           watchName: [get('brand'), get('model')].filter(Boolean).join(' '),
@@ -250,12 +267,12 @@
         })
       }).then(function (r) {
         if (!r.ok) throw new Error(r.status);
-        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[kind] || 'BUY' });
+        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[as] || 'BUY' });
         onSent();
       }).catch(function () {
         if (window.dbhTracking) window.dbhTracking.error(form);
-        var lines = [cfg.title + ', Dialed by H'];
-        var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
+        var lines = [(FORMS[as] || cfg).title + ', Dialed by H'];
+        var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', ask: askLabel, details: 'Details' };
         Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
         window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
         onFailed();
@@ -264,7 +281,7 @@
   }
 
   // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
-  var ENVELOPE_VERSION = '3', envelopeLoad;
+  var ENVELOPE_VERSION = '4', envelopeLoad;
   function loadEnvelope() {
     if (window.dbhEnvelope) return Promise.resolve();
     if (envelopeLoad) return envelopeLoad;
@@ -353,7 +370,7 @@
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         modal.classList.add('is-open');
-        if (window.dbhTracking) window.dbhTracking.open(modal.querySelector('form'), {source:'BUY',sell:'SELL',trade:'TRADE'}[kind]);
+        if (window.dbhTracking) window.dbhTracking.open(modal.querySelector('form'), {source:'BUY',sell:'SELL',trade:'TRADE',selltrade:'SELL'}[kind]);
         var first = modal.querySelector('input[name="name"]');
         if (first && window.matchMedia('(min-width: 640px)').matches) first.focus();
       });

@@ -45,7 +45,12 @@ function pieceSlug(p) {
 // strings are unchanged from the Notion era so nothing downstream had to move.
 function mapRow(r) {
     const caseSize = r.case_size_mm ? `${r.case_size_mm}mm` : '';
-    const name = r.piece || `${r.brand || ''} ${r.model || ''}`.trim();
+    // Names as typed in the catalogue can carry stray spaces, and 13 nicknames are stored already wrapped
+    // in quotes. Pages add their own quotes around a nickname, so those came out doubled in page titles
+    // (GMT-Master II ""Batgirl"") and with quotes on the tiles. Cleaned here once, for every page. Slugs
+    // are built from brand, model and ref and ignore punctuation, so no URL changes.
+    const tidy = s => String(s || '').replace(/\s+/g, ' ').trim();
+    const name = tidy(r.piece) || tidy(`${r.brand || ''} ${r.model || ''}`);
 
     const descParts = [];
     if (r.case_material) descParts.push(r.case_material);
@@ -68,7 +73,7 @@ function mapRow(r) {
         brand: r.brand || '',
         model: r.model || '',
         name,
-        nickname: r.nickname || '',
+        nickname: tidy(r.nickname).replace(/^["'“”‘’]+|["'“”‘’]+$/g, ''),
         ref: r.ref || '',
         details: descParts.join(' · '),
         image: images[0] || '',

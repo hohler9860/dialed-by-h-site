@@ -115,8 +115,10 @@
       field('Brand', '<select name="brand" class="js-brand" required><option value="">Select Brand</option>' + brands + '</select>') +
       field('Model', '<select name="model" class="js-model" disabled><option value="">Select Brand First</option></select>') +
       field('Reference Number (if known)', text('reference', { placeholder: 'e.g. 126500LN' })) +
-      // Sell and Trade ask exactly what Source asks. No price, no reason:
-      // Henry's call, the conversation happens over text.
+      (kind === 'selltrade' ? field('Why are you selling, or what piece are you trading for?', text('ask')) : '') +
+      // Sell and Trade ask exactly what Source asks, no price: the conversation
+      // happens over text. The one addition (Henry, 11-09) is the line above on
+      // the Sell or Trade card: why they're selling, or the piece they want.
       field('Additional Details', '<textarea name="details" placeholder="Condition, box &amp; papers, etc."></textarea>');
     return html;
   }
@@ -234,13 +236,15 @@
       }
       err.style.display = 'none';
 
+      var typeMap = { sell: 'SELL', trade: 'TRADE', selltrade: 'SELL', source: 'BUY' };
+      var as = get('deal') || kind;
+      // The Sell or Trade card's extra line: why they're selling, or the piece they want in trade.
+      var askLabel = as === 'trade' ? 'Trading for' : 'Reason for selling';
       var detailParts = [];
-      [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
+      [['Reference', 'reference'], ['Asking price', 'price'], ['Reason', 'reason'], [askLabel, 'ask'], ['Details', 'details'], ['Phone', 'phone'], ['Preferred contact', 'preferred']].forEach(function (p) {
         if (get(p[1])) detailParts.push(p[0] + ': ' + get(p[1]));
       });
       detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
-      var typeMap = { sell: 'SELL', trade: 'TRADE', selltrade: 'SELL', source: 'BUY' };
-      var as = get('deal') || kind;
       var btn = form.querySelector('[type="submit"]');
       btn.disabled = true; btn.textContent = 'Sending…';
       fetch('/api/submit-form', {
@@ -268,7 +272,7 @@
       }).catch(function () {
         if (window.dbhTracking) window.dbhTracking.error(form);
         var lines = [(FORMS[as] || cfg).title + ', Dialed by H'];
-        var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', details: 'Details' };
+        var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', ask: askLabel, details: 'Details' };
         Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
         window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
         onFailed();

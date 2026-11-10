@@ -134,10 +134,12 @@
 .ec__check input{-webkit-appearance:none;appearance:none;flex:none;width:18px;height:18px;margin:0;background:transparent;border:1px solid var(--ink);border-radius:0;cursor:pointer}
 .ec__check input:checked{background:var(--ink);box-shadow:inset 0 0 0 3px var(--paper)}
 .ec__check input:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
-/* The Sell or Trade card asks which one, drawn like the checkbox so it belongs to the card. Its rows are
-   a touch shorter to pay for that line, so the card is no taller than the others and Send stays on screen. */
+/* The Sell or Trade card asks which one, drawn like the checkbox so it belongs to the card, and has one more
+   line than the others (why they're selling, or the piece they want). To stay no taller than the other cards,
+   so Send stays on screen, its rows are a touch shorter and on a phone the sub line makes way. */
 .ec--pick{--row:clamp(40px,calc(var(--vh)*6.3),51px)}
-.ec__pick{display:flex;justify-content:center;gap:30px;margin:calc(var(--gap)*.6) 0 0}
+.ec--pick .ec__sub{display:none}
+.ec__pick{display:flex;justify-content:center;gap:30px;margin:calc(var(--gap)*.6) 0 8px}
 .ec__pick .ec__check{margin:0;font-size:16px}
 .ec__pick.is-missing input{border-color:#8a3a2f}
 .ec__send{display:flex;align-items:center;justify-content:center;width:min(190px,100%);height:44px;margin:calc(var(--gap)*.8) auto 0;padding:0;background:transparent;border:1px solid var(--ink);border-radius:0;color:var(--ink);font-family:var(--intl);font-weight:400;font-size:16px;line-height:1;text-decoration:none;cursor:pointer;transition:background .2s ease,color .2s ease}
@@ -185,13 +187,17 @@
   .ec__err{margin:calc(var(--c)*24) 0 0;font-size:max(9px,calc(var(--c)*13))}
   /* Sell or Trade: the choice sits under the sub line in the fields' own size. The artboard is full, so
      its rows give up 8.5 units each to make the room and everything below lands where it does on the others. */
+  .ec--pick .ec__sub{display:block}
   .ec--pick .ec__form{margin-top:calc(var(--c)*15)}
   .ec__pick{gap:calc(var(--c)*50);margin:0 0 calc(var(--c)*2)}
   .ec__pick .ec__check{font-size:max(14px,calc(var(--c)*23))}
   .ec__pick .ec__check input{width:max(12px,calc(var(--c)*19));height:max(12px,calc(var(--c)*19))}
   .ec--pick .ec__f,.ec--pick .ec__f--half{height:calc(var(--c)*101.5)}
   .ec--pick .ec__l{top:calc(var(--c)*26)}
-  .ec--pick .ec__f--wide{height:calc(var(--c)*92)}
+  /* Its last row is two halves: the question that follows the choice, then details. Side by side, the two
+     have to sit on one baseline, so details centres its line the way a field does (30.5 = the field's middle). */
+  .ec--pick .ec__f--ask,.ec--pick .ec__f--wide{grid-column:auto;height:calc(var(--c)*92)}
+  .ec--pick textarea{padding-top:calc(var(--c)*30.5 - .6em)}
   .ec__thanks{padding:calc(var(--c)*215) calc(var(--c)*180) 0}
   .ec__thanks h2{font-size:calc(var(--c)*64)}
   .ec__thanks .ec__lede{margin-top:calc(var(--c)*16);font-size:calc(var(--c)*26)}

@@ -21,6 +21,8 @@
     // "Sell or Trade" in the menu. The card asks which one (pick), and that answer is the lead's type.
     selltrade: { seal: 'seal-burgundy.webp', hand: 'request-to-sell-or-trade.webp', w: 1215, track: 'SELL', pick: true }
   };
+  // That card has one more line, and its question follows the choice: selling asks why, trading asks for what.
+  var ASK = { none: 'Choose sell or trade first', sell: 'Why are you selling?', trade: 'What piece are you trading for?' };
   var OPEN_AT = 310, OPEN_FOR = 840, END_ANGLE = 177, DRIFT = 148;
   var RISE_AT = 840, RISE_FOR = 620, GROW_AT = 1085, GROW_FOR = 665, FALL_AT = 1000, FALL_FOR = 600, END = GROW_AT + GROW_FOR;
   var SEAT_W = 494, SEAT_TOP = 8, SEAT_H = 350; // the card in the pocket, in artwork units. It really fits inside.
@@ -93,6 +95,8 @@
     var K = KINDS[kind], cfg = M.FORMS[kind];
     // On a phone the model menu shares a row with the brand, so its hint has to be the short one.
     var modelHint = !matchMedia(WIDE).matches && matchMedia('(min-width:385px)').matches ? 'Model' : 'Model (select brand first)';
+    // On the Sell or Trade card's desktop layout, details shares its row with the question, so its hint is the short one.
+    var detailsHint = K.pick && matchMedia(WIDE).matches ? 'Condition, box &amp; papers' : 'Additional details (condition, box &amp; papers)';
     return '<div class="ec__shadow"></div><div class="ec__in">' +
       '<img class="ec__mark" src="' + B + 'wordmark.svg" alt="Dialed by H" width="730" height="52">' +
       '<div class="ec__body">' +
@@ -111,7 +115,8 @@
         menu('brand', 'Brand', 'js-brand', '<option value="">Brand</option>' + M.brandOptions(), 'required') +
         menu('model', 'Model', 'js-model', '<option value="">' + modelHint + '</option>', 'disabled data-empty="' + modelHint + '" data-ready="Model"', '<span class="ec__gate"></span><span class="ec__need" role="status"></span>') +
         field('reference', 'Reference number', 'Reference number (if known)', 'type="text"') +
-        '<label class="ec__f ec__f--wide"><span class="ec__l">Additional details</span><textarea name="details" rows="1" placeholder="Additional details (condition, box &amp; papers)" aria-label="Additional details"></textarea></label>' +
+        (K.pick ? field('ask', ASK.none, ASK.none, 'type="text" autocomplete="off" maxlength="200"', 'ec__f--ask') : '') +
+        '<label class="ec__f ec__f--wide"><span class="ec__l">Additional details</span><textarea name="details" rows="1" placeholder="' + detailsHint + '" aria-label="Additional details"></textarea></label>' +
       '</div>' +
       '<label class="ec__check"><input type="checkbox" name="textok"><span>OK to text me about this request</span></label>' +
       '<input type="text" name="website" class="ec__hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
@@ -161,8 +166,18 @@
       modelF.classList.add('needs-brand'); brandF.classList.add('is-missing');
     });
     var err = form.querySelector('.js-err'), pick = form.querySelector('.ec__pick'), picked = function () { return form.querySelector('[name=deal]:checked'); };
+    // The extra line asks the question that fits the choice. An answer typed for the other one is cleared.
+    var ask = form.querySelector('[name=ask]');
+    var syncAsk = function () {
+      var d = picked();
+      if (!ask || !d) return;
+      if (ask.dataset.q && ask.dataset.q !== d.value) ask.value = '';
+      ask.dataset.q = d.value;
+      ask.placeholder = ASK[d.value]; ask.setAttribute('aria-label', ASK[d.value]);
+      ask.closest('.ec__f').querySelector('.ec__l').textContent = ASK[d.value];
+    };
     var refresh = function () {
-      syncLabels(); syncGate();
+      syncAsk(); syncLabels(); syncGate();
       if (form.querySelector('[name=brand]').value) { modelF.classList.remove('needs-brand'); need.textContent = ''; }
       [].forEach.call(form.querySelectorAll('.ec__f.is-missing'), function (f) { var c = f.querySelector('input,select'); if (c && c.value) f.classList.remove('is-missing'); });
       if (pick && picked()) {

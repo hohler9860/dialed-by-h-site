@@ -119,6 +119,12 @@ function renderWatchPage(w, all = []) {
         ],
     };
 
+    // What the "Inquire to source" card arrives filled in with. A few pieces have no model on file:
+    // their name stands in (minus the brand), so the request still says which watch it is about.
+    const brandLc = String(w.brand || '').toLowerCase();
+    const nameOnly = String(w.name || '').trim();
+    const askModel = w.model || (brandLc && nameOnly.toLowerCase().startsWith(brandLc) ? nameOnly.slice(brandLc.length).trim() : nameOnly);
+
     const waText = encodeURIComponent(`Hi Henry, I'm interested in the ${displayName}${w.ref ? ' (Ref. ' + w.ref + ')' : ''}. Is it available?`);
     const waLink = `https://wa.me/${WA_NUMBER}?text=${waText}`;
 
@@ -187,11 +193,11 @@ ${thumbsHtml}
 <h1 class="pt-title">${escHtml(w.name || w.model)}</h1>
 ${w.ref ? `<p class="pt-ref">Ref. ${escHtml(w.ref)}</p>` : ''}
 ${stack.length ? `<ul class="pt-stack">${stack.map(d => `<li>${escHtml(d)}</li>`).join('')}</ul>` : ''}
-<p class="pt-blurb">Sourced for clients in Boston, New York, Miami, and nationwide. Independently authenticated, with fully insured shipping anywhere in the US.</p>
+<p class="pt-blurb">Sourced for clients across the United States.</p>
 <div class="pt-inquiry">
 <p>Interested in this piece? Inquire below and I&rsquo;ll get back to you with sourcing details, pricing, and availability.</p>
 <a class="btn btn--solid btn--full" href="${waLink}" target="_blank" rel="noopener">Message on WhatsApp</a>
-<a class="btn btn--full" href="/source" data-modal="source" data-brand="${escAttr(w.brand || '')}" data-model="${escAttr(w.model || '')}" data-ref="${escAttr(w.ref || '')}">Inquire to source</a>
+<a class="btn btn--full" href="/source" data-modal="source" data-brand="${escAttr(w.brand || '')}" data-model="${escAttr(askModel)}" data-ref="${escAttr(w.ref || '')}">Inquire to source</a>
 </div>
 <div class="pt-chips"><span class="pt-chip">Authenticated</span><span class="pt-chip">Insured nationwide</span><span class="pt-chip">Secure transaction</span></div>
 </div>

@@ -289,11 +289,13 @@ button{font:inherit;color:inherit}
 .dbh-faq__cta p{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--grey-dark);margin:0;line-height:1.2}
 @media(max-width:820px){.dbh-faq__tag,.dbh-faq__list{grid-column:1/13}.dbh-faq__tag{margin-bottom:20px}}
 
-/* ── privacy ── */
-.lg{max-width:760px;margin:0 auto;padding:clamp(36px,4.6vw,68px) var(--gutter) clamp(72px,8vw,120px)}
-.lg-title{font-family:var(--intl);font-weight:500;font-size:clamp(34px,4.4vw,60px);line-height:.9;letter-spacing:-.04em;margin:0 0 12px;text-wrap:balance}
+/* ── privacy ── The same shell as every other page: crumb and title start at the left edge, in line with the
+   logo, and the title is the standard .pg-h1. The reading text keeps the exact column width it had when the
+   page was a centred 760px box (760 less the two gutters), so no line of the policy wraps differently. */
+.lg{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.6vw,68px) var(--gutter) clamp(72px,8vw,120px)}
+.lg .pg-h1{margin-bottom:14px}
 .lg-updated{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-dark);line-height:1.1}
-.lg-sec{margin-top:clamp(44px,5vw,64px)}
+.lg-sec{max-width:calc(760px - 2*var(--gutter));margin-top:clamp(44px,5vw,64px)}
 .lg-sec h2{font-family:var(--intl);font-weight:500;font-size:clamp(24px,2.2vw,32px);letter-spacing:-.03em;line-height:1.1;padding-bottom:14px;border-bottom:1px solid var(--grey-light)}
 .lg-block{margin-top:26px}
 .lg-block h3{font-family:var(--intl);font-weight:500;font-size:16px;margin:0 0 8px;line-height:1.2;letter-spacing:-.01em}

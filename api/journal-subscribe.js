@@ -91,7 +91,7 @@ function confirmEmailHtml({ confirmUrl, email }) {
             </p>
         </div>
         <div style="border-top: 1px solid #52514E; margin-top: 36px; padding-top: 16px; text-align: center;">
-            <p style="font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #999791; -webkit-text-fill-color: #999791; margin: 0;">&copy; 2026 Dialed by H &mdash; dialedbyhenry.com</p>
+            <p style="font-family: 'Suisse Intl Mono', 'SF Mono', Menlo, 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #999791; -webkit-text-fill-color: #999791; margin: 0;">Dialed by H&trade; &middot; dialedbyhenry.com</p>
         </div>
     </div>
     </div>

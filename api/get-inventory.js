@@ -375,8 +375,15 @@ module.exports = async (req, res) => {
     try {
         // ?fresh=1 — manual lever: drop the warm cache and re-read Postgres.
         // Far cheaper than the Notion era, but still handy right after an edit.
+        // Admin only: an open lever let anyone force a full catalogue re-read.
         if (q.fresh) {
             res.setHeader('Cache-Control', 'no-store');
+            const expected = process.env.ADMIN_PASSWORD;
+            const auth = req.headers.authorization || '';
+            const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+            if (!expected || !timingSafeEq(token, expected)) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
             const fresh = await fetchAllPieces({ force: true });
             return res.status(200).json({ refreshed: true, pieces: fresh.length });
         }

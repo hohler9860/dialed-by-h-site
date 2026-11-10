@@ -51,6 +51,9 @@ fbq('track', 'PageView');
 .jx-band{background:var(--jx-page);padding-bottom:clamp(72px,8vw,120px)}
 .jx-vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .jx-wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+/* One line for people arriving from the newsletter's confirm or unsubscribe link. Hidden for everyone else. */
+.jx-note{margin:0;padding:15px var(--gutter);background:var(--charcoal);color:var(--cream);font-family:var(--works);font-size:16px;line-height:1.25;letter-spacing:-.01em;text-align:center;text-wrap:balance}
+.jx-note[hidden]{display:none}
 .jx-meta{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;font-family:var(--mono);font-size:10px;line-height:1.6;letter-spacing:.12em;text-transform:uppercase}
 .jx-meta i{font-style:normal}
 .jx-by{font-family:var(--works);font-size:16px;line-height:1.1;letter-spacing:-.01em}
@@ -180,6 +183,7 @@ img.is-cut{object-fit:contain;padding:8%}
 <!--/dbh:header-->
 <main class="jx" id="jx">
   <h1 class="jx-vh">Off-Catalog: the journal from Dialed by H</h1>
+  <p class="jx-note" id="jx-note" role="status" hidden></p>
   <section class="jx-lead" id="jx-lead" aria-roledescription="carousel" aria-label="Featured stories"></section>
   <div class="jx-band"><div class="jx-wrap">
     <div class="jx-bar">
@@ -426,6 +430,16 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
     });
   }
   var q = new URLSearchParams(location.search);
+  // People arriving from the newsletter's confirm or unsubscribe link are told what happened (the links
+  // redirect here from api/journal-confirm.js). The first render tidies the address, so a reload doesn't repeat it.
+  (function(){
+    var note = document.getElementById('jx-note'), c = q.get('confirmed'), u = q.get('unsubscribed'), why = q.get('reason'), msg = '';
+    if (c === '1') msg = q.get('already') ? "You're already on the list. Nothing else to do." : "You're on the list. New stories from Off-Catalog will land in your inbox.";
+    else if (c === '0') msg = why === 'expired' ? "That confirmation link has expired. Subscribe again from any story and I'll send a fresh one." : why === 'server' ? "Something went wrong on my end. Try the link in your email again in a minute." : "That confirmation link didn't work. Subscribe again from any story and I'll send a new one.";
+    else if (u === '1') msg = "You're unsubscribed. No more emails from Off-Catalog.";
+    else if (u === '0') msg = why === 'server' ? "Something went wrong on my end. Try the link again in a minute, or email henry@dialedbyhenry.com." : "That unsubscribe link didn't work. Email henry@dialedbyhenry.com and I'll take you off the list.";
+    if (note && msg) { note.textContent = msg; note.hidden = false; }
+  })();
   if (q.get('sort') === 'oldest') state.sort = 'old';
   state.page = parseInt(q.get('page'), 10) || 1;
   load(0, []).then(function(list){

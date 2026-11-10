@@ -4,8 +4,6 @@
 # functions and the build, so they stay and are blocked by redirects in vercel.json.
 /scripts/*
 !/scripts/admin-auth.js
-!/scripts/lucide.min.js
-!/scripts/premium-ui.js
 !/scripts/social-admin.js
 !/scripts/inline-css.js
 /supabase

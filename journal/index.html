@@ -82,8 +82,10 @@ img.is-cut{object-fit:contain;padding:8%}
 /* One bar for the whole row instead of an underline per tab. It glides to the tab under the pointer and
    settles back on the current one. Until the script has placed it, the current tab keeps its own underline. */
 .jx-tabs:not(.has-ink) .jx-tab[aria-pressed=true]{border-bottom-color:var(--charcoal)}
-/* A 1px sliver that the script moves and stretches with one transform, so the glide never touches layout. */
-.jx-ink{position:absolute;left:0;bottom:0;width:1px;height:2px;background:var(--charcoal);pointer-events:none;transform-origin:0 50%;transform:scaleX(0);will-change:transform}
+/* The script sets its left and width in real pixels. Do not go back to stretching a 1px sliver with scaleX:
+   at any browser zoom other than 100% the sliver is rounded before it is stretched, and the bar comes out
+   visibly shorter or longer than the word (Henry's Safari sits at 85%). */
+.jx-ink{position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--charcoal);pointer-events:none}
 .jx-tab:focus-visible,.jx-sort:focus-visible,.jx-pager button:focus-visible{outline:1px solid var(--charcoal);outline-offset:3px}
 .jx-sortwrap{position:relative;flex:none;padding-bottom:16px}
 .jx-sort{appearance:none;-webkit-appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23252522'/%3E%3C/svg%3E") no-repeat right center;border:0;border-radius:0;padding:0 20px 0 0;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);cursor:pointer}
@@ -346,7 +348,7 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
   // motion (first paint, a resize, or when the visitor's system asks for reduced motion).
   // INK_PULL is the spring's strength: higher is quicker (13 lands in about a third of a second).
   var ink = null, INK_PULL = 13, inkAt = { x: 0, w: 0, vx: 0, vw: 0, tx: 0, tw: 0, raf: 0, t: 0 };
-  function inkDraw(){ ink.style.transform = 'translate3d(' + inkAt.x.toFixed(2) + 'px,0,0) scaleX(' + Math.max(inkAt.w, 0).toFixed(2) + ')'; }
+  function inkDraw(){ ink.style.left = inkAt.x.toFixed(2) + 'px'; ink.style.width = Math.max(inkAt.w, 0).toFixed(2) + 'px'; }
   function inkStep(now){
     var s = inkAt, dt = Math.min(Math.max((now - s.t) / 1000, 0), 0.034); s.t = now;
     s.vx += (-2 * INK_PULL * s.vx - INK_PULL * INK_PULL * (s.x - s.tx)) * dt; s.x += s.vx * dt;
@@ -356,7 +358,9 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
   }
   function inkTo(tab, snap){
     if (!ink || !tab) return;
-    var s = inkAt; s.tx = tab.offsetLeft; s.tw = tab.offsetWidth;
+    // The word's own edges, to the fraction of a pixel, so the bar is exactly as wide as the word it is under.
+    var s = inkAt, r = tab.getBoundingClientRect(), row = tabsEl.getBoundingClientRect();
+    s.tx = r.left - row.left + tabsEl.scrollLeft; s.tw = r.width;
     if (snap === true || reduce) { cancelAnimationFrame(s.raf); s.raf = 0; s.x = s.tx; s.w = s.tw; s.vx = s.vw = 0; return inkDraw(); }
     if (!s.raf) { s.t = performance.now(); s.raf = requestAnimationFrame(inkStep); }
   }

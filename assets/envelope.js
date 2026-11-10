@@ -165,7 +165,7 @@
       need.textContent = 'Please select brand first';
       modelF.classList.add('needs-brand'); brandF.classList.add('is-missing');
     });
-    var err = form.querySelector('.js-err'), pick = form.querySelector('.ec__pick'), picked = function () { return form.querySelector('[name=deal]:checked'); };
+    var pick = form.querySelector('.ec__pick'), picked = function () { return form.querySelector('[name=deal]:checked'); };
     // The extra line asks the question that fits the choice. An answer typed for the other one is cleared.
     var ask = form.querySelector('[name=ask]');
     var syncAsk = function () {
@@ -185,19 +185,25 @@
         card.querySelector('.ec__wa a').href = M.waHref(prefill, picked().value);
       }
       // Once nothing is missing any more the message goes, and the WhatsApp line it stood in for comes back.
-      if (form.classList.contains('is-err') && !form.querySelector('.is-missing')) { err.style.display = 'none'; form.classList.remove('is-err'); }
+      if (form.classList.contains('is-err') && !form.querySelector('.is-missing')) form.dbhHideErr();
     };
     form.addEventListener('input', refresh); form.addEventListener('change', refresh);
-    // Runs after wireForm's own check: if that stopped the send, mark what's missing.
+    // Runs after wireForm's own check, which puts .is-err on the form if it stopped the send: mark what's missing.
     form.addEventListener('submit', function () {
-      var stopped = getComputedStyle(err).display !== 'none';
-      form.classList.toggle('is-err', stopped);
-      if (!stopped) return;
+      if (!form.classList.contains('is-err')) return;
       [].forEach.call(form.querySelectorAll('[required]'), function (c) { if (!c.value.trim()) c.closest('.ec__f').classList.add('is-missing'); });
       if (pick && !picked()) pick.classList.add('is-missing');
     });
     syncLabels(); syncGate();
     if (window.dbhTracking) window.dbhTracking.open(form, KINDS[kind].track);
+  }
+  // Closing keeps what they typed but not the complaints: the message, the red rules and the Model hint
+  // all go, so a reopened card starts clean.
+  function clearErrors() {
+    if (!card || !form) return;
+    if (form.dbhHideErr) form.dbhHideErr();
+    [].forEach.call(card.querySelectorAll('.is-missing,.needs-brand'), function (el) { el.classList.remove('is-missing', 'needs-brand'); });
+    var need = card.querySelector('.ec__need'); if (need) need.textContent = '';
   }
 
   // Timing curves.
@@ -324,6 +330,7 @@
     return Promise.race([preload(kind).then(function () { return true; }), new Promise(function (r) { setTimeout(r, 450, false); })]).then(function (ready) {
       var still = !ready || matchMedia('(prefers-reduced-motion: reduce)').matches;
       ensureCard(prefill);
+      clearErrors(); // a card kept from last time comes back with their answers, not with last time's message
       root.style.setProperty('--pace', pace);
       root.classList.remove('is-playing', 'is-landed', 'is-closing'); root.hidden = false; landed = false;
       card.querySelector('.ec__in').scrollTop = 0;

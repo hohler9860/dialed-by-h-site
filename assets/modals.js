@@ -12,6 +12,7 @@
 (function () {
   var WA = 'https://wa.me/19146211848';
   var IG = 'https://www.instagram.com/dialedbyh';
+  var ERR_FOR = 7000; // how long the "please fill in" message stays up, in milliseconds
 
   var MODELS = {
     'Rolex': ['Daytona', 'Submariner', 'GMT-Master II', 'Explorer', 'Explorer II', 'Datejust', 'Day-Date', 'Sky-Dweller', 'Yacht-Master', 'Sea-Dweller', 'Oyster Perpetual', 'Land-Dweller', 'Milgauss', 'Air-King', 'Cellini', 'Other'],
@@ -215,26 +216,34 @@
       if (prefill.ref) form.querySelector('[name="reference"]').value = prefill.ref;
     }
 
-    var errText = form.querySelector('.js-err').textContent;
+    // The red message shows when Send is stopped and goes away by itself after ERR_FOR (7 seconds, Henry's
+    // number). The form carries .is-err while it shows. form.dbhHideErr clears it at once: the card calls
+    // that when it closes, so a reopened card never comes back with an old message, and when nothing is
+    // missing any more.
+    var errEl = form.querySelector('.js-err'), errText = errEl.textContent, errTimer;
+    var hideErr = function () { clearTimeout(errTimer); errEl.style.display = 'none'; form.classList.remove('is-err'); };
+    var showErr = function (text) {
+      errEl.textContent = text; errEl.style.display = 'block'; form.classList.add('is-err');
+      clearTimeout(errTimer); errTimer = setTimeout(hideErr, ERR_FOR);
+    };
+    form.dbhHideErr = hideErr;
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (window.dbhTracking) window.dbhTracking.attempt(form);
       var fd = new FormData(form);
       var get = function (k) { return (fd.get(k) || '').toString().trim(); };
-      var err = form.querySelector('.js-err');
       var missing = ['name', 'email', 'phone', 'preferred', 'location', 'brand'].filter(function (k) { return !get(k); });
       // The "Sell or Trade" card asks which one first. That answer is the lead's type.
       var unpicked = !!form.querySelector('[name="deal"]') && !get('deal');
       if (unpicked) missing.unshift('deal');
       if (missing.length) {
         if (window.dbhTracking) window.dbhTracking.error(form);
-        err.textContent = unpicked ? 'Please choose sell or trade.' : errText;
-        err.style.display = 'block';
+        showErr(unpicked ? 'Please choose sell or trade.' : errText);
         var first = form.querySelector('[name="' + missing[0] + '"]');
         if (first) first.focus();
         return;
       }
-      err.style.display = 'none';
+      hideErr();
 
       var typeMap = { sell: 'SELL', trade: 'TRADE', selltrade: 'SELL', source: 'BUY' };
       var as = get('deal') || kind;
@@ -281,7 +290,7 @@
   }
 
   // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
-  var ENVELOPE_VERSION = '4', envelopeLoad;
+  var ENVELOPE_VERSION = '5', envelopeLoad;
   function loadEnvelope() {
     if (window.dbhEnvelope) return Promise.resolve();
     if (envelopeLoad) return envelopeLoad;

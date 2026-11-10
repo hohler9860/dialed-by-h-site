@@ -78,14 +78,16 @@ img.is-cut{object-fit:contain;padding:8%}
 .jx-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
 .jx-tabs{display:flex;gap:32px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
 .jx-tabs::-webkit-scrollbar{display:none}
-.jx-tab{display:block;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:36px 0 32px;white-space:nowrap;cursor:pointer}
+.jx-tab{display:block;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:28px 0 16px;white-space:nowrap;cursor:pointer}
 .jx-tab[aria-pressed=true]{border-bottom-color:var(--charcoal)}
 .jx-tab:focus-visible,.jx-sort:focus-visible,.jx-pager button:focus-visible{outline:1px solid var(--charcoal);outline-offset:3px}
-.jx-sortwrap{position:relative;flex:none;padding-bottom:32px}
+.jx-sortwrap{position:relative;flex:none;padding-bottom:16px}
 .jx-sort{appearance:none;-webkit-appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23252522'/%3E%3C/svg%3E") no-repeat right center;border:0;border-radius:0;padding:0 20px 0 0;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);cursor:pointer}
 
 /* grid: rows of three small cards, then two large photo cards */
-.jx-grid{display:flex;flex-direction:column;gap:46px;padding-top:55px;min-height:40vh}
+.jx-grid{display:flex;flex-direction:column;gap:46px;padding-top:36px}
+/* Room is held only while the stories load, so the footer doesn't jump. A category with one story ends where its story ends. */
+.jx-grid.is-wait{min-height:40vh}
 .jx-row{display:grid;gap:16px}
 .jx-row--s{grid-template-columns:repeat(3,minmax(0,1fr))}
 .jx-row--l{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -134,11 +136,11 @@ img.is-cut{object-fit:contain;padding:8%}
   .jx-count{top:220px;bottom:auto;left:auto;right:14px}
   .jx-bar{flex-direction:column;align-items:stretch;gap:0}
   .jx-tabs{gap:24px;margin:0 calc(-1 * var(--gutter));padding:0 var(--gutter)}
-  .jx-tab{font-size:13px;padding:26px 0 22px}
-  .jx-sortwrap{align-self:flex-end;padding:16px 0 0}
+  .jx-tab{font-size:13px;padding:18px 0 12px}
+  .jx-sortwrap{align-self:flex-end;padding:12px 0 0}
   .jx-sort{font-size:13px}
   .jx-grid,.jx-row{gap:32px}
-  .jx-grid{padding-top:32px}
+  .jx-grid{padding-top:18px}
   .jx-row--s,.jx-row--l{grid-template-columns:1fr}
   .jx-card{flex-direction:row;align-items:flex-start;gap:17px;background:none}
   .jx-card__img{flex:0 0 104px;width:104px;height:104px;aspect-ratio:auto}
@@ -178,7 +180,7 @@ img.is-cut{object-fit:contain;padding:8%}
       <ul class="jx-tabs" id="jx-tabs" aria-label="Filter stories"></ul>
       <div class="jx-sortwrap"><label class="jx-vh" for="jx-sort">Sort stories</label><select class="jx-sort" id="jx-sort"><option value="new">Most Recent</option><option value="old">Least Recent</option></select></div>
     </div>
-    <div class="jx-grid" id="jx-grid" aria-live="polite"></div>
+    <div class="jx-grid is-wait" id="jx-grid" aria-live="polite"></div>
     <nav class="jx-pager" id="jx-pager" aria-label="Pages" hidden></nav>
   </div></div>
 </main>
@@ -387,11 +389,12 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
   if (q.get('sort') === 'oldest') state.sort = 'old';
   state.page = parseInt(q.get('page'), 10) || 1;
   load(0, []).then(function(list){
+    grid.classList.remove('is-wait');
     all = list.filter(function(a){ return a && a.slug && a.title; });
     if (!all.length) { lead.hidden = true; grid.innerHTML = '<p class="jx-empty">No stories yet.</p>'; return; }
     var want = q.get('category'); if (want && cats(all).indexOf(want) > -1) state.cat = want;
     buildLead(all); buildTabs(); render();
-  }).catch(function(){ lead.hidden = true; grid.innerHTML = '<p class="jx-empty">The journal is unavailable right now. Please try again shortly.</p>'; });
+  }).catch(function(){ grid.classList.remove('is-wait'); lead.hidden = true; grid.innerHTML = '<p class="jx-empty">The journal is unavailable right now. Please try again shortly.</p>'; });
 })();
 </script>
 </body>

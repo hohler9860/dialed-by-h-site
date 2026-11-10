@@ -76,10 +76,14 @@ img.is-cut{object-fit:contain;padding:8%}
 
 /* filter tabs + sort */
 .jx-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
-.jx-tabs{display:flex;gap:32px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.jx-tabs{position:relative;display:flex;gap:32px;margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
 .jx-tabs::-webkit-scrollbar{display:none}
 .jx-tab{display:block;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:28px 0 16px;white-space:nowrap;cursor:pointer}
-.jx-tab[aria-pressed=true]{border-bottom-color:var(--charcoal)}
+/* One bar for the whole row instead of an underline per tab. It glides to the tab under the pointer and
+   settles back on the current one. Until the script has placed it, the current tab keeps its own underline. */
+.jx-tabs:not(.has-ink) .jx-tab[aria-pressed=true]{border-bottom-color:var(--charcoal)}
+/* A 1px sliver that the script moves and stretches with one transform, so the glide never touches layout. */
+.jx-ink{position:absolute;left:0;bottom:0;width:1px;height:2px;background:var(--charcoal);pointer-events:none;transform-origin:0 50%;transform:scaleX(0);will-change:transform}
 .jx-tab:focus-visible,.jx-sort:focus-visible,.jx-pager button:focus-visible{outline:1px solid var(--charcoal);outline-offset:3px}
 .jx-sortwrap{position:relative;flex:none;padding-bottom:16px}
 .jx-sort{appearance:none;-webkit-appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23252522'/%3E%3C/svg%3E") no-repeat right center;border:0;border-radius:0;padding:0 20px 0 0;font-family:var(--intl);font-size:14px;line-height:21px;color:var(--charcoal);cursor:pointer}
@@ -336,8 +340,32 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
     var c = {}; list.forEach(function(a){ var k = cat(a); c[k] = (c[k] || 0) + 1; });
     return [ALL].concat(Object.keys(c).sort(function(x, y){ return c[y] - c[x] || x.localeCompare(y); }));
   }
+  // The bar under the tabs. One bar for the row, pulled along by a small spring (no bounce), so it eases
+  // away, keeps its momentum when the pointer moves on to another tab, and settles softly: a glide, not a
+  // jump. inkTo sends it under a tab, inkHome back under the current category. snap places it with no
+  // motion (first paint, a resize, or when the visitor's system asks for reduced motion).
+  // INK_PULL is the spring's strength: higher is quicker (13 lands in about a third of a second).
+  var ink = null, INK_PULL = 13, inkAt = { x: 0, w: 0, vx: 0, vw: 0, tx: 0, tw: 0, raf: 0, t: 0 };
+  function inkDraw(){ ink.style.transform = 'translate3d(' + inkAt.x.toFixed(2) + 'px,0,0) scaleX(' + Math.max(inkAt.w, 0).toFixed(2) + ')'; }
+  function inkStep(now){
+    var s = inkAt, dt = Math.min(Math.max((now - s.t) / 1000, 0), 0.034); s.t = now;
+    s.vx += (-2 * INK_PULL * s.vx - INK_PULL * INK_PULL * (s.x - s.tx)) * dt; s.x += s.vx * dt;
+    s.vw += (-2 * INK_PULL * s.vw - INK_PULL * INK_PULL * (s.w - s.tw)) * dt; s.w += s.vw * dt;
+    if (Math.abs(s.x - s.tx) < 0.05 && Math.abs(s.w - s.tw) < 0.05 && Math.abs(s.vx) < 0.5 && Math.abs(s.vw) < 0.5) { s.x = s.tx; s.w = s.tw; s.vx = s.vw = 0; s.raf = 0; return inkDraw(); }
+    inkDraw(); s.raf = requestAnimationFrame(inkStep);
+  }
+  function inkTo(tab, snap){
+    if (!ink || !tab) return;
+    var s = inkAt; s.tx = tab.offsetLeft; s.tw = tab.offsetWidth;
+    if (snap === true || reduce) { cancelAnimationFrame(s.raf); s.raf = 0; s.x = s.tx; s.w = s.tw; s.vx = s.vw = 0; return inkDraw(); }
+    if (!s.raf) { s.t = performance.now(); s.raf = requestAnimationFrame(inkStep); }
+  }
+  function inkHome(snap){ inkTo(tabsEl.querySelector('.jx-tab[aria-pressed="true"]'), snap === true); }
   function buildTabs(){
     tabsEl.innerHTML = cats(all).map(function(c){ return '<li><button type="button" class="jx-tab" data-c="' + esc(c) + '" aria-pressed="' + (c === state.cat) + '">' + esc(c) + '</button></li>'; }).join('');
+    ink = document.createElement('li'); ink.className = 'jx-ink'; ink.setAttribute('role', 'presentation'); ink.setAttribute('aria-hidden', 'true');
+    tabsEl.appendChild(ink); tabsEl.classList.add('has-ink');
+    inkHome(true);
   }
   function syncUrl(){
     var q = new URLSearchParams();
@@ -361,12 +389,20 @@ var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1
     pager.hidden = pages < 2;
     pager.innerHTML = pages < 2 ? '' : '<button type="button" data-p="-1" aria-label="Previous page"' + (state.page === 1 ? ' disabled' : '') + '>&larr;</button><span>Page ' + state.page + ' of ' + pages + '</span><button type="button" data-p="1" aria-label="Next page"' + (state.page === pages ? ' disabled' : '') + '>&rarr;</button>';
     [].forEach.call(tabsEl.querySelectorAll('.jx-tab'), function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-c') === state.cat)); });
+    inkHome();
     sortEl.value = state.sort;
     syncUrl();
   }
   function toGrid(){ var y = tabsEl.getBoundingClientRect().top + scrollY - 90; if (scrollY > y) scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); }
 
   tabsEl.addEventListener('click', function(e){ var b = e.target.closest('.jx-tab'); if (!b) return; state.cat = b.getAttribute('data-c'); state.page = 1; render(); });
+  // The bar follows the pointer from tab to tab (and the keyboard), and goes home when the pointer leaves the row.
+  tabsEl.addEventListener('pointerover', function(e){ if (e.pointerType === 'touch') return; var b = e.target.closest('.jx-tab'); if (b) inkTo(b); });
+  tabsEl.addEventListener('pointerleave', inkHome);
+  tabsEl.addEventListener('focusin', function(e){ var b = e.target.closest('.jx-tab'); if (b && b.matches(':focus-visible')) inkTo(b); });
+  tabsEl.addEventListener('focusout', inkHome);
+  addEventListener('resize', function(){ inkHome(true); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ inkHome(true); });
   sortEl.addEventListener('change', function(){ state.sort = sortEl.value; state.page = 1; render(); });
   pager.addEventListener('click', function(e){ var b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; state.page += +b.getAttribute('data-p'); render(); toGrid(); });
 

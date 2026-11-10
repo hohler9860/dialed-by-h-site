@@ -355,15 +355,19 @@ button{font:inherit;color:inherit}
 .oc-end-msg{width:100%;font-family:var(--works);font-size:15px;margin:8px 0 0;line-height:1.4;letter-spacing:0}
 .oc-end-msg.error{color:var(--charcoal);text-decoration:underline}
 
-/* ── trivia ── */
-.tv{max-width:1040px;margin:0 auto;padding:clamp(36px,4.6vw,68px) var(--gutter) clamp(72px,8vw,120px)}
+/* ── trivia ── The standard page shell, so the title starts at the left edge like every other page; the
+   cards and the quiz keep the exact width they had as a centred 1040px box (1040 less the two gutters). */
+.tv{max-width:var(--max);margin:0 auto;padding:clamp(36px,4.6vw,68px) var(--gutter) clamp(72px,8vw,120px)}
+.tv>section{max-width:calc(1040px - 2*var(--gutter))}
 .tv-intro{font-family:var(--works);font-size:16px;max-width:48ch;margin:0 0 44px;line-height:1.25;letter-spacing:-.01em}
 .tv-label{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-dark);margin:0 0 14px;line-height:1.1}
 .tv-grid{display:grid;gap:14px;margin-bottom:44px}
 .tv-grid--3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .tv-grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:760px){.tv-grid--3,.tv-grid--2{grid-template-columns:1fr}}
-.difficulty-card{background:transparent;border:1px solid var(--grey-light);padding:22px;text-align:left;cursor:pointer;color:inherit;transition:border-color .25s,background .25s}
+/* A column that starts at the top: a button centres its contents by default, so in a row where one card's
+   text ran a line longer the other cards' labels and names sat lower than its own. */
+.difficulty-card{display:flex;flex-direction:column;justify-content:flex-start;background:transparent;border:1px solid var(--grey-light);padding:22px;text-align:left;cursor:pointer;color:inherit;transition:border-color .25s,background .25s}
 .difficulty-card:hover{border-color:var(--charcoal);background:var(--panel)}
 .tv-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .difficulty-card .tv-row{margin-bottom:26px}

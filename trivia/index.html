@@ -74,6 +74,7 @@ fbq('track', 'PageView');
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 <!--/dbh:head-->
+<script>(function(d){d.classList.add('js');setTimeout(function(){d.classList.remove('js')},3000)})(document.documentElement)</script>
 </head>
 <body>
 <!--dbh:header-->
@@ -94,7 +95,7 @@ fbq('track', 'PageView');
         <!-- INTRO / DIFFICULTY SELECTION -->
         <section id="screen-intro">
             <nav class="crumb" aria-label="Breadcrumb"><a href="/">Home</a> / Trivia</nav>
-            <h1 class="pg-h1"><span class="h-lead">Watch</span> Trivia</h1>
+            <h1 class="pg-h1" data-su="words"><span class="h-lead">Watch</span> Trivia</h1>
             <p class="tv-intro">
                 Pick your test. Three difficulty tiers, or go brand-specific with the houses.
             </p>
@@ -198,7 +199,7 @@ fbq('track', 'PageView');
             <div id="explanation-box" class="explanation hidden"></div>
 
             <div class="tv-end">
-                <button id="next-btn" class="pill-btn primary" disabled>Next Question</button>
+                <button id="next-btn" class="pill-btn primary" disabled>Next question</button>
             </div>
         </section>
 
@@ -223,9 +224,9 @@ fbq('track', 'PageView');
             </div>
 
             <div class="tv-actions">
-                <button id="share-btn" class="pill-btn primary">Share Score</button>
-                <button id="retry-btn" class="pill-btn">Try Again</button>
-                <button id="back-btn" class="pill-btn">Back to Menu</button>
+                <button id="share-btn" class="pill-btn primary">Share score</button>
+                <button id="retry-btn" class="pill-btn">Try again</button>
+                <button id="back-btn" class="pill-btn">Back to menu</button>
             </div>
 
             <div id="share-feedback" class="tv-label hidden">Copied to clipboard</div>
@@ -291,6 +292,7 @@ document.addEventListener('error',function(e){
 },true);
 </script>
 <!--/dbh:scripts-->
+<script src="/assets/slide-up.js?v=4"></script>
 <script>
     (function () {
         // QUESTION BANK
@@ -893,7 +895,7 @@ document.addEventListener('error',function(e){
             explanationBox.classList.add('hidden');
             explanationBox.textContent = '';
             nextBtn.disabled = true;
-            nextBtn.textContent = (state.index === total - 1) ? 'See Score' : 'Next Question';
+            nextBtn.textContent = (state.index === total - 1) ? 'See score' : 'Next question';
             state.answered = false;
         }
 

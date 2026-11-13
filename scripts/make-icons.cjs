@@ -60,7 +60,9 @@ async function svgIcon(markFile, color, shape, fill) {
     // Safari keeps Favorites tiles at 144px and shrinks whatever it is given with a crude
     // filter, so a 1024px source comes out jagged. 288px is an exact double and shrinks
     // cleanly, and it is still sharp on a phone home screen or in the Dock.
-    fs.writeFileSync('apple-touch-icon.png', await tile(cream, 288, 0.62, CHARCOAL));
+    // Google Search uses this file for the result icon and crops it to a ~28px circle, so
+    // the mark fills 80% like the other icons. At 62% the rings smeared together there.
+    fs.writeFileSync('apple-touch-icon.png', await tile(cream, 288, 0.8, CHARCOAL));
     // The admin stays inverted so it is easy to tell apart on a home screen.
     fs.writeFileSync('admin/favicon.svg', await svgIcon(SRC.charcoal, CHARCOAL, `<rect width="64" height="64" rx="8" fill="${CREAM}"/>`, 0.8));
     fs.writeFileSync('admin/icon-288.png', await tile(charcoal, 288, 0.62, CREAM));

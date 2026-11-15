@@ -98,6 +98,21 @@
     }
   });
 
+  // Email: the Gmail app flattens paragraphs that arrive through a link, so
+  // this copies the formatted message and opens a blank email to paste into.
+  if (main === links.mail) {
+    $("go").textContent = "Copy message and open email";
+    $("copy").hidden = true;
+    $("note").textContent = "This copies the message with its paragraphs, then opens an email to them. Tap the body and paste.";
+    $("go").addEventListener("click", function (ev) {
+      ev.preventDefault();
+      var open = function () { location.href = "mailto:" + email + "?subject=" + enc(subject); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(emailMsg).then(open, open); }
+      else { open(); }
+    });
+    return;
+  }
+
   // Jump straight into the app so it is one tap from the email. If the
   // browser blocks it, the button above does the same thing.
   if (!q.get("stay")) { setTimeout(function () { location.href = main.href; }, 250); }

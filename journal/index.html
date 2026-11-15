@@ -41,6 +41,13 @@ fbq('init', '798516899968965');
 fbq('track', 'PageView');
 }
 </script>
+<!-- ChatGPT Ads Pixel -->
+<script>
+if (location.hostname === 'dialedbyhenry.com' || location.hostname === 'www.dialedbyhenry.com') {
+!function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);j.async=1;j.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(j,f)}(window,document,"script","https://bzrcdn.openai.com/sdk/oaiq.min.js");oaiq("init",{pixelId:"H7zG3vP6T8fmtxURjWhzjn",debug:true});
+}
+</script>
+<!-- End ChatGPT Ads Pixel -->
 <script defer src="/_vercel/insights/script.js"></script>
 <!--/dbh:head-->
 <style>
@@ -214,7 +221,7 @@ img.is-cut{object-fit:contain;padding:8%}
 <!--dbh:scripts-->
 <script defer src="/assets/inquiry-schema.js?v=1"></script>
 <script defer src="/assets/inquiry-tracking.js?v=1"></script>
-<script defer src="/assets/modals.js?v=11"></script>
+<script defer src="/assets/modals.js?v=12"></script>
 <script>
 (function(){
   var sheet=document.getElementById('sheet'),o=document.getElementById('menu-open'),c=document.getElementById('menu-close');

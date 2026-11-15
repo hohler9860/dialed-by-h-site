@@ -277,6 +277,8 @@
       }).then(function (r) {
         if (!r.ok) throw new Error(r.status);
         if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[as] || 'BUY' });
+        // ChatGPT ads: count the inquiry as a lead. Must never break the form.
+        try { if (typeof window.oaiq === 'function') window.oaiq('measure', 'lead_created', { type: 'customer_action' }); } catch (e) {}
         onSent();
       }).catch(function () {
         if (window.dbhTracking) window.dbhTracking.error(form);

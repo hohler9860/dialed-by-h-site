@@ -23,13 +23,14 @@
   };
   // That card has one more line, and its question follows the choice: selling asks why, trading asks for what.
   var ASK = { none: 'Choose sell or trade first', sell: 'Why are you selling?', trade: 'What piece are you trading for?' };
+  var THANKS_W = 532; // thank-you.webp, same recipe and height as the titles
   var OPEN_AT = 310, OPEN_FOR = 840, END_ANGLE = 177, DRIFT = 148;
   var RISE_AT = 840, RISE_FOR = 620, GROW_AT = 1085, GROW_FOR = 665, FALL_AT = 1000, FALL_FOR = 600, END = GROW_AT + GROW_FOR;
   var SEAT_W = 494, SEAT_TOP = 8, SEAT_H = 350; // the card in the pocket, in artwork units. It really fits inside.
   var WIDE = '(min-width:820px) and (min-height:640px)'; // same as the media query in envelope.css
   // Light from above and in front of the page, as (down the screen, towards the viewer).
   var LIGHT_Y = -0.45, LIGHT_Z = 0.89;
-  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, kind = 'source', decoded = {}, reversing = false, reverseTimers = [];
+  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, kind = 'source', decoded = {};
 
   function preload(k) {
     k = KINDS[k] ? k : 'source';
@@ -141,10 +142,9 @@
   }
   function showSent(M) {
     sent = true;
+    // Only the words, in the same handwriting as the card's title (Henry, 2026-11-15).
     card.querySelector('.ec__body').innerHTML =
-      '<div class="ec__thanks"><h2>Thank you.</h2><p class="ec__lede">Inquiry submitted. I\'ll be in touch shortly.</p>' +
-      '<p class="ec__note">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
-      '<a class="ec__send" href="' + M.instagram + '" target="_blank" rel="noopener">Follow @dialedbyh</a></div>';
+      '<div class="ec__thanks"><h2 class="ec__title"><img class="ec__hand" style="--hw:' + (THANKS_W / 2) + '" src="' + B + 'thank-you.webp" alt="Thank you" width="' + THANKS_W + '" height="194"></h2></div>';
   }
   function ensureCard(prefill) {
     var M = window.DBHModals, key = kind + JSON.stringify(prefill || {});
@@ -153,12 +153,13 @@
     scroll.innerHTML = '<article class="ec' + (KINDS[kind].pick ? ' ec--pick' : '') + '">' + cardHtml(M, prefill) + '</article>';
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
     placeLocation();
+    new Image().src = B + 'thank-you.webp';
     M.wireForm(form, kind, M.FORMS[kind], prefill, function () {
       showSent(M); card.querySelector('.ec__in').scrollTop = 0;
-      // Say it was sent, then put the envelope away (Henry, 2026-11-15). Only if this same
+      // Say thank you, then close (Henry, 2026-11-15: no closing animation). Only if this same
       // card is still the one showing, so a card reopened in the meantime is left alone.
       var shown = card;
-      setTimeout(function () { if (card === shown && sent) closeReversed(); }, 2600);
+      setTimeout(function () { if (card === shown && sent) close(); }, 2500);
     }, close);
     // A locked menu can't report a tap, so an invisible layer over it does, on screens where the hint has no room.
     // The layer must go the moment Model unlocks or it would block the menu. Set from here, not with a CSS
@@ -354,35 +355,7 @@
       playOpening(m);
     });
   }
-  // After an inquiry is sent: the opening, played backwards. The card goes back into the pocket,
-  // the envelope comes back up, the flap shuts on it, then it all fades (Henry, 2026-11-15).
-  // Each piece of the opening has its own start and length on one shared clock, so each is parked
-  // at its last frame and set running backwards at the moment the shared clock, counting down,
-  // reaches it. Anything that goes wrong falls back to the ordinary close.
-  function closeReversed() {
-    if (!root || root.hidden || reversing) return;
-    if (!landed || !Element.prototype.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return close();
-    try {
-      reversing = true;
-      var m = { S: root.querySelector('.env__stage--front').getBoundingClientRect(), F: card.getBoundingClientRect(), stack: !matchMedia(WIDE).matches };
-      m.u = m.S.width / 572;
-      root.classList.remove('is-landed'); root.classList.add('is-reversing');
-      playOpening(m);
-      var total = END * pace, rate = 1.2;
-      running.forEach(function (a) {
-        var end = Math.min(a.effect.getComputedTiming().endTime, total);
-        a.pause(); a.currentTime = end;
-        reverseTimers.push(setTimeout(function () { try { a.playbackRate = -rate; a.play(); } catch (e) {} }, (total - end) / rate));
-      });
-      // The card is inside the sealed envelope now. Keep it out of sight while the envelope fades,
-      // or it would flash back at full size for that last moment. A reopened card is a new one.
-      reverseTimers.push(setTimeout(function () { if (card) card.style.visibility = 'hidden'; close(); }, total / rate + 80));
-    } catch (e) { close(); }
-  }
   function close() {
-    reverseTimers.forEach(clearTimeout); reverseTimers = [];
-    if (root && reversing) root.classList.remove('is-reversing');
-    reversing = false;
     if (!root || root.hidden) return;
     removeEventListener('keydown', onKey); removeEventListener('resize', onResize);
     running.forEach(function (a) { a.cancel(); }); running = [];

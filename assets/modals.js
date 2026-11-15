@@ -321,7 +321,7 @@
   }
 
   // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
-  var ENVELOPE_VERSION = '8', envelopeLoad;
+  var ENVELOPE_VERSION = '9', envelopeLoad;
   function loadEnvelope() {
     if (window.dbhEnvelope) return Promise.resolve();
     if (envelopeLoad) return envelopeLoad;
@@ -384,18 +384,14 @@
         '</form>');
 
       wireForm(modal.querySelector('form'), kind, cfg, prefill, function () {
-        // Thank-you with the Instagram follow. Most visitors from search
-        // have never seen the account; this is the moment they are paying
-        // attention.
+        // Thank-you: just the words, then it closes by itself.
         modal.innerHTML = card(
           '<span class="dbh-lm__eyebrow">Received</span>' +
           '<h2 class="dbh-lm__title">Thank you.</h2>' +
-          '<p class="dbh-lm__sub">Inquiry submitted. I\'ll be in touch shortly.</p>' +
-          '<p class="dbh-lm__lead">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
-          '<a class="dbh-lm__link" href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>');
+          '');
         modal.querySelector('.dbh-lm__close').addEventListener('click', close);
         // Say it was sent, then close by itself, same as the envelope.
-        setTimeout(function () { if (current === modal) close(); }, 4000);
+        setTimeout(function () { if (current === modal) close(); }, 2500);
       }, close);
     }
 

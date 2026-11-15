@@ -243,6 +243,18 @@
         if (first) first.focus();
         return;
       }
+      // The server refuses a malformed email or phone. Say so here, on the field, instead of
+      // sending it and failing: that used to count as a failed send and opened WhatsApp.
+      var phoneDigits = get('phone').replace(/\D/g, '');
+      var bad = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('email')) ? ['email', 'Please enter a valid email address.']
+        : (phoneDigits.length < 7 || phoneDigits.length > 15) ? ['phone', 'Please enter a valid phone number.'] : null;
+      if (bad) {
+        if (window.dbhTracking) window.dbhTracking.error(form);
+        showErr(bad[1]);
+        var badField = form.querySelector('[name="' + bad[0] + '"]');
+        if (badField) badField.focus();
+        return;
+      }
       hideErr();
 
       var typeMap = { sell: 'SELL', trade: 'TRADE', selltrade: 'SELL', source: 'BUY' };
@@ -255,6 +267,7 @@
       });
       detailParts.push('OK to text: ' + (fd.get('textok') ? 'YES' : 'NO'));
       var btn = form.querySelector('[type="submit"]');
+      var btnLabel = btn.textContent;
       btn.disabled = true; btn.textContent = 'Sending…';
       fetch('/api/submit-form', {
         method: 'POST',
@@ -275,24 +288,42 @@
           attribution: window.dbhTracking ? window.dbhTracking.context(form) : null
         })
       }).then(function (r) {
-        if (!r.ok) throw new Error(r.status);
-        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[as] || 'BUY' });
-        // ChatGPT ads: count the inquiry as a lead. Must never break the form.
+        return r.json().catch(function () { return {}; }).then(function (body) { return { ok: r.ok, status: r.status, body: body || {} }; });
+      }).then(function (res) {
+        if (res.ok) return sent();
+        // 400 = the server did not accept what was typed. Keep them on the form with the reason.
+        if (res.status === 400) return refused(res.body.error);
+        failed();
+      }, failed);
+
+      // Sent. Nothing in here may reach failed(): a hiccup in a tracking pixel or in the
+      // thank-you must never look like a failed send.
+      function sent() {
+        try { if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: typeMap[as] || 'BUY' }); } catch (e) {}
+        // ChatGPT ads: count the inquiry as a lead.
         try { if (typeof window.oaiq === 'function') window.oaiq('measure', 'lead_created', { type: 'customer_action' }); } catch (e) {}
-        onSent();
-      }).catch(function () {
+        try { onSent(); } catch (e) {}
+      }
+      function refused(message) {
+        if (window.dbhTracking) window.dbhTracking.error(form);
+        btn.disabled = false; btn.textContent = btnLabel;
+        showErr(message || 'Something in the form was not accepted. Please check it and send again.');
+      }
+      // Could not reach the server at all (offline, outage, too many tries): hand the request
+      // to WhatsApp so it is never lost.
+      function failed() {
         if (window.dbhTracking) window.dbhTracking.error(form);
         var lines = [(FORMS[as] || cfg).title + ', Dialed by H'];
         var labels = { name: 'Name', email: 'Email', brand: 'Brand', model: 'Model', reference: 'Reference', location: 'Based in', price: 'Asking price', reason: 'Reason', ask: askLabel, details: 'Details' };
         Object.keys(labels).forEach(function (k) { if (get(k)) lines.push(labels[k] + ': ' + get(k)); });
         window.open(WA + '?text=' + encodeURIComponent(lines.join('\n')), '_blank');
         onFailed();
-      });
+      }
     });
   }
 
   // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
-  var ENVELOPE_VERSION = '5', envelopeLoad;
+  var ENVELOPE_VERSION = '6', envelopeLoad;
   function loadEnvelope() {
     if (window.dbhEnvelope) return Promise.resolve();
     if (envelopeLoad) return envelopeLoad;
@@ -360,11 +391,13 @@
         // attention.
         modal.innerHTML = card(
           '<span class="dbh-lm__eyebrow">Received</span>' +
-          '<h2 class="dbh-lm__title">Got it.</h2>' +
+          '<h2 class="dbh-lm__title">Inquiry sent.</h2>' +
           '<p class="dbh-lm__sub">I\'ll be in touch shortly.</p>' +
           '<p class="dbh-lm__lead">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
           '<a class="dbh-lm__link" href="' + IG + '" target="_blank" rel="noopener">Follow @dialedbyh</a>');
         modal.querySelector('.dbh-lm__close').addEventListener('click', close);
+        // Say it was sent, then close by itself, same as the envelope.
+        setTimeout(function () { if (current === modal) close(); }, 4000);
       }, close);
     }
 

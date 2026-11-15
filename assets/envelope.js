@@ -142,7 +142,7 @@
   function showSent(M) {
     sent = true;
     card.querySelector('.ec__body').innerHTML =
-      '<div class="ec__thanks"><h2>Got it.</h2><p class="ec__lede">I\'ll be in touch shortly.</p>' +
+      '<div class="ec__thanks"><h2>Inquiry sent.</h2><p class="ec__lede">I\'ll be in touch shortly.</p>' +
       '<p class="ec__note">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
       '<a class="ec__send" href="' + M.instagram + '" target="_blank" rel="noopener">Follow @dialedbyh</a></div>';
   }
@@ -153,7 +153,13 @@
     scroll.innerHTML = '<article class="ec' + (KINDS[kind].pick ? ' ec--pick' : '') + '">' + cardHtml(M, prefill) + '</article>';
     card = scroll.firstChild; form = card.querySelector('form'); sent = false; lastKey = key;
     placeLocation();
-    M.wireForm(form, kind, M.FORMS[kind], prefill, function () { showSent(M); card.querySelector('.ec__in').scrollTop = 0; }, close);
+    M.wireForm(form, kind, M.FORMS[kind], prefill, function () {
+      showSent(M); card.querySelector('.ec__in').scrollTop = 0;
+      // Say it was sent, then put the envelope away (Henry, 2026-11-15). Only if this same
+      // card is still the one showing, so a card reopened in the meantime is left alone.
+      var shown = card;
+      setTimeout(function () { if (card === shown && sent) close(); }, 4000);
+    }, close);
     // A locked menu can't report a tap, so an invisible layer over it does, on screens where the hint has no room.
     // The layer must go the moment Model unlocks or it would block the menu. Set from here, not with a CSS
     // :disabled sibling rule, which Safari's engine doesn't update when the menu unlocks.

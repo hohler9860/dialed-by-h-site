@@ -161,10 +161,10 @@
 .ec__err{display:none;margin:calc(var(--gap)*.7) 0 0;font-family:var(--mono);font-size:11px;line-height:1.3;letter-spacing:.06em;text-transform:uppercase;text-align:center;color:#8a3a2f}
 .ec__form.is-err .ec__wa{display:none}
 .ec__hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
-.ec__thanks{padding:30px 0 12px;text-align:center}
-.ec__thanks h2{margin:0;font-family:var(--works);font-weight:400;font-size:40px;line-height:1.1;letter-spacing:-.04em}
-.ec__thanks .ec__lede{margin:10px 0 0;font-family:var(--works);font-size:17px;line-height:1.25}
-.ec__thanks .ec__note{max-width:40ch;margin:22px auto 0;font-family:var(--works);font-size:15px;line-height:1.4}
+.ec--pick .ec__sub--thanks{display:block}
+.ec__next{margin:calc(var(--gap)*1.7) 0 6px;text-align:center}
+.ec__next-l{margin:0;font-family:var(--mono);font-size:10px;line-height:1.1;letter-spacing:.12em;text-transform:uppercase;color:var(--rule)}
+.ec__next .ec__send{width:min(230px,100%);margin-top:calc(var(--gap)*.7)}
 
 /* Room for the design as drawn: everything is a share of its 1480 x 1050 artboard, and the card
    stays well short of filling the screen. Change the .68px or the 78 to resize it. */
@@ -206,11 +206,9 @@
      have to sit on one baseline, so details centres its line the way a field does (30.5 = the field's middle). */
   .ec--pick .ec__f--ask,.ec--pick .ec__f--wide{grid-column:auto;height:calc(var(--c)*92)}
   .ec--pick textarea{padding-top:calc(var(--c)*30.5 - .6em)}
-  .ec__thanks{padding:calc(var(--c)*215) calc(var(--c)*180) 0}
-  .ec__thanks h2{font-size:calc(var(--c)*64)}
-  .ec__thanks .ec__lede{margin-top:calc(var(--c)*16);font-size:calc(var(--c)*26)}
-  .ec__thanks .ec__note{margin-top:calc(var(--c)*44);font-size:calc(var(--c)*23)}
-  .ec__thanks .ec__send{margin-top:calc(var(--c)*44);width:calc(var(--c)*340)}
+  .ec__next{margin:calc(var(--c)*64) 0 0}
+  .ec__next-l{font-size:max(10px,calc(var(--c)*15))}
+  .ec__next .ec__send{width:calc(var(--c)*340);margin-top:calc(var(--c)*20)}
   /* A finger can't zoom-proof 14px: on an iPad the fields stay 16px. */
   @media(pointer:coarse){.ec input[type=text],.ec input[type=email],.ec input[type=tel],.ec select,.ec textarea{font-size:max(16px,calc(var(--c)*23))}}
 }

@@ -142,9 +142,14 @@
   }
   function showSent(M) {
     sent = true;
-    // Only the words, in the same handwriting as the card's title (Henry, 2026-11-15).
+    // Same top as the request cards: script title, the sub line under it, then where to go next
+    // (Henry, 2026-11-15: more than "thank you", point them to the journal or Instagram).
     card.querySelector('.ec__body').innerHTML =
-      '<div class="ec__thanks"><h2 class="ec__title"><img class="ec__hand" style="--hw:' + (THANKS_W / 2) + '" src="' + B + 'thank-you.webp" alt="Thank you" width="' + THANKS_W + '" height="194"></h2></div>';
+      '<h2 class="ec__title"><img class="ec__hand" style="--hw:' + (THANKS_W / 2) + '" src="' + B + 'thank-you.webp" alt="Thank you" width="' + THANKS_W + '" height="194"></h2>' +
+      '<p class="ec__sub ec__sub--thanks">Inquiry submitted. I\'ll be in touch shortly.</p>' +
+      '<div class="ec__next"><p class="ec__next-l">In the meantime</p>' +
+      '<a class="ec__send" href="/journal/">Explore the Journal</a>' +
+      '<a class="ec__send" href="' + M.instagram + '" target="_blank" rel="noopener">Follow @dialedbyh</a></div>';
   }
   function ensureCard(prefill) {
     var M = window.DBHModals, key = kind + JSON.stringify(prefill || {});
@@ -156,10 +161,11 @@
     new Image().src = B + 'thank-you.webp';
     M.wireForm(form, kind, M.FORMS[kind], prefill, function () {
       showSent(M); card.querySelector('.ec__in').scrollTop = 0;
-      // Say thank you, then close (Henry, 2026-11-15: no closing animation). Only if this same
-      // card is still the one showing, so a card reopened in the meantime is left alone.
+      // Say thank you, then close (Henry, 2026-11-15: no closing animation). Long enough to read
+      // it and tap a link. Only if this same card is still the one showing, so a card reopened in
+      // the meantime is left alone.
       var shown = card;
-      setTimeout(function () { if (card === shown && sent) close(); }, 2500);
+      setTimeout(function () { if (card === shown && sent) close(); }, 8000);
     }, close);
     // A locked menu can't report a tap, so an invisible layer over it does, on screens where the hint has no room.
     // The layer must go the moment Model unlocks or it would block the menu. Set from here, not with a CSS

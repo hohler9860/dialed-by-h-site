@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Reply | Dialed by H</title>
+<!--
+  Internal helper for Henry, not a public page. The "reply ready" emails link
+  here because Gmail deletes sms: links from emails. Everything (number,
+  message) travels in the part of the address after the #, which browsers
+  never send to the server, so no client details reach our logs.
+-->
+<style>
+  @font-face { font-family: "Suisse Intl"; src: url("/assets/fonts/suisse/SuisseIntl-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Suisse Intl"; src: url("/assets/fonts/suisse/SuisseIntl-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Suisse Mono"; src: url("/assets/fonts/suisse/SuisseIntlMono-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #0a0a0a; color: #F7F3E9; }
+  body { font-family: "Suisse Intl", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 520px; margin: 0 auto; padding: 28px 20px 56px; }
+  .logo { display: block; width: 132px; height: auto; margin-bottom: 36px; }
+  .eyebrow { font-family: "Suisse Mono", ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .6; margin: 0 0 10px; }
+  h1 { font-size: 26px; line-height: 1.15; font-weight: 500; margin: 0 0 24px; letter-spacing: -.01em; }
+  .msg { white-space: pre-wrap; font-size: 16px; line-height: 1.5; border: 1px solid rgba(247,243,233,.22); border-radius: 12px; padding: 16px; margin: 0 0 20px; -webkit-user-select: text; user-select: text; }
+  .btn { display: block; width: 100%; text-align: center; text-decoration: none; font: inherit; font-size: 16px; font-weight: 500; padding: 16px 18px; border-radius: 999px; border: 1px solid #F7F3E9; margin: 0 0 12px; cursor: pointer; }
+  .btn--main { background: #F7F3E9; color: #0a0a0a; }
+  .btn--alt { background: transparent; color: #F7F3E9; }
+  .note { font-size: 13px; line-height: 1.5; opacity: .6; margin: 18px 0 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="/assets/brand/wordmark-cream.svg" alt="Dialed by H" width="791" height="112">
+  <p class="eyebrow" id="eyebrow">Reply ready</p>
+  <h1 id="title">Nothing to send</h1>
+  <div class="msg" id="msg" hidden></div>
+  <a class="btn btn--main" id="go" href="#" hidden>Open</a>
+  <button class="btn btn--alt" id="copy" type="button" hidden>Copy message</button>
+  <a class="btn btn--alt" id="alt1" href="#" hidden></a>
+  <a class="btn btn--alt" id="alt2" href="#" hidden></a>
+  <p class="note" id="note">This link opens from the reply emails. Open one of those and tap a button.</p>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.hash.replace(/^#/, ""));
+  var c = q.get("c") || "sms";
+  var phone = (q.get("p") || "").replace(/[^\d+]/g, "");
+  var email = q.get("e") || "";
+  var subject = q.get("s") || "";
+  var msg = q.get("m") || "";
+  var emailMsg = q.get("em") || msg;
+  var name = q.get("n") || "";
+  if (!msg) return;
+
+  var enc = encodeURIComponent;
+  var apple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+  var links = {};
+  if (phone) {
+    links.sms = { label: "Open in Messages", href: "sms:" + phone + (apple ? "&" : "?") + "body=" + enc(msg) };
+    links.wa = { label: "Open in WhatsApp", href: "https://wa.me/" + phone.replace(/\D/g, "") + "?text=" + enc(msg) };
+  }
+  if (email) {
+    links.mail = { label: "Open as email", href: "mailto:" + email + "?subject=" + enc(subject) + "&body=" + enc(emailMsg) };
+  }
+  var main = links[c] || links.sms || links.wa || links.mail;
+  if (!main) return;
+
+  var $ = function (id) { return document.getElementById(id); };
+  $("title").textContent = name ? "Message for " + name : "Your message";
+  $("msg").textContent = main === links.mail ? emailMsg : msg;
+  $("msg").hidden = false;
+  $("go").textContent = main.label;
+  $("go").href = main.href;
+  $("go").hidden = false;
+  $("copy").hidden = false;
+  $("note").textContent = "The message is already filled in. Tap the button, check it, hit send.";
+
+  var others = Object.keys(links).filter(function (k) { return links[k] !== main; });
+  others.slice(0, 2).forEach(function (k, i) {
+    var a = $("alt" + (i + 1));
+    a.textContent = links[k].label;
+    a.href = links[k].href;
+    a.hidden = false;
+  });
+
+  $("copy").addEventListener("click", function () {
+    var text = $("msg").textContent;
+    var done = function () { $("copy").textContent = "Copied"; setTimeout(function () { $("copy").textContent = "Copy message"; }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var r = document.createRange(); r.selectNodeContents($("msg"));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand("copy"); done(); } catch (e) {}
+    }
+  });
+
+  // Jump straight into the app so it is one tap from the email. If the
+  // browser blocks it, the button above does the same thing.
+  if (!q.get("stay")) { setTimeout(function () { location.href = main.href; }, 250); }
+})();
+</script>
+</body>
+</html>

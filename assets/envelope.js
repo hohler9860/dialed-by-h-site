@@ -142,7 +142,7 @@
   function showSent(M) {
     sent = true;
     card.querySelector('.ec__body').innerHTML =
-      '<div class="ec__thanks"><h2>Inquiry sent.</h2><p class="ec__lede">I\'ll be in touch shortly.</p>' +
+      '<div class="ec__thanks"><h2>Thank you.</h2><p class="ec__lede">Inquiry submitted. I\'ll be in touch shortly.</p>' +
       '<p class="ec__note">In the meantime, follow Dialed by H on Instagram. That\'s where every new piece shows up first.</p>' +
       '<a class="ec__send" href="' + M.instagram + '" target="_blank" rel="noopener">Follow @dialedbyh</a></div>';
   }

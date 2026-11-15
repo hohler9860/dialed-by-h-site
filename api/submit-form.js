@@ -221,12 +221,15 @@ module.exports = async (req, res) => {
     return res.status(200).json({ success: true });
   }
 
-  // Rate limit: 6 submissions / 10 min per IP, plus a 40 / 10 min global backstop
+  // Rate limit: 20 submissions / 10 min per IP, plus a 100 / 10 min global backstop.
+  // It was 6 per IP until 2026-11-15, when a handful of tests from Henry's own
+  // connection locked his real attempts out. 20 still stops a flood.
+  // (old note) 6 submissions / 10 min per IP, plus a 40 / 10 min global backstop
   // so no single machine (or a distributed flood) can drain the email quota.
   const rl = await guard({
     req, name: "submit-form",
-    perIp: { max: 6, windowSeconds: 600 },
-    global: { max: 40, windowSeconds: 600 },
+    perIp: { max: 20, windowSeconds: 600 },
+    global: { max: 100, windowSeconds: 600 },
   });
   if (!rl.allowed) {
     console.warn("[submit-form] Rate limited, scope:", rl.scope);

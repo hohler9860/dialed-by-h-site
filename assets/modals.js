@@ -321,7 +321,7 @@
   }
 
   // The envelope loads on demand. If it can't load, or this browser can't run it, the popup opens.
-  var ENVELOPE_VERSION = '7', envelopeLoad;
+  var ENVELOPE_VERSION = '8', envelopeLoad;
   function loadEnvelope() {
     if (window.dbhEnvelope) return Promise.resolve();
     if (envelopeLoad) return envelopeLoad;

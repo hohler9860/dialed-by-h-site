@@ -29,7 +29,7 @@
   var WIDE = '(min-width:820px) and (min-height:640px)'; // same as the media query in envelope.css
   // Light from above and in front of the page, as (down the screen, towards the viewer).
   var LIGHT_Y = -0.45, LIGHT_Z = 0.89;
-  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, kind = 'source', decoded = {};
+  var root, card, form, lastFocus, testClose, optsClose, pace = 1, running = [], landed = false, skipGuard = false, sent = true, lastKey = null, kind = 'source', decoded = {}, reversing = false, reverseTimers = [];
 
   function preload(k) {
     k = KINDS[k] ? k : 'source';
@@ -158,7 +158,7 @@
       // Say it was sent, then put the envelope away (Henry, 2026-11-15). Only if this same
       // card is still the one showing, so a card reopened in the meantime is left alone.
       var shown = card;
-      setTimeout(function () { if (card === shown && sent) close(); }, 4000);
+      setTimeout(function () { if (card === shown && sent) closeReversed(); }, 2600);
     }, close);
     // A locked menu can't report a tap, so an invisible layer over it does, on screens where the hint has no room.
     // The layer must go the moment Model unlocks or it would block the menu. Set from here, not with a CSS
@@ -354,7 +354,35 @@
       playOpening(m);
     });
   }
+  // After an inquiry is sent: the opening, played backwards. The card goes back into the pocket,
+  // the envelope comes back up, the flap shuts on it, then it all fades (Henry, 2026-11-15).
+  // Each piece of the opening has its own start and length on one shared clock, so each is parked
+  // at its last frame and set running backwards at the moment the shared clock, counting down,
+  // reaches it. Anything that goes wrong falls back to the ordinary close.
+  function closeReversed() {
+    if (!root || root.hidden || reversing) return;
+    if (!landed || !Element.prototype.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return close();
+    try {
+      reversing = true;
+      var m = { S: root.querySelector('.env__stage--front').getBoundingClientRect(), F: card.getBoundingClientRect(), stack: !matchMedia(WIDE).matches };
+      m.u = m.S.width / 572;
+      root.classList.remove('is-landed'); root.classList.add('is-reversing');
+      playOpening(m);
+      var total = END * pace, rate = 1.2;
+      running.forEach(function (a) {
+        var end = Math.min(a.effect.getComputedTiming().endTime, total);
+        a.pause(); a.currentTime = end;
+        reverseTimers.push(setTimeout(function () { try { a.playbackRate = -rate; a.play(); } catch (e) {} }, (total - end) / rate));
+      });
+      // The card is inside the sealed envelope now. Keep it out of sight while the envelope fades,
+      // or it would flash back at full size for that last moment. A reopened card is a new one.
+      reverseTimers.push(setTimeout(function () { if (card) card.style.visibility = 'hidden'; close(); }, total / rate + 80));
+    } catch (e) { close(); }
+  }
   function close() {
+    reverseTimers.forEach(clearTimeout); reverseTimers = [];
+    if (root && reversing) root.classList.remove('is-reversing');
+    reversing = false;
     if (!root || root.hidden) return;
     removeEventListener('keydown', onKey); removeEventListener('resize', onResize);
     running.forEach(function (a) { a.cancel(); }); running = [];

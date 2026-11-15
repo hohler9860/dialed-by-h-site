@@ -76,7 +76,7 @@
 .env.is-playing .env__stage{animation:env-fade calc(190ms*var(--pace)) ease-out both}
 .env.is-playing .env__rise{animation:env-rise calc(400ms*var(--pace)) var(--ease-rise) both;--from:calc(var(--u)*44);--scale:1}
 .env.is-playing .env__shadow-r{animation:env-rise calc(400ms*var(--pace)) var(--ease-rise) both;--from:calc(var(--u)*22);--scale:.96}
-.env.is-closing .env__scrim,.env.is-closing .env__scroll{animation:env-out .2s ease both}
+.env.is-closing .env__scrim,.env.is-closing .env__scroll,.env.is-closing .env__stage{animation:env-out .2s ease both}
 @keyframes env-fade{from{opacity:0}to{opacity:1}}
 @keyframes env-out{from{opacity:1}to{opacity:0}}
 @keyframes env-rise{from{transform:translate3d(0,var(--from),0) scale(var(--scale))}to{transform:none}}
@@ -90,7 +90,7 @@
    from --row, --gap and --top, which breathe with the screen's height so the card fits a normal phone
    without scrolling. It scrolls inside itself only on the very smallest. */
 .ec{--row:clamp(44px,calc(var(--vh)*7),56px);--gap:clamp(10px,calc(var(--vh)*2.4),20px);--top:clamp(20px,calc(var(--vh)*3.6),30px);position:relative;display:flex;flex-direction:column;width:100%;max-width:440px;max-height:100%;background:var(--paper);color:var(--ink);transform-origin:0 0;visibility:hidden;font-family:var(--intl);-webkit-font-smoothing:antialiased;cursor:auto}
-.env.is-playing .ec,.env.is-landed .ec{visibility:visible}
+.env.is-playing .ec,.env.is-landed .ec,.env.is-reversing .ec{visibility:visible}
 .ec__in{position:relative;flex:1 1 auto;min-height:0;padding:var(--top) 22px calc(var(--top) - 4px);overflow:hidden}
 .env.is-landed .ec__in{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .ec__shadow{position:absolute;inset:0;box-shadow:0 16px 48px rgba(37,37,34,.26),0 2px 6px rgba(37,37,34,.1);opacity:0;pointer-events:none}

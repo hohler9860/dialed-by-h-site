@@ -56,6 +56,9 @@
   if (!msg) return;
 
   var enc = encodeURIComponent;
+  // The address is encoded so nothing typed into an email field (a "?" or "&")
+  // can add hidden recipients or text to the email that opens.
+  var to = enc(email).replace(/%40/g, "@").replace(/%2B/gi, "+");
   var apple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
   var links = {};
   if (phone) {
@@ -63,7 +66,7 @@
     links.wa = { label: "Open in WhatsApp", href: "https://wa.me/" + phone.replace(/\D/g, "") + "?text=" + enc(msg) };
   }
   if (email) {
-    links.mail = { label: "Open as email", href: "mailto:" + email + "?subject=" + enc(subject) + "&body=" + enc(emailMsg) };
+    links.mail = { label: "Open as email", href: "mailto:" + to + "?subject=" + enc(subject) + "&body=" + enc(emailMsg) };
   }
   var main = links[c] || links.sms || links.wa || links.mail;
   if (!main) return;
@@ -106,7 +109,7 @@
     $("note").textContent = "This copies the message with its paragraphs, then opens an email to them. Tap the body and paste.";
     $("go").addEventListener("click", function (ev) {
       ev.preventDefault();
-      var open = function () { location.href = "mailto:" + email + "?subject=" + enc(subject); };
+      var open = function () { location.href = "mailto:" + to + "?subject=" + enc(subject); };
       if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(emailMsg).then(open, open); }
       else { open(); }
     });

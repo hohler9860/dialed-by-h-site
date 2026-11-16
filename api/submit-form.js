@@ -239,7 +239,22 @@ module.exports = async (req, res) => {
   console.log("[submit-form] Using SUPABASE_URL:", SUPABASE_URL);
 
   try {
-    const { type, fullName, email, phone, watchDetails, watchName, watchRef, watchImage, watchBrand, intent, budget, lookingFor, preferred, okToText, location } = req.body;
+    // Anyone can POST straight to this endpoint, so nothing here is trusted to be
+    // a string or a sane length. Every text field is forced to text and capped,
+    // so a crafted request cannot crash the handler or store and email megabytes.
+    const b = req.body && typeof req.body === "object" ? req.body : {};
+    const str = (v, max) => (typeof v === "string" || typeof v === "number" ? String(v).slice(0, max) : "");
+    const type = str(b.type, 20);
+    const fullName = str(b.fullName, 200);
+    const email = str(b.email, 254).trim();
+    const phone = str(b.phone, 40);
+    const watchDetails = str(b.watchDetails, 6000);
+    const watchName = str(b.watchName, 200);
+    const watchRef = str(b.watchRef, 100);
+    const budget = str(b.budget, 100);
+    const preferred = str(b.preferred, 40);
+    const location = str(b.location, 200);
+    const okToText = b.okToText;
 
     console.log("[submit-form] Parsed payload -type:", type, "email:", email, "watchName:", watchName || "(none)");
 
@@ -365,16 +380,18 @@ module.exports = async (req, res) => {
     // Vercel freezes the function once we respond, so settle this before returning.
     await classifierPromise;
 
+    // Internal error text (email provider, database) stays in the server logs.
+    // It used to be sent back to the browser, where any visitor could read it.
+    if (emailDebug) console.error("[submit-form] email debug:", emailDebug);
     return res.status(200).json({
       success: true,
       id: data.id,
       emailSent,
       inquirySent,
-      _debug: emailDebug || null,
     });
   } catch (err) {
     console.error("[submit-form] UNHANDLED ERROR:", err.message);
     console.error("[submit-form] STACK:", err.stack);
-    return res.status(500).json({ error: "Server error", details: err.message });
+    return res.status(500).json({ error: "Server error" });
   }
 };
